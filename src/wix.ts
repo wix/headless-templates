@@ -19,7 +19,7 @@ enum PostFieldField {
 
 export function wixLoader(): Loader {
   return {
-    name: "wixLoader",
+    name: "wix-loader",
     load: async (context: LoaderContext) => {
       const { items } = await getWixClient()
         .use(posts)
