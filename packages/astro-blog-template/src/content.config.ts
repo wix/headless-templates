@@ -1,8 +1,8 @@
 import { defineCollection, z } from "astro:content";
-import { wixLoader } from "./wix";
+import { wixBlogLoader } from "@wix/astro-blog-loader";
 
 const blog = defineCollection({
-  loader: wixLoader(),
+  loader: wixBlogLoader(),
   schema: z.object({
     title: z.string(),
     description: z.string(),

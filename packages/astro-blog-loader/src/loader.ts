@@ -1,6 +1,7 @@
 import { posts } from "@wix/blog";
 import { createClient, media, OAuthStrategy } from "@wix/sdk";
 import type { Loader, LoaderContext } from "astro/loaders";
+import { wixBlogLoaderSchema } from "./schema";
 
 const getWixClient = () => {
   const { PUBLIC_WIX_CLIENT_ID } = import.meta.env;
@@ -26,9 +27,9 @@ enum PostFieldField {
   CONTENT_TEXT = "CONTENT_TEXT",
 }
 
-export function wixLoader(): Loader {
+export function wixBlogLoader(): Loader {
   return {
-    name: "wix-loader",
+    name: "wix-blog-loader",
     load: async (context: LoaderContext) => {
       const { items } = await getWixClient()
         .use(posts)
@@ -64,5 +65,6 @@ export function wixLoader(): Loader {
         });
       }
     },
+    schema: wixBlogLoaderSchema,
   };
 }
