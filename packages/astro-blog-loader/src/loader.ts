@@ -1,7 +1,6 @@
 import { posts } from "@wix/blog";
 import { createClient, media, OAuthStrategy } from "@wix/sdk";
 import type { Loader, LoaderContext } from "astro/loaders";
-import { wixBlogLoaderSchema } from "./schema";
 
 const getWixClient = () => {
   const { PUBLIC_WIX_CLIENT_ID } = import.meta.env;
@@ -39,18 +38,15 @@ export function wixBlogLoader(): Loader {
         .find();
 
       for (const item of items) {
-        const id = item.slug as string;
+        const id = item._id;
         const data = await context.parseData({
-          id,
+          id: id,
           data: {
-            title: item.title,
-            description: item.excerpt,
-            pubDate: item.firstPublishedDate,
-            updatedDate: item.lastPublishedDate,
+            ...item,
             ...(item.media?.wixMedia?.image && {
-              heroImage: media.getImageUrl(item.media?.wixMedia?.image).url,
+              media: media.getImageUrl(item.media?.wixMedia?.image).url,
             }),
-          },
+          } as any, // TODO: fix type
         });
 
         const digest = context.generateDigest(data);
@@ -65,6 +61,5 @@ export function wixBlogLoader(): Loader {
         });
       }
     },
-    schema: wixBlogLoaderSchema,
   };
 }
