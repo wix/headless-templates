@@ -1,5 +1,5 @@
 {
-  "name": "wix-headless-astro",
+  "name": "wix-headless",
   "version": "1.0.0",
   "private": true,
   "workspaces": [
