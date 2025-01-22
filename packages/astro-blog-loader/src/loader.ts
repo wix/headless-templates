@@ -44,9 +44,9 @@ export function wixBlogLoader(): Loader {
           data: {
             ...item,
             ...(item.media?.wixMedia?.image && {
-              media: media.getImageUrl(item.media?.wixMedia?.image).url,
+              mediaUrl: media.getImageUrl(item.media?.wixMedia?.image).url,
             }),
-          } as any, // TODO: fix type
+          },
         });
 
         const digest = context.generateDigest(data);

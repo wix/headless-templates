@@ -14,7 +14,7 @@ export function blogLoader(): Loader {
           description: item.data.excerpt,
           pubDate: new Date(`${item.data.firstPublishedDate}`),
           updatedDate: new Date(`${item.data.lastPublishedDate}`),
-          heroImage: item.data.media,
+          heroImage: item.data.mediaUrl,
         };
 
         const digest = context.generateDigest(data);
