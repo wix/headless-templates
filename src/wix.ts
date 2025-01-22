@@ -15,6 +15,7 @@ const getWixClient = () => {
 
 enum PostFieldField {
   RICH_CONTENT = "RICH_CONTENT",
+  CONTENT_TEXT = "CONTENT_TEXT",
 }
 
 export function wixLoader(): Loader {
@@ -23,7 +24,9 @@ export function wixLoader(): Loader {
     load: async (context: LoaderContext) => {
       const { items } = await getWixClient()
         .use(posts)
-        .queryPosts({ fieldsets: [PostFieldField.RICH_CONTENT] })
+        .queryPosts({
+          fieldsets: [PostFieldField.RICH_CONTENT, PostFieldField.CONTENT_TEXT],
+        })
         .find();
 
       for (const item of items) {
@@ -48,7 +51,7 @@ export function wixLoader(): Loader {
           data,
           digest,
           rendered: {
-            html: JSON.stringify(item.richContent),
+            html: item.contentText || "",
           },
         });
       }
