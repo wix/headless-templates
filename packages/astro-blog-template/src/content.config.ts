@@ -7,8 +7,10 @@ export function blogLoader(): Loader {
     name: "blog-loader",
     load: async (context: LoaderContext): Promise<void> => {
       await wixBlogLoader().load(context);
+      const items = context.store.values();
+      context.store.clear();
 
-      for (const [, item] of context.store.entries()) {
+      for (const item of items) {
         const data = {
           title: item.data.title,
           description: item.data.excerpt,
@@ -21,6 +23,7 @@ export function blogLoader(): Loader {
 
         context.store.set({
           ...item,
+          id: item.data.slug as string,
           data,
           digest,
         });
