@@ -1,0 +1,118 @@
+{
+    "nodes": [
+        {
+            "type": "IMAGE",
+            "id": "dfkcg1",
+            "nodes": [
+                {
+                    "type": "CAPTION",
+                    "id": "8otnq8",
+                    "nodes": [
+                        {
+                            "type": "TEXT",
+                            "id": "",
+                            "textData": {
+                                "text": "Our wedding."
+                            }
+                        }
+                    ],
+                    "captionData": {}
+                }
+            ],
+            "imageData": {
+                "image": {
+                    "src": {
+                        "id": "8bb438_b2847057eba64e22b9d75c777a3c5145.jpg"
+                    },
+                    "width": 120,
+                    "height": 120
+                },
+                "containerData": {
+                    "width": {
+                        "size": "ORIGINAL"
+                    },
+                    "alignment": "RIGHT",
+                    "textWrap": true
+                },
+                "altText": "A couple kissing during their marriage ceremony",
+                "caption": "Our wedding."
+            }
+        },
+        {
+            "type": "IMAGE",
+            "id": "dfkcg1",
+            "nodes": [
+                {
+                    "type": "CAPTION",
+                    "id": "8otnq8",
+                    "nodes": [
+                        {
+                            "type": "TEXT",
+                            "id": "",
+                            "textData": {
+                                "text": "Our wedding."
+                            }
+                        }
+                    ],
+                    "captionData": {}
+                }
+            ],
+            "imageData": {
+                "image": {
+                    "src": {
+                        "id": "8bb438_b2847057eba64e22b9d75c777a3c5145.jpg"
+                    },
+                    "width": 120,
+                    "height": 120
+                },
+                "containerData": {
+                    "width": {
+                        "size": "FULL_WIDTH"
+                    },
+                    "alignment": "CENTER",
+                    "textWrap": true
+                },
+                "altText": "A couple kissing during their marriage ceremony",
+                "caption": "Our wedding."
+            }
+        },
+        {
+            "type": "IMAGE",
+            "id": "dfkcg1",
+            "nodes": [
+                {
+                    "type": "CAPTION",
+                    "id": "8otnq8",
+                    "nodes": [
+                        {
+                            "type": "TEXT",
+                            "id": "",
+                            "textData": {
+                                "text": "Our wedding."
+                            }
+                        }
+                    ],
+                    "captionData": {}
+                }
+            ],
+            "imageData": {
+                "image": {
+                    "src": {
+                        "id": "8bb438_b2847057eba64e22b9d75c777a3c5145.jpg"
+                    },
+                    "width": 120,
+                    "height": 120
+                },
+                "containerData": {
+                    "width": {
+                        "size": "CONTENT"
+                    },
+                    "alignment": "LEFT",
+                    "textWrap": true
+                },
+                "altText": "A couple kissing during their marriage ceremony",
+                "caption": "Our wedding."
+            }
+        }
+    ]
+}

@@ -1,0 +1,109 @@
+{
+    "nodes": [
+        {
+            "type": "HEADING",
+            "id": "6crhm174",
+            "nodes": [
+                {
+                    "type": "TEXT",
+                    "id": "",
+                    "textData": {
+                        "text": "Steps to Set Up Your Account"
+                    }
+                }
+            ],
+            "headingData": {
+                "level": 3,
+                "textStyle": {
+                    "textAlignment": "AUTO"
+                }
+            }
+        },
+        {
+            "type": "ORDERED_LIST",
+            "id": "9ep0u176",
+            "nodes": [
+                {
+                    "type": "LIST_ITEM",
+                    "id": "jjfyx177",
+                    "nodes": [
+                        {
+                            "type": "PARAGRAPH",
+                            "id": "jnstn178",
+                            "nodes": [
+                                {
+                                    "type": "TEXT",
+                                    "id": "",
+                                    "textData": {
+                                        "text": "Register for an Account"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "LIST_ITEM",
+                    "id": "c5n41185",
+                    "nodes": [
+                        {
+                            "type": "PARAGRAPH",
+                            "id": "99sc6186",
+                            "nodes": [
+                                {
+                                    "type": "TEXT",
+                                    "id": "",
+                                    "textData": {
+                                        "text": "Complete Your Profile"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "LIST_ITEM",
+                    "id": "ztavj195",
+                    "nodes": [
+                        {
+                            "type": "PARAGRAPH",
+                            "id": "t5003196",
+                            "nodes": [
+                                {
+                                    "type": "TEXT",
+                                    "id": "",
+                                    "textData": {
+                                        "text": "Set Up Two-Factor Authentication (2FA)"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "LIST_ITEM",
+                    "id": "aqi3s205",
+                    "nodes": [
+                        {
+                            "type": "PARAGRAPH",
+                            "id": "rlnv2206",
+                            "nodes": [
+                                {
+                                    "type": "TEXT",
+                                    "id": "",
+                                    "textData": {
+                                        "text": "Explore Features"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "orderedListData": {
+                "start": 1,
+                "offset": 2
+            }
+        }
+    ]
+}

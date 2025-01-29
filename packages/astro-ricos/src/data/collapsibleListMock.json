@@ -1,0 +1,122 @@
+{
+    "nodes": [
+        {
+            "type": "COLLAPSIBLE_LIST",
+            "id": "b0fu917",
+            "nodes": [
+                {
+                    "type": "COLLAPSIBLE_ITEM",
+                    "id": "mm8oh20",
+                    "nodes": [
+                        {
+                            "type": "COLLAPSIBLE_ITEM_TITLE",
+                            "id": "03qwh21",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "gtvb622",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "gqvb622",
+                                            "textData": {
+                                                "text": "Collapsible list title"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "COLLAPSIBLE_ITEM_BODY",
+                            "id": "p0wqu23",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "t4jcv24",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "gtvb62b",
+                                            "textData": {
+                                                "text": "Collapsible list body"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "collapsibleListData": {
+                "containerData": {
+                    "alignment": "CENTER",
+                    "textWrap": true
+                },
+                "expandOnlyOne": false,
+                "initialExpandedItems": "FIRST",
+                "direction": "LTR"
+            }
+        },
+        {
+            "type": "COLLAPSIBLE_LIST",
+            "id": "b0fu917",
+            "nodes": [
+                {
+                    "type": "COLLAPSIBLE_ITEM",
+                    "id": "mm8oh20",
+                    "nodes": [
+                        {
+                            "type": "COLLAPSIBLE_ITEM_TITLE",
+                            "id": "03qwh21",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "gtvb622",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "gqvb622",
+                                            "textData": {
+                                                "text": "Collapsible list title"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "COLLAPSIBLE_ITEM_BODY",
+                            "id": "p0wqu23",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "t4jcv24",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "gtvb62b",
+                                            "textData": {
+                                                "text": "Collapsible list body"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "collapsibleListData": {
+                "containerData": {
+                    "alignment": "CENTER",
+                    "textWrap": true
+                },
+                "expandOnlyOne": false,
+                "initialExpandedItems": "FIRST",
+                "direction": "RTL"
+            }
+        }
+    ]
+}

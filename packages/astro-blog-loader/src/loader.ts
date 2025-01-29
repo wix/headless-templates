@@ -38,7 +38,7 @@ export function wixBlogLoader(): Loader {
         .find();
 
       for (const item of items) {
-        const id = item._id;
+        const id = item._id as string;
         const data = await context.parseData({
           id: id,
           data: {

@@ -1,0 +1,491 @@
+{
+    "nodes": [
+        {
+            "type": "TABLE",
+            "id": "9g36s18",
+            "nodes": [
+                {
+                    "type": "TABLE_ROW",
+                    "id": "r7gdr21",
+                    "nodes": [
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "3pzdu75",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "fon0l76",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Name",
+                                                "decorations": [
+                                                    {
+                                                        "type": "BOLD",
+                                                        "fontWeightValue": 700
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "9wuv079",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "idtbo80",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Position",
+                                                "decorations": [
+                                                    {
+                                                        "type": "BOLD",
+                                                        "fontWeightValue": 700
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "tqfv684",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "mnhrp85",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Location",
+                                                "decorations": [
+                                                    {
+                                                        "type": "BOLD",
+                                                        "fontWeightValue": 700
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "zwrg390",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "6j2gt91",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Years of Service",
+                                                "decorations": [
+                                                    {
+                                                        "type": "BOLD",
+                                                        "fontWeightValue": 700
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        }
+                    ]
+                },
+                {
+                    "type": "TABLE_ROW",
+                    "id": "duvpp30",
+                    "nodes": [
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "z6tty101",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "83fk8102",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "John Doe"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "eri6f129",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "salmd130",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Software Engineer"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "wxca7138",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "ua2un139",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "New York"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "f2j0437",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "ne6z638",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "5"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        }
+                    ]
+                },
+                {
+                    "type": "TABLE_ROW",
+                    "id": "y85h939",
+                    "nodes": [
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "66c76157",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "l2h6h158",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Jane Smith"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "bsuzu169",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "cdjar170",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Product Manager"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "qet97182",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "ans0s183",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "San Francisco"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "1ce1h46",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "astfs47",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "3"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        }
+                    ]
+                },
+                {
+                    "type": "TABLE_ROW",
+                    "id": "vld5n48",
+                    "nodes": [
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "k1v2b236",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "jotik237",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Sam Johnson"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "5zvv3254",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "vgscl255",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "UX Designer"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "ol6t7273",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "kj82q274",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Remote"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "ipx9955",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "nove956",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "2"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        }
+                    ]
+                },
+                {
+                    "type": "TABLE_ROW",
+                    "id": "1c81x57",
+                    "nodes": [
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "672s3294",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "9qtxt295",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Emily Davis"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "9t9wi315",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "yfnm1316",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Data Scientist"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "iav9i337",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "5edbz338",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "Boston"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        },
+                        {
+                            "type": "TABLE_CELL",
+                            "id": "ir2bq64",
+                            "nodes": [
+                                {
+                                    "type": "PARAGRAPH",
+                                    "id": "rdvbi65",
+                                    "nodes": [
+                                        {
+                                            "type": "TEXT",
+                                            "id": "",
+                                            "textData": {
+                                                "text": "4"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "tableCellData": {}
+                        }
+                    ]
+                }
+            ],
+            "tableData": {
+                "dimensions": {
+                    "colsWidthRatio": [
+                        139,
+                        139,
+                        139,
+                        139
+                    ],
+                    "rowsHeight": [
+                        47,
+                        47,
+                        47,
+                        47,
+                        47
+                    ],
+                    "colsMinWidth": [
+                        120,
+                        120,
+                        120,
+                        120
+                    ]
+                }
+            }
+        },
+        {
+            "type": "PARAGRAPH",
+            "id": "lvoqc20"
+        }
+    ]
+}

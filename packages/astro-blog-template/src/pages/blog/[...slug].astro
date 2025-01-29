@@ -1,7 +1,8 @@
 ---
+import { RicosViewer } from '@wix/astro-ricos';
+import { renameKeysFromSDKRequestToRESTRequest } from "@wix/sdk-runtime/rename-all-nested-keys";
 import { type CollectionEntry, getCollection } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
-import { render } from 'astro:content';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
@@ -13,9 +14,8 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;
-const { Content } = await render(post);
 ---
 
 <BlogPost {...post.data}>
-	<Content />
+	 <RicosViewer content={renameKeysFromSDKRequestToRESTRequest(post.data.content)} />
 </BlogPost>

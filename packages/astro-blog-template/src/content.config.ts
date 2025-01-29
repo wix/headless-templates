@@ -17,13 +17,14 @@ export function blogLoader(): Loader {
           pubDate: new Date(`${item.data.firstPublishedDate}`),
           updatedDate: new Date(`${item.data.lastPublishedDate}`),
           heroImage: item.data.mediaUrl,
+          content: item.data.richContent,
         };
 
         const digest = context.generateDigest(data);
 
         context.store.set({
           ...item,
-          id: item.data.slug as string,
+          id: (item.data.slug || item.id) as string,
           data,
           digest,
         });

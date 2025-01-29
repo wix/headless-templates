@@ -1,0 +1,22 @@
+{
+    "nodes": [
+        {
+            "type": "GIF",
+            "id": "a00xy33",
+            "gifData": {
+                "containerData": {
+                    "width": {
+                        "size": "CONTENT"
+                    },
+                    "alignment": "CENTER",
+                    "textWrap": true
+                },
+                "original": {
+                    "gif": "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExYng4MjIyeXliYWozODB3NmxncDhwcXMwNjcxZ2dkZHJ5ZjBnc2dpZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kYNVwkyB3jkauFJrZA/giphy.webp"
+                },
+                "height": 480,
+                "width": 480
+            }
+        }
+    ]
+}
