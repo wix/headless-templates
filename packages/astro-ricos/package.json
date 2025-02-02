@@ -9,7 +9,7 @@
     "preview": "astro preview",
     "astro": "astro"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@wix/sdk": "^1.15.9",
     "astro": "^5.1.8"
   },

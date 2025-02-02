@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "main": "index.ts",
-  "devDependencies": {
+  "peerDependencies": {
     "@wix/blog": "^1.0.340",
     "@wix/sdk": "^1.15.9",
     "astro": "^5.1.8"
