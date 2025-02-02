@@ -38,21 +38,17 @@ export function wixBlogLoader(): Loader {
         .find();
 
       for (const item of items) {
-        const id = item._id as string;
-        const data = await context.parseData({
-          id: id,
-          data: {
-            ...item,
-            ...(item.media?.wixMedia?.image && {
-              mediaUrl: media.getImageUrl(item.media?.wixMedia?.image).url,
-            }),
-          },
-        });
+        const data = {
+          ...item,
+          ...(item.media?.wixMedia?.image && {
+            mediaUrl: media.getImageUrl(item.media?.wixMedia?.image).url,
+          }),
+        };
 
         const digest = context.generateDigest(data);
 
         context.store.set({
-          id,
+          id: item._id as string,
           data,
           digest,
           rendered: {

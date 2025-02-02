@@ -1,5 +1,6 @@
 import { wixBlogLoader } from "@wix/astro-blog-loader";
 import type { Loader, LoaderContext } from "astro/loaders";
+import { z } from "astro/zod";
 import { defineCollection } from "astro:content";
 
 export function blogLoader(): Loader {
@@ -11,20 +12,21 @@ export function blogLoader(): Loader {
       context.store.clear();
 
       for (const item of items) {
+        const { data: sdkData } = item as any;
+
         const data = {
-          title: item.data.title,
-          description: item.data.excerpt,
-          pubDate: new Date(`${item.data.firstPublishedDate}`),
-          updatedDate: new Date(`${item.data.lastPublishedDate}`),
-          heroImage: item.data.mediaUrl,
-          content: item.data.richContent,
+          title: sdkData.title,
+          description: sdkData.excerpt,
+          pubDate: new Date(`${sdkData.firstPublishedDate}`),
+          updatedDate: new Date(`${sdkData.lastPublishedDate}`),
+          heroImage: sdkData.mediaUrl,
+          richContent: sdkData.richContent,
         };
 
         const digest = context.generateDigest(data);
 
         context.store.set({
-          ...item,
-          id: (item.data.slug || item.id) as string,
+          id: sdkData.slug as string,
           data,
           digest,
         });
@@ -35,6 +37,14 @@ export function blogLoader(): Loader {
 
 const blog = defineCollection({
   loader: blogLoader(),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+    updatedDate: z.coerce.date().optional(),
+    heroImage: z.string().optional(),
+    richContent: z.any(),
+  }),
 });
 
 export const collections = { blog };

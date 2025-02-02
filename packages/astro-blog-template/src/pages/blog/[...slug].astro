@@ -17,5 +17,5 @@ const post = Astro.props;
 ---
 
 <BlogPost {...post.data}>
-	 <RicosViewer content={renameKeysFromSDKRequestToRESTRequest(post.data.content)} />
+	 <RicosViewer content={renameKeysFromSDKRequestToRESTRequest(post.data.richContent)} />
 </BlogPost>
