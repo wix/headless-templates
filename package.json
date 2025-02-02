@@ -11,5 +11,8 @@
     "@wix/sdk": "^1.15.9",
     "@wix/blog": "^1.0.340",
     "astro": "^5.1.8"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   }
 }
