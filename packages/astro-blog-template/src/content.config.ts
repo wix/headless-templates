@@ -26,7 +26,7 @@ export function blogLoader(): Loader {
         const digest = context.generateDigest(data);
 
         context.store.set({
-          id: sdkData.slug as string,
+          id: (sdkData.slug || item.id) as string,
           data,
           digest,
         });
