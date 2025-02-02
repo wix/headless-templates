@@ -17,8 +17,8 @@ export function blogLoader(): Loader {
         const data = {
           title: sdkData.title,
           description: sdkData.excerpt,
-          pubDate: new Date(`${sdkData.firstPublishedDate}`),
-          updatedDate: new Date(`${sdkData.lastPublishedDate}`),
+          pubDate: new Date(sdkData.firstPublishedDate),
+          updatedDate: new Date(sdkData.lastPublishedDate),
           heroImage: sdkData.mediaUrl,
           richContent: sdkData.richContent,
         };
