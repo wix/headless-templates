@@ -1,0 +1,22 @@
+{
+  "name": "@wix/astro-ricos-app",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "devDependencies": {
+    "@wix/astro-ricos": "^0.0.1",
+    "@astrojs/react": "^4.1.6",
+    "@types/react": "^18.0.8",
+    "@types/react-dom": "^18.0.3",
+    "@wix/ricos": "^10.116.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
+}
