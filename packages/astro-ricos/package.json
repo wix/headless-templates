@@ -3,10 +3,10 @@
   "type": "module",
   "version": "1.0.0",
   "exports": {
-    ".": "./index.ts"
+    ".": "./dist/components/RicosViewer.astro"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc && cp -r src/components dist/"
   },
   "peerDependencies": {
     "@wix/sdk": "^1.15.9",

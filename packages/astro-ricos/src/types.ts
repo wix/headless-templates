@@ -98,10 +98,6 @@ export type RicosDecoration = {
 };
 
 export type RicosNode = {
-  node: any;
-  node: any;
-  [x: string]: any;
-  node: any;
   type: RicosNodeType;
   id: string;
   textData?: { text: string; decorations: RicosDecoration[] };

@@ -352,6 +352,11 @@ const renderNode = {
     });
   },
   [RicosNodeType.COLLAPSIBLE_ITEM]: renderCollapsibleItemNode,
+  [RicosNodeType.COLLAPSIBLE_ITEM_TITLE]: (node: RicosNode) =>
+    renderRicosNode(node.nodes!),
+
+  [RicosNodeType.COLLAPSIBLE_ITEM_BODY]: (node: RicosNode) =>
+    renderRicosNode(node.nodes!),
 
   [RicosNodeType.TABLE]: (node: RicosNode) => {
     const { colsWidthRatio, colsMinWidth } = node.tableData!.dimensions;
