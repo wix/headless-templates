@@ -13,20 +13,24 @@ export function blogLoader(): Loader {
 
       for (const item of items) {
         const { data: sdkData } = item as any;
+        const id = (sdkData.slug || item.id) as string;
 
-        const data = {
-          title: sdkData.title,
-          description: sdkData.excerpt,
-          pubDate: new Date(sdkData.firstPublishedDate),
-          updatedDate: new Date(sdkData.lastPublishedDate),
-          heroImage: sdkData.mediaUrl,
-          richContent: sdkData.richContent,
-        };
+        const data = await context.parseData({
+          id,
+          data: {
+            title: sdkData.title,
+            description: sdkData.excerpt,
+            pubDate: new Date(sdkData.firstPublishedDate),
+            updatedDate: new Date(sdkData.lastPublishedDate),
+            heroImage: sdkData.mediaUrl,
+            richContent: sdkData.richContent,
+          },
+        });
 
         const digest = context.generateDigest(data);
 
         context.store.set({
-          id: (sdkData.slug || item.id) as string,
+          id,
           data,
           digest,
         });
