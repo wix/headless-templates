@@ -18,7 +18,7 @@ export const renderTag = ({
 }: {
   tag: string;
   children?: string;
-  attributes?: Record<string, string>;
+  attributes?: Record<string, any>;
   style?: Record<string, string>;
 }): string => {
   const attributesString = Object.keys(attributes).length

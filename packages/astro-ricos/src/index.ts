@@ -1,6 +1,6 @@
 import { media } from "@wix/sdk";
-import { renderRicosNode } from "./renderers";
-import type { RicosNode } from "./types";
+import { renderRicosNode } from "./renderers.js";
+import type { RicosNode } from "./types.js";
 
 export const ricosToHtml = async (content: {
   nodes: RicosNode[];

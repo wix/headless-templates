@@ -1,6 +1,6 @@
-import { renderNodeStyle, renderTextStyle } from "./styles";
-import { DecorationType, type RicosNode, RicosNodeType } from "./types";
-import { renderTag } from "./utils";
+import { renderNodeStyle, renderTextStyle } from "./styles.js";
+import { DecorationType, type RicosNode, RicosNodeType } from "./types.js";
+import { renderTag } from "./utils.js";
 
 const renderSpanNode = (node: RicosNode): string =>
   renderTag({
@@ -34,7 +34,6 @@ const renderCollapsibleItemNode = (
       renderTag({
         tag: "summary",
         children: title,
-
         style: {
           "list-style-position": "unset",
         },
@@ -44,11 +43,11 @@ const renderCollapsibleItemNode = (
 
 const renderNode = {
   [RicosNodeType.TEXT]: (node: RicosNode): string => {
-    const { text, decorations } = node.textData ?? {};
+    const { text = "", decorations } = node.textData ?? {};
 
     return (
       decorations?.reduce((result, decoration) => {
-        const styles = {
+        const styles: Record<string, string> = {
           [DecorationType.BOLD]: {
             "font-weight": `${decoration.fontWeightValue}`,
           },
@@ -73,6 +72,34 @@ const renderNode = {
           [DecorationType.FONT_SIZE]: {
             "font-size": `${decoration.fontSizeData?.value}${decoration.fontSizeData?.unit}`,
           },
+          [DecorationType.LINK]: {},
+          [DecorationType.ANCHOR]: {},
+          [DecorationType.MENTION]: {},
+        }[decoration.type];
+
+        const attributes: Record<string, string> = {
+          [DecorationType.BOLD]: {},
+          [DecorationType.ITALIC]: {},
+          [DecorationType.UNDERLINE]: {},
+          [DecorationType.SPOILER]: {},
+          [DecorationType.COLOR]: {},
+          [DecorationType.FONT_SIZE]: {},
+          [DecorationType.LINK]: {
+            ...(decoration.linkData?.link?.url && {
+              href: decoration.linkData?.link?.url,
+            }),
+            target: "_blank",
+            rel: "noopener noreferrer",
+          },
+          [DecorationType.ANCHOR]: {
+            href: `#viewer-${decoration.anchorData?.anchor}`,
+            target: "_self",
+          },
+          [DecorationType.MENTION]: {
+            href: "#",
+            rel: "noopener noreferrer",
+            tabIndex: "0",
+          },
         }[decoration.type];
 
         const tag = {
@@ -81,6 +108,8 @@ const renderNode = {
           [DecorationType.UNDERLINE]: "u",
           [DecorationType.SPOILER]: "span",
           [DecorationType.LINK]: "a",
+          [DecorationType.ANCHOR]: "a",
+          [DecorationType.MENTION]: "span",
           [DecorationType.COLOR]: "span",
           [DecorationType.FONT_SIZE]: "span",
         }[decoration.type];
@@ -89,14 +118,7 @@ const renderNode = {
           tag,
           children: result,
           style: styles ?? {},
-          attributes:
-            decoration.type === DecorationType.LINK
-              ? {
-                  href: decoration.linkData?.link.url,
-                  target: "_blank",
-                  rel: "noopener noreferrer",
-                }
-              : {},
+          attributes: attributes ?? {},
         });
       }, text) ?? text
     );
@@ -104,8 +126,8 @@ const renderNode = {
 
   [RicosNodeType.HEADING]: (node: RicosNode) =>
     renderTag({
-      tag: `h${node.headingData.level || 1}`,
-      style: { ...renderTextStyle(node.headingData) },
+      tag: `h${node.headingData?.level || 1}`,
+      style: { ...(node.headingData && renderTextStyle(node.headingData)) },
       children: renderRicosNode(node.nodes!),
     }),
 
@@ -115,8 +137,8 @@ const renderNode = {
       children: renderRicosNode(node.nodes),
       attributes: { id: node.id },
       style: {
-        ...renderNodeStyle(node.style),
-        ...renderTextStyle(node.paragraphData),
+        ...(node.style && renderNodeStyle(node.style)),
+        ...(node.paragraphData && renderTextStyle(node.paragraphData)),
       },
     }),
 
@@ -127,7 +149,9 @@ const renderNode = {
         ...(node.orderedListData?.start && {
           start: node.orderedListData.start,
         }),
-        "arial-level": node.orderedListData?.offset + 1 || "1",
+        "arial-level":
+          (node.orderedListData?.offset && node.orderedListData?.offset + 1) ||
+          "1",
       },
       children: renderRicosNode(node.nodes!),
     }),
@@ -135,7 +159,11 @@ const renderNode = {
   [RicosNodeType.BULLETED_LIST]: (node: RicosNode) =>
     renderTag({
       tag: "ul",
-      attributes: { "arial-level": node.orderedListData?.offset + 1 || "1" },
+      attributes: {
+        "arial-level":
+          (node.orderedListData?.offset && node.orderedListData?.offset + 1) ||
+          "1",
+      },
       children: renderRicosNode(node.nodes!),
     }),
 
@@ -147,7 +175,7 @@ const renderNode = {
       tag: "figcaption",
       children: renderRicosNode(node.nodes!),
       style: {
-        ...renderNodeStyle(node.style),
+        ...(node.style && renderNodeStyle(node.style)),
       },
     }),
 
@@ -156,7 +184,7 @@ const renderNode = {
       tag: "blockquote",
       children: renderRicosNode(node.nodes!),
       style: {
-        ...renderNodeStyle(node.style),
+        ...(node.style && renderNodeStyle(node.style)),
         ...(node.blockquoteData?.indentation && {
           "margin-inline-start": `${node.blockquoteData.indentation * 1.5}em`,
         }),
@@ -171,14 +199,18 @@ const renderNode = {
         children: renderRicosNode(node.nodes!),
       }),
       style: {
-        ...renderNodeStyle(node.style),
-        ...renderTextStyle(node.codeBlockData),
+        ...(node.style && renderNodeStyle(node.style)),
+        ...(node.codeBlockData && renderTextStyle(node.codeBlockData)),
       },
     }),
 
   [RicosNodeType.DIVIDER]: (node: RicosNode) => {
     const { dividerData } = node;
-    const { lineStyle, width, alignment } = dividerData;
+    const {
+      lineStyle = "SINGLE",
+      width = "LARGE",
+      alignment = "CENTER",
+    } = dividerData || {};
 
     const styles = {
       LEFT: { "margin-left": "0" },
@@ -202,9 +234,9 @@ const renderNode = {
     return renderTag({
       tag: "div",
       style: {
-        ...styles[alignment || "CENTER"],
-        ...lineStyles[lineStyle || "SINGLE"],
-        ...widthStyles[width || "LARGE"],
+        ...styles[alignment],
+        ...lineStyles[lineStyle],
+        ...widthStyles[width],
         padding: "14px 0",
       },
       attributes: { role: "separator", "aria-label": "divider" },
@@ -212,24 +244,26 @@ const renderNode = {
   },
 
   [RicosNodeType.IMAGE]: (node: RicosNode, helpers: any) => {
-    const { src, width, height } = node.imageData.image;
+    const { src, width, height } = node.imageData!.image;
     const imageUrl = helpers.media.getImageUrl(
       `https://static.wixstatic.com/media/${src.id}`
     ).url;
-    const alignment = node.imageData.containerData.alignment.toLowerCase();
+    const alignment = node.imageData?.containerData.alignment.toLowerCase();
     const caption = renderRicosNode(node.nodes!, helpers);
 
     return renderTag({
       tag: "figure",
       style: {
-        "text-align": alignment,
-        ...(node.imageData.containerData.width.size === "ORIGINAL" && {
+        ...(alignment && { "text-align": alignment }),
+        ...(node.imageData?.containerData.width.size === "ORIGINAL" && {
           width: `${width}px`,
           height: `${height}px`,
         }),
       },
       children:
-        `<img src="${imageUrl}" width="${width}" height="${height}" alt="${node.imageData.altText}" />` +
+        `<img src="${imageUrl}" width="${width}" height="${height}" alt="${
+          node.imageData?.altText || ""
+        }" />` +
         (caption
           ? renderTag({
               tag: "figcaption",
@@ -240,9 +274,9 @@ const renderNode = {
   },
 
   [RicosNodeType.GIF]: (node: RicosNode) => {
-    const { width, height } = node.gifData;
-    const url = node.gifData.original.gif || node.gifData.original.mp4;
-    const alignment = node.gifData.containerData.alignment.toLowerCase();
+    const { width, height } = node.gifData!;
+    const url = node.gifData!.original.gif || node.gifData!.original.mp4;
+    const alignment = node.gifData!.containerData.alignment.toLowerCase();
 
     return renderTag({
       tag: "figure",
@@ -257,14 +291,14 @@ const renderNode = {
 
   [RicosNodeType.VIDEO]: (node: RicosNode, helpers: any): string => {
     const { videoData } = node;
-    const { src } = videoData.video;
-    const alignment = videoData.containerData.alignment.toLowerCase();
+    const { src } = videoData!.video;
+    const alignment = videoData!.containerData.alignment.toLowerCase();
     const isYouTube =
       src.url?.includes("youtube.com") || src.url?.includes("youtu.be");
 
     if (isYouTube) {
       const youtubeId =
-        src.url.match(/[?&]v=([^&#]+)/)?.[1] || src.url.split("/").pop();
+        src.url!.match(/[?&]v=([^&#]+)/)?.[1] || src.url!.split("/").pop();
       return renderTag({
         tag: "figure",
         style: { "text-align": alignment },
@@ -295,7 +329,7 @@ const renderNode = {
   },
 
   [RicosNodeType.COLLAPSIBLE_LIST]: (node: RicosNode): string => {
-    const { initialExpandedItems } = node.collapsibleListData;
+    const { initialExpandedItems } = node.collapsibleListData || {};
 
     const children = node.nodes
       .map((childNode, index) => {
@@ -320,7 +354,7 @@ const renderNode = {
   [RicosNodeType.COLLAPSIBLE_ITEM]: renderCollapsibleItemNode,
 
   [RicosNodeType.TABLE]: (node: RicosNode) => {
-    const { colsWidthRatio, colsMinWidth } = node.tableData.dimensions;
+    const { colsWidthRatio, colsMinWidth } = node.tableData!.dimensions;
     const colGroup = colsWidthRatio
       .map(
         (width, index) =>

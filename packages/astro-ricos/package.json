@@ -2,10 +2,18 @@
   "name": "@wix/astro-ricos",
   "type": "module",
   "version": "1.0.0",
-  "main": "index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
   "peerDependencies": {
     "@wix/sdk": "^1.15.9",
     "astro": "^5.1.8"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.5"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
