@@ -7,7 +7,8 @@
     "start": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "publish": "wix edge deploy",
+    "deploy:preview": "wix edge deploy",
+    "deploy:prod": "wix edge deploy --prod",
     "astro": "astro"
   },
   "dependencies": {
