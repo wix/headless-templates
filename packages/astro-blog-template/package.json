@@ -9,8 +9,11 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/rss": "^4.0.11",
+    "@astrojs/sitemap": "^3.2.1",
     "@wix/astro-blog-loader": "^0.0.1",
-    "@wix/astro-ricos": "^0.0.1"
+    "@wix/astro-ricos": "^0.0.1",
+    "astro": "^5.2.4"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
