@@ -1,0 +1,59 @@
+---
+import { getMenu } from "../../../lib/wix";
+import type { Menu } from "../../../lib/wix/types";
+import CartModal from "../../cart/cart-modal.astro";
+import LogoSquare from "../../logo-square.astro";
+import MobileMenu from "./mobile-menu.astro";
+import Search from "./search.astro";
+
+const menu = await getMenu("next-js-frontend-header-menu");
+
+const { SITE_NAME } = import.meta.env;
+---
+
+<nav class="relative flex items-center justify-between p-4 lg:px-6">
+  <div class="block flex-none md:hidden">
+    <MobileMenu menu={menu}>
+      <Search />
+    </MobileMenu>
+  </div>
+  <div class="flex w-full items-center">
+    <div class="flex w-full md:w-1/3">
+      <a
+        href="/"
+        class="mr-2 flex w-full items-center justify-center md:w-auto lg:mr-6"
+      >
+        <LogoSquare />
+        <div
+          class="ml-2 flex-none text-sm font-medium uppercase md:hidden lg:block"
+        >
+          {SITE_NAME}
+        </div>
+      </a>
+      {
+        menu.length ? (
+          <ul class="hidden gap-6 text-sm md:flex md:items-center">
+            {menu.map((item: Menu) => (
+              <li>
+                <a
+                  href={item.path}
+                  data-astro-prefetch
+                  class="text-neutral-500 underline-offset-4 hover:text-black hover:underline dark:text-neutral-400 dark:hover:text-neutral-300"
+                >
+                  {item.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : null
+      }
+    </div>
+    <div class="hidden justify-center md:flex md:w-1/3">
+      <Search />
+    </div>
+
+    <div class="flex justify-end md:w-1/3">
+      <CartModal />
+    </div>
+  </div>
+</nav>

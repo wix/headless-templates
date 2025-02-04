@@ -1,0 +1,182 @@
+---
+import ShoppingCartIcon from "../icons/shopping-cart-icon.astro";
+import { DEFAULT_OPTION } from "../../lib/constants";
+import { createUrl } from "../../lib/utils";
+import { getCart } from "../../lib/wix";
+import LoadingDots from "../loading-dots.astro";
+import Price from "../price.astro";
+import CloseCart from "./close-cart.astro";
+import DeleteItemButton from "./delete-item-button.astro";
+import EditItemQuantityButton from "./edit-item-quantity-button.astro";
+import OpenCart from "./open-cart.astro";
+import { actions } from "astro:actions";
+import { Image } from "astro:assets";
+
+type MerchandiseSearchParams = {
+  [key: string]: string;
+};
+
+const addItemToCartResult = Astro.getActionResult(actions.addItemToCart);
+const deleteItemFromCartResult = Astro.getActionResult(
+  actions.deleteItemFromCart
+);
+const updateItemQuantityResult = Astro.getActionResult(
+  actions.updateItemQuantity
+);
+
+const cart = await getCart();
+---
+
+<button aria-label="Open cart">
+  <label for="cart-modal">
+    <span class="sr-only">Open cart</span>
+    <OpenCart quantity={cart?.totalQuantity} />
+  </label>
+</button>
+<div class="relative z-50">
+  <input
+    type="checkbox"
+    id="cart-modal"
+    class="peer hidden"
+    checked={addItemToCartResult?.data === null ||
+      deleteItemFromCartResult?.data === null ||
+      updateItemQuantityResult?.data === null}
+  />
+  <label
+    for="cart-modal"
+    class="fixed inset-0 bg-black/30 opacity-0 hidden backdrop-blur-none transition-all ease-in-out duration-300 peer-checked:opacity-100 peer-checked:backdrop-blur-[.5px] peer-checked:block"
+    aria-hidden="true"
+  >
+  </label>
+  <div
+    class="fixed bottom-0 right-0 top-0 flex h-full w-full flex-col border-l border-neutral-200 bg-white/80 p-6 text-black backdrop-blur-xl md:w-[390px] dark:border-neutral-700 dark:bg-black/80 dark:text-white translate-x-full transition-all ease-in-out duration-300 peer-checked:translate-x-0"
+  >
+    <div class="flex items-center justify-between">
+      <p class="text-lg font-semibold">My Cart</p>
+      <button aria-label="Close cart">
+        <label for="cart-modal">
+          <span class="sr-only">Close cart</span>
+          <CloseCart />
+        </label>
+      </button>
+    </div>
+
+    {
+      !cart || cart.lines.length === 0 ? (
+        <div class="mt-20 flex w-full flex-col items-center justify-center overflow-hidden">
+          <ShoppingCartIcon class="h-16" />
+          <p class="mt-6 text-center text-2xl font-bold">Your cart is empty.</p>
+        </div>
+      ) : (
+        <div class="flex h-full flex-col justify-between overflow-hidden p-1">
+          <ul class="flex-grow overflow-auto py-4">
+            {cart.lines
+              .sort((a, b) =>
+                a.merchandise.product.title.localeCompare(
+                  b.merchandise.product.title
+                )
+              )
+              .map((item) => {
+                const merchandiseSearchParams = {} as MerchandiseSearchParams;
+
+                item.merchandise.selectedOptions.forEach(({ name, value }) => {
+                  if (value !== DEFAULT_OPTION) {
+                    merchandiseSearchParams[name.toLowerCase()] = value;
+                  }
+                });
+
+                const merchandiseUrl = createUrl(
+                  `/product/${item.merchandise.product.handle}`,
+                  new URLSearchParams(merchandiseSearchParams)
+                );
+
+                return (
+                  <li class="flex w-full flex-col border-b border-neutral-300 dark:border-neutral-700">
+                    <div class="relative flex w-full flex-row justify-between px-1 py-4">
+                      <div class="absolute z-40 -ml-1 -mt-2">
+                        <DeleteItemButton item={item} />
+                      </div>
+                      <div class="flex flex-row">
+                        <div class="relative h-16 w-16 overflow-hidden rounded-md border border-neutral-300 bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800">
+                          <Image
+                            class="h-full w-full object-cover"
+                            width={64}
+                            height={64}
+                            loading="lazy"
+                            alt={
+                              item.merchandise.product.featuredImage.altText ||
+                              item.merchandise.product.title
+                            }
+                            src={item.merchandise.product.featuredImage.url}
+                          />
+                        </div>
+                        <a
+                          href={merchandiseUrl}
+                          class="z-30 ml-2 flex flex-row space-x-4"
+                        >
+                          <div class="flex flex-1 flex-col text-base">
+                            <span class="leading-tight">
+                              {item.merchandise.product.title}
+                            </span>
+                            {item.merchandise.title !== DEFAULT_OPTION ? (
+                              <p class="text-sm text-neutral-500 dark:text-neutral-400">
+                                {item.merchandise.title}
+                              </p>
+                            ) : null}
+                          </div>
+                        </a>
+                      </div>
+                      <div class="flex h-16 flex-col justify-between">
+                        <Price
+                          class="flex justify-end space-y-2 text-right text-sm"
+                          amount={item.cost.totalAmount.amount}
+                          currencyCode={item.cost.totalAmount.currencyCode}
+                        />
+                        <div class="ml-auto flex h-9 flex-row items-center rounded-full border border-neutral-200 dark:border-neutral-700">
+                          <EditItemQuantityButton item={item} type="minus" />
+                          <p class="w-6 text-center">
+                            <span class="w-full text-sm">{item.quantity}</span>
+                          </p>
+                          <EditItemQuantityButton item={item} type="plus" />
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+          </ul>
+          <div class="py-4 text-sm text-neutral-500 dark:text-neutral-400">
+            <div class="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 dark:border-neutral-700">
+              <p>Taxes</p>
+              <Price
+                class="text-right text-base text-black dark:text-white"
+                amount={cart.cost.totalTaxAmount.amount}
+                currencyCode={cart.cost.totalTaxAmount.currencyCode}
+              />
+            </div>
+            <div class="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
+              <p>Shipping</p>
+              <p class="text-right">Calculated at checkout</p>
+            </div>
+            <div class="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
+              <p>Total</p>
+              <Price
+                class="text-right text-base text-black dark:text-white"
+                amount={cart.cost.totalAmount.amount}
+                currencyCode={cart.cost.totalAmount.currencyCode}
+              />
+            </div>
+          </div>
+          <form method="get" action="/api/checkout">
+            <button
+              class="block w-full rounded-full bg-blue-600 p-3 text-center text-sm font-medium text-white opacity-90 hover:opacity-100"
+              type="submit"
+            >
+              {false ? <LoadingDots class="bg-white" /> : "Proceed to Checkout"}
+            </button>
+          </form>
+        </div>
+      )
+    }
+  </div>
+</div>

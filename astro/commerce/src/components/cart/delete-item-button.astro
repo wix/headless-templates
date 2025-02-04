@@ -1,0 +1,27 @@
+---
+import XMarkIcon from "../icons/x-mark.astro";
+import type { CartItem } from "../../lib/wix/types";
+import { actions } from "astro:actions";
+
+type Props = {
+  item: CartItem;
+};
+
+const deleteItemFromCartResult = Astro.getActionResult(
+  actions.deleteItemFromCart
+);
+---
+
+<form method="post" action={actions.deleteItemFromCart}>
+  <input type="hidden" name="lineId" value={Astro.props.item.merchandise.id} />
+  <button
+    type="submit"
+    aria-label="Remove cart item"
+    class="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-neutral-500"
+  >
+    <XMarkIcon class="mx-[1px] h-4 w-4 text-white dark:text-black" />
+  </button>
+  <p aria-live="polite" class="sr-only" role="status">
+    {deleteItemFromCartResult?.data}
+  </p>
+</form>
