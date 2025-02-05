@@ -1612,12 +1612,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wix/cli-edge@npm:^1.1.59":
-  version: 1.1.59
-  resolution: "@wix/cli-edge@npm:1.1.59"
+"@wix/cli-edge@npm:^1.1.60":
+  version: 1.1.60
+  resolution: "@wix/cli-edge@npm:1.1.60"
   bin:
     wix: bin/wix.cjs
-  checksum: 10c0/15ccac1065f0d98b29d401bb4c11d94a6096eeeffcc86178d4d6d9bf13a85970e01c4affb425a1df60d5755657172d3f7819e6e7b7aeb5f61bd3e35f94ea881f
+  checksum: 10c0/5ff5ec7da5609dca20112250f07c86eb21bfba7ca3257f280705bd6ed2a5aadee38d6a9d487a21f1c8ccadc416df0b9bfd90b6a5e9dab334fdad455335dacb4b
   languageName: node
   linkType: hard
 
@@ -2680,7 +2680,7 @@ __metadata:
     "@tailwindcss/container-queries": "npm:^0.1.1"
     "@tailwindcss/typography": "npm:^0.5.15"
     "@wix/astro": "npm:^0.2.0"
-    "@wix/cli-edge": "npm:^1.1.59"
+    "@wix/cli-edge": "npm:^1.1.60"
     "@wix/data": "npm:1.0.168"
     "@wix/ecom": "npm:1.0.806"
     "@wix/redirects": "npm:1.0.60"
