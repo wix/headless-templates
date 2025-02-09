@@ -28,7 +28,7 @@
     "typescript": "^5.6.3"
   },
   "devDependencies": {
-    "@wix/cli-edge": "^1.1.60"
+    "@wix/cli-edge": "^1.1.61"
   },
   "packageManager": "yarn@4.5.3"
 }
