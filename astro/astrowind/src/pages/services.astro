@@ -1,0 +1,233 @@
+---
+import { getWixClient } from '@wix/astro';
+import CallToAction from '~/components/widgets/CallToAction.astro';
+import Content from '~/components/widgets/Content.astro';
+import Features2 from '~/components/widgets/Features2.astro';
+import Hero from '~/components/widgets/Hero.astro';
+import Testimonials from '~/components/widgets/Testimonials.astro';
+import Layout from '~/layouts/PageLayout.astro';
+
+const { items: [servicesData] } = await getWixClient()
+  .items
+  .query('ServicesPage')
+  .find();
+
+const metadata = {
+  title: 'Services',
+};
+
+---
+
+<Layout metadata={metadata}>
+  <!-- Hero Widget ******************* -->
+
+  <Hero
+    tagline={servicesData.heroTagline}
+    title={servicesData.heroTitle}
+    subtitle={servicesData.heroSubtitle}
+    actions={[{ variant: 'primary', target: '_blank', text: servicesData.heroActionButtonText
+, href: '/' }]}
+    image={{
+      src: servicesData.heroImage,
+      alt: servicesData.heroImageAlt,
+    }}
+  />
+
+  <!-- Features2 Widget ************** -->
+
+  <Features2
+    title={servicesData.featuresTitle}
+    subtitle={servicesData.featuresDescription}
+    columns={3}
+    items={[
+      {
+        title: servicesData.featuresFirstItemTitle,
+        description:
+          servicesData.featuresFirstItemDescription,
+        icon: servicesData.featuresFirstItemIcon,
+      },
+      {
+        title: servicesData.featuresSecondItemTitle,
+        description:
+          servicesData.featuresSecondItemDescription,
+        icon: servicesData.featuresSecondItemIcon,
+      },
+      {
+        title: servicesData.featuresThirdItemTitle,
+        description:
+          servicesData.featuresThirdItemDescription,
+        icon: servicesData.featuresThirdItemIcon,
+      },
+      {
+        title: 'E-commerce',
+        description:
+          'Developing engaging online stores, our E-commerce templates ensure a dynamic presence to effectively showcase products. Ideal for startups or revamps.',
+        icon: 'tabler:shopping-cart',
+      },
+      {
+        title: 'Blog',
+        description:
+          'With attention to typography, these templates empower effective content presentation for writers at any stage, ensuring visually engaging and user-friendly blogs.',
+        icon: 'tabler:article',
+      },
+      {
+        title: 'Business',
+        description:
+          'Providing polished options for effective visual communication, these templates empower both startups and established companies for a professional brand presence.',
+        icon: 'tabler:building-store',
+      },
+      {
+        title: 'Branding',
+        description:
+          'Offering pre-designed elements for a consistent brand identity, including logos and marketing materials. Ideal for new ventures or revamps.',
+        icon: 'tabler:arrow-big-up-lines',
+      },
+      {
+        title: 'Medical',
+        description: `From presentations to patient forms, these tools enhance communication effectiveness for healthcare professionals. Ideal for medical practices and research pursuits.`,
+        icon: 'tabler:vaccine',
+      },
+      {
+        title: 'Fashion Design',
+        description:
+          'With attention to detail, customization, and contemporary design, they empower designers to showcase ideas cohesively. Ideal for all levels of designers.',
+        icon: 'tabler:tie',
+      },
+    ]}
+  />
+
+  <!-- Content Widget **************** -->
+
+  <Content
+    isReversed
+    items={[
+      {
+        title: servicesData.mainFeaturesFirstItemTitle,
+        description:
+          servicesData.mainFeaturesFirstItemDescription,
+        icon: servicesData.mainFeaturesFirstItemIcon,
+      },
+      {
+        title: servicesData.mainFeaturesSecondItemTitle,
+        description:
+          servicesData.mainFeaturesSecondItemDescription,
+        icon: servicesData.mainFeaturesSecondItemIcon,
+      },
+      {
+        title: servicesData.mainFeaturesThirdItemTitle,
+        description:
+          servicesData.mainFeaturesThirdItemDescription,
+        icon: servicesData.mainFeaturesThirdItemIcon,
+      },
+      {
+        title: 'Preview and Mockup Views',
+        description:
+          'Visualize the final outcome before making any changes using our preview and mockup views, ensuring your projects meet your expectations.',
+        icon: 'tabler:carousel-horizontal',
+      },
+    ]}
+    image={{
+      src: servicesData.mainFeaturesImage,
+      alt: servicesData.mainFeaturesImageAlt,
+    }}
+  >
+    <Fragment slot="content">
+      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">{servicesData.mainFeaturesTitle}</h3>
+    </Fragment>
+  </Content>
+
+  <!-- Content Widget **************** -->
+
+  <Content
+    isAfterContent
+    items={[
+      {
+        title: servicesData.benefitsFirstItemTitle,
+        description:
+          servicesData.benefitsFirstItemDescription,
+        icon: servicesData.benefitsFirstItemIcon,
+      },
+      {
+        title: servicesData.benefitsSecondItemTitle,
+        description:
+          servicesData.benefitsSecondItemDescription,
+        icon: servicesData.benefitsSecondItemIcon,
+      },
+      {
+        title: servicesData.benefitsThirdItemTitle,
+        description:
+          servicesData.benefitsThirdItemDescription,
+        icon: servicesData.benefitsThirdItemIcon,
+      },
+      {
+        title: 'Instant Download',
+        description:
+          'Enjoy immediate access to your chosen templates upon purchase, enabling you to begin working on your projects without delay.',
+        icon: 'tabler:file-download',
+      },
+    ]}
+    image={{
+      src: servicesData.benefitsImage,
+      alt: servicesData.benefitsImageAlt,
+    }}
+  >
+    <Fragment slot="content">
+      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">{servicesData.benefitsTitle}</h3>
+    </Fragment>
+  </Content>
+
+  <!-- Testimonials Widget *********** -->
+
+  <Testimonials
+    title={servicesData.testimonialsTitle}
+    testimonials={[
+      {
+        testimonial: servicesData.testimonialsFirstItemDescription,
+        name: servicesData.testimonialsFirstItemName,
+        job: servicesData.testimonialsFirstItemJob,
+        image: {
+          src: servicesData.testimonialsFirstItemImage,
+          alt: servicesData.testimonialsFirstItemImageAlt
+        },
+      },
+      {
+        testimonial: servicesData.testimonialsSecondItemDescription,
+        name: servicesData.testimonialsSecondItemName,
+        job: servicesData.testimonialsSecondItemJob,
+        image: {
+          src: servicesData.testimonialsSecondItemImage,
+          alt: servicesData.testimonialsSecondItemImageAlt
+        },
+      },
+      {
+        testimonial: servicesData.testimonialsThirdItemDescription,
+        name: servicesData.testimonialsThirdItemName,
+        job: servicesData.testimonialsThirdItemJob,
+        image: {
+          src: servicesData.testimonialsThirdItemImage,
+          alt: servicesData.testimonialsThirdItemImageAlt
+        },
+      },
+    ]}
+    callToAction={{
+      target: '_blank',
+      text: servicesData.testimonialsActionButtonText,
+      href: servicesData.testimonialsActionButtonHref,
+      icon: servicesData.testimonialsActionButtonIcon,
+    }}
+  />
+
+  <!-- CallToAction Widget *********** -->
+
+  <CallToAction
+    actions={[
+      {
+        variant: 'primary',
+        text: servicesData.callToActionButtonText,
+        href: servicesData.callToActionButtonHref,
+      },
+    ]}
+    title={servicesData.callToActionTitle}
+    subtitle={servicesData.callToActionSubtitle}
+  />
+</Layout>
