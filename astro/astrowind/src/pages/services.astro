@@ -1,5 +1,5 @@
 ---
-import { getWixClient } from '@wix/astro';
+import { items } from "@wix/data";
 import CallToAction from '~/components/widgets/CallToAction.astro';
 import Content from '~/components/widgets/Content.astro';
 import Features2 from '~/components/widgets/Features2.astro';
@@ -7,8 +7,7 @@ import Hero from '~/components/widgets/Hero.astro';
 import Testimonials from '~/components/widgets/Testimonials.astro';
 import Layout from '~/layouts/PageLayout.astro';
 
-const { items: [servicesData] } = await getWixClient()
-  .items
+const { items: [servicesData] } = await items
   .query('ServicesPage')
   .find();
 
