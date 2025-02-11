@@ -1,5 +1,5 @@
 [build]
-  publish = "dist"
+  publish = "dist/client"
   command = "npm --workspace @wix/astrowind-template run build"
 [build.processing.html]
   pretty_urls = false
