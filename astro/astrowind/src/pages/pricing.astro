@@ -1,5 +1,5 @@
 ---
-import { plans } from "@wix/pricing-plans";
+import { plans } from '@wix/pricing-plans';
 import CallToAction from '~/components/widgets/CallToAction.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
 import Features3 from '~/components/widgets/Features3.astro';
@@ -14,14 +14,11 @@ enum Period {
   YEAR = 'Per Year',
 }
 
-const { items: plansData } = await plans
-  .queryPublicPlans()
-  .find();
+const { items: plansData } = await plans.queryPublicPlans().find();
 
 const metadata = {
   title: 'Pricing',
 };
-
 ---
 
 <Layout metadata={metadata}>
@@ -39,17 +36,17 @@ const metadata = {
     title="Our prices"
     subtitle="Only pay for what you need"
     prices={plansData.map((plan) => ({
-      title: plan.name || "", 
-      subtitle: plan.description || "",
+      title: plan.name || '',
+      subtitle: plan.description || '',
       price: plan.pricing?.price?.value || 0,
-      period: Period[plan.pricing?.subscription?.cycleDuration?.unit || "MONTH"],
+      period: Period[plan.pricing?.subscription?.cycleDuration?.unit || 'MONTH'],
       items: plan.perks?.values?.map((perk) => ({ description: perk })) || [],
       callToAction: {
-        target: "_blank",
-        text: "Get started",
-        href: "#",
+        target: '_blank',
+        text: 'Get started',
+        href: '/checkout/' + plan._id,
       },
-      ...(plan.slug === "standard" && { hasRibbon: true, ribbonTitle: "popular" }),
+      ...(plan.slug === 'standard' && { hasRibbon: true, ribbonTitle: 'popular' }),
     }))}
   />
 
