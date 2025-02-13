@@ -1,68 +1,92 @@
-# Astro Starter Kit: Blog
+# 🚀 Wix Astro Blog Template
+
+This project combines the official [Astro Blog template](https://github.com/withastro/astro/tree/main/examples/blog) with **[Wix Headless](https://dev.wix.com/docs/go-headless)**, enabling seamless content management with Wix while delivering a high-performance static site using Astro.
+
+## 📖 Table of Contents
+
+- [Features](#-features)
+- [Demo](#-demo)
+- [Installation](#-installation)
+- [How It Works](#-how-it-works)
+- [Deployment](#-deployment)
+
+## ✨ Features
+
+- **🚀 Astro-powered blog** – A minimal, performant, and SEO-friendly blog template built with **Astro**.
+- **📝 Wix Blog as a Headless CMS** – Manage blog content directly in the **Wix Dashboard**, including posts, categories, and tags.
+- **🔗 Seamless Data Fetching** – Uses [`@wix/astro`](https://www.npmjs.com/package/@wix/astro) to fetch and display blog content dynamically.
+
+## 🌍 Live Demo
+
+Check out the **Wix Astro Blog Demo** here:
+
+👉 **[Live Demo](https://netlify.blog-demo.wix.dev/)**
+
+## ⚡ Installation
+
+### 1️⃣ Create the project
+
+Scaffold a new Wix Astro Blog project using the official template:
 
 ```sh
-npm create astro@latest -- --template blog
+npm create astro@latest -- --template wix/headless-templates/astro/blog
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/blog)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/blog)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/blog/devcontainer.json)
+### 2️⃣ Pull environment variables
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Sync required API keys and settings with Wix:
 
-![blog](https://github.com/withastro/astro/assets/2244813/ff10799f-a816-4703-b967-c78997e8323d)
-
-Features:
-
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and OpenGraph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-├── public/
-├── src/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+```sh
+npx wix edge pull-env
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+This generates a `.env.local` file with your environment variables.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+### 3️⃣ Start the development server
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+Run the local development server:
 
-Any static assets, like images, can be placed in the `public/` directory.
+```sh
+npm run dev
+```
 
-## 🧞 Commands
+Visit **[http://localhost:4321/](http://localhost:4321/)** to view your blog. 🎉
 
-All commands are run from the root of the project, from a terminal:
+### 4️⃣ Manage content
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+The blog includes **sample posts** to start. Edit or add new posts via the **Wix Blog Dashboard**:
 
-## 👀 Want to learn more?
+1. Open the **Wix Dashboard** → **Blog**.
+2. Update or create new posts.
+3. Modify **titles, content, images, and tags**.
+4. Publish or save as a draft.
 
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+More details:
 
-## Credit
+- [Wix Blog Docs](https://support.wix.com/en/wix-blog-1401920)
 
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+## 🛠 How It Works
+
+- **📝 Content Management** – Create and manage blog posts, categories, and tags directly in the **Wix Blog Dashboard**.
+
+- **📡 Data Fetching** – The `@wix/astro` adapter enables seamless data retrieval using the **Wix SDK**:
+
+  - **Blog Posts** – Uses `wixBlogLoader` to dynamically fetch and format blog posts, creating the blog content collection.
+
+  Thanks to the `wix()` Astro adapter from `@wix/astro`, all content is efficiently retrieved and integrated into the Astro Blog template.
+
+- **⚡ Fast & Optimized** – Blog posts are statically generated for speed while still allowing dynamic updates via Wix.
+
+## 🚀 Deployment
+
+To deploy your site, run the following command:
+
+```sh
+npm run deploy:prod
+```
+
+This will build and deploy your site to the configured hosting platform. Ensure that all necessary environment variables are set before running this command.
+
+### Alternative Deployment Options
+
+If you prefer to deploy manually, you can use **Vercel, Netlify, GitHub Pages**, or any other hosting service while still maintaining dynamic content capabilities from Wix.
