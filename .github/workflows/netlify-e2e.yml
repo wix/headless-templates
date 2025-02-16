@@ -25,6 +25,7 @@ jobs:
       with:
         node-version: 16
         cache: 'yarn'
+        cache-dependency-path: ./nextjs/commerce-ticketing/yarn.lock
     - name: Install dependencies
       run: yarn
     - uses: ./.github/actions/setup-playwright
