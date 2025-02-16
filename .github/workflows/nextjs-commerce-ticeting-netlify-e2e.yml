@@ -1,0 +1,52 @@
+name: Netlify E2E
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - nextjs/commerce-ticketing/**
+  workflow_dispatch:
+    inputs:
+      deploymentUrl:
+        description: 'The deployment URL to test with'
+        required: true
+      prNumber:
+        description: 'Pull request number (optional)'
+        required: false
+defaults:
+  run:
+    working-directory: ./nextjs/commerce-ticketing
+jobs:
+  netlify-e2e:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        cache: 'yarn'
+        cache-dependency-path: ./nextjs/commerce-ticketing/yarn.lock
+    - name: Install dependencies
+      run: yarn
+    - uses: ./.github/actions/setup-playwright
+      with:
+        working-directory: ./nextjs/commerce-ticketing
+    - name: Waiting for 200 from the Netlify Preview
+      if: ${{ !github.event.inputs.deploymentUrl }}
+      uses: jakepartusch/wait-for-netlify-action@v1.4
+      id: waitFor200
+      with:
+        base_path: "./nextjs/commerce-ticketing"
+        site_name: "wix-commerce-ticketing-nextjs" # TODO: change to your site name
+        max_timeout: 120 # 2 Minutes, depends on your build pipeline duration
+    - name: Set Run with URL
+      run: |
+        echo "DEPLOYMENT_URL=${{ github.event.inputs.deploymentUrl || steps.waitFor200.outputs.url }}" >> $GITHUB_ENV
+    - uses: ./.github/actions/run-playwright
+      id: runPlaywright
+      with:
+        provider: 'netlify'
+        working-directory: ./nextjs/commerce-ticketing
+        githubToken: ${{ secrets.GITHUB_TOKEN }}
+        prNumber: ${{ github.event.inputs.prNumber || github.event.pull_request.number }}
+        provider-deployment-url: ${{ env.DEPLOYMENT_URL }}

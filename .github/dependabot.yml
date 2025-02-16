@@ -6,7 +6,8 @@
 version: 2
 updates:
  - package-ecosystem: "npm"
-   directory: "/nextjs/commerce-ticketing"
+   directories: 
+     - "/nextjs/*"
    open-pull-requests-limit: 10
    versioning-strategy: lockfile-only
    schedule:
