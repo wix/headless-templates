@@ -2,6 +2,8 @@ name: Netlify E2E
 on:
   pull_request:
     branches: [ main ]
+    paths:
+      - nextjs/commerce-ticketing/**
   workflow_dispatch:
     inputs:
       deploymentUrl:
