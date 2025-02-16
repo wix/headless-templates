@@ -6,12 +6,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Print current dir
-      run: |
-        pwd
-        ls -la
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
     - name: Store Playwright's Version
       id: store-playwright-version
       run: |
@@ -19,6 +13,7 @@ runs:
         echo "Playwright's Version: $PLAYWRIGHT_VERSION"
         echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
     - name: Cache Playwright Browsers for Playwright's Version
       id: cache-playwright-browsers
       uses: actions/cache@v3
@@ -29,3 +24,4 @@ runs:
       if: steps.cache-playwright-browsers.outputs.cache-hit != 'true'
       run: yarn playwright install --with-deps
       shell: bash
+      working-directory: ${{ inputs.working-directory }}

@@ -26,8 +26,8 @@ jobs:
         node-version: 16
         cache: 'yarn'
         cache-dependency-path: ./nextjs/commerce-ticketing/yarn.lock
-    # - name: Install dependencies
-    #   run: yarn
+    - name: Install dependencies
+      run: yarn
     - uses: ./.github/actions/setup-playwright
       with:
         working-directory: ./nextjs/commerce-ticketing
@@ -36,7 +36,7 @@ jobs:
       uses: jakepartusch/wait-for-netlify-action@v1.4
       id: waitFor200
       with:
-        base_path: "/nextjs/commerce-ticketing"
+        base_path: "./nextjs/commerce-ticketing"
         site_name: "wix-commerce-ticketing-nextjs-templat" # TODO: change to your site name
         max_timeout: 120 # 2 Minutes, depends on your build pipeline duration
     - name: Set Run with URL
@@ -46,6 +46,7 @@ jobs:
       id: runPlaywright
       with:
         provider: 'netlify'
+        working-directory: ./nextjs/commerce-ticketing
         githubToken: ${{ secrets.GITHUB_TOKEN }}
         prNumber: ${{ github.event.inputs.prNumber || github.event.pull_request.number }}
         provider-deployment-url: ${{ env.DEPLOYMENT_URL }}

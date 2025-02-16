@@ -13,6 +13,9 @@ inputs:
   prNumber:
     description: 'Pull request ID (optional)'
     required: false
+  working-directory:
+    description: 'Working directory'
+    required: true
 outputs:
   conclusion:
     description: 'E2E result'
@@ -23,6 +26,7 @@ runs:
       id: playwright-e2e
       run: REMOTE_PROVIDER=${{ inputs.provider }} yarn e2e
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       env:
         PLAYWRIGHT_TEST_BASE_URL: ${{ inputs.provider-deployment-url }}
     - uses: actions/upload-artifact@v4
@@ -30,14 +34,14 @@ runs:
       if: always()
       with:
         name: playwright-report-${{ inputs.provider }}
-        path: playwright-report/
+        path: ${{ inputs.working-directory }}/playwright-report/
         retention-days: 10
     - uses: actions/upload-artifact@v4
       id: playwright-screenshots-artifact
       if: always()
       with:
         name: screenshots-${{inputs.provider}}
-        path: tests/e2e/__screenshots__/${{inputs.provider}}
+        path: ${{ inputs.working-directory }}/tests/e2e/__screenshots__/${{inputs.provider}}
         retention-days: 10
     - uses: actions/github-script@v6
       if: always()
