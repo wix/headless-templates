@@ -2657,11 +2657,12 @@ __metadata:
   linkType: hard
 
 "@wix/stores@npm:^1.0.71":
-  version: 1.0.356
-  resolution: "@wix/stores@npm:1.0.356"
+  version: 1.0.357
+  resolution: "@wix/stores@npm:1.0.357"
   dependencies:
+    "@wix/stores_app-extensions": 1.0.0
     "@wix/stores_brands-v-3": 1.0.44
-    "@wix/stores_catalog-versioning": 1.0.33
+    "@wix/stores_catalog-versioning": 1.0.34
     "@wix/stores_collections": 1.0.66
     "@wix/stores_customizations-v-3": 1.0.46
     "@wix/stores_info-sections-v-3": 1.0.46
@@ -2673,7 +2674,17 @@ __metadata:
     "@wix/stores_stores-locations-v-3": 1.0.47
     "@wix/stores_subscription-options": 1.0.65
     "@wix/stores_wishlist": 1.0.58
-  checksum: 5f086de150c823cefa8c954a667905efa6770b294874e67860f3aec56dac46ec2a0f1557f2467006ae9c3313a07094f6534c799f60308e67a2861afe31e6d5d7
+  checksum: 6df0fc4382795f1d110a91f188409e8a059cc8efa0f7409c9bbd281606b17c5cae97414e155398b326a7d46d6757eb7d7ed60a399ff5c58ee0a5f241cccbf511
+  languageName: node
+  linkType: hard
+
+"@wix/stores_app-extensions@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@wix/stores_app-extensions@npm:1.0.0"
+  dependencies:
+    "@wix/sdk-runtime": ^0.3.22
+    "@wix/sdk-types": ^1.12.4
+  checksum: b39a81dd03b7cc4da409a3df877c306faf3193cec4f309faae40b5925f76fd2ebefecb5d0106b5f58da610b33ec733f01416b938a35a0e47e0df0cbdaeed78ca
   languageName: node
   linkType: hard
 
@@ -2687,13 +2698,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wix/stores_catalog-versioning@npm:1.0.33":
-  version: 1.0.33
-  resolution: "@wix/stores_catalog-versioning@npm:1.0.33"
+"@wix/stores_catalog-versioning@npm:1.0.34":
+  version: 1.0.34
+  resolution: "@wix/stores_catalog-versioning@npm:1.0.34"
   dependencies:
     "@wix/sdk-runtime": ^0.3.22
     "@wix/sdk-types": ^1.12.4
-  checksum: e509851a40ff556b29074a841125c5c359d02d03a521c3dcef3f06d7aeb770f4f4f5392c8d798c65e9fcbd8439043b335bcf0a71cf2164405dbefdcc001ca4b8
+  checksum: 03a05cfb2aa39ef0f42ae447d2ecc0d0a328bc21fd08c95e73492dbf72c1a9b5fc21205cbd01c7a6b7ed591198606457fc2e3404ce105a81f133149e9299a37d
   languageName: node
   linkType: hard
 
