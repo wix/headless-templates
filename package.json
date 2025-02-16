@@ -1,9 +1,5 @@
 {
   "name": "headless-templates",
   "version": "1.0.0",
-  "private": true,
-  "workspaces": [
-    "packages/*",
-    "astro/*"
-  ]
+  "private": true
 }
