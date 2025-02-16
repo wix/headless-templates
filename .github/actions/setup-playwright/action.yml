@@ -1,5 +1,8 @@
 name: 'Setup Playwright With Cache'
 description: 'Setup Playwright With Cache'
+inputs:
+  working-directory:
+    description: 'Working directory'
 runs:
   using: "composite"
   steps:
@@ -8,6 +11,7 @@ runs:
         pwd
         ls -la
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
     - name: Store Playwright's Version
       id: store-playwright-version
       run: |

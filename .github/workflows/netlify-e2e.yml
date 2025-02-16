@@ -29,6 +29,8 @@ jobs:
     # - name: Install dependencies
     #   run: yarn
     - uses: ./.github/actions/setup-playwright
+      with:
+        working-directory: ./nextjs/commerce-ticketing
     - name: Waiting for 200 from the Netlify Preview
       if: ${{ !github.event.inputs.deploymentUrl }}
       uses: jakepartusch/wait-for-netlify-action@v1.4
