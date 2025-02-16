@@ -12,13 +12,13 @@ on:
       prNumber:
         description: 'Pull request number (optional)'
         required: false
+defaults:
+  run:
+    working-directory: ./nextjs/commerce-ticketing
 jobs:
   netlify-e2e:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./nextjs/commerce-ticketing
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
