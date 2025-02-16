@@ -1,5 +1,8 @@
 name: 'Setup Playwright With Cache'
 description: 'Setup Playwright With Cache'
+defaults:
+  run:
+    working-directory: ./nextjs/commerce-ticketing
 runs:
   using: "composite"
   steps:
