@@ -3,6 +3,11 @@ description: 'Setup Playwright With Cache'
 runs:
   using: "composite"
   steps:
+    - name: Print current dir
+      run: |
+        pwd
+        ls -la
+      shell: bash
     - name: Store Playwright's Version
       id: store-playwright-version
       run: |

@@ -26,8 +26,8 @@ jobs:
         node-version: 16
         cache: 'yarn'
         cache-dependency-path: ./nextjs/commerce-ticketing/yarn.lock
-    - name: Install dependencies
-      run: yarn
+    # - name: Install dependencies
+    #   run: yarn
     - uses: ./.github/actions/setup-playwright
     - name: Waiting for 200 from the Netlify Preview
       if: ${{ !github.event.inputs.deploymentUrl }}
