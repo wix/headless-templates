@@ -1,7 +1,7 @@
 # This workflow uses actions/cache@v3, but it would always get cache miss since it runs on deployment_status trigger
 # See - https://github.com/actions/cache/issues/319
 # If GitHub would allow deployment_status trigger to access cache, it would work here too
-name: Vercel E2E
+name: appointments-subscriptions Vercel E2E
 on:
   deployment_status:
   workflow_dispatch:
