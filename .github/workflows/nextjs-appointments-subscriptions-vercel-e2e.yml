@@ -26,9 +26,12 @@ jobs:
       with:
         node-version: 16
         cache: 'yarn'
+        cache-dependency-path: ./nextjs/appointments-subscriptions/yarn.lock
     - name: Install dependencies
       run: yarn
     - uses: ./.github/actions/setup-playwright
+      with:
+        working-directory: ./nextjs/appointments-subscriptions
     - name: Set Run with URL
       run: |
         echo "setting DEPLOYMENT_URL=${{ github.event.inputs.deploymentUrl || github.event.deployment_status.target_url }}"
@@ -40,3 +43,4 @@ jobs:
         githubToken: ${{ secrets.GITHUB_TOKEN }}
         prNumber: ${{ github.event.inputs.prNumber }}
         provider-deployment-url: ${{ env.DEPLOYMENT_URL }}
+        working-directory: ./nextjs/appointments-subscriptions
