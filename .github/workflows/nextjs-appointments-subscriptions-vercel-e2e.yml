@@ -14,7 +14,7 @@ on:
         required: false
 jobs:
   vercel-e2e:
-    if: github.event.inputs.deploymentUrl || (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success' && contains(github.event.deployment_status.target_url, 'vercel-demo-wix-commerce')) # TODO: change to your site name
+    if: github.event.inputs.deploymentUrl || (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success' && contains(github.event.deployment_status.target_url, 'vercel-demo-wix-appointments-subscriptions')) # TODO: change to your site name
     timeout-minutes: 60
     runs-on: ubuntu-latest
     defaults:
