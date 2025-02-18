@@ -9,6 +9,8 @@ runs:
     - name: Store Playwright's Version
       id: store-playwright-version
       run: |
+        pwd
+        ls -ltra
         echo "hwerererer"
         npm ls @playwright/test | grep @playwright | sed 's/.*@//'
         echo "after after $?"
