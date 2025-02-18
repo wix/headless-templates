@@ -9,13 +9,6 @@ runs:
     - name: Store Playwright's Version
       id: store-playwright-version
       run: |
-        pwd
-        ls -ltra
-        ls -ltra node_modules
-        ls -ltra node_modules/@playwright
-        echo "hwerererer"
-        yarn info @playwright/test | grep "Version:" | sed 's/.*\: //'
-        echo "after after $?"
         PLAYWRIGHT_VERSION=$(yarn info @playwright/test | grep "Version:" | sed 's/.*\: //')
         echo "Playwright's Version: $PLAYWRIGHT_VERSION"
         echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
