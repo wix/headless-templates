@@ -1,4 +1,4 @@
-name: Netlify E2E
+name: cms-education Netlify E2E
 on:
   pull_request:
     branches: [ main ]
