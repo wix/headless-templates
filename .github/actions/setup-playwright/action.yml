@@ -14,7 +14,7 @@ runs:
         ls -ltra node_modules
         ls -ltra node_modules/@playwright
         echo "hwerererer"
-        npm ls @playwright/test | grep @playwright | sed 's/.*@//'
+        npm ls @playwright/test --verbose
         echo "after after $?"
         PLAYWRIGHT_VERSION=$(npm ls @playwright/test | grep @playwright | sed 's/.*@//')
         echo "Playwright's Version: $PLAYWRIGHT_VERSION"
