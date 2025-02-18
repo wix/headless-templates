@@ -11,6 +11,8 @@ runs:
       run: |
         pwd
         ls -ltra
+        ls -ltra node_modules
+        ls -ltra node_modules/@playwright
         echo "hwerererer"
         npm ls @playwright/test | grep @playwright | sed 's/.*@//'
         echo "after after $?"
