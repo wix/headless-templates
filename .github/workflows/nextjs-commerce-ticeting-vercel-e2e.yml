@@ -1,7 +1,7 @@
 # This workflow uses actions/cache@v3, but it would always get cache miss since it runs on deployment_status trigger
 # See - https://github.com/actions/cache/issues/319
 # If GitHub would allow deployment_status trigger to access cache, it would work here too
-name: Vercel E2E
+name: commerce-ticketing Vercel E2E
 on:
   deployment_status:
   workflow_dispatch:
@@ -14,7 +14,7 @@ on:
         required: false
 jobs:
   vercel-e2e:
-    if: github.event.inputs.deploymentUrl || (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success' && contains(github.event.deployment_status.target_url, 'vercel-demo-wix-commerce')) # TODO: change to your site name
+    if: github.event.inputs.deploymentUrl || (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success' && contains(github.event.deployment_status.target_url, 'vercel-demo-wix-commerce-ticketing')) # TODO: change to your site name
     timeout-minutes: 60
     runs-on: ubuntu-latest
     defaults:
@@ -26,9 +26,12 @@ jobs:
       with:
         node-version: 16
         cache: 'yarn'
+        cache-dependency-path: ./nextjs/commerce-ticketing/yarn.lock
     - name: Install dependencies
       run: yarn
     - uses: ./.github/actions/setup-playwright
+      with:
+        working-directory: ./nextjs/commerce-ticketing
     - name: Set Run with URL
       run: |
         echo "setting DEPLOYMENT_URL=${{ github.event.inputs.deploymentUrl || github.event.deployment_status.target_url }}"
@@ -40,3 +43,4 @@ jobs:
         githubToken: ${{ secrets.GITHUB_TOKEN }}
         prNumber: ${{ github.event.inputs.prNumber }}
         provider-deployment-url: ${{ env.DEPLOYMENT_URL }}
+        working-directory: ./nextjs/commerce-ticketing
