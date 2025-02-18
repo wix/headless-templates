@@ -1236,6 +1236,44 @@ __metadata:
   languageName: node
   linkType: hard
 
+"appointments-subscriptions@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "appointments-subscriptions@workspace:."
+  dependencies:
+    "@playwright/test": ^1.34.3
+    "@tanstack/react-query": ^4.24.4
+    "@types/cookie": ^0.5.1
+    "@types/js-cookie": ^3.0.3
+    "@types/node": 18.13.0
+    "@types/react": 18.0.27
+    "@types/react-dom": 18.0.10
+    "@wix/bookings": ^1.0.122
+    "@wix/members": ^1.0.38
+    "@wix/pricing-plans": ^1.0.17
+    "@wix/redirects": ^1.0.13
+    "@wix/sdk": ^1.5.0
+    autoprefixer: ^10.4.13
+    cookie: ^0.5.0
+    date-fns: ^2.29.3
+    eslint: ^8.33.0
+    eslint-config-next: ^13.4.9
+    eslint-config-prettier: ^8.6.0
+    eslint-plugin-prettier: ^4.2.1
+    flowbite: ^1.6.3
+    flowbite-react: ^0.4.4
+    js-cookie: ^3.0.1
+    jsurl: ^0.1.5
+    next: ^13.4.9
+    postcss: ^8.4.21
+    prettier: ^2.8.4
+    react: 18.2.0
+    react-day-picker: ^8.5.1
+    react-dom: 18.2.0
+    tailwindcss: ^3.2.6
+    typescript: 4.9.5
+  languageName: unknown
+  linkType: soft
+
 "aproba@npm:^1.0.3 || ^2.0.0":
   version: 2.0.0
   resolution: "aproba@npm:2.0.0"
@@ -5503,44 +5541,6 @@ __metadata:
   checksum: d5fc37cd561f9daee3c80e03b92ed3e84d80dde3365a8767263d03dacfc8fa06b065ffe1df00d8c2a09f731482fcacae745abfbb478d4af36d0a891fad4834d3
   languageName: node
   linkType: hard
-
-"wix-fitness-nextjs@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "wix-fitness-nextjs@workspace:."
-  dependencies:
-    "@playwright/test": ^1.34.3
-    "@tanstack/react-query": ^4.24.4
-    "@types/cookie": ^0.5.1
-    "@types/js-cookie": ^3.0.3
-    "@types/node": 18.13.0
-    "@types/react": 18.0.27
-    "@types/react-dom": 18.0.10
-    "@wix/bookings": ^1.0.122
-    "@wix/members": ^1.0.38
-    "@wix/pricing-plans": ^1.0.17
-    "@wix/redirects": ^1.0.13
-    "@wix/sdk": ^1.5.0
-    autoprefixer: ^10.4.13
-    cookie: ^0.5.0
-    date-fns: ^2.29.3
-    eslint: ^8.33.0
-    eslint-config-next: ^13.4.9
-    eslint-config-prettier: ^8.6.0
-    eslint-plugin-prettier: ^4.2.1
-    flowbite: ^1.6.3
-    flowbite-react: ^0.4.4
-    js-cookie: ^3.0.1
-    jsurl: ^0.1.5
-    next: ^13.4.9
-    postcss: ^8.4.21
-    prettier: ^2.8.4
-    react: 18.2.0
-    react-day-picker: ^8.5.1
-    react-dom: 18.2.0
-    tailwindcss: ^3.2.6
-    typescript: 4.9.5
-  languageName: unknown
-  linkType: soft
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
   version: 7.0.0

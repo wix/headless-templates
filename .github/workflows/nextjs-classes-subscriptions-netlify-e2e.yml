@@ -1,4 +1,4 @@
-name: Netlify E2E
+name: classes-subscriptions Netlify E2E
 on:
   pull_request:
     branches: [ main ]
