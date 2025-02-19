@@ -1,5 +1,5 @@
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://manage.wix.com/headless-funnel-nextjs/netlify?repository=https://github.com/wix/wix-appointments-subscriptions-nextjs-template) &emsp; [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?integration-ids=oac_LZ0wUqGylqzgr8bE8a1R7JTE&skippable-integrations=1&build-command=yarn+build&deploymentIds=dpl_9Gtegfcme9RUmTXFvVGrP8BwDGUV&external-id=%7B%22repo%22%3A%22https%3A%2F%2Fgithub.com%2Fwix%2Fwix-appointments-subscriptions-nextjs-template%22%2C%22referralInfo%22%3A%22repo-readme_coacher%22%7D&demo-title=Appointment+Booking+Starter&demo-description=Professional+Coach+starter+template+with+Wix%E2%80%99s+best-in-class+appointment+scheduling+solution.&demo-image=%2F%2Fgithub.com%2Fwix%2Fwix-appointments-subscriptions-nextjs-template%2Fraw%2Fmain%2Fdocs%2Fmedia%2Ftemplate-showcase.gif&demo-url=https%3A%2F%2Fvercel.bookings-appointments-demo.wix.dev%2F&repository-name=wix-appointments-subscriptions-nextjs-template&s=https%3A%2F%2Fgithub.com%2Fwix%2Fwix-appointments-subscriptions-nextjs-template&referralInfo=repo-readme_coacher)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://manage.wix.com/headless-funnel-nextjs/netlify?repository=COACHER) &emsp; [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?integration-ids=oac_LZ0wUqGylqzgr8bE8a1R7JTE&skippable-integrations=1&build-command=yarn+build&deploymentIds=dpl_9Gtegfcme9RUmTXFvVGrP8BwDGUV&s=https%3A%2F%2Fgithub.com%2Fwix%2Fheadless-templates%2Ftree%2Fmain%2Fnextjs%2Fappointments-subscriptions&demo-image=%2F%2Fgithub.com%2Fwix%2Fheadless-templates%2Fraw%2Fmain%2Fnextjs%2Fappointments-subscriptions%2Fdocs%2Fmedia%2Ftemplate-showcase.gif&external-id=%7B%22repo%22%3A%22CONCERT%22%2C%22referralInfo%22%3A%22repo-readme_music%22%7D&demo-title=Appointment+Booking+Starter&demo-description=Professional+Coach+starter+template+with+Wix%E2%80%99s+best-in-class+appointment+scheduling+solution.&demo-url=https%3A%2F%2Fvercel.appointments-subscriptions-demo.wix.dev&repository-name=wix-appointments-subscriptions-nextjs&referralInfo=repo-readme_coacher)
 
 # Integration Guide
 
@@ -45,7 +45,7 @@ Authentication credentials are automatically incorporated into the template, mak
 ##### Netlify
 [![Netlify Status](https://api.netlify.com/api/v1/badges/5c157945-33fe-469c-b694-961db274a9bd/deploy-status)](https://app.netlify.com/sites/wix-appointments-subscriptions-nextjs/deploys)
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://manage.wix.com/headless-funnel-nextjs/netlify?repository=https://github.com/wix/wix-appointments-subscriptions-nextjs-template)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://manage.wix.com/headless-funnel-nextjs/netlify?repository=COACHER)
 
 For more information, see [How to Deploy Next.js Sites to Netlify](https://www.netlify.com/blog/2020/11/30/how-to-deploy-next.js-sites-to-netlify/).
 
@@ -54,9 +54,9 @@ You can also view our [live demo site](https://netlify.bookings-appointments-dem
 ---
 
 ##### Vercel
-![Vercel](https://vercelbadge.vercel.app/api/wix/wix-appointments-subscriptions-nextjs-template?style=flat-square)
+![Vercel](https://vercelbadge.vercel.app/api/wix/headless-templates?style=flat-square)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?integration-ids=oac_LZ0wUqGylqzgr8bE8a1R7JTE&skippable-integrations=1&build-command=yarn+build&deploymentIds=dpl_9Gtegfcme9RUmTXFvVGrP8BwDGUV&external-id=%7B%22repo%22%3A%22https%3A%2F%2Fgithub.com%2Fwix%2Fwix-appointments-subscriptions-nextjs-template%22%2C%22referralInfo%22%3A%22repo-readme_coacher%22%7D&demo-title=Appointment+Booking+Starter&demo-description=Professional+Coach+starter+template+with+Wix%E2%80%99s+best-in-class+appointment+scheduling+solution.&demo-image=%2F%2Fgithub.com%2Fwix%2Fwix-appointments-subscriptions-nextjs-template%2Fraw%2Fmain%2Fdocs%2Fmedia%2Ftemplate-showcase.gif&demo-url=https%3A%2F%2Fvercel.bookings-appointments-demo.wix.dev%2F&repository-name=wix-appointments-subscriptions-nextjs-template&s=https%3A%2F%2Fgithub.com%2Fwix%2Fwix-appointments-subscriptions-nextjs-template&referralInfo=repo-readme_coacher)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?integration-ids=oac_LZ0wUqGylqzgr8bE8a1R7JTE&skippable-integrations=1&build-command=yarn+build&deploymentIds=dpl_9Gtegfcme9RUmTXFvVGrP8BwDGUV&s=https%3A%2F%2Fgithub.com%2Fwix%2Fheadless-templates%2Ftree%2Fmain%2Fnextjs%2Fappointments-subscriptions&demo-image=%2F%2Fgithub.com%2Fwix%2Fheadless-templates%2Fraw%2Fmain%2Fnextjs%2Fappointments-subscriptions%2Fdocs%2Fmedia%2Ftemplate-showcase.gif&external-id=%7B%22repo%22%3A%22CONCERT%22%2C%22referralInfo%22%3A%22repo-readme_music%22%7D&demo-title=Appointment+Booking+Starter&demo-description=Professional+Coach+starter+template+with+Wix%E2%80%99s+best-in-class+appointment+scheduling+solution.&demo-url=https%3A%2F%2Fvercel.appointments-subscriptions-demo.wix.dev&repository-name=wix-appointments-subscriptions-nextjs&referralInfo=repo-readme_coacher)
 
 For more information, see [How to Deploy Next.js Sites to Vercel](https://vercel.com/docs/frameworks/nextjs).
 
