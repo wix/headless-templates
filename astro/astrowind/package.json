@@ -29,7 +29,7 @@
     "@astrolib/analytics": "^0.6.1",
     "@astrolib/seo": "^1.0.0-beta.8",
     "@fontsource-variable/inter": "^5.1.1",
-    "@wix/astro": "^0.2.4",
+    "@wix/astro": "^0.2.5",
     "@wix/astro-ricos": "^0.0.3",
     "@wix/data": "^1.0.194",
     "@wix/pricing-plans": "^1.0.121",
