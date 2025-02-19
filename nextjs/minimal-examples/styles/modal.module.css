@@ -1,0 +1,121 @@
+/* Modal container */
+.modal-container {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+    overflow-y: auto;
+    outline: none;
+}
+
+/* Modal content wrapper */
+.modal-content-wrapper {
+    position: relative;
+    width: auto;
+    max-width: 48rem; /* max-w-3xl */
+    margin: 1.5rem auto; /* my-6 */
+}
+
+/* Modal content */
+.modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background-color: white;
+    border: none;
+    border-radius: 0.5rem; /* rounded-lg */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+    outline: none;
+}
+
+/* Modal overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 6, 36, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modal header */
+.modal-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    padding: 1.25rem; /* p-5 */
+    border-bottom: 1px solid #d1d5db; /* border-gray-300 */
+    border-radius: 0.375rem 0.375rem 0 0; /* rounded-t */
+}
+
+/* Modal body */
+.modal-body {
+    position: relative;
+    padding: 1.5rem; /* p-6 */
+    flex: 1 1 auto;
+}
+
+/* Modal footer */
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem; /* p-6 */
+    border-top: 1px solid #d1d5db; /* border-gray-300 */
+    border-radius: 0 0 0.375rem 0.375rem; /* rounded-b */
+}
+
+.modal-close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    color: #333;
+    z-index: 999;
+    transition: color 0.1s;
+}
+
+.modal-close-button:hover {
+    color: #999;
+}
+
+.button {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: filter 0.2s;
+}
+
+.button:hover {
+    filter: brightness(0.9);
+}
+
+.buttonPrimary {
+    background-color: rgb(var(--premium-rgb));
+    color: white;
+}
+
+.buttonSecondary {
+    background-color: rgb(var(--card-rgb));
+    color: white;
+}
+
+.icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    color: rgb(var(--card-rgb));
+}

@@ -1,0 +1,38 @@
+{
+  "name": "wix-headless-example",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "yarn e2e",
+    "e2e": "yarn playwright test",
+    "lint": "next lint"
+  },
+  "eslintConfig": {
+    "extends": "next/core-web-vitals"
+  },
+  "dependencies": {
+    "@wix/bookings": "^1.0.127",
+    "@wix/data": "^1.0.2",
+    "@wix/ecom": "^1.0.164",
+    "@wix/events": "^1.0.159",
+    "@wix/members": "^1.0.12",
+    "@wix/pricing-plans": "^1.0.17",
+    "@wix/redirects": "^1.0.12",
+    "@wix/sdk": "^1.5.0",
+    "@wix/stores": "^1.0.60",
+    "eslint": "8.39.0",
+    "eslint-config-next": "^13.4.9",
+    "js-cookie": "^3.0.5",
+    "jwt-decode": "^4.0.0",
+    "next": "^13.4.9",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.34.3"
+  },
+  "packageManager": "yarn@3.3.0"
+}

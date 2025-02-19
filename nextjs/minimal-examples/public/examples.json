@@ -1,0 +1,78 @@
+[
+  {
+    "dataCollectionId": "examples",
+    "data": {
+      "description": "Let people book appointments, classes, and more. Manage payments, staff, clients, and calendar availability.",
+      "_id": "a50ba154-d23c-4927-81fc-97b3dc8601f0",
+      "orderId": 1,
+      "_owner": "4975b698-64ae-4833-b4c9-71bac6d53fb0",
+      "_createdDate": {
+        "$date": "2023-05-03T16:09:03.752Z"
+      },
+      "_updatedDate": {
+        "$date": "2023-06-15T00:10:03.501Z"
+      },
+      "slug": "/booking",
+      "title": "Bookings"
+    },
+    "_id": "a50ba154-d23c-4927-81fc-97b3dc8601f0",
+    "installLink": "https://www.wix.com/app-market/bookings/overview"
+  },
+  {
+    "dataCollectionId": "examples",
+    "data": {
+      "description": "Sell online, manage products & inventory, and more.",
+      "_id": "8c5c65ce-bd06-4f91-95bc-ce8cdb238d9d",
+      "orderId": 2,
+      "_owner": "4975b698-64ae-4833-b4c9-71bac6d53fb0",
+      "_createdDate": {
+        "$date": "2023-05-03T16:09:22.768Z"
+      },
+      "_updatedDate": {
+        "$date": "2023-05-08T08:22:41.301Z"
+      },
+      "slug": "/store",
+      "title": "Ecommerce"
+    },
+    "_id": "8c5c65ce-bd06-4f91-95bc-ce8cdb238d9d",
+    "installLink": "https://www.wix.com/app-market/wix-stores/overview"
+  },
+  {
+    "dataCollectionId": "examples",
+    "data": {
+      "description": "Sell tickets and manage events you want to showcase.",
+      "_id": "d910d14e-f656-47bb-9941-0dffeeeab2ce",
+      "orderId": 3,
+      "_owner": "4975b698-64ae-4833-b4c9-71bac6d53fb0",
+      "_createdDate": {
+        "$date": "2023-05-03T16:09:25.595Z"
+      },
+      "_updatedDate": {
+        "$date": "2023-05-08T08:22:56.054Z"
+      },
+      "slug": "/tickets",
+      "title": "Events & Tickets"
+    },
+    "_id": "d910d14e-f656-47bb-9941-0dffeeeab2ce",
+    "installLink": "https://www.wix.com/app-market/events/overview"
+  },
+  {
+    "dataCollectionId": "examples",
+    "data": {
+      "description": "Offer subscriptions and memberships at different tiers. Charge customers a single payment, on a recurring basis, or offer a free plan.",
+      "_id": "3bca722f-de01-4029-bce9-eb51203b3e20",
+      "orderId": 4,
+      "_owner": "4975b698-64ae-4833-b4c9-71bac6d53fb0",
+      "_createdDate": {
+        "$date": "2023-05-03T16:09:30.906Z"
+      },
+      "_updatedDate": {
+        "$date": "2023-05-08T08:23:17.229Z"
+      },
+      "slug": "/subscriptions",
+      "title": "Subscriptions"
+    },
+    "_id": "3bca722f-de01-4029-bce9-eb51203b3e20",
+    "installLink": "https://www.wix.com/app-market/paid-plans/overview"
+  }
+]
