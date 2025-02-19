@@ -17,7 +17,7 @@
     "@astrojs/tailwind": "5.1.4",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/typography": "^0.5.15",
-    "@wix/astro": "^0.2.0",
+    "@wix/astro": "^0.2.4",
     "@wix/data": "1.0.168",
     "@wix/ecom": "1.0.806",
     "@wix/redirects": "1.0.60",
