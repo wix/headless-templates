@@ -6,7 +6,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "deploy:preview": "wix edge deploy",
+    "deploy:prod": "wix edge deploy --prod"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.11",
@@ -14,6 +16,9 @@
     "@wix/astro": "^0.2.2",
     "@wix/astro-ricos": "^0.0.2",
     "astro": "^5.2.4"
+  },
+  "devDependencies": {
+    "@wix/cli-edge": "^1.1.69"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
