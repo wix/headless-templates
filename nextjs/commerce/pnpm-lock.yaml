@@ -13,28 +13,28 @@ dependencies:
     version: 2.2.0(react@19.0.0)
   '@wix/data':
     specifier: ^1.0.189
-    version: 1.0.198
+    version: 1.0.201
   '@wix/ecom':
     specifier: ^1.0.905
-    version: 1.0.940
+    version: 1.0.943
   '@wix/redirects':
     specifier: ^1.0.70
-    version: 1.0.71
+    version: 1.0.73
   '@wix/sdk':
     specifier: ^1.15.9
-    version: 1.15.10
+    version: 1.15.11
   '@wix/stores':
     specifier: ^1.0.347
-    version: 1.0.362
+    version: 1.0.363
   clsx:
     specifier: ^2.1.1
     version: 2.1.1
   geist:
     specifier: ^1.3.1
-    version: 1.3.1(next@15.2.0-canary.47)
+    version: 1.3.1(next@15.2.0-canary.67)
   next:
-    specifier: 15.2.0-canary.47
-    version: 15.2.0-canary.47(react-dom@19.0.0)(react@19.0.0)
+    specifier: 15.2.0-canary.67
+    version: 15.2.0-canary.67(react-dom@19.0.0)(react@19.0.0)
   react:
     specifier: 19.0.0
     version: 19.0.0
@@ -42,40 +42,40 @@ dependencies:
     specifier: 19.0.0
     version: 19.0.0(react@19.0.0)
   sonner:
-    specifier: ^1.7.4
-    version: 1.7.4(react-dom@19.0.0)(react@19.0.0)
+    specifier: ^2.0.1
+    version: 2.0.1(react-dom@19.0.0)(react@19.0.0)
 
 devDependencies:
   '@tailwindcss/container-queries':
     specifier: ^0.1.1
-    version: 0.1.1(tailwindcss@4.0.7)
+    version: 0.1.1(tailwindcss@4.0.8)
   '@tailwindcss/postcss':
-    specifier: ^4.0.5
-    version: 4.0.7
+    specifier: ^4.0.8
+    version: 4.0.8
   '@tailwindcss/typography':
     specifier: ^0.5.16
-    version: 0.5.16(tailwindcss@4.0.7)
+    version: 0.5.16(tailwindcss@4.0.8)
   '@types/node':
-    specifier: 22.13.1
-    version: 22.13.1
+    specifier: 22.13.4
+    version: 22.13.4
   '@types/react':
-    specifier: 19.0.8
-    version: 19.0.8
+    specifier: 19.0.10
+    version: 19.0.10
   '@types/react-dom':
-    specifier: 19.0.3
-    version: 19.0.3(@types/react@19.0.8)
+    specifier: 19.0.4
+    version: 19.0.4(@types/react@19.0.10)
   postcss:
-    specifier: ^8.5.1
+    specifier: ^8.5.3
     version: 8.5.3
   prettier:
-    specifier: 3.4.2
-    version: 3.4.2
+    specifier: 3.5.1
+    version: 3.5.1
   prettier-plugin-tailwindcss:
     specifier: ^0.6.11
-    version: 0.6.11(prettier@3.4.2)
+    version: 0.6.11(prettier@3.5.1)
   tailwindcss:
-    specifier: ^4.0.5
-    version: 4.0.7
+    specifier: ^4.0.8
+    version: 4.0.8
   typescript:
     specifier: 5.7.3
     version: 5.7.3
@@ -346,12 +346,12 @@ packages:
     dev: false
     optional: true
 
-  /@next/env@15.2.0-canary.47:
-    resolution: {integrity: sha512-0+uaTmTQCPos5wXFruXVLmtO49Wlf2plh/EWe+Fa3i4hQZiZejwOBWxQrxlh/7Fp8go63CyrkOcwcZC5U/UbjA==}
+  /@next/env@15.2.0-canary.67:
+    resolution: {integrity: sha512-Is8AU8GcBrDoyXTmEKPTM+K87Xb5SA545jkw0E6+51Zb/1sg5MSCH9OmQf2KlvbqSrkiVuQ8UA23pY5+xGFGpw==}
     dev: false
 
-  /@next/swc-darwin-arm64@15.2.0-canary.47:
-    resolution: {integrity: sha512-3TccgBTUEIOtwhsyyh+0GiSzvTtXne7xJP+c6dIccN66PA2CbB6/pBAAjtMmjxIVN5SkCKHGxO8uUhERtYrUfw==}
+  /@next/swc-darwin-arm64@15.2.0-canary.67:
+    resolution: {integrity: sha512-BNBt0qWhnZR2pSxlofSBsmy5PYRa7/t4txnYH5z41lSs0B9OlhlsYyiokefmiw6EKKLxzT23hmb+ZPtxTCjiFw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
@@ -359,8 +359,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-darwin-x64@15.2.0-canary.47:
-    resolution: {integrity: sha512-dZ8qlvAtNBG8R1VS0prHv5ia4lQ9aOwJWDWB3q7+B/6jmcuwUc/DafWT399ZdncruL3eEEOXUs5y5qB+8ORrVA==}
+  /@next/swc-darwin-x64@15.2.0-canary.67:
+    resolution: {integrity: sha512-ZPC0/iL3dhexN+MQ6QOfaOO6y3WMhyxns01KA9mae0V0sp/uC+KwpSbNCVXptjmiZQ9j0Q9TYjqQBQ4KwtBK8Q==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
@@ -368,8 +368,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-linux-arm64-gnu@15.2.0-canary.47:
-    resolution: {integrity: sha512-TiAsd8zJO6nlgI02V/tyrzIetZVDJvay9ZicfoYCAH4zLbIQFQbsQTYvOXO/J0InmAFIwuqwd5on7o6cbQVGEQ==}
+  /@next/swc-linux-arm64-gnu@15.2.0-canary.67:
+    resolution: {integrity: sha512-t+i9tRB0uYj3OoZS2qhPwDrlcf5bRTKQY5GtFwboyCzBLv9KcU1xa3cwXulNxq1soo8wTiWRnhq8CkvUT+Fbvw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -377,8 +377,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-linux-arm64-musl@15.2.0-canary.47:
-    resolution: {integrity: sha512-0c7DOvIh1ymHXrMZqubj+Xs1NKAeNb/XmXhLo23JkivV1KL/eQIywwgY/ebenomUW4qePGhLW47bLCu9a8IyDQ==}
+  /@next/swc-linux-arm64-musl@15.2.0-canary.67:
+    resolution: {integrity: sha512-9jffwDN4X2ER5eqj16XJHCf4MmRI3QI0L52JLYH9/3OPxD86bDeQlH/+NK3iEu/3X4KX1rDb7cF9uulB9hjfXw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -386,8 +386,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-linux-x64-gnu@15.2.0-canary.47:
-    resolution: {integrity: sha512-Far7vPoSG5DH9VMRMiCp/13zYyFFyZx2fZOoaJ3HELCt5cuNys8/9lSDA8oC5cguD0ootSSEG6Lp7L4P+M0XhQ==}
+  /@next/swc-linux-x64-gnu@15.2.0-canary.67:
+    resolution: {integrity: sha512-pWp5NIAbMLKy6tfZF22tsDC3A9IJm/p+UQf9l906NClYKtMXLYDFmapXVpTUB7fdb9xDOvB+DtAX11nQk5bukw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -395,8 +395,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-linux-x64-musl@15.2.0-canary.47:
-    resolution: {integrity: sha512-cdYRFKqM+T2F20BJKJdFx647/f9pMjPK5KLlp1JHFL+odLdKNzPKX+Bv6iPfad37qy62AVllF1YbiInFF2upJQ==}
+  /@next/swc-linux-x64-musl@15.2.0-canary.67:
+    resolution: {integrity: sha512-RjSu9pEgQuUmkt1FINCCvpV0SHYrLpf7LaF7pZPem1N2lgDySnazt4ag7ZDaWL0XMBiTKGmNxkk185HeST2PSg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -404,8 +404,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-win32-arm64-msvc@15.2.0-canary.47:
-    resolution: {integrity: sha512-3h2Bce6KjQcJChEYJNStQ5IJmTnfKq67I+tBQbohTt/X2aRlfYz9sUjx8H/A8KGIkEUuEvn6VHqXvUdFdBtBSQ==}
+  /@next/swc-win32-arm64-msvc@15.2.0-canary.67:
+    resolution: {integrity: sha512-DM+ysK87Q10MkoxgZeFOZsRx4Yt1WtynDVZoogdEjikfxZrMLCEo22O2uFVNh2E0kHCdE89K3dODO9rQz9EjAw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
@@ -413,8 +413,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-win32-x64-msvc@15.2.0-canary.47:
-    resolution: {integrity: sha512-ofyXrshTj+WklYhK2Nvfv6eaCo9XVKtZZjPHmUdFZbl0sTHbz3jHrgquOZXOfLrCvd+Pv7zHzmlxe+F+wxI7qQ==}
+  /@next/swc-win32-x64-msvc@15.2.0-canary.67:
+    resolution: {integrity: sha512-gI3Hk/6YrFXMJn018ZjZo832Pxrsj2DpyXbLc9Vxs4wOZ0x3ChVk2yhFA/SJZY7yhdD3vwG9Srdn8gfCuO4xHg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -503,24 +503,24 @@ packages:
       tslib: 2.8.1
     dev: false
 
-  /@tailwindcss/container-queries@0.1.1(tailwindcss@4.0.7):
+  /@tailwindcss/container-queries@0.1.1(tailwindcss@4.0.8):
     resolution: {integrity: sha512-p18dswChx6WnTSaJCSGx6lTmrGzNNvm2FtXmiO6AuA1V4U5REyoqwmT6kgAsIMdjo07QdAfYXHJ4hnMtfHzWgA==}
     peerDependencies:
       tailwindcss: '>=3.2.0'
     dependencies:
-      tailwindcss: 4.0.7
+      tailwindcss: 4.0.8
     dev: true
 
-  /@tailwindcss/node@4.0.7:
-    resolution: {integrity: sha512-dkFXufkbRB2mu3FPsW5xLAUWJyexpJA+/VtQj18k3SUiJVLdpgzBd1v1gRRcIpEJj7K5KpxBKfOXlZxT3ZZRuA==}
+  /@tailwindcss/node@4.0.8:
+    resolution: {integrity: sha512-FKArQpbrbwv08TNT0k7ejYXpF+R8knZFAatNc0acOxbgeqLzwb86r+P3LGOjIeI3Idqe9CVkZrh4GlsJLJKkkw==}
     dependencies:
       enhanced-resolve: 5.18.1
       jiti: 2.4.2
-      tailwindcss: 4.0.7
+      tailwindcss: 4.0.8
     dev: true
 
-  /@tailwindcss/oxide-android-arm64@4.0.7:
-    resolution: {integrity: sha512-5iQXXcAeOHBZy8ASfHFm1k0O/9wR2E3tKh6+P+ilZZbQiMgu+qrnfpBWYPc3FPuQdWiWb73069WT5D+CAfx/tg==}
+  /@tailwindcss/oxide-android-arm64@4.0.8:
+    resolution: {integrity: sha512-We7K79+Sm4mwJHk26Yzu/GAj7C7myemm7PeXvpgMxyxO70SSFSL3uCcqFbz9JA5M5UPkrl7N9fkBe/Y0iazqpA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [android]
@@ -528,8 +528,8 @@ packages:
     dev: true
     optional: true
 
-  /@tailwindcss/oxide-darwin-arm64@4.0.7:
-    resolution: {integrity: sha512-7yGZtEc5IgVYylqK/2B0yVqoofk4UAbkn1ygNpIJZyrOhbymsfr8uUFCueTu2fUxmAYIfMZ8waWo2dLg/NgLgg==}
+  /@tailwindcss/oxide-darwin-arm64@4.0.8:
+    resolution: {integrity: sha512-Lv9Isi2EwkCTG1sRHNDi0uRNN1UGFdEThUAGFrydRmQZnraGLMjN8gahzg2FFnOizDl7LB2TykLUuiw833DSNg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
@@ -537,8 +537,8 @@ packages:
     dev: true
     optional: true
 
-  /@tailwindcss/oxide-darwin-x64@4.0.7:
-    resolution: {integrity: sha512-tPQDV20fBjb26yWbPqT1ZSoDChomMCiXTKn4jupMSoMCFyU7+OJvIY1ryjqBuY622dEBJ8LnCDDWsnj1lX9nNQ==}
+  /@tailwindcss/oxide-darwin-x64@4.0.8:
+    resolution: {integrity: sha512-fWfywfYIlSWtKoqWTjukTHLWV3ARaBRjXCC2Eo0l6KVpaqGY4c2y8snUjp1xpxUtpqwMvCvFWFaleMoz1Vhzlw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
@@ -546,8 +546,8 @@ packages:
     dev: true
     optional: true
 
-  /@tailwindcss/oxide-freebsd-x64@4.0.7:
-    resolution: {integrity: sha512-sZqJpTyTZiknU9LLHuByg5GKTW+u3FqM7q7myequAXxKOpAFiOfXpY710FuMY+gjzSapyRbDXJlsTQtCyiTo5w==}
+  /@tailwindcss/oxide-freebsd-x64@4.0.8:
+    resolution: {integrity: sha512-SO+dyvjJV9G94bnmq2288Ke0BIdvrbSbvtPLaQdqjqHR83v5L2fWADyFO+1oecHo9Owsk8MxcXh1agGVPIKIqw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [freebsd]
@@ -555,8 +555,8 @@ packages:
     dev: true
     optional: true
 
-  /@tailwindcss/oxide-linux-arm-gnueabihf@4.0.7:
-    resolution: {integrity: sha512-PBgvULgeSswjd8cbZ91gdIcIDMdc3TUHV5XemEpxlqt9M8KoydJzkuB/Dt910jYdofOIaTWRL6adG9nJICvU4A==}
+  /@tailwindcss/oxide-linux-arm-gnueabihf@4.0.8:
+    resolution: {integrity: sha512-ZSHggWiEblQNV69V0qUK5vuAtHP+I+S2eGrKGJ5lPgwgJeAd6GjLsVBN+Mqn2SPVfYM3BOpS9jX/zVg9RWQVDQ==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
@@ -564,8 +564,8 @@ packages:
     dev: true
     optional: true
 
-  /@tailwindcss/oxide-linux-arm64-gnu@4.0.7:
-    resolution: {integrity: sha512-By/a2yeh+e9b+C67F88ndSwVJl2A3tcUDb29FbedDi+DZ4Mr07Oqw9Y1DrDrtHIDhIZ3bmmiL1dkH2YxrtV+zw==}
+  /@tailwindcss/oxide-linux-arm64-gnu@4.0.8:
+    resolution: {integrity: sha512-xWpr6M0OZLDNsr7+bQz+3X7zcnDJZJ1N9gtBWCtfhkEtDjjxYEp+Lr5L5nc/yXlL4MyCHnn0uonGVXy3fhxaVA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -573,8 +573,8 @@ packages:
     dev: true
     optional: true
 
-  /@tailwindcss/oxide-linux-arm64-musl@4.0.7:
-    resolution: {integrity: sha512-WHYs3cpPEJb/ccyT20NOzopYQkl7JKncNBUbb77YFlwlXMVJLLV3nrXQKhr7DmZxz2ZXqjyUwsj2rdzd9stYdw==}
+  /@tailwindcss/oxide-linux-arm64-musl@4.0.8:
+    resolution: {integrity: sha512-5tz2IL7LN58ssGEq7h/staD7pu/izF/KeMWdlJ86WDe2Ah46LF3ET6ZGKTr5eZMrnEA0M9cVFuSPprKRHNgjeg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -582,8 +582,8 @@ packages:
     dev: true
     optional: true
 
-  /@tailwindcss/oxide-linux-x64-gnu@4.0.7:
-    resolution: {integrity: sha512-7bP1UyuX9kFxbOwkeIJhBZNevKYPXB6xZI37v09fqi6rqRJR8elybwjMUHm54GVP+UTtJ14ueB1K54Dy1tIO6w==}
+  /@tailwindcss/oxide-linux-x64-gnu@4.0.8:
+    resolution: {integrity: sha512-KSzMkhyrxAQyY2o194NKVKU9j/c+NFSoMvnHWFaNHKi3P1lb+Vq1UC19tLHrmxSkKapcMMu69D7+G1+FVGNDXQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -591,8 +591,8 @@ packages:
     dev: true
     optional: true
 
-  /@tailwindcss/oxide-linux-x64-musl@4.0.7:
-    resolution: {integrity: sha512-gBQIV8nL/LuhARNGeroqzXymMzzW5wQzqlteVqOVoqwEfpHOP3GMird5pGFbnpY+NP0fOlsZGrxxOPQ4W/84bQ==}
+  /@tailwindcss/oxide-linux-x64-musl@4.0.8:
+    resolution: {integrity: sha512-yFYKG5UtHTRimjtqxUWXBgI4Tc6NJe3USjRIVdlTczpLRxq/SFwgzGl5JbatCxgSRDPBFwRrNPxq+ukfQFGdrw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -600,8 +600,8 @@ packages:
     dev: true
     optional: true
 
-  /@tailwindcss/oxide-win32-arm64-msvc@4.0.7:
-    resolution: {integrity: sha512-aH530NFfx0kpQpvYMfWoeG03zGnRCMVlQG8do/5XeahYydz+6SIBxA1tl/cyITSJyWZHyVt6GVNkXeAD30v0Xg==}
+  /@tailwindcss/oxide-win32-arm64-msvc@4.0.8:
+    resolution: {integrity: sha512-tndGujmCSba85cRCnQzXgpA2jx5gXimyspsUYae5jlPyLRG0RjXbDshFKOheVXU4TLflo7FSG8EHCBJ0EHTKdQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
@@ -609,8 +609,8 @@ packages:
     dev: true
     optional: true
 
-  /@tailwindcss/oxide-win32-x64-msvc@4.0.7:
-    resolution: {integrity: sha512-8Cva6bbJN7ZJx320k7vxGGdU0ewmpfS5A4PudyzUuofdi8MgeINuiiWiPQ0VZCda/GX88K6qp+6UpDZNVr8HMQ==}
+  /@tailwindcss/oxide-win32-x64-msvc@4.0.8:
+    resolution: {integrity: sha512-T77jroAc0p4EHVVgTUiNeFn6Nj3jtD3IeNId2X+0k+N1XxfNipy81BEkYErpKLiOkNhpNFjPee8/ZVas29b2OQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -618,35 +618,35 @@ packages:
     dev: true
     optional: true
 
-  /@tailwindcss/oxide@4.0.7:
-    resolution: {integrity: sha512-yr6w5YMgjy+B+zkJiJtIYGXW+HNYOPfRPtSs+aqLnKwdEzNrGv4ZuJh9hYJ3mcA+HMq/K1rtFV+KsEr65S558g==}
+  /@tailwindcss/oxide@4.0.8:
+    resolution: {integrity: sha512-KfMcuAu/Iw+DcV1e8twrFyr2yN8/ZDC/odIGta4wuuJOGkrkHZbvJvRNIbQNhGh7erZTYV6Ie0IeD6WC9Y8Hcw==}
     engines: {node: '>= 10'}
     optionalDependencies:
-      '@tailwindcss/oxide-android-arm64': 4.0.7
-      '@tailwindcss/oxide-darwin-arm64': 4.0.7
-      '@tailwindcss/oxide-darwin-x64': 4.0.7
-      '@tailwindcss/oxide-freebsd-x64': 4.0.7
-      '@tailwindcss/oxide-linux-arm-gnueabihf': 4.0.7
-      '@tailwindcss/oxide-linux-arm64-gnu': 4.0.7
-      '@tailwindcss/oxide-linux-arm64-musl': 4.0.7
-      '@tailwindcss/oxide-linux-x64-gnu': 4.0.7
-      '@tailwindcss/oxide-linux-x64-musl': 4.0.7
-      '@tailwindcss/oxide-win32-arm64-msvc': 4.0.7
-      '@tailwindcss/oxide-win32-x64-msvc': 4.0.7
+      '@tailwindcss/oxide-android-arm64': 4.0.8
+      '@tailwindcss/oxide-darwin-arm64': 4.0.8
+      '@tailwindcss/oxide-darwin-x64': 4.0.8
+      '@tailwindcss/oxide-freebsd-x64': 4.0.8
+      '@tailwindcss/oxide-linux-arm-gnueabihf': 4.0.8
+      '@tailwindcss/oxide-linux-arm64-gnu': 4.0.8
+      '@tailwindcss/oxide-linux-arm64-musl': 4.0.8
+      '@tailwindcss/oxide-linux-x64-gnu': 4.0.8
+      '@tailwindcss/oxide-linux-x64-musl': 4.0.8
+      '@tailwindcss/oxide-win32-arm64-msvc': 4.0.8
+      '@tailwindcss/oxide-win32-x64-msvc': 4.0.8
     dev: true
 
-  /@tailwindcss/postcss@4.0.7:
-    resolution: {integrity: sha512-zXcKs1uGssVDlnsQ+iwrkul5GPKvsXPynGCuk/eXLx3DVhHlQKMpA6tXN2oO28x2ki1xRBTfadKiHy2taVvp7g==}
+  /@tailwindcss/postcss@4.0.8:
+    resolution: {integrity: sha512-SUwlrXjn1ycmUbA0o0n3Y0LqlXqxN5R8HR+ti+OBbRS79wl2seDmiypEs3xJCuQXe07ol81s1AmRMitBmPveJA==}
     dependencies:
       '@alloc/quick-lru': 5.2.0
-      '@tailwindcss/node': 4.0.7
-      '@tailwindcss/oxide': 4.0.7
+      '@tailwindcss/node': 4.0.8
+      '@tailwindcss/oxide': 4.0.8
       lightningcss: 1.29.1
       postcss: 8.5.3
-      tailwindcss: 4.0.7
+      tailwindcss: 4.0.8
     dev: true
 
-  /@tailwindcss/typography@0.5.16(tailwindcss@4.0.7):
+  /@tailwindcss/typography@0.5.16(tailwindcss@4.0.8):
     resolution: {integrity: sha512-0wDLwCVF5V3x3b1SGXPCDcdsbDHMBe+lkFzBRaHeLvNi+nrrnZ1lA18u+OTWO8iSWU2GxUOCvlXtDuqftc1oiA==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
@@ -655,7 +655,7 @@ packages:
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
-      tailwindcss: 4.0.7
+      tailwindcss: 4.0.8
     dev: true
 
   /@tanstack/react-virtual@3.13.0(react-dom@19.0.0)(react@19.0.0):
@@ -676,24 +676,24 @@ packages:
   /@types/kind-of@6.0.3:
     resolution: {integrity: sha512-JEwIR1oOC99PjUTd1LUHxq3gd6w9GGJ8nYUTHMfwOLszw6GuQB4ezsnk3WEeMOtOFx12Jk2JWrGttSnwUD4hrQ==}
     dependencies:
-      '@types/node': 22.13.1
+      '@types/node': 22.13.4
     dev: false
 
-  /@types/node@22.13.1:
-    resolution: {integrity: sha512-jK8uzQlrvXqEU91UxiK5J7pKHyzgnI1Qnl0QDHIgVGuolJhRb9EEl28Cj9b3rGR8B2lhFCtvIm5os8lFnO/1Ew==}
+  /@types/node@22.13.4:
+    resolution: {integrity: sha512-ywP2X0DYtX3y08eFVx5fNIw7/uIv8hYUKgXoK8oayJlLnKcRfEYCxWMVE1XagUdVtCJlZT1AU4LXEABW+L1Peg==}
     dependencies:
       undici-types: 6.20.0
 
-  /@types/react-dom@19.0.3(@types/react@19.0.8):
-    resolution: {integrity: sha512-0Knk+HJiMP/qOZgMyNFamlIjw9OFCsyC2ZbigmEEyXXixgre6IQpm/4V+r3qH4GC1JPvRJKInw+on2rV6YZLeA==}
+  /@types/react-dom@19.0.4(@types/react@19.0.10):
+    resolution: {integrity: sha512-4fSQ8vWFkg+TGhePfUzVmat3eC14TXYSsiiDSLI0dVLsrm9gZFABjPy/Qu6TKgl1tq1Bu1yDsuQgY3A3DOjCcg==}
     peerDependencies:
       '@types/react': ^19.0.0
     dependencies:
-      '@types/react': 19.0.8
+      '@types/react': 19.0.10
     dev: true
 
-  /@types/react@19.0.8:
-    resolution: {integrity: sha512-9P/o1IGdfmQxrujGbIMDyYaaCykhLKc0NGCtYcECNUr9UAaDe4gwvV9bR6tvd5Br1SG0j+PBpbKr2UYY8CwqSw==}
+  /@types/react@19.0.10:
+    resolution: {integrity: sha512-JuRQ9KXLEjaUNjTWpzuR231Z2WpIwczOkBEIvbHNCzQefFIT0L8IqE6NV6ULLyC1SI/i234JnDoMkfg+RjQj2g==}
     dependencies:
       csstype: 3.1.3
     dev: true
@@ -702,129 +702,416 @@ packages:
     resolution: {integrity: sha512-wQ1unJoajjDOP7bkg7FHOYelVp6BSsuBIFSvifNKeiMHegXWa6vddoqM/dHTVkX8bn9fJcor4Hukff9AtFybcA==}
     dev: false
 
-  /@wix/data@1.0.198:
-    resolution: {integrity: sha512-gGoUfonwDG8Pg6t2rBryzhWRQa9e1cjGPGtLa08XbAm/Ye/4YDj7LrUzyHok7ninwycTj28bQAfTqy4JiTFMfw==}
-    dependencies:
-      '@wix/data_backups': 1.0.3
-      '@wix/data_collections': 1.0.73
-      '@wix/data_external-database': 1.0.35
-      '@wix/data_external-database-connections': 1.0.65
-      '@wix/data_indexes': 1.0.52
-      '@wix/data_permissions': 1.0.2
-      '@wix/data_tasks': 1.0.3
-      '@wix/wix-data-items-sdk': 1.0.261
-    dev: false
-
-  /@wix/data_backups@1.0.3:
-    resolution: {integrity: sha512-XOnfvlFQq4JyU1SAvxpcweZDzVZsyUOuYJOKeJTn70N9myFrobHsgSTi4exDADa8c9ZqzjxWAjJ4VkMQkrDvFA==}
+  /@wix/auto_sdk_ecom_abandoned-checkouts@1.0.0:
+    resolution: {integrity: sha512-tbBx3+G9kl97cG2JD4vy0EfCKk5rE5IzSkHjjL97hPmwm5T07wKwkssKjHGobebZP/PW+2WvnxnGFZtnHJrC8w==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/data_collections@1.0.73:
-    resolution: {integrity: sha512-7gZHRJO+gY8lvrVBZPXRUK6sPCA+UIGP/wd4yRZFdT0/6BxQo272JZLLJbvIwnm7saQsrKu81NdP6U1qBS3QzQ==}
+  /@wix/auto_sdk_ecom_additional-fees@1.0.0:
+    resolution: {integrity: sha512-JzfAXuic+MMYm61xSHD75eVfcGEP/wDeI7OWKguaNXi3Iutfme5wacMknb8BI5cUq4uAK52/X6xhirOGS1GoVw==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/data_external-database-connections@1.0.65:
-    resolution: {integrity: sha512-dkpg4WqMx8MTXf3qmVwlpLiwBWDgR0OWB1i/KDlmpanKE2V3n2R9HsJ7ysayipB7I45lrPszSmkGGaENS+bGrA==}
+  /@wix/auto_sdk_ecom_back-in-stock-notifications@1.0.0:
+    resolution: {integrity: sha512-pLDcqRJA35xDwiVAXd8vx0W1n/iQRvYM3tGfrBwYkhDsUKGjKl1C/UEVViU8zKqOQGJKYDi6NU0olF2N8O8L7Q==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/data_external-database@1.0.35:
-    resolution: {integrity: sha512-ZITY/Tki0Vf4zrn5x02tqFNaURbJ/DKULAwNdpM0+KbP2paE1MM7VqYfAWJTlrAOYJL/dtMD/ilhGUFXDXJQFw==}
+  /@wix/auto_sdk_ecom_back-in-stock-settings@1.0.0:
+    resolution: {integrity: sha512-Sc5VMV2FbT1GP3voVZyCZPmJhT5r5Jx9AscA/Su5ZbLZCP46xGcHCbx/NLeBFMufRpA+SHYSJBhE/ECaLOfnTg==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/data_indexes@1.0.52:
-    resolution: {integrity: sha512-98vFI93hhVpwBwgP6bMYJk2J/GAWM7ViH7Bb2pfnC8hId2Wr+PmE7eIBXAYOS44WV5LrnuNF1zHjXtMy+h3TDg==}
+  /@wix/auto_sdk_ecom_cart@1.0.0:
+    resolution: {integrity: sha512-Trkr05RhBbxqQg378ZqVcwZpULL+ozSurh0WqN5XNHSuhsfl3OUk20DRu8eaLdJ0GAXDk4rwQKeKMkkkuhEoeA==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/data_permissions@1.0.2:
-    resolution: {integrity: sha512-pQDIgOzjBpAAVR9mlVKioT61yHmTGe85M85WDP7RPa5MDn4CnRpXr7TdgSsNf+SKosATNoVdLIcJ4ej2QQgbkw==}
+  /@wix/auto_sdk_ecom_catalog@1.0.0:
+    resolution: {integrity: sha512-wVd26267laVolJuq5yn8C2OqVU9CHRV+LTPluSCbd8BnxVKxqOn9LBPzNSM0l3vP7RjeHnNjb6HHWmrlFRTpbg==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/data_tasks@1.0.3:
-    resolution: {integrity: sha512-7xzkpaps4eVsrcbDaKDe1MoKtXETbs8/abpUWwfE/R7JUa3detU80JIJIM8F+a38+UZOC+qB4qDPl/zy9Kosjw==}
+  /@wix/auto_sdk_ecom_checkout-content@1.0.0:
+    resolution: {integrity: sha512-VqhDVxjCtCNbgzwU1P+FRAO0Qr4HQQd8qtBW5FFFY8HrCdcp+PRaxKYt5LvyyKt/fzvv0r7fuPlTF3dywuByKA==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/ecom@1.0.940:
-    resolution: {integrity: sha512-XGZi6YI5mMXTTOxC2Gbb1l5zvAB/460eiARoPIUPze2GDemewLT93I+WckJ0r+jL4j8/2NbqyDId8thy3reEyQ==}
+  /@wix/auto_sdk_ecom_checkout-settings@1.0.0:
+    resolution: {integrity: sha512-VBk/5eYXZ2dZA28CGOp+tQncjLlc+9lrBY+5Obm00O9VVnmSWBE1Pm72bJT309ApfnV1Czrh+47GuXScaOsKaQ==}
     dependencies:
-      '@wix/ecom_abandoned-checkouts': 1.0.77
-      '@wix/ecom_additional-fees': 1.0.56
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_checkout-templates@1.0.0:
+    resolution: {integrity: sha512-NsMJzehkTjx8ftkBNg7qSngqs4+4xIKd6A2B7POQRB8FfEvCM6S3Pl7qA/Mo/WIW5p4pTsb9B9xNLA4BYpaECw==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_checkout@1.0.0:
+    resolution: {integrity: sha512-FSxb/zZyh1iZsnUoJTfWr5w0YjHFen46D2YpnLzt136KFknOSUsrgtjB/TXdA99jeYafnyEFnVMOa80lOx2/0w==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_currencies@1.0.0:
+    resolution: {integrity: sha512-txasmIP60SZ1gHMLdi1WgLpFDZWnIRGXatJ4+c6d5k7BaWuDFLTA+wel+BSN2xNqWOsMWjge7cKbb6kzLzuW9g==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_current-cart@1.0.0:
+    resolution: {integrity: sha512-42XTmGEwxaNbzSo5abTePViYK7wKuq0j2tA3eDgWgqd+zq1O+NKU3UzB0K/nvryKVmxIGlueSQl3LlLXSyl2iw==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_custom-triggers@1.0.0:
+    resolution: {integrity: sha512-vdja4wBIEGCjXBFc2pv19bVWf9cJahz0RO+zkklXEBjZ3CfTf7mbIBVAmTXJ9eZTCAP4RMSldDmnyRUfUd01Tg==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_delivery-profile@1.0.0:
+    resolution: {integrity: sha512-Aj1/y7YRA+eocfCHX3iqX0qSbpwTzBLG0OxT+N6vXj6YtuwXfFFbMtdicJmeV0q8hNTr05cNOynC3esegpbKTw==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_delivery-solutions@1.0.0:
+    resolution: {integrity: sha512-oBuupOZlQAmlI+RNEHnz9xtC2s3M047J2UJmFSKw/2gfb96JBQDq0/Y6r2DTdsYa3Kto6WiZMPMU+xng3pzVBA==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_discount-rules@1.0.0:
+    resolution: {integrity: sha512-UeAD3imWBlEAdlTsQrVqmhPLSHrtSn4gB6x88vlv2mZcWeQw2m+705YFi86ROEbxA+HSU0uKYKNif3v8WO4s9w==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_discounts-custom-trigger@1.0.0:
+    resolution: {integrity: sha512-R3ULdcD2Lwou/cQx09lobjIeufXF527WRj2B7iY5JaMOV7MR+Lb/1odFky84+WV3nygFjfL7Yu8kCTp2CAfhSg==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_discounts@1.0.0:
+    resolution: {integrity: sha512-GFQsnUMqgLFznmq1mLBk+e3h3Hm4S0o4s0RtEGfjuUGPuE13pNQTo6CG51rjx3YzVdL8r6AaCNkZz8C7eT86UA==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_draft-orders@1.0.0:
+    resolution: {integrity: sha512-cmYw7XP6b67nrpn/Xxx9UWVzlX95V0tZmDF+1pkCB3WwG67c72BFE8lYnMdaAXxzAJYlutGra+VLKyeyYhZcEQ==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_gift-vouchers-provider@1.0.0:
+    resolution: {integrity: sha512-J7syugWkBJlR/6nec7qSL6fC1vx1H9Hkr63Wna32VrpLmFUnJ+5126n+JtiKHfr4V0qc/kiTV0NeXEemnIydrg==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_gift-vouchers@1.0.0:
+    resolution: {integrity: sha512-caPyvMoJPIcMpHcFBhaHvv64LwWDLrUJ45lMGqiIERmvOhfBy/tALKcKvxEWUALYj6Cd2qLvOA0h2VOSrhV9kw==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_local-delivery-options@1.0.0:
+    resolution: {integrity: sha512-AaR6COWaCIVYuAxa/dRUBzcTI9i56VWK4Y3W8w5ENPemiesiXjLGpUmF9hXe0LZZtMokypg8JREfKlTvkpAosQ==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_memberships@1.0.0:
+    resolution: {integrity: sha512-GVVUORa0gOXhZHi/cn1Qg5hyeC2MZmGVk+ZyHyenn3P14fGbDrpnMV3oSup+dVspS5YY5QsR10eyylUP/YidrA==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_order-billing@1.0.0:
+    resolution: {integrity: sha512-t2/asbQaVbKoavCnAf682yHdAoTvgnX0zzET+I3XrgXkU+B2EwUVCpPLCxlGwrDGwxq+7DnK0rn5dbFmD/UEXg==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_order-fulfillments@1.0.0:
+    resolution: {integrity: sha512-zwDcs3NjXCW10uLMGC1QRCu3s5GNTCAlNUHIbNv6q7LVjvl9bK0kKv+oICin4Q+buaNYbEmkcV18DyIHUilzrQ==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_order-invoices@1.0.0:
+    resolution: {integrity: sha512-4JBOPZD5oR5wo0q2mPCoORrq5FJnxZIm+0398in6UGkObwvfdzq0JCElriQWgbiOfQ0dFGlMafJal5kMhTLy9A==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_order-payment-requests@1.0.0:
+    resolution: {integrity: sha512-5lU2COTldvgMDV5C7AFqfhgjPe7xN2bv1skwTtsAxnil/4kb+bJZgNM1vhFYmwgBgFhLh4gFJQYiYcxhVI6Uxw==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_order-transactions@1.0.0:
+    resolution: {integrity: sha512-uWae/0kelp5PJ826Ggkjz6k9jUqDS1A6WSymVFRovJKg1rUBdqX2xEwRNs2lKz7CDIFh0ygGh8ljo2Gttnao3Q==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_orders-settings@1.0.0:
+    resolution: {integrity: sha512-omWsWz1JUNJxUbZEBljsCP19Wi43dQxG0xx3PNaXZ7tv3Oc1TzEwEKUD7c+FluSmQ/yT2o3gcQgj8hHu9XY4UQ==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_orders@1.0.0:
+    resolution: {integrity: sha512-3XeTSX5iddcmwI04VDi0R+hCspSPrG+386Ev7dwY9060lDOSjLDXx+2QORkAusfzGWiiMyUfi8BaY4IltxwEBw==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_payment-settings@1.0.0:
+    resolution: {integrity: sha512-+GLCQQUEKPZQpPPxZ47mPgleNCm9XwTP4x9yFuoyv9Ie2q3Xl4sr8GBqK6o2Y88Fmq7rKCq5gLhbs89HTklsaA==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_pickup-locations@1.0.0:
+    resolution: {integrity: sha512-4xGW0yBzL/ngS6Jbwyibj2U2AuWpcONM7V+zvyANkS+Fi2VVoCz/q7Xlgv8tF4ODcb9ak3qawHNt60xmz/rzJA==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_recommendations-provider@1.0.0:
+    resolution: {integrity: sha512-eWH7KEfjzdxzcNb59UvoYrm1sCNWaqiNRdtLHl9LE2bS1AAYBFW6HKIcpqUqemCGvw9PseNxDSb+NuG1rH3LyQ==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_recommendations@1.0.0:
+    resolution: {integrity: sha512-LwE5ymDHwFxWPWYj7nrZSsP+h7b62eonuN2S5sMDdkU2OBpAchnMhL2ZVApVox90s2CRO+aFiPCyvvMM5sjYLg==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_shipping-options@1.0.0:
+    resolution: {integrity: sha512-s/HRQm5n7N3ucKQ4YsWK/hpFVtddYJY9tX6ww+SkQ+V0mswScZhbQuMj9BonQKElwf1GJpCPB1ulcmXtPd5RAQ==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_shipping-rates@1.0.0:
+    resolution: {integrity: sha512-TNLB/bYFByhS82iLnuEfNzeVcKyTwv/ZHkVEDLkNgJwuPdI52TNr3R0D4R7OPJfKRPQXwZRa6VpcHMGQjJgXYw==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_shippo-configurations@1.0.0:
+    resolution: {integrity: sha512-QzYPhcEWMrRRUNdwIWmVVtf8q5SgErqxqpUzBpEGMKcfSig95fJJ38Q2Es+DuxUBUPfS9ZrC4iVmsf3C3Y6mgQ==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_subscription-contracts@1.0.0:
+    resolution: {integrity: sha512-211H7bNbsaUjvr/8b5HkomhS2HToqpDFO1U+TxrCKbsM6IlibnnntBvBJ1JMkX9X6qwTsjIOmzZEOtopwtMDJg==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_tip-settings@1.0.0:
+    resolution: {integrity: sha512-Q1vpgu3zgf100bwub2OWS/YQmX21S+1hFNZ/seZnOejC1QermeiAFc9y38nd3td1Tc5oJH3ZuEm0gEd3rTcAwg==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_tippable-staff@1.0.0:
+    resolution: {integrity: sha512-e/5TcaySgD/Og/nGK7Sm9uCT4X2CRwH/TwvRQ3kfa9FJXshdNXzRjZYenhfzKqBz8+At1DJJ3owx7QmloeH6yw==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_tips@1.0.0:
+    resolution: {integrity: sha512-tL3ZrkuxPiD3LdaTeFskp8nrUZJe4Lcxokt52XqOiIKuVqohp+BM4ctFWopR4f8eX5Bac4/jbZ4d/y/+JyBjxg==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_totals-calculator@1.0.0:
+    resolution: {integrity: sha512-hyXltl8lIr6jmleRZtvvktFetm0K0QLNazXIsV79PTf60Vn5Hrdl0wp1yK2eRY8uvvU1DZpSqA+A7ZjZ5yQCLw==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/auto_sdk_ecom_validations@1.0.0:
+    resolution: {integrity: sha512-tjxzWLGX/eynf2eDuXujoefmXYXeQKLH8cAAEFuFdSySLbSpb6Cm4RPLSFlhMDtoDMcXhVrRff114fstfVWq3g==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/data@1.0.201:
+    resolution: {integrity: sha512-v3RDT3N8IpIDJadKpyJuqf7QQePBCTt90cyRwp2SeeXm75TCa1mKy6V811HTb3O+ulL/swsnO5AyljxW7eX1JA==}
+    dependencies:
+      '@wix/data_backups': 1.0.6
+      '@wix/data_collections': 1.0.76
+      '@wix/data_external-database': 1.0.38
+      '@wix/data_external-database-connections': 1.0.68
+      '@wix/data_indexes': 1.0.55
+      '@wix/data_permissions': 1.0.5
+      '@wix/data_tasks': 1.0.6
+      '@wix/wix-data-items-sdk': 1.0.265
+    dev: false
+
+  /@wix/data_backups@1.0.6:
+    resolution: {integrity: sha512-rDVsJ4QZkg38adDDpExpHM9LtL4pc8+qnuM5Zf6mn8IizYx88+kaUanTUTKb0y/+5NKLC7/+lLXrNjkz2MqcJQ==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/data_collections@1.0.76:
+    resolution: {integrity: sha512-Tka1LlgesuHxbAe2vCsxiv9g65S/METv+JgTDEFr3mwVOOdrlhcrPRnQbJkMGOHX70i3Lo0bLYje9W730A35pA==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/data_external-database-connections@1.0.68:
+    resolution: {integrity: sha512-MVsK54jJttICWiy3yEmhErUgPnmQvDlwsSyJIvvxBgrHpqlkY+JZmlFFGt9t5lt4mlrJPoEYcIwh4J4Vgxwamg==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/data_external-database@1.0.38:
+    resolution: {integrity: sha512-AF484d/Fp4uxNB2NlJZQMZuZdiWaB2VFD0oUP4XlEy0XdaT9i6dcvDHwYZfMQ+RE+e0rHa/VjPqVJeOvPo6vxg==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/data_indexes@1.0.55:
+    resolution: {integrity: sha512-h6MzZ2LXnM2psiAMzroF7AM1OAnL9rW5+kRqcpixLcPnlD8kVHo4sqb1CxCpKhgPNstWYQ3QDVQOwejvvrjUcg==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/data_permissions@1.0.5:
+    resolution: {integrity: sha512-NKypxx/irRt78DmqWyZ/+9kQFRx0dkV5MYCFnPul5SNsyrVK7ph97RlpjRjumiwn4hb+iILeica6OXXMdVFj9Q==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/data_tasks@1.0.6:
+    resolution: {integrity: sha512-sLXkSAnDELbCU/rGk6wRoRPvnvpEcgCIAubhqTeccpiQUCz304bXnbwpyQUcSc9n0r0Yh3V8M6yixVN+72gmRQ==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/ecom@1.0.943:
+    resolution: {integrity: sha512-0Q1Tj+MX652/K6RLK+aXJ7Du1HCUWjfbbpnILCBkfsduUgfY2Urlz/kgOz6DMG4hBd0ATzelwKE74KOzX+s5Hw==}
+    dependencies:
+      '@wix/auto_sdk_ecom_abandoned-checkouts': 1.0.0
+      '@wix/auto_sdk_ecom_additional-fees': 1.0.0
+      '@wix/auto_sdk_ecom_back-in-stock-notifications': 1.0.0
+      '@wix/auto_sdk_ecom_back-in-stock-settings': 1.0.0
+      '@wix/auto_sdk_ecom_cart': 1.0.0
+      '@wix/auto_sdk_ecom_catalog': 1.0.0
+      '@wix/auto_sdk_ecom_checkout': 1.0.0
+      '@wix/auto_sdk_ecom_checkout-content': 1.0.0
+      '@wix/auto_sdk_ecom_checkout-settings': 1.0.0
+      '@wix/auto_sdk_ecom_checkout-templates': 1.0.0
+      '@wix/auto_sdk_ecom_currencies': 1.0.0
+      '@wix/auto_sdk_ecom_current-cart': 1.0.0
+      '@wix/auto_sdk_ecom_custom-triggers': 1.0.0
+      '@wix/auto_sdk_ecom_delivery-profile': 1.0.0
+      '@wix/auto_sdk_ecom_delivery-solutions': 1.0.0
+      '@wix/auto_sdk_ecom_discount-rules': 1.0.0
+      '@wix/auto_sdk_ecom_discounts': 1.0.0
+      '@wix/auto_sdk_ecom_discounts-custom-trigger': 1.0.0
+      '@wix/auto_sdk_ecom_draft-orders': 1.0.0
+      '@wix/auto_sdk_ecom_gift-vouchers': 1.0.0
+      '@wix/auto_sdk_ecom_gift-vouchers-provider': 1.0.0
+      '@wix/auto_sdk_ecom_local-delivery-options': 1.0.0
+      '@wix/auto_sdk_ecom_memberships': 1.0.0
+      '@wix/auto_sdk_ecom_order-billing': 1.0.0
+      '@wix/auto_sdk_ecom_order-fulfillments': 1.0.0
+      '@wix/auto_sdk_ecom_order-invoices': 1.0.0
+      '@wix/auto_sdk_ecom_order-payment-requests': 1.0.0
+      '@wix/auto_sdk_ecom_order-transactions': 1.0.0
+      '@wix/auto_sdk_ecom_orders': 1.0.0
+      '@wix/auto_sdk_ecom_orders-settings': 1.0.0
+      '@wix/auto_sdk_ecom_payment-settings': 1.0.0
+      '@wix/auto_sdk_ecom_pickup-locations': 1.0.0
+      '@wix/auto_sdk_ecom_recommendations': 1.0.0
+      '@wix/auto_sdk_ecom_recommendations-provider': 1.0.0
+      '@wix/auto_sdk_ecom_shipping-options': 1.0.0
+      '@wix/auto_sdk_ecom_shipping-rates': 1.0.0
+      '@wix/auto_sdk_ecom_shippo-configurations': 1.0.0
+      '@wix/auto_sdk_ecom_subscription-contracts': 1.0.0
+      '@wix/auto_sdk_ecom_tip-settings': 1.0.0
+      '@wix/auto_sdk_ecom_tippable-staff': 1.0.0
+      '@wix/auto_sdk_ecom_tips': 1.0.0
+      '@wix/auto_sdk_ecom_totals-calculator': 1.0.0
+      '@wix/auto_sdk_ecom_validations': 1.0.0
       '@wix/ecom_app-extensions': 1.0.12
-      '@wix/ecom_back-in-stock-notifications': 1.0.82
-      '@wix/ecom_back-in-stock-settings': 1.0.64
-      '@wix/ecom_cart': 1.0.138
-      '@wix/ecom_catalog': 1.0.19
-      '@wix/ecom_checkout': 1.0.145
-      '@wix/ecom_checkout-content': 1.0.35
-      '@wix/ecom_checkout-settings': 1.0.81
-      '@wix/ecom_checkout-templates': 1.0.138
-      '@wix/ecom_currencies': 1.0.65
-      '@wix/ecom_current-cart': 1.0.140
-      '@wix/ecom_custom-triggers': 1.0.50
-      '@wix/ecom_delivery-profile': 1.0.63
-      '@wix/ecom_delivery-solutions': 1.0.36
-      '@wix/ecom_discount-rules': 1.0.83
-      '@wix/ecom_discounts': 1.0.33
-      '@wix/ecom_discounts-custom-trigger': 1.0.37
-      '@wix/ecom_draft-orders': 1.0.76
-      '@wix/ecom_gift-vouchers': 1.0.34
-      '@wix/ecom_gift-vouchers-provider': 1.0.31
-      '@wix/ecom_local-delivery-options': 1.0.42
-      '@wix/ecom_memberships': 1.0.29
-      '@wix/ecom_order-billing': 1.0.7
-      '@wix/ecom_order-fulfillments': 1.0.75
-      '@wix/ecom_order-invoices': 1.0.68
-      '@wix/ecom_order-payment-requests': 1.0.40
-      '@wix/ecom_order-transactions': 1.0.104
-      '@wix/ecom_orders': 1.0.190
-      '@wix/ecom_orders-settings': 1.0.75
-      '@wix/ecom_payment-settings': 1.0.110
-      '@wix/ecom_pickup-locations': 1.0.38
-      '@wix/ecom_recommendations': 1.0.72
-      '@wix/ecom_recommendations-provider': 1.0.31
-      '@wix/ecom_shipping-options': 1.0.36
-      '@wix/ecom_shipping-rates': 1.0.75
-      '@wix/ecom_shippo-configurations': 1.0.44
-      '@wix/ecom_subscription-contracts': 1.0.38
-      '@wix/ecom_tip-settings': 1.0.24
-      '@wix/ecom_tippable-staff': 1.0.24
-      '@wix/ecom_tips': 1.0.28
-      '@wix/ecom_totals-calculator': 1.0.48
-      '@wix/ecom_validations': 1.0.67
-    dev: false
-
-  /@wix/ecom_abandoned-checkouts@1.0.77:
-    resolution: {integrity: sha512-tEMzGQYG/NTpOjIWF+FrfJ6zJF6xVgzg71vMrqnILHFzlrRqDwPZj8KhPpkRS739K2iL0JhL8pbYEYJFaNpSjA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_additional-fees@1.0.56:
-    resolution: {integrity: sha512-8UQkIaieadAyOwcF1TmiBJvn3j/ufQZyo1I9bPZgDiUDc2KTDXZACDv5V6o/zi0hMVjdJ58j33Q+ZJw51LrK7w==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
     dev: false
 
   /@wix/ecom_app-extensions@1.0.12:
@@ -834,333 +1121,46 @@ packages:
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/ecom_back-in-stock-notifications@1.0.82:
-    resolution: {integrity: sha512-oXUXJxB2cVPE1xRklAenwpKwWfQlIQNqMF0saFUvvRRcYZp15neU9NjyFHtmPJplD+juBNlRe7orLVAT2hojVA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_back-in-stock-settings@1.0.64:
-    resolution: {integrity: sha512-QGUF6C4UbaBdHGlhZOVXXqcRr8sGakEXeER//CIR6HSE3vk6o7sZh24FfXIg/a7o9VH6Wrx2p+4Iv9noT7oMxg==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_cart@1.0.138:
-    resolution: {integrity: sha512-FPmTR9jTW3bjojwipyPX2yV1sI57R43/t4c1GHj0Pkhs9PBBYqwzLBsvCWcPWrPlByc3EQAF7fsg9Sr0+3MHUQ==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_catalog@1.0.19:
-    resolution: {integrity: sha512-wslDeMFSs+VPjpYF81C2+PGwqqcGUIJ0tpfMrs/roTZZ+dxT16OP7odzoWEHV4TYmFDxB29PRU0MYOzhAmWAQw==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_checkout-content@1.0.35:
-    resolution: {integrity: sha512-W9oh7HslCYAFpJkh8A313/lXwE/zQrx22eC6247+Yq+Pk3pfju222u1/BtsVz42XshmjOfqRPRXcw49yzvWihw==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_checkout-settings@1.0.81:
-    resolution: {integrity: sha512-vhNpu6M/32Oa0k0d6eoPixGS9GvTInxWJTqwBZZpkq9qbhcmstZHxiLe7U5wXPZXQd6nQ5B4TYD9PRKeA9hKOA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_checkout-templates@1.0.138:
-    resolution: {integrity: sha512-uF2o5r99z/7GyU584PpafqSlfL7UvbXKuuapnPr3CIj8wixNJuKYv5xEQDLOd5hYTdxSjg5PqhHkBPJoyMFyXQ==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_checkout@1.0.145:
-    resolution: {integrity: sha512-0KShhpKRKvfs5PjBGXJYHkzp7cEUDt+yftMWq4QY6uVmsPZJMh/GJfChh7JsjLRzAWLUYXhOCPbjxyDh9KqoQA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_currencies@1.0.65:
-    resolution: {integrity: sha512-egrM0Df/I04DIfkDLBRQCxw1Zyigb2Ac5g2D2HyNgRtBNl2mpXez32UlzMGRX9qaLmD0FtvkmaUaBUouLoOuAg==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_current-cart@1.0.140:
-    resolution: {integrity: sha512-BSiJC0vEwUWG4PQwe5/v5NMQCBwLsTFGaIgn+uvXHc37PT/kvo8NV7PCVJBqWh5Wk2kPJ3prCw3KR1KSpq0gqA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_custom-triggers@1.0.50:
-    resolution: {integrity: sha512-2DA+YEXq2wokPFnRH9x+NVn1afjaRRJnOHZULCJ+q54DVCdcATAqk3VIqcCW6RXr+PFyX7K7frHnD/+b/2xtXA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_delivery-profile@1.0.63:
-    resolution: {integrity: sha512-7wLqGUqbEcFwvRX9veWqEEFOcZ64lQnfIe5P1YXTIGAAJO8XuCgKWZwjAPluynwKPSEIoQznxEyIkC62IW+TOg==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_delivery-solutions@1.0.36:
-    resolution: {integrity: sha512-Og52tcRWGpkjBgPPEj/zURWlxNywvFGxVXqL8+G4B2VQzGepZrd1PsWXMrndrjmeoVN91qwI3Jgf8I4ycgMrFA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_discount-rules@1.0.83:
-    resolution: {integrity: sha512-J2A4zMvBAztjYKboxpbKbHfmCwcqQbEbxSzQSVtVsZOJIi24E7f22pW/UK0jFC0FwZdNrGiXFKN9fELc1mtH4Q==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_discounts-custom-trigger@1.0.37:
-    resolution: {integrity: sha512-YLyoWWBdUTxh58wIlr3Gr5DayTpyLu/5qU7TGG2ePH174r3B34tMzrt8BSqgVo0MVjZk5xl6fbqQMwx5nwZOWg==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_discounts@1.0.33:
-    resolution: {integrity: sha512-AN/CujmlKTDilkRudnOb6WIgZqUGYhvu+1u8MsL6h9RNUYyoLCLxWkf1bFd4DdpolpIzvqp000u70Qnf8a0fgw==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_draft-orders@1.0.76:
-    resolution: {integrity: sha512-vu3HSKwSiLPsSElPCe1WvN66bG28xF+tADoa4rekvzxxDySYG+F5BxSMelt3cRtKXTnH/6oZqk1QQVVLxoOk8g==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_gift-vouchers-provider@1.0.31:
-    resolution: {integrity: sha512-K+iqD7h9V+3eakvQnoaoOFb9imvNTfsX2sF4cMS3vbHZJK8BwzAmPAwgpSGBSuWEQcOXZKJiIaAs2u6Hbp2Kzg==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_gift-vouchers@1.0.34:
-    resolution: {integrity: sha512-FTFHoXCFh2Nh5H0k/5CxuZUIxSJvtKdK4frHCiGCE65VzSw5N1uRH+8lSYjxZ/WVVeIFdNEH3J06rAc0TMf3fQ==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_local-delivery-options@1.0.42:
-    resolution: {integrity: sha512-S/GtYYlEMWOEsSxe/UJ/q/x8C/SblXFdUSMMNeXlE+SYejMmlRloShk6kKRqWfBXNsf+spFc84BmIMCUssDh7Q==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_memberships@1.0.29:
-    resolution: {integrity: sha512-ZsnRsST7O31ajKtjQd5ygjZ5mISEk2RyS4jsALjcOx9cq0XLHiCoSZr0VNSGYjWBTr2l05PgB5t5Z+zV8Pmm2g==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_order-billing@1.0.7:
-    resolution: {integrity: sha512-xwSdBn2RzHSY+hwjvSUtU4wCw27WxKYEtl/x8i4gXMm/YusMSKrJGgevKurjgiP6LGrRX23ctHK+LG59VrzlnQ==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_order-fulfillments@1.0.75:
-    resolution: {integrity: sha512-u7drmGg8J5bXYky7Rw4bA/25M6/f+YsHkzVPCxC+Ez6ogIzz7HquL4BzLheTYN8GFaiDOTqk4CwMucnrqVfGYA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_order-invoices@1.0.68:
-    resolution: {integrity: sha512-HTdlKSFmUTevqggShhI4gMr4YFzi7N6UpsaD3zSWnXktWI+05c30a/N2Cp/m69mXSHI+NRzYSlFDw/xABiwdrg==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_order-payment-requests@1.0.40:
-    resolution: {integrity: sha512-pRtMnT2dtmx5r2C1ARKwOf/h1mxGBv/dDmAI+JB8hnPPHPr3b9J7MmEBn1MgGztEXfTKDVJaNTDCuvpqjxllHA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_order-transactions@1.0.104:
-    resolution: {integrity: sha512-AgzlIS/S6U/iwCMMaDKNYWNuLBhVGCjS2Uhscoq963QK4qgNHUTVfMxMXkqYgtDRKr4FZUzh54m2b7nmKiUaxg==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_orders-settings@1.0.75:
-    resolution: {integrity: sha512-3NJ0hN8Nt8uUGtgd7y2Qkq7J98mi7ATOtvFmkT/4xj8ThdLFvx8QLPnvLpujDYUBnwWE3i0u99x5LJsHfc55XQ==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_orders@1.0.190:
-    resolution: {integrity: sha512-tJZQQ3Sy9GhON4ZvdtLXGDrrkHgcf2SKS0KKke6v8RAkHtnDRK5A/Mhzo0WLEM+mMPsbG+GNkVXuct9JiRh6PQ==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_payment-settings@1.0.110:
-    resolution: {integrity: sha512-3i7TuqoNchACqdmZRoQRt1q7zAP8IDSmiuiLfwJXw9ZYdBmw4byv0/R94OIU7Fra0wkBySXMsBtVM8ylTQxewg==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_pickup-locations@1.0.38:
-    resolution: {integrity: sha512-3U7tz4nMm+1JXIw1Jlevlo4/pHeshT/zK92Hms/nJEuZOyTNElmQ6PWpipa5fugQ4IYWJq8eP213HBI6zcqKow==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_recommendations-provider@1.0.31:
-    resolution: {integrity: sha512-zaMKIb36suuLuj+Je0L+IisOckOTB3WRwGvktkjN8IbVpBw4IoEOyOL4FMuloO3XVuF/wojzvha4pNjAWYAyPA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_recommendations@1.0.72:
-    resolution: {integrity: sha512-Mk8mgJNAapzH9OHk5e2QE+FkZFw9YdCusgRL24BpboNiuKt27htueOdYKF8rxytEKygqqFh7tGC/aconsEtmlg==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_shipping-options@1.0.36:
-    resolution: {integrity: sha512-VRez+WlJRdD59WwBFj/jY+Wt/oQXl76PNcmuyaTfw4Tz/a+IVDbgQBEEbDoRjpNuWWlciPKthJ6Al4mbmHMA7g==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_shipping-rates@1.0.75:
-    resolution: {integrity: sha512-Jh4g/HL07cQr0RHjG1uVIKbj3AtgAjDLO28r6G0PBNhUk3u46FnR0FABcK/VeV6+yswmD2wqvXONwPte42I3Kw==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_shippo-configurations@1.0.44:
-    resolution: {integrity: sha512-OrljSuFx5sODd4mR4d21gFEI8tn5BfJrCqCgxyMha8Ok5LWT3D+/J+UfTVhwGA5QcsOoalsZORcOKhNolx5i5A==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_subscription-contracts@1.0.38:
-    resolution: {integrity: sha512-Emnrl0Dpvg9HtFOGLb+bhJqBG+L2Z/+qhLD7mpaKeksnzMhTDdpOvBOYbx/0Y5YNj4IrWxgAJLtDTeR35apqyw==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_tip-settings@1.0.24:
-    resolution: {integrity: sha512-qX8otwDBjg6pEE78rLngm5u8Yhdv8G0YzhQ3CiwC7AxjytH6wV1608z7mRZIwoR8gOiHTbN4kfPZqpavw/GIQA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_tippable-staff@1.0.24:
-    resolution: {integrity: sha512-VzeaalTMMRmnKOkHD33nSpJm9uxxqc13UQBQtjQ2mJ69H46gjlXj/rtwu+GCa/rhgBI5aaXa7hDltwVyGghh7Q==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_tips@1.0.28:
-    resolution: {integrity: sha512-S7u6+zTJ1CWLeLqjZgWVeSj6m2e6WVT8lywJvMSKw/4oL/yihZvDpyh9IKwOxRd2u7wly/Bhu38IRAIDfama/A==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_totals-calculator@1.0.48:
-    resolution: {integrity: sha512-OFnitK6u494DUyc6UU/VyzOE3aJ2Qqn8ZYjZ87oWtZLEduGRzbacM7+NiYCbiNadh79jgqbutlXi+xb0YR7eYA==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/ecom_validations@1.0.67:
-    resolution: {integrity: sha512-Uqila/4+5HtBVr5s+jL1pkEqYCjHKLRN8bgDJryJBwUrKAb2efxGBlD6tctX7XKxJIZckYYd2qZX/BdtC/5LvQ==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/filter-builder@1.0.102:
-    resolution: {integrity: sha512-Qe+bTJpeQyarRdZ5FbA4ERU5u3SF//nE/h21yXkeV+p9fPPhNNYGTrt9ijR0YRXdG7s15yURBYcjyEz3j2NUHA==}
+  /@wix/filter-builder@1.0.106:
+    resolution: {integrity: sha512-BqiQboudYKtWLGvGv0kZEJbtHSZeQvs73vF99M/wiDzu8FfVKi3FYdlrQobne2i+vKIsKvteA9QqaTmxGFjlkw==}
     dependencies:
       '@babel/runtime': 7.26.9
       kind-of: 5.1.0
       tslib: 2.8.1
     dev: false
 
-  /@wix/identity@1.0.121:
-    resolution: {integrity: sha512-K7BVwfE/2VanfZwh1dA0Q+9IEKEK8EIRW+/qWbI+sAcmktr88uxsJ5uzhBRrXwUEpga9PWcvyh1dhseZAMWNzA==}
+  /@wix/identity@1.0.122:
+    resolution: {integrity: sha512-H5tJwc9kHMBdyLVstd9WQGfCcWwlLkqlyXho5Z3vj3dhxRpMdRaI+T72dQqiKWjLyUn0ytBjz23EvQGN6jPj8Q==}
     dependencies:
-      '@wix/identity_authentication': 1.0.38
-      '@wix/identity_oauth': 1.0.22
-      '@wix/identity_recovery': 1.0.28
-      '@wix/identity_verification': 1.0.25
+      '@wix/identity_authentication': 1.0.39
+      '@wix/identity_oauth': 1.0.23
+      '@wix/identity_recovery': 1.0.29
+      '@wix/identity_verification': 1.0.26
     dev: false
 
-  /@wix/identity_authentication@1.0.38:
-    resolution: {integrity: sha512-KPDKiaWZ3nbD2ZPqcph31CvEBtZojg9n61LxLIjCN1kS6Erz+EPtX9qOnD/DGHiyUOiNzocr+LeF+kOySIZ3lg==}
-    dependencies:
-      '@wix/sdk-runtime': 0.3.35
-      '@wix/sdk-types': 1.13.3
-    dev: false
-
-  /@wix/identity_oauth@1.0.22:
-    resolution: {integrity: sha512-l+ySnmKbHJlCdODrk8NZ10T4atV9XFxYBVYvtf8PGUVCF3A5wWvm+nr7CgvRAg4NEke9M1WDCMKbgszXWEfVrA==}
+  /@wix/identity_authentication@1.0.39:
+    resolution: {integrity: sha512-tYBPMhL/aT61ACt5Oiq2szgBJrwufRdcb/x+HfYf8gURmfVGg4LSb0mIVRg5CC8pRk6ko4vMIuc65qdBfjO+3A==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/identity_recovery@1.0.28:
-    resolution: {integrity: sha512-IAGV+tPrP1ZmZvKcoa20Ug9hyPZ/+AiDMSpddZ/MUel7MqLU7hXxmzmTd6yJZpczFqtuvtg/EWt7+v85HNTSKw==}
+  /@wix/identity_oauth@1.0.23:
+    resolution: {integrity: sha512-xz4q66dwVct5Jrwy2Ov3YBCwDv5rnizN7eYcbBlP0w02tHH3w8WoTcwor1hXsv6X5gOwWkhGadKEkNtz9z3BnQ==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/identity_verification@1.0.25:
-    resolution: {integrity: sha512-A4Z+uVUFuzmFb2JCodLmgwY1nu7FCkOWcSvfQ2d0xqO8KJ0zDYLM0/sIZ1+TSVReosFhIxa2WMdf14NZ9zaNOA==}
+  /@wix/identity_recovery@1.0.29:
+    resolution: {integrity: sha512-PrNuR/ROnuNygxpzag2qOkOJJwSTRPguA1hHTOW+vwOyISbpH2CCN+my2Or6Mv/psK4yKU/F59Aw0bzEoY1adA==}
+    dependencies:
+      '@wix/sdk-runtime': 0.3.35
+      '@wix/sdk-types': 1.13.3
+    dev: false
+
+  /@wix/identity_verification@1.0.26:
+    resolution: {integrity: sha512-Xm18esnPNjMS8ck3jmYJgINFcFdFEoSQO15hzxpjsjHuyC+G2n7kjRQjFsx0AmspEFvIZcJkHSe2bW/59yTI0w==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
@@ -1177,14 +1177,14 @@ packages:
     resolution: {integrity: sha512-Nq5Rcd9TMAUZygTuCuwSqhu/MDm8fXFbgDptQTsabDHPPEZyCdmloq70XqrD7TvzGntmh5PR4Xda/M8ITwfszA==}
     dev: false
 
-  /@wix/redirects@1.0.71:
-    resolution: {integrity: sha512-8je8t96SgNGcc0s7XxwoOsG41c/nFCZ5NL+P2nilQQ3U2Dooz28mlnILLdrJJYuUxTCJ08rLl1bj0lE6JuDYeA==}
+  /@wix/redirects@1.0.73:
+    resolution: {integrity: sha512-/5TIXbJQ5SXWZ6kk7PSUlagND81qCw2QUTFKv3VCbeSOOUSAy3Orkwh4UrjEABuih7VUa5h3Ylmva9HD4ZlrAg==}
     dependencies:
-      '@wix/redirects_redirects': 1.0.40
+      '@wix/redirects_redirects': 1.0.42
     dev: false
 
-  /@wix/redirects_redirects@1.0.40:
-    resolution: {integrity: sha512-e2nZwRpD/8p+cE/pllC9pdePxSzGNqBDSu/bLEXtujMEFAXNWssGGto7/mcM0kysMq6a17bXmBlLZTq9AT8UXw==}
+  /@wix/redirects_redirects@1.0.42:
+    resolution: {integrity: sha512-grAki0dfx3uStXsZ7yzxSi9WNR1aqcRIdK73E3xr1hE2XfJBLaKbZVS1dZcYkjv/XDABW62lo+MJF187vXGB5g==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
@@ -1192,13 +1192,6 @@ packages:
 
   /@wix/sdk-context@0.0.1:
     resolution: {integrity: sha512-ziSzrceUC0KFn4IJIVBn1cXXKrZ49ZKG5tQ6fl+TpontyUw5p/Z4VofFUUsnqNl9JYCpYNTzIXpzwok93Vrl8A==}
-    dev: false
-
-  /@wix/sdk-runtime@0.3.32:
-    resolution: {integrity: sha512-a/uJCWDKc/sAaoP60LI5qHDXYM7265QAVByPI+xfJfp8dlkwAZxz1vhfSljdCXyus7Ygkd2kiPvi1zevWfYGDg==}
-    dependencies:
-      '@wix/sdk-context': 0.0.1
-      '@wix/sdk-types': 1.13.3
     dev: false
 
   /@wix/sdk-runtime@0.3.35:
@@ -1214,14 +1207,14 @@ packages:
       '@wix/monitoring-types': 0.5.0
     dev: false
 
-  /@wix/sdk@1.15.10:
-    resolution: {integrity: sha512-gaVgXr9rT/GHo+v8t7N69KTciYiGo5ckQuiNBw66hlPxSR72Msy1NqaryKJ9LfTbFgVJZGJAqwXYB178KgDI/A==}
+  /@wix/sdk@1.15.11:
+    resolution: {integrity: sha512-VDW8tCnEJowxCN/PZNmi/vb9No4KEl/eTxxUeG3CRh/FWW5mqDd1iSaERSr0QtXQ6OyC5LTya+PkQTT6vkWf0Q==}
     dependencies:
-      '@wix/identity': 1.0.121
+      '@wix/identity': 1.0.122
       '@wix/image-kit': 1.102.0
-      '@wix/redirects': 1.0.71
+      '@wix/redirects': 1.0.73
       '@wix/sdk-context': 0.0.1
-      '@wix/sdk-runtime': 0.3.32
+      '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
       jose: 5.10.0
       type-fest: 4.35.0
@@ -1229,23 +1222,23 @@ packages:
       graphql: 16.10.0
     dev: false
 
-  /@wix/stores@1.0.362:
-    resolution: {integrity: sha512-Af+Wweo4VYFIXmn+F2AOol7CwgRtcjaoNkkWXzDGcFWJGiGKgC99N4ofBwJjZCXfvYh04fyjck0w7ad0BJttwA==}
+  /@wix/stores@1.0.363:
+    resolution: {integrity: sha512-e+lco+Zx6orkDh7XdxT73DsHrpIX+xbGMHH+iojx6X45NLbx5dUEBBY+Ag19LosKLZBPjpkMfMxWCnYDubLDKQ==}
     dependencies:
       '@wix/stores_app-extensions': 1.0.3
-      '@wix/stores_brands-v-3': 1.0.47
-      '@wix/stores_catalog-versioning': 1.0.37
-      '@wix/stores_collections': 1.0.69
-      '@wix/stores_customizations-v-3': 1.0.49
-      '@wix/stores_info-sections-v-3': 1.0.49
-      '@wix/stores_inventory': 1.0.87
-      '@wix/stores_inventory-items-v-3': 1.0.62
-      '@wix/stores_products': 1.0.113
-      '@wix/stores_products-v-3': 1.0.113
-      '@wix/stores_ribbons-v-3': 1.0.44
-      '@wix/stores_stores-locations-v-3': 1.0.50
-      '@wix/stores_subscription-options': 1.0.68
-      '@wix/stores_wishlist': 1.0.61
+      '@wix/stores_brands-v-3': 1.0.48
+      '@wix/stores_catalog-versioning': 1.0.38
+      '@wix/stores_collections': 1.0.70
+      '@wix/stores_customizations-v-3': 1.0.50
+      '@wix/stores_info-sections-v-3': 1.0.50
+      '@wix/stores_inventory': 1.0.88
+      '@wix/stores_inventory-items-v-3': 1.0.63
+      '@wix/stores_products': 1.0.114
+      '@wix/stores_products-v-3': 1.0.114
+      '@wix/stores_ribbons-v-3': 1.0.45
+      '@wix/stores_stores-locations-v-3': 1.0.51
+      '@wix/stores_subscription-options': 1.0.69
+      '@wix/stores_wishlist': 1.0.62
     dev: false
 
   /@wix/stores_app-extensions@1.0.3:
@@ -1255,114 +1248,114 @@ packages:
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_brands-v-3@1.0.47:
-    resolution: {integrity: sha512-wmAyzdF1kR1n72eGpcyNINXDLFTA6F0uqMrppMH85rzKdfkifkK4bhJJMjA3SU3qHb4cuPnihLsUj/74dEgN2w==}
+  /@wix/stores_brands-v-3@1.0.48:
+    resolution: {integrity: sha512-E2KglhfkfDZ8cryOy6fpUaMGVhMU0LWR6OvdmHf5hNgEeChoGjsEg0th16Ajy3IuiX2dh56EXm2ghrFVEzi+oQ==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_catalog-versioning@1.0.37:
-    resolution: {integrity: sha512-qG3mx54/LxOuoEx0g3L/Y65BzUhFY1rFLv+XwEUKHkEDVdui2eWQ9tK4GCoXqdZXwPZB+VlPsn0jZ7J7yNALdw==}
+  /@wix/stores_catalog-versioning@1.0.38:
+    resolution: {integrity: sha512-BpnB2Xxqg3v1jNeeTqU/Gj8qHgqEodgWhJQLZ6U7wSqm+dKK1AsEIGHTKy//pSKWtmQjKFRh/1GDZauSfYgpcg==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_collections@1.0.69:
-    resolution: {integrity: sha512-KplGf8fAO6qW3EHH/Ja7PVq8lKbinD7TmrYDu3IqKZQVd1Fa98O+FsagxKevUZBB5kCccM4qbdArzPGKFe7+rg==}
+  /@wix/stores_collections@1.0.70:
+    resolution: {integrity: sha512-MaMHFd0dO/BFoR7CGX9rNj/GzeMO/Tg6FJrV6lx3Iukv0rRMourDLK7Ytn8O04g+ccz8+OF9/RrUBtcqgk8R2A==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_customizations-v-3@1.0.49:
-    resolution: {integrity: sha512-Y/qfKBH9zYy8T+wbNPVlWWm7G5RDgMz9ys03P+UhvxUUSXG2I4olISvUTDJcCmWHk2c0QJC4PGbktG9/9K+Q4Q==}
+  /@wix/stores_customizations-v-3@1.0.50:
+    resolution: {integrity: sha512-hwTwlnmLCgy9mffcP1a2rzQPzoSc2pLqPZ7dG9GUae+xUR+nhKg3o8QknEV6QWz6tBDDbjzuR9ijHTuhOOQQ8w==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_info-sections-v-3@1.0.49:
-    resolution: {integrity: sha512-DpRbvMGfJqhIoBVJD+p/ZhBRmLE0gNLRoqA9pB/XRqm3UkznuRxy9Pl5M9cN7ZFT+lGPv5fhLwJjMwsC0p/zxQ==}
+  /@wix/stores_info-sections-v-3@1.0.50:
+    resolution: {integrity: sha512-DYUU9mCb7kENam3krYrQSlpf0QNsBs0kmswFHaEbICecXiPR/lOq2zwc8P3NRr3j/Srt0i4Lv+raiXbk7aCc7A==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_inventory-items-v-3@1.0.62:
-    resolution: {integrity: sha512-tRN1BS0LXFu4TQBWTDIlOb9ceD9UpYjnxVVgQbVLmD6Kj5yYx4mt+Kx0kV+GNjPv+9cIRQ8x0eckTAs2NU/e9A==}
+  /@wix/stores_inventory-items-v-3@1.0.63:
+    resolution: {integrity: sha512-4WgOYUiKKSgIMXeOwQu2o/XhH+HzMwGoKJK4NAI5nQw3/YvkjBPyXOVYJu+n30HqUjW8bO/zeL1hhgjV8LxbLg==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_inventory@1.0.87:
-    resolution: {integrity: sha512-C8Jr8+n7A9s/4SZUPtKI1huS/CggjgG0Z4Cj8JydIdc/gUdPyhqpy2AlKva8QWZgxhIL9Z/X+8ha72hyfVANxQ==}
+  /@wix/stores_inventory@1.0.88:
+    resolution: {integrity: sha512-X7/RuqH/maIAFShLbVeo5X+ntQqJihZsIKynVSdtVr6ZJEny+raZcj7+Xx0HqlrQUyqyX0/6Yrl3Ioxcq4TK9g==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_products-v-3@1.0.113:
-    resolution: {integrity: sha512-rqic30l3HEB7qT1IK1ee2TibSg39fryLnQCBl80SHiKZv8k7NsLKE/OkLy2k+T+N4MlPwknQ0GA8HxbZLtzAJw==}
+  /@wix/stores_products-v-3@1.0.114:
+    resolution: {integrity: sha512-6K+o49xaASelX8wGJsFsgO2KbMGJEWdXf9sTDX5Ly7lJ2DQ0+BkrVAJe6TBEG5h/+jNdaJy/lgnAb/mtjeyzvg==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_products@1.0.113:
-    resolution: {integrity: sha512-xhaFV5fWloizLhP1BQOAol4Lv7Hnpr0jjRzNCpVYE8nuEiKQhjG574JgyiajQA0/bCSXXEHIkPV6I2DDIgh1/A==}
+  /@wix/stores_products@1.0.114:
+    resolution: {integrity: sha512-r3SjFzwxNCSlPvZgS2a3nBe2IHXNV9gN1xD91iBGh2CZKOTr7oI+FaRacjxxB3Midbs7BYrv/Dbkj4EACMzx1w==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_ribbons-v-3@1.0.44:
-    resolution: {integrity: sha512-2OuF7XJysLCm812U3bllSg5x6glpDMOkW0sOLqQrPpJAL4TqJlaI3vLq11o8BWvd4U6k9V/LRuU6AlbnqoM3Gg==}
+  /@wix/stores_ribbons-v-3@1.0.45:
+    resolution: {integrity: sha512-+DoeO5jOoxstUmEa6ISdHiZLROz4h8sSnmA8/qB/XjXh4wsJEoJ+zNTt+H5KFikbDiQGOM6bDtS3kCFkXRax8A==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_stores-locations-v-3@1.0.50:
-    resolution: {integrity: sha512-DUB7n6++6mh49GMi5XukL/NeG9YR5Lja64CmX8iC8j6Kq1+g2Sk0GEEwoQMLIhGW3HQZo4GOf+luz73Vfvldnw==}
+  /@wix/stores_stores-locations-v-3@1.0.51:
+    resolution: {integrity: sha512-BS5/yJndTOdxa0Z82VqvQMXZMISrxNyI2Xc2RZGZBbtG+JTlTFbmwAXRqZ0kZtosRt0IbipKTbU6FNUiysKuAA==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_subscription-options@1.0.68:
-    resolution: {integrity: sha512-gvNlPFWxBYh3Xv6khucaGm+y72/Tr/2v5Pth4FNQFmjMnwjjgJmra94bETbpNcPAU8UV3//RthaNMUUQTK6IsA==}
+  /@wix/stores_subscription-options@1.0.69:
+    resolution: {integrity: sha512-pyou1QE22AhZJnnQutmAoG1QkWvsfv34QyLmESagBrmvwIvT9WgyVhXKOrh47iO3WajKpZTJB3X0iqMKMJ4LXA==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/stores_wishlist@1.0.61:
-    resolution: {integrity: sha512-GJ+S+4k5duMQbxofMrh7dKAnBr/rSWsolyUlIXW+Uky+vKMMYs3amvGSbb7RYymUUIg3wyx/dIDBXH/QH2vFmA==}
+  /@wix/stores_wishlist@1.0.62:
+    resolution: {integrity: sha512-5+r9b2L+PNAVOC8GVOrzwIIc8793EMBep19g2g8TDdmQi3n4EsaxYoS2JXev8my2V7UGUaHTksjeSA9MF+43fA==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
     dev: false
 
-  /@wix/wix-data-items-common@1.0.93:
-    resolution: {integrity: sha512-NITWj2FrLyFu8YG6wS0CX+EQYbqSDD0nn9UiiXr4p05jLFlXRwNRex/9ykldFxsFk7IZsPHxQzKhAf7PugbE+Q==}
+  /@wix/wix-data-items-common@1.0.97:
+    resolution: {integrity: sha512-rqeD5CynRIDh2RYSn1lrKNKYxG03SUKZB/IrcAk2PSmkWEWK4R1OOjdQVnclVSlLb43UG8D3qqW7dOkRkQE42g==}
     dependencies:
       '@babel/runtime': 7.26.9
       '@types/kind-of': 6.0.3
       '@types/safe-json-stringify': 1.1.5
-      '@wix/filter-builder': 1.0.102
+      '@wix/filter-builder': 1.0.106
       kind-of: 6.0.3
       safe-json-stringify: 1.2.0
     dev: false
 
-  /@wix/wix-data-items-sdk@1.0.261:
-    resolution: {integrity: sha512-RpS0QsU2SSodDMBPmOH02+oyCO2ezYi+AqAFJ8TPtPeckGmudkvsOwtTj/K+/MXFv7BcdK0dQHeX2W4hn2lhQg==}
+  /@wix/wix-data-items-sdk@1.0.265:
+    resolution: {integrity: sha512-P/690AN5NfTOmhHqQW+iGcrdBLWblqkM7hzigRlz9ej8c4NkXcFhHT7l1i8LW7q7BOCGq2pY0mjAj40fr53NRQ==}
     dependencies:
       '@wix/sdk-runtime': 0.3.35
       '@wix/sdk-types': 1.13.3
-      '@wix/wix-data-items-common': 1.0.93
+      '@wix/wix-data-items-common': 1.0.97
     dev: false
 
   /busboy@1.6.0:
@@ -1450,12 +1443,12 @@ packages:
       tapable: 2.2.1
     dev: true
 
-  /geist@1.3.1(next@15.2.0-canary.47):
+  /geist@1.3.1(next@15.2.0-canary.67):
     resolution: {integrity: sha512-Q4gC1pBVPN+D579pBaz0TRRnGA4p9UK6elDY/xizXdFk/g4EKR5g0I+4p/Kj6gM0SajDBZ/0FvDV9ey9ud7BWw==}
     peerDependencies:
       next: '>=13.2.0'
     dependencies:
-      next: 15.2.0-canary.47(react-dom@19.0.0)(react@19.0.0)
+      next: 15.2.0-canary.67(react-dom@19.0.0)(react@19.0.0)
     dev: false
 
   /graceful-fs@4.2.11:
@@ -1619,8 +1612,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  /next@15.2.0-canary.47(react-dom@19.0.0)(react@19.0.0):
-    resolution: {integrity: sha512-cPWsJtvigXXoN6cCME8vaxOaT4Z7NndNz5pw9BkYqK8UH14oou9061cGXBM/6tJ1WzID5fQ6Ssp6vYg2kuCWZw==}
+  /next@15.2.0-canary.67(react-dom@19.0.0)(react@19.0.0):
+    resolution: {integrity: sha512-hKZjcmngKiY/HzHXNN0SGXR9Xio6pirraWu8GqRD24pMiGueY0ykxTbOp0SrqgHDsgWGTOxy3hXCriGiyyVb8w==}
     engines: {node: ^18.18.0 || ^19.8.0 || >= 20.0.0}
     hasBin: true
     peerDependencies:
@@ -1640,7 +1633,7 @@ packages:
       sass:
         optional: true
     dependencies:
-      '@next/env': 15.2.0-canary.47
+      '@next/env': 15.2.0-canary.67
       '@swc/counter': 0.1.3
       '@swc/helpers': 0.5.15
       busboy: 1.6.0
@@ -1650,14 +1643,14 @@ packages:
       react-dom: 19.0.0(react@19.0.0)
       styled-jsx: 5.1.6(react@19.0.0)
     optionalDependencies:
-      '@next/swc-darwin-arm64': 15.2.0-canary.47
-      '@next/swc-darwin-x64': 15.2.0-canary.47
-      '@next/swc-linux-arm64-gnu': 15.2.0-canary.47
-      '@next/swc-linux-arm64-musl': 15.2.0-canary.47
-      '@next/swc-linux-x64-gnu': 15.2.0-canary.47
-      '@next/swc-linux-x64-musl': 15.2.0-canary.47
-      '@next/swc-win32-arm64-msvc': 15.2.0-canary.47
-      '@next/swc-win32-x64-msvc': 15.2.0-canary.47
+      '@next/swc-darwin-arm64': 15.2.0-canary.67
+      '@next/swc-darwin-x64': 15.2.0-canary.67
+      '@next/swc-linux-arm64-gnu': 15.2.0-canary.67
+      '@next/swc-linux-arm64-musl': 15.2.0-canary.67
+      '@next/swc-linux-x64-gnu': 15.2.0-canary.67
+      '@next/swc-linux-x64-musl': 15.2.0-canary.67
+      '@next/swc-win32-arm64-msvc': 15.2.0-canary.67
+      '@next/swc-win32-x64-msvc': 15.2.0-canary.67
       sharp: 0.33.5
     transitivePeerDependencies:
       - '@babel/core'
@@ -1693,7 +1686,7 @@ packages:
       source-map-js: 1.2.1
     dev: true
 
-  /prettier-plugin-tailwindcss@0.6.11(prettier@3.4.2):
+  /prettier-plugin-tailwindcss@0.6.11(prettier@3.5.1):
     resolution: {integrity: sha512-YxaYSIvZPAqhrrEpRtonnrXdghZg1irNg4qrjboCXrpybLWVs55cW2N3juhspVJiO0JBvYJT8SYsJpc8OQSnsA==}
     engines: {node: '>=14.21.3'}
     peerDependencies:
@@ -1748,11 +1741,11 @@ packages:
       prettier-plugin-svelte:
         optional: true
     dependencies:
-      prettier: 3.4.2
+      prettier: 3.5.1
     dev: true
 
-  /prettier@3.4.2:
-    resolution: {integrity: sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ==}
+  /prettier@3.5.1:
+    resolution: {integrity: sha512-hPpFQvHwL3Qv5AdRvBFMhnKo4tYxp0ReXiPn2bxkiohEX6mBeBwEpBSQTkD458RaaDKQMYSp4hX4UtfUTA5wDw==}
     engines: {node: '>=14'}
     hasBin: true
     dev: true
@@ -1830,8 +1823,8 @@ packages:
     dev: false
     optional: true
 
-  /sonner@1.7.4(react-dom@19.0.0)(react@19.0.0):
-    resolution: {integrity: sha512-DIS8z4PfJRbIyfVFDVnK9rO3eYDtse4Omcm6bt0oEr5/jtLgysmjuBl1frJ9E/EQZrFmKx2A8m/s5s9CRXIzhw==}
+  /sonner@2.0.1(react-dom@19.0.0)(react@19.0.0):
+    resolution: {integrity: sha512-FRBphaehZ5tLdLcQ8g2WOIRE+Y7BCfWi5Zyd8bCvBjiW8TxxAyoWZIxS661Yz6TGPqFQ4VLzOF89WEYhfynSFQ==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
@@ -1870,8 +1863,8 @@ packages:
     resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
     dev: false
 
-  /tailwindcss@4.0.7:
-    resolution: {integrity: sha512-yH5bPPyapavo7L+547h3c4jcBXcrKwybQRjwdEIVAd9iXRvy/3T1CC6XSQEgZtRySjKfqvo3Cc0ZF1DTheuIdA==}
+  /tailwindcss@4.0.8:
+    resolution: {integrity: sha512-Me7N5CKR+D2A1xdWA5t5+kjjT7bwnxZOE6/yDI/ixJdJokszsn2n++mdU5yJwrsTpqFX2B9ZNMBJDwcqk9C9lw==}
     dev: true
 
   /tapable@2.2.1:
