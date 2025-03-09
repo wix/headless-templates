@@ -87,24 +87,7 @@ export const headerData = {
     },
     {
       text: 'Blog',
-      links: [
-        {
-          text: 'Blog List',
-          href: getBlogPermalink(),
-        },
-        {
-          text: 'Article',
-          href: getPermalink('now-you-can-blog-from-everywhere', 'post'),
-        },
-        {
-          text: 'Category Page',
-          href: getPermalink('content-creation', 'category'),
-        },
-        {
-          text: 'Tag Page',
-          href: getPermalink('mobile-blogging', 'tag'),
-        },
-      ],
+      href: getBlogPermalink(),
     },
     {
       text: 'Widgets',
