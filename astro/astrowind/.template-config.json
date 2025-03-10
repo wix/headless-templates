@@ -1,3 +1,4 @@
 {
-  "slug": "astrowind"
+  "slug": "astrowind",
+  "dependencies": ["Wix Blog", "Wix Pricing Plans"]
 }
