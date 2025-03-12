@@ -16,7 +16,7 @@ There are two ways to experiment with the example site functionality:
 
 ### Code Sandbox
 
-1. Fork the CodeSandbox project by click **Fork** in the top right corner.
+1. Fork the CodeSandbox project by click **Fork** in the top right corner, after signing in.
 2. In [constants/constants.js](./constants/constants.js), replace the existing client ID with your own. You can find
    your client
    ID
