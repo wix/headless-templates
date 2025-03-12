@@ -1,6 +1,6 @@
 # Wix Headless - react-native Example
 
-> Join the [Wix Headless community on Discord](https://discord.gg/yjcKCfad) to get official support, interact with fellow Wix Headless developers and get updates on new releases.
+> Join the [Wix Headless community on Discord](https://discord.gg/47gUT9KabP) to get official support, interact with fellow Wix Headless developers and get updates on new releases.
 
 This is an example mobile app using Wix Headless and Wix's business solutions APIs. It showcases the ability to build a secure and flexible native application using react-native.
 
@@ -42,4 +42,4 @@ These are the currently planned features and guides for this example application
   - [X] Order screen
   - [X] handle cart not found error
 
-Join in the conversation in our [discord channel](https://discord.com/channels/773211030314418196/1090595348067655813) to provide feedback, ask questions and request more features for the example application.
+Join in the conversation in our [discord channel](https://discord.gg/47gUT9KabP) to provide feedback, ask questions and request more features for the example application.
