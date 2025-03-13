@@ -1,5 +1,7 @@
 # Wix Headless Examples
 
+> Join the [Wix Headless community on Discord](https://discord.com/invite/n6TBrSnYTp) to get official support, interact with fellow Wix Headless developers and get updates on new releases.
+
 This [Next.js](https://nextjs.org/) project provides a minimal example site to demonstrate basic usage of various Wix
 Headless APIs. The implementation focuses on simplicity and readability, rather than feature richness, performance, or
 completeness. This repository can be used as a quick reference for bootstrapping a Wix Headless application.
