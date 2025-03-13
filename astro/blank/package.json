@@ -1,0 +1,20 @@
+{
+  "name": "blank",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "deploy:prod": "wix edge deploy --prod",
+    "deploy:preview": "wix edge deploy"
+  },
+  "dependencies": {
+    "astro": "^5.4.3",
+    "@wix/astro": "^0.2.9"
+  },
+  "devDependencies": {
+    "@wix/cli-edge": "^1.1.77"
+  }
+}
