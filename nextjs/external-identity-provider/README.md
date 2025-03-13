@@ -1,5 +1,7 @@
 # Wix Authentication with External Identity Provider (Github OAuth)
 
+> Join the [Wix Headless community on Discord](https://discord.gg/47gUT9KabP) to get official support, interact with fellow Wix Headless developers and get updates on new releases.
+
 This is a sample project that demonstrates how to authenticate users with Wix using an external identity provider (Github OAuth). 
 
 ## When is this useful?
