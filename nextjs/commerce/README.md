@@ -2,6 +2,8 @@
 
 # Next.js Commerce with Wix Stores
 
+> Join the [Wix Headless community on Discord](https://discord.gg/47gUT9KabP) to get official support, interact with fellow Wix Headless developers and get updates on new releases.
+
 A high-performance, server-rendered Next.js App Router ecommerce application.
 
 This template uses React Server Components, Server Actions, `Suspense`, `useOptimistic`, and more.
