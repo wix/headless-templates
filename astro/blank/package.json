@@ -14,14 +14,9 @@
     "@tailwindcss/vite": "^4.0.13",
     "@wix/astro": "^0.2.9",
     "astro": "^5.4.3",
-    "tailwindcss": "^4.0.13",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "tailwindcss": "^4.0.13"
   },
   "devDependencies": {
-    "@astrojs/react": "^4.2.1",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
     "@tailwindcss/vite": "^4.0.13",
     "@wix/cli-edge": "^1.1.77",
     "tailwindcss": "^4.0.13"
