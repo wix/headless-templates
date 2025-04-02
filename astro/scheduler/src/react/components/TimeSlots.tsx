@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import { Clock } from "lucide-react";
 import AnimatedContainer from "./shared/AnimatedContainer";
 
@@ -18,7 +17,7 @@ const generateTimeSlots = (date: Date) => {
   const slots = [];
   const isToday = new Date().toDateString() === date.toDateString();
   const currentHour = new Date().getHours();
-  
+
   // Simulate some slots being unavailable randomly
   const unavailableSlots = new Set([
     Math.floor(Math.random() * 8) + 9,
@@ -28,15 +27,15 @@ const generateTimeSlots = (date: Date) => {
   for (let hour = 9; hour < 17; hour++) {
     // Skip times in the past if it's today
     if (isToday && hour <= currentHour) continue;
-    
+
     const isAvailable = !unavailableSlots.has(hour);
-    
+
     slots.push({
       time: `${hour}:00`,
       display: format(new Date().setHours(hour, 0, 0, 0), "h:mm a"),
       available: isAvailable,
     });
-    
+
     // Add 30-min slot if we're not at the end of the business day
     if (hour < 16) {
       const halfHourAvailable = !unavailableSlots.has(hour + 0.5);
@@ -47,7 +46,7 @@ const generateTimeSlots = (date: Date) => {
       });
     }
   }
-  
+
   return slots;
 };
 
@@ -57,8 +56,10 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
   className,
 }) => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [timeSlots, setTimeSlots] = useState<Array<{time: string, display: string, available: boolean}>>([]);
-  
+  const [timeSlots, setTimeSlots] = useState<
+    Array<{ time: string; display: string; available: boolean }>
+  >([]);
+
   useEffect(() => {
     if (selectedDate) {
       setTimeSlots(generateTimeSlots(selectedDate));
@@ -88,7 +89,7 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
         <h3 className="text-base font-medium mb-4">
           Available Times for {format(selectedDate, "MMMM d, yyyy")}
         </h3>
-        
+
         {timeSlots.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">
             No available slots for this date
@@ -96,10 +97,17 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {timeSlots.map((slot, index) => (
-              <AnimatedContainer 
-                key={slot.time} 
-                animation="scale-in" 
-                delay={(index % 5 * 100).toString() as "100" | "200" | "300" | "400" | "500"}
+              <AnimatedContainer
+                key={slot.time}
+                animation="scale-in"
+                delay={
+                  ((index % 5) * 100).toString() as
+                    | "100"
+                    | "200"
+                    | "300"
+                    | "400"
+                    | "500"
+                }
               >
                 <Button
                   variant={slot.time === selectedTime ? "default" : "outline"}

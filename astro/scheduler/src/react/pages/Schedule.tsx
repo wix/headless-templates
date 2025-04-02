@@ -2,14 +2,14 @@
 import React, { useState } from "react";
 import { ArrowLeftIcon } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import Navbar from "@/components/Navbar";
-import DatePicker from "@/components/DatePicker";
-import TimeSlots from "@/components/TimeSlots";
-import BookingForm from "@/components/BookingForm";
-import AnimatedContainer from "@/components/shared/AnimatedContainer";
-import Logo from "@/components/Logo";
-import { useBrandConfig } from "@/lib/brandConfig";
+import { Button } from "../components/ui/button";
+import Navbar from "../components/Navbar";
+import DatePicker from "../components/DatePicker";
+import TimeSlots from "../components/TimeSlots";
+import BookingForm from "../components/BookingForm";
+import AnimatedContainer from "../components/shared/AnimatedContainer";
+import Logo from "../components/Logo";
+import { useBrandConfig } from "../lib/brandConfig";
 
 const Schedule = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);

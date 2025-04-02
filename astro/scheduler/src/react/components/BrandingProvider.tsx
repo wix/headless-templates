@@ -1,19 +1,22 @@
-
 import React, { useState, useEffect } from "react";
-import { BrandConfigContext, BrandConfig, defaultBrandConfig } from "@/lib/brandConfig";
+import {
+  BrandConfigContext,
+  BrandConfig,
+  defaultBrandConfig,
+} from "../lib/brandConfig";
 
 interface BrandingProviderProps {
   children: React.ReactNode;
   initialConfig?: Partial<BrandConfig>;
 }
 
-const BrandingProvider: React.FC<BrandingProviderProps> = ({ 
-  children, 
-  initialConfig 
+const BrandingProvider: React.FC<BrandingProviderProps> = ({
+  children,
+  initialConfig,
 }) => {
   const [brandConfig, setBrandConfig] = useState<BrandConfig>({
     ...defaultBrandConfig,
-    ...initialConfig
+    ...initialConfig,
   });
 
   // Apply CSS variables for colors

@@ -2,9 +2,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRightIcon, CalendarClock, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Navbar from "@/components/Navbar";
-import AnimatedContainer from "@/components/shared/AnimatedContainer";
+import { Button } from "../components/ui/button";
+import Navbar from "../components/Navbar";
+import AnimatedContainer from "../components/shared/AnimatedContainer";
 
 const features = [
   {

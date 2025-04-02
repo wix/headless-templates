@@ -1,12 +1,11 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   Form,
   FormControl,
@@ -14,11 +13,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from "../components/ui/form";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
 import { CalendarClock } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "../hooks/use-toast";
 import AnimatedContainer from "./shared/AnimatedContainer";
 
 interface BookingFormProps {
@@ -66,7 +65,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     }
 
     setIsSubmitting(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       // Store booking data in session storage (in a real app, this would be sent to a server)
@@ -77,9 +76,9 @@ const BookingForm: React.FC<BookingFormProps> = ({
         displayDate: format(selectedDate, "MMMM d, yyyy"),
         displayTime: selectedTime,
       };
-      
+
       sessionStorage.setItem("bookingData", JSON.stringify(bookingData));
-      
+
       // Navigate to confirmation page
       navigate("/confirmation");
       setIsSubmitting(false);

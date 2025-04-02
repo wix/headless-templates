@@ -1,12 +1,11 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import AnimatedContainer from "./shared/AnimatedContainer";
 import Logo from "./Logo";
-import { useBrandConfig } from "@/lib/brandConfig";
+import { useBrandConfig } from "../lib/brandConfig";
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -44,12 +43,18 @@ const Navbar: React.FC = () => {
 
         <div className="hidden md:flex items-center space-x-8">
           <AnimatedContainer animation="fade-in" delay="100">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link
+              to="/"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
               Home
             </Link>
           </AnimatedContainer>
           <AnimatedContainer animation="fade-in" delay="200">
-            <Link to="/schedule" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link
+              to="/schedule"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
               Schedule
             </Link>
           </AnimatedContainer>
@@ -59,8 +64,8 @@ const Navbar: React.FC = () => {
             </Button>
           </AnimatedContainer>
           <AnimatedContainer animation="fade-in" delay="400">
-            <Button 
-              asChild 
+            <Button
+              asChild
               className="rounded-full bg-gradient-to-r from-primary via-secondary to-accent hover:shadow-md transition-all"
             >
               <Link to="/schedule">Book Now</Link>
@@ -109,8 +114,8 @@ const Navbar: React.FC = () => {
             >
               Login
             </Link>
-            <Button 
-              asChild 
+            <Button
+              asChild
               className="w-full rounded-full bg-gradient-to-r from-primary via-secondary to-accent"
             >
               <Link to="/schedule" onClick={() => setIsMobileMenuOpen(false)}>
