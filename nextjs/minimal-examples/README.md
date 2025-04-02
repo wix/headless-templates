@@ -18,7 +18,7 @@ There are two ways to experiment with the example site functionality:
 
 ### Code Sandbox
 
-1. Fork the CodeSandbox project by click **Fork** in the top right corner.
+1. Fork the CodeSandbox project by click **Fork** in the top right corner, after signing in.
 2. In [constants/constants.js](./constants/constants.js), replace the existing client ID with your own. You can find
    your client
    ID
@@ -28,7 +28,7 @@ There are two ways to experiment with the example site functionality:
 
 ### Copy the project to your local workspace
 
-1. Clone the [github repo](https://github.com/wix/wix-headless-example/tree/main).
+1. Clone the [github repo](https://github.com/wix/headless-templates/tree/main/nextjs/minimal-examples).
 2. Run the following commands:
 
     ```bash

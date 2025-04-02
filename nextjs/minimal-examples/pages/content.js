@@ -29,6 +29,9 @@ export default function Examples() {
         setIsLoggedIn(myWixClient.auth.loggedIn());
     }, []);
 
+    const appLabel = uninstalledExamples.length === 1 ? "Suggested App" : "Suggested Apps";
+    const hasApps = uninstalledExamples.length > 0;
+
     return (
         <div>
             <div className={styles.grid}>
@@ -55,14 +58,13 @@ export default function Examples() {
                     );
                 })}
             </div>
-            {uninstalledExamples.length > 0 && (
-                <div style={{padding: "24px 0"}}>
-                    <label className={styles.row} style={{paddingLeft: "1.2rem"}}>
-                        Uninstalled apps
-                    </label>
-                    <hr/>
-                </div>
-            )}
+            <div style={{ padding: "24px 0" }}>
+                <label className={styles.row} style={{ paddingLeft: "1.2rem" }}>
+                    {appLabel}
+                </label>
+                <hr />
+            </div>
+           )}
             <div className={styles.grid}>
                 {uninstalledExamples.map((example) => {
                     if (installedAppsList.includes(example.data.orderId - 1)) {
