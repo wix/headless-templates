@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   BrandConfigContext,
-  BrandConfig,
+  type BrandConfig,
   defaultBrandConfig,
 } from "../lib/brandConfig";
 
