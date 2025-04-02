@@ -1,0 +1,29 @@
+{
+  "name": "@wix/astro-scheduler-template",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "playwright install && playwright test",
+    "deploy:preview": "wix edge deploy",
+    "deploy:prod": "wix edge deploy --prod --no-prod-confirm"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.2.1",
+    "@playwright/test": "^1.51.1",
+    "@wix/astro": "workspace:*",
+    "astro": "^5.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@wix/cli-edge": "^1.1.74"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
+}
