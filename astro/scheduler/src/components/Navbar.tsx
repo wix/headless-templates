@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { Menu, X } from "lucide-react";
-import { Button } from "../components/ui/button";
+import { Button } from "./ui/button";
 import AnimatedContainer from "./shared/AnimatedContainer";
 import Logo from "./Logo";
 import { useBrandConfig } from "../lib/brandConfig";

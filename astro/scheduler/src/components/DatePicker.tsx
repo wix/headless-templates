@@ -2,8 +2,8 @@ import * as React from "react";
 import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "../lib/utils";
-import { Button } from "../components/ui/button";
-import { Calendar } from "../components/ui/calendar";
+import { Button } from "./ui/button";
+import { Calendar } from "./ui/calendar";
 
 interface DatePickerProps {
   date: Date | undefined;

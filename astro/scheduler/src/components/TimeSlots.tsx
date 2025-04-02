@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "../lib/utils";
 import { format } from "date-fns";
-import { Button } from "../components/ui/button";
+import { Button } from "./ui/button";
 import { Clock } from "lucide-react";
 import AnimatedContainer from "./shared/AnimatedContainer";
 
