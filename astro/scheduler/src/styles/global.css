@@ -1,9 +1,8 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 @layer base {
   :root {
@@ -36,7 +35,7 @@
     --ring: 240 10% 3.9%;
 
     --radius: 0.75rem;
-    
+
     /* Brand colors - will be overridden by BrandingProvider */
     --primary-color: hsl(212, 82%, 45%);
     --secondary-color: hsl(277, 75%, 84%);
@@ -74,7 +73,7 @@
   }
 }
 
-@layer base {
+/* @layer base {
   * {
     @apply border-border;
   }
@@ -82,21 +81,21 @@
     @apply bg-background text-foreground font-inter antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-}
+} */
 
 @layer utilities {
   .glass-panel {
     @apply bg-white/70 backdrop-blur-lg backdrop-filter rounded-2xl border border-white/20 shadow-sm;
   }
-  
+
   .glass-panel-dark {
     @apply bg-black/40 backdrop-blur-lg backdrop-filter rounded-2xl border border-white/10 shadow-md;
   }
-  
+
   .brand-gradient-text {
     @apply bg-gradient-to-r from-[var(--primary-color)] to-[var(--accent-color)] bg-clip-text text-transparent;
   }
-  
+
   .brand-gradient-bg {
     @apply bg-gradient-to-r from-[var(--primary-color)] via-[var(--secondary-color)] to-[var(--accent-color)];
   }
