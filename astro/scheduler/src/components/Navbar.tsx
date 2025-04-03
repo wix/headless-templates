@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
@@ -36,31 +35,31 @@ const Navbar: React.FC = () => {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <AnimatedContainer animation="fade-in">
-          <Link to="/" className="flex items-center space-x-2">
+          <a href="/" className="flex items-center space-x-2">
             <Logo />
-          </Link>
+          </a>
         </AnimatedContainer>
 
         <div className="hidden md:flex items-center space-x-8">
           <AnimatedContainer animation="fade-in" delay="100">
-            <Link
-              to="/"
+            <a
+              href="/"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
               Home
-            </Link>
+            </a>
           </AnimatedContainer>
           <AnimatedContainer animation="fade-in" delay="200">
-            <Link
-              to="/schedule"
+            <a
+              href="/schedule"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
               Schedule
-            </Link>
+            </a>
           </AnimatedContainer>
           <AnimatedContainer animation="fade-in" delay="300">
             <Button asChild variant="ghost" className="text-sm font-medium">
-              <Link to="/">Login</Link>
+              <a href="/">Login</a>
             </Button>
           </AnimatedContainer>
           <AnimatedContainer animation="fade-in" delay="400">
@@ -68,7 +67,7 @@ const Navbar: React.FC = () => {
               asChild
               className="rounded-full bg-gradient-to-r from-primary via-secondary to-accent hover:shadow-md transition-all"
             >
-              <Link to="/schedule">Book Now</Link>
+              <a href="/schedule">Book Now</a>
             </Button>
           </AnimatedContainer>
         </div>
@@ -93,34 +92,34 @@ const Navbar: React.FC = () => {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 top-16 z-40 md:hidden">
           <div className="glass-panel min-h-screen p-4 flex flex-col space-y-4">
-            <Link
-              to="/"
+            <a
+              href="/"
               className="text-base font-medium p-3 hover:bg-accent rounded-md transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Home
-            </Link>
-            <Link
-              to="/schedule"
+            </a>
+            <a
+              href="/schedule"
               className="text-base font-medium p-3 hover:bg-accent rounded-md transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Schedule
-            </Link>
-            <Link
-              to="/"
+            </a>
+            <a
+              href="/"
               className="text-base font-medium p-3 hover:bg-accent rounded-md transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Login
-            </Link>
+            </a>
             <Button
               asChild
               className="w-full rounded-full bg-gradient-to-r from-primary via-secondary to-accent"
             >
-              <Link to="/schedule" onClick={() => setIsMobileMenuOpen(false)}>
+              <a href="/schedule" onClick={() => setIsMobileMenuOpen(false)}>
                 Book Now
-              </Link>
+              </a>
             </Button>
           </div>
         </div>

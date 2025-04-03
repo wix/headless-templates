@@ -1,0 +1,13 @@
+---
+import Layout from "../layouts/Layout.astro";
+import NotFound from "../components/NotFound";
+import "../styles/global.css";
+
+export const getStaticPaths = async () => {
+  return [];
+};
+---
+
+<Layout>
+  <NotFound client:only />
+</Layout>

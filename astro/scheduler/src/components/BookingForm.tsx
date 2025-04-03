@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { cn } from "../lib/utils";
 import { z } from "zod";
@@ -41,7 +40,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
   className,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const form = useForm<BookingFormValues>({
@@ -80,7 +78,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
       sessionStorage.setItem("bookingData", JSON.stringify(bookingData));
 
       // Navigate to confirmation page
-      navigate("/confirmation");
+      window.location.href = "/confirmation";
       setIsSubmitting(false);
     }, 1500);
   };

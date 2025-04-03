@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { ArrowRightIcon, CalendarClock, CheckCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import Navbar from "./Navbar";
@@ -55,7 +54,7 @@ const Index = () => {
                     size="lg"
                     className="rounded-lg px-6 font-medium"
                   >
-                    <Link to="/schedule">Schedule Now</Link>
+                    <a href="/schedule">Schedule Now</a>
                   </Button>
                   <Button
                     variant="outline"
@@ -215,10 +214,10 @@ const Index = () => {
                   size="lg"
                   className="mt-8 rounded-lg px-8 font-medium"
                 >
-                  <Link to="/schedule" className="flex items-center">
+                  <a href="/schedule" className="flex items-center">
                     Get Started
                     <ArrowRightIcon className="ml-2 h-5 w-5" />
-                  </Link>
+                  </a>
                 </Button>
               </AnimatedContainer>
             </div>

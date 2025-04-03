@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { CheckCircle, Calendar, ArrowLeftIcon } from "lucide-react";
 import { Button } from "./ui/button";
-import { Link } from "react-router-dom";
 import Navbar from "./Navbar";
 import AnimatedContainer from "./shared/AnimatedContainer";
 
@@ -19,7 +17,6 @@ interface BookingData {
 
 const Confirmation = () => {
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Retrieve booking data from sessionStorage
@@ -27,12 +24,12 @@ const Confirmation = () => {
 
     if (!data) {
       // Redirect if no booking data is found
-      navigate("/schedule");
+      window.location.href = "/schedule";
       return;
     }
 
     setBookingData(JSON.parse(data));
-  }, [navigate]);
+  }, []);
 
   if (!bookingData) {
     return null; // Redirecting or loading
@@ -45,10 +42,10 @@ const Confirmation = () => {
       <div className="max-w-3xl mx-auto pt-32 pb-16 px-4">
         <AnimatedContainer>
           <Button variant="ghost" asChild className="mb-6">
-            <Link to="/" className="flex items-center space-x-2">
+            <a href="/" className="flex items-center space-x-2">
               <ArrowLeftIcon className="h-4 w-4" />
               <span>Back to Home</span>
-            </Link>
+            </a>
           </Button>
         </AnimatedContainer>
 
@@ -111,10 +108,10 @@ const Confirmation = () => {
           <AnimatedContainer animation="fade-up" delay="300">
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild variant="outline" className="rounded-lg">
-                <Link to="/">Return to Home</Link>
+                <a href="/">Return to Home</a>
               </Button>
               <Button asChild className="rounded-lg">
-                <Link to="/schedule">Book Another Appointment</Link>
+                <a href="/schedule">Book Another Appointment</a>
               </Button>
             </div>
           </AnimatedContainer>

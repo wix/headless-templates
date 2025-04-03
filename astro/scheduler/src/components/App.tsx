@@ -2,12 +2,8 @@ import { Toaster } from "./ui/toaster";
 import { Toaster as Sonner } from "./ui/sonner";
 import { TooltipProvider } from "./ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./Index";
-import Schedule from "./Schedule";
-import Confirmation from "./Confirmation";
-import NotFound from "./NotFound";
 import BrandingProvider from "./BrandingProvider";
+import type { ReactNode } from "react";
 
 const queryClient = new QueryClient();
 
@@ -20,21 +16,13 @@ const brandConfig = {
   accentColor: "hsl(22, 90%, 57%)",
 };
 
-const App = () => (
+const App = ({ children }: { children: ReactNode }) => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <BrandingProvider initialConfig={brandConfig}>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/schedule" element={<Schedule />} />
-            <Route path="/confirmation" element={<Confirmation />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        {children}
       </BrandingProvider>
     </TooltipProvider>
   </QueryClientProvider>
