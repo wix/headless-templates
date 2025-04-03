@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle, Calendar, ArrowLeftIcon } from "lucide-react";
-import { Button } from "../components/ui/button";
+import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import AnimatedContainer from "../components/shared/AnimatedContainer";
+import Navbar from "./Navbar";
+import AnimatedContainer from "./shared/AnimatedContainer";
 
 interface BookingData {
   name: string;
