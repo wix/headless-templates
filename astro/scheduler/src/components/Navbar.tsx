@@ -10,6 +10,7 @@ const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { accentColor } = useBrandConfig();
+  
 
   useEffect(() => {
     const handleScroll = () => {

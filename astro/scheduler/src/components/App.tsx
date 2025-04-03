@@ -16,7 +16,7 @@ const brandConfig = {
   accentColor: "hsl(22, 90%, 57%)",
 };
 
-const App = ({ children }: { children: ReactNode }) => (
+const App = ({ children }: { children?: ReactNode }) => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <BrandingProvider initialConfig={brandConfig}>

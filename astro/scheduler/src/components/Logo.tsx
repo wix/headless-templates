@@ -9,6 +9,7 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ size = "md", className }) => {
   const { businessName, logoUrl } = useBrandConfig();
+  console.log({ businessName, logoUrl });
 
   const sizeClasses = {
     sm: "h-6",
