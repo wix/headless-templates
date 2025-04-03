@@ -73,7 +73,7 @@
   }
 }
 
-/* @layer base {
+@layer base {
   * {
     @apply border-border;
   }
@@ -81,7 +81,7 @@
     @apply bg-background text-foreground font-inter antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-} */
+}
 
 @layer utilities {
   .glass-panel {
