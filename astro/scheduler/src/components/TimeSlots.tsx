@@ -4,12 +4,22 @@ import { format } from "date-fns";
 import { Button } from "./ui/button";
 import { Clock } from "lucide-react";
 import AnimatedContainer from "./shared/AnimatedContainer";
+import { Calendar } from "./ui/calendar";
+import { availabilityCalendar, services } from "@wix/bookings";
+import { createClient, OAuthStrategy } from "@wix/sdk";
 
 interface TimeSlotsProps {
   selectedDate: Date | undefined;
   onTimeSelected: (time: string) => void;
   className?: string;
 }
+
+const wixClient = createClient({
+  modules: { services, availabilityCalendar },
+  auth: OAuthStrategy({
+    clientId: "30e9f47f-67ff-46b9-b9f0-bffcf702080d",
+  }),
+});
 
 // In a real app, these would come from an API
 const generateTimeSlots = (date: Date) => {
@@ -62,7 +72,37 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
 
   useEffect(() => {
     if (selectedDate) {
-      setTimeSlots(generateTimeSlots(selectedDate));
+      const fetchAvailability = async () => {
+        const {
+          items: [consultingService],
+        } = await wixClient.services.queryServices().find();
+
+        const today = selectedDate;
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const availability =
+          await wixClient.availabilityCalendar.queryAvailability(
+            {
+              filter: {
+                serviceId: [consultingService._id],
+                startDate: today.toISOString(),
+                endDate: tomorrow.toISOString(),
+              },
+            },
+            { timezone: "UTC" }
+          );
+
+        const timeSlots = availability.availabilityEntries.map((item) => ({
+          time: item.slot?.startDate!,
+          display: format(item.slot?.startDate!, "h:mm a"),
+          available: item.bookable!,
+        }));
+
+        setTimeSlots(timeSlots);
+      };
+
+      fetchAvailability();
       setSelectedTime(null); // Reset selected time when date changes
     }
   }, [selectedDate]);

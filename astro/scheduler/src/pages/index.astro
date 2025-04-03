@@ -1,32 +1,9 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import IndexPage from "../components/Index";
-import { services, availabilityCalendar } from "@wix/bookings";
 
 import "../styles/global.css";
 
-const {
-  items: [consultingService],
-} = await services.queryServices().find();
-
-const today = new Date();
-const tomorrow = new Date(today);
-tomorrow.setDate(tomorrow.getDate() + 1);
-
-const availability = await availabilityCalendar.queryAvailability(
-  {
-    filter: {
-      serviceId: [consultingService._id],
-      startDate: today.toISOString(),
-      endDate: tomorrow.toISOString(),
-    },
-  },
-  { timezone: "UTC" }
-);
-
-console.log({
-  availability,
-});
 ---
 
 <Layout>
