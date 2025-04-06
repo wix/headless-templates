@@ -30,6 +30,9 @@ interface BookingFormProps {
 
 const bookingFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  address: z
+    .string()
+    .min(2, { message: "Address must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   phone: z.string().min(7, { message: "Please enter a valid phone number" }),
   notes: z.string().optional(),
@@ -56,6 +59,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
       name: "",
+      address: "",
       email: "",
       phone: "",
       notes: "",
@@ -81,9 +85,13 @@ const BookingForm: React.FC<BookingFormProps> = ({
         contactDetails: {
           firstName: data.name.split(" ")[0],
           lastName: data.name.split(" ")[1] || "",
+          fullAddress: {
+            addressLine: data.address,
+          },
           email: data.email,
           phone: data.phone,
         },
+        // status: bookings.BookingStatus.CONFIRMED,
       });
 
       const bookingData = {
@@ -178,6 +186,22 @@ const BookingForm: React.FC<BookingFormProps> = ({
                     <FormLabel>Phone</FormLabel>
                     <FormControl>
                       <Input placeholder="Your phone number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </AnimatedContainer>
+
+            <AnimatedContainer animation="fade-up" delay="500">
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your full address" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

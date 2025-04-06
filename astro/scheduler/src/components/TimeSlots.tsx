@@ -117,6 +117,7 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
 
   const handleTimeSelection = (slot: any) => {
     setSelectedSlot(slot);
+    console.log({ slot });
 
     onTimeSelected(slot);
   };
