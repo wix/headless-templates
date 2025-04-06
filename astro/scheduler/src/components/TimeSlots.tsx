@@ -98,7 +98,12 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
 
           const timeSlots = availability.availabilityEntries.map((item) => ({
             time: item.slot?.startDate!,
-            display: format(item.slot?.startDate!, "h:mm a"),
+            display: Intl.DateTimeFormat("en-US", {
+              hour: "numeric",
+              minute: "numeric",
+              hour12: true,
+              timeZone: "UTC",
+            }).format(new Date(item.slot?.startDate!)),
             available: item.bookable!,
             entity: item,
           }));
@@ -117,7 +122,6 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
 
   const handleTimeSelection = (slot: any) => {
     setSelectedSlot(slot);
-    console.log({ slot });
 
     onTimeSelected(slot);
   };
