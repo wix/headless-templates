@@ -65,9 +65,9 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
   onTimeSelected,
   className,
 }) => {
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<any>(null);
   const [timeSlots, setTimeSlots] = useState<
-    Array<{ time: string; display: string; available: boolean }>
+    Array<{ time: string; display: string; available: boolean; entity: any }>
   >([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -100,24 +100,25 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
             time: item.slot?.startDate!,
             display: format(item.slot?.startDate!, "h:mm a"),
             available: item.bookable!,
+            entity: item,
           }));
 
           setTimeSlots(timeSlots);
         } catch (error) {
-          console.error("Error fetching availability:", error);
         } finally {
           setIsLoading(false);
         }
       };
 
       fetchAvailability();
-      setSelectedTime(null); // Reset selected time when date changes
+      setSelectedSlot(null); // Reset selected time when date changes
     }
   }, [selectedDate]);
 
-  const handleTimeSelection = (time: string) => {
-    setSelectedTime(time);
-    onTimeSelected(time);
+  const handleTimeSelection = (slot: any) => {
+    setSelectedSlot(slot);
+
+    onTimeSelected(slot);
   };
 
   if (!selectedDate) {
@@ -195,13 +196,15 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
                 }
               >
                 <Button
-                  variant={slot.time === selectedTime ? "default" : "outline"}
+                  variant={
+                    slot.time === selectedSlot?.time ? "default" : "outline"
+                  }
                   className={cn(
                     "w-full text-sm rounded-lg",
                     !slot.available && "opacity-50 cursor-not-allowed"
                   )}
                   disabled={!slot.available}
-                  onClick={() => handleTimeSelection(slot.time)}
+                  onClick={() => handleTimeSelection(slot)}
                 >
                   {slot.display}
                 </Button>

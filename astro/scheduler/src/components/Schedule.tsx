@@ -12,11 +12,11 @@ import { Button } from "./ui/button";
 
 const Schedule = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
   const { businessName } = useBrandConfig();
 
-  const handleTimeSelected = (time: string) => {
-    setSelectedTime(time);
+  const handleTimeSelected = (slot: any) => {
+    setSelectedSlot(slot);
     // Scroll to the booking form
     setTimeout(() => {
       const bookingForm = document.getElementById("booking-form");
@@ -78,7 +78,7 @@ const Schedule = () => {
             >
               <BookingForm
                 selectedDate={selectedDate}
-                selectedTime={selectedTime}
+                selectedSlot={selectedSlot}
               />
             </AnimatedContainer>
           </div>
