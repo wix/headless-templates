@@ -92,12 +92,12 @@
     @apply bg-black/40 backdrop-blur-lg backdrop-filter rounded-2xl border border-white/10 shadow-md;
   }
 
-  .brand-gradient-text {
-    @apply bg-gradient-to-r from-[var(--primary-color)] to-[var(--accent-color)] bg-clip-text text-transparent;
+  .brand-text {
+    @apply text-primary;
   }
 
-  .brand-gradient-bg {
-    @apply bg-gradient-to-r from-[var(--primary-color)] via-[var(--secondary-color)] to-[var(--accent-color)];
+  .brand-bg {
+    @apply bg-primary;
   }
 }
 
