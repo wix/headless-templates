@@ -1,6 +1,6 @@
-import { format } from 'date-fns';
-import { createWixClient } from './wix-client';
-import { DATE_FORMAT, TIME_FORMAT } from './constants';
+import { format } from "date-fns";
+import { createWixClient } from "./wix-client";
+import { DATE_FORMAT, TIME_FORMAT } from "./constants";
 
 export interface BookingData {
   name: string;
@@ -35,7 +35,7 @@ interface WixRedirectResponse {
   redirectSession?: {
     fullUrl?: string;
     [key: string]: any;
-  }
+  };
   [key: string]: any;
 }
 
@@ -47,34 +47,39 @@ export async function getServices(): Promise<WixService[]> {
     const { items } = await wixClient.services.queryServices().find();
     return items;
   } catch (error) {
-    console.error('Error fetching services:', error);
+    console.error("Error fetching services:", error);
     throw error;
   }
 }
 
-export async function getServiceByType(type: 'free' | 'premium'): Promise<WixService | undefined> {
+export async function getServiceByType(
+  type: "free" | "premium"
+): Promise<WixService | undefined> {
   try {
     const services = await getServices();
-    return type === 'free'
-      ? services.find(s => s.name.toLowerCase().includes('free'))
-      : services.find(s => !s.name.toLowerCase().includes('free'));
+    return type === "free"
+      ? services.find((s) => s.name.toLowerCase().includes("free"))
+      : services.find((s) => !s.name.toLowerCase().includes("free"));
   } catch (error) {
     console.error(`Error finding ${type} service:`, error);
     throw error;
   }
 }
 
-export async function getAvailableSlots(date: Date, serviceType: 'free' | 'premium'): Promise<TimeSlot[]> {
+export async function getAvailableSlots(
+  date: Date,
+  serviceType: "free" | "premium"
+): Promise<TimeSlot[]> {
   try {
     const service = await getServiceByType(serviceType);
-    
+
     if (!service) {
       throw new Error(`No ${serviceType} service found`);
     }
-    
+
     const tomorrow = new Date(date);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
+
     const availability = await wixClient.availabilityCalendar.queryAvailability(
       {
         filter: {
@@ -85,22 +90,24 @@ export async function getAvailableSlots(date: Date, serviceType: 'free' | 'premi
       },
       { timezone: "UTC" }
     );
-    
+
     return availability.availabilityEntries.map((item) => ({
       time: item.slot?.startDate!,
-      display: Intl.DateTimeFormat("en-US", TIME_FORMAT).format(new Date(item.slot?.startDate!)),
+      display: Intl.DateTimeFormat("en-US", TIME_FORMAT).format(
+        new Date(item.slot?.startDate!)
+      ),
       available: item.bookable!,
       entity: item,
     }));
   } catch (error) {
-    console.error('Error fetching available slots:', error);
+    console.error("Error fetching available slots:", error);
     return [];
   }
 }
 
 export async function createBooking(
-  bookingData: BookingData, 
-  selectedSlot: TimeSlot, 
+  bookingData: BookingData,
+  selectedSlot: TimeSlot,
   selectedDate: Date
 ): Promise<WixBookingResponse> {
   try {
@@ -108,8 +115,8 @@ export async function createBooking(
       bookedEntity: selectedSlot.entity,
       totalParticipants: 1,
       contactDetails: {
-        firstName: bookingData.name.split(' ')[0],
-        lastName: bookingData.name.split(' ')[1] || '',
+        firstName: bookingData.name.split(" ")[0],
+        lastName: bookingData.name.split(" ")[1] || "",
         fullAddress: {
           addressLine: bookingData.address,
         },
@@ -117,41 +124,45 @@ export async function createBooking(
         phone: bookingData.phone,
       },
     });
-    
+
     // Prepare data for confirmation page
     const confirmationData = {
       ...bookingData,
-      date: format(selectedDate, 'yyyy-MM-dd'),
+      date: format(selectedDate, "yyyy-MM-dd"),
       time: selectedSlot.time,
       displayDate: format(selectedDate, DATE_FORMAT),
       displayTime: selectedSlot.display,
     };
-    
+
     // Save to session storage
-    sessionStorage.setItem('bookingData', JSON.stringify(confirmationData));
-    
+    sessionStorage.setItem("bookingData", JSON.stringify(confirmationData));
+
     return booking;
   } catch (error) {
-    console.error('Error creating booking:', error);
+    console.error("Error creating booking:", error);
     throw error;
   }
 }
 
-export async function createRedirectSession(slot: any, returnUrl: string): Promise<string | undefined> {
+export async function createRedirectSession(
+  slot: any,
+  returnUrl: string
+): Promise<string | undefined> {
   try {
-    const redirect: WixRedirectResponse = await wixClient.redirects.createRedirectSession({
-      bookingsCheckout: { 
-        slotAvailability: slot, 
-        timezone: "UTC" 
-      },
-      callbacks: { 
-        postFlowUrl: returnUrl
-      },
-    });
-    
+    const redirect: WixRedirectResponse =
+      await wixClient.redirects.createRedirectSession({
+        bookingsCheckout: {
+          slotAvailability: slot,
+          timezone: "UTC",
+        },
+        callbacks: {
+          postFlowUrl: returnUrl,
+        },
+      });
+
     return redirect.redirectSession?.fullUrl;
   } catch (error) {
-    console.error('Error creating redirect session:', error);
+    console.error("Error creating redirect session:", error);
     throw error;
   }
 }
