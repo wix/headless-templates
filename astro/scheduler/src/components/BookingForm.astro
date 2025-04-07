@@ -149,7 +149,7 @@ const { class: className = "" } = Astro.props;
         id: "booking-submit-form",
       });
       const nameField = createFormField(
-        "name",
+        "fullName",
         "Name",
         "text",
         "Your full name",
@@ -289,7 +289,7 @@ const { class: className = "" } = Astro.props;
 
     const form = event.target as HTMLFormElement;
     const formData: BookingData = {
-      name: form.name,
+      name: form.fullName.value,
       email: form.email.value,
       phone: form.phone.value,
       address: form.address.value,

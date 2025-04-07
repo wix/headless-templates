@@ -57,9 +57,10 @@ export async function getServiceByType(
 ): Promise<WixService | undefined> {
   try {
     const services = await getServices();
+
     return type === "free"
-      ? services.find((s) => s.name.toLowerCase().includes("free"))
-      : services.find((s) => !s.name.toLowerCase().includes("free"));
+      ? services.find((s) => s.payment.rateType === "NO_FEE")
+      : services.find((s) => s.payment.rateType === "FIXED");
   } catch (error) {
     console.error(`Error finding ${type} service:`, error);
     throw error;
