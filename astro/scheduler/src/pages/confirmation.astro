@@ -4,9 +4,7 @@ import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import Panel from "../components/Panel.astro";
 import "../styles/global.css";
-
-// Business constants
-const businessName = "Acme Consulting";
+import { BUSINESS_NAME } from "../utils/constants";
 ---
 
 <Layout>
@@ -39,7 +37,7 @@ const businessName = "Acme Consulting";
 
         <div class="animate-fade-up" style="animation-delay: 100ms;">
           <p class="text-muted-foreground mb-8 max-w-xl mx-auto">
-            Your appointment has been successfully scheduled. We've sent a
+            Your appointment has been successfully scheduled with {BUSINESS_NAME}. We've sent a
             confirmation email to <span id="confirmation-email">your email</span>.
           </p>
         </div>

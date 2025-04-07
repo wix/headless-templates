@@ -3,9 +3,9 @@ import Layout from "../layouts/Layout.astro";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import "../styles/global.css";
+import { BUSINESS_NAME } from "../utils/constants";
 
-// Business constants
-const businessName = "Acme Consulting";
+// Features list
 const features = [
   {
     title: "Online Booking",
@@ -40,7 +40,7 @@ const features = [
           </div>
           <div class="animate-fade-up" style="animation-delay: 100ms;">
             <p class="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Book your next appointment with {businessName} in just a few clicks. Simple, fast, and convenient scheduling.
+              Book your next appointment with {BUSINESS_NAME} in just a few clicks. Simple, fast, and convenient scheduling.
             </p>
           </div>
           <div class="animate-fade-up" style="animation-delay: 200ms;">
