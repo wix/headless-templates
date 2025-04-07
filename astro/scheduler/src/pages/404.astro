@@ -1,9 +1,41 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import NotFoundPage from "../components/NotFound";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import Panel from "../components/Panel.astro";
 import "../styles/global.css";
 ---
 
 <Layout>
-  <NotFoundPage client:only />
+  <div class="min-h-screen">
+    <Navbar />
+
+    <div class="max-w-3xl mx-auto pt-32 pb-16 px-4">
+      <Panel class="p-8 md:p-12 text-center">
+        <div class="animate-fade-up">
+          <h1 class="text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            404
+          </h1>
+        </div>
+
+        <div class="animate-fade-up" style="animation-delay: 100ms;">
+          <h2 class="text-2xl font-semibold mb-4">Page Not Found</h2>
+        </div>
+
+        <div class="animate-fade-up" style="animation-delay: 200ms;">
+          <p class="text-muted-foreground mb-8 max-w-xl mx-auto">
+            The page you're looking for doesn't exist or has been moved.
+          </p>
+        </div>
+
+        <div class="animate-fade-up" style="animation-delay: 300ms;">
+          <a href="/" class="inline-block py-3 px-6 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            Go Back Home
+          </a>
+        </div>
+      </Panel>
+    </div>
+
+    <Footer />
+  </div>
 </Layout>

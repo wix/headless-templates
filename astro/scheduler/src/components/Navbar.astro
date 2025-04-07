@@ -1,0 +1,21 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../assets/logo.svg';
+---
+
+<header class="fixed top-0 left-0 w-full backdrop-blur-md bg-white/80 z-50 border-b border-gray-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center">
+        <a href="/" class="flex items-center">
+          <Image src={logo} alt="Logo" height={32} width={32} />
+          <span class="ml-2 text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Scheduler</span>
+        </a>
+      </div>
+      <nav class="flex space-x-4">
+        <a href="/" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors">Home</a>
+        <a href="/schedule" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors">Schedule</a>
+      </nav>
+    </div>
+  </div>
+</header>
