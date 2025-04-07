@@ -3,7 +3,6 @@ import { formatDisplayDate } from '../utils/date-utils';
 import Panel from './ui/Panel.astro';
 import EmptyState from './ui/EmptyState.astro';
 import LoadingSpinner from './ui/LoadingSpinner.astro';
-import Button from './ui/Button.astro';
 
 interface Props {
   class?: string;
@@ -23,7 +22,7 @@ const { class: className = '' } = Astro.props;
 
 <script>
   import { formatDisplayDate } from '../utils/date-utils';
-  import { getAvailableSlots } from '../utils/booking-service';
+  import { getAvailableSlots, TimeSlot } from '../utils/booking-service';
   import { createElement, replaceContent } from '../utils/dom-utils';
   import { 
     onDateSelected,
@@ -32,10 +31,10 @@ const { class: className = '' } = Astro.props;
   } from '../utils/event-utils';
   
   // State
-  let selectedDate = null;
-  let selectedSlot = null;
-  let sessionType = 'free';
-  let timeSlots = [];
+  let selectedDate: Date | null = null;
+  let selectedSlot: TimeSlot | null = null;
+  let sessionType: 'free' | 'premium' = 'free';
+  let timeSlots: TimeSlot[] = [];
   let isLoading = false;
   
   // Get container element
@@ -59,7 +58,7 @@ const { class: className = '' } = Astro.props;
   });
   
   // Fetch available time slots from the service
-  async function fetchTimeSlots() {
+  async function fetchTimeSlots(): Promise<void> {
     if (!selectedDate) return;
     
     isLoading = true;
@@ -77,7 +76,7 @@ const { class: className = '' } = Astro.props;
   }
   
   // Update the time slots UI
-  function updateTimeSlotsUI() {
+  function updateTimeSlotsUI(): void {
     if (!timeSlotsContainer) return;
     
     // Clear container

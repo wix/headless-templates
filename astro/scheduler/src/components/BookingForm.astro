@@ -1,10 +1,6 @@
 ---
-import { formatDisplayDate } from '../utils/date-utils';
 import Panel from './ui/Panel.astro';
-import Button from './ui/Button.astro';
-import Icon from './ui/Icon.astro';
 import EmptyState from './ui/EmptyState.astro';
-import FormField from './ui/FormField.astro';
 
 interface Props {
   class?: string;
@@ -24,7 +20,7 @@ const { class: className = '' } = Astro.props;
 
 <script>
   import { formatDisplayDate } from '../utils/date-utils';
-  import { createBooking, createRedirectSession } from '../utils/booking-service';
+  import { createBooking, createRedirectSession, BookingData, TimeSlot } from '../utils/booking-service';
   import { createElement, replaceContent } from '../utils/dom-utils';
   import { 
     onDateSelected, 
@@ -33,9 +29,9 @@ const { class: className = '' } = Astro.props;
   } from '../utils/event-utils';
   
   // State
-  let selectedDate = null;
-  let selectedSlot = null;
-  let sessionType = 'free';
+  let selectedDate: Date | null = null;
+  let selectedSlot: TimeSlot | null = null;
+  let sessionType: 'free' | 'premium' = 'free';
   
   // Get container element
   const bookingFormContainer = document.getElementById('booking-form-container');
@@ -62,7 +58,7 @@ const { class: className = '' } = Astro.props;
   });
   
   // Update the booking form UI
-  function updateBookingForm() {
+  function updateBookingForm(): void {
     if (!bookingFormContainer) return;
     
     // Clear container
@@ -191,7 +187,13 @@ const { class: className = '' } = Astro.props;
   }
   
   // Helper function to create form fields
-  function createFormField(id, label, type, placeholder, required) {
+  function createFormField(
+    id: string, 
+    label: string, 
+    type: 'text' | 'email' | 'tel' | 'textarea', 
+    placeholder: string, 
+    required: boolean
+  ): HTMLDivElement {
     const fieldWrapper = createElement('div');
     
     const labelElement = createElement('label', {
@@ -234,7 +236,7 @@ const { class: className = '' } = Astro.props;
   }
   
   // Handle booking form submission
-  async function handleBookingSubmit(event) {
+  async function handleBookingSubmit(event: Event): Promise<void> {
     event.preventDefault();
     
     if (!selectedDate || !selectedSlot) {
@@ -243,8 +245,8 @@ const { class: className = '' } = Astro.props;
     }
     
     // Get form data
-    const form = event.target;
-    const formData = {
+    const form = event.target as HTMLFormElement;
+    const formData: BookingData = {
       name: form.name.value,
       email: form.email.value,
       phone: form.phone.value,
@@ -253,7 +255,7 @@ const { class: className = '' } = Astro.props;
     };
     
     // Disable submit button
-    const submitButton = form.querySelector('button[type="submit"]');
+    const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
     if (submitButton) {
       submitButton.disabled = true;
       submitButton.textContent = 'Confirming...';
@@ -278,10 +280,10 @@ const { class: className = '' } = Astro.props;
   }
   
   // Handle checkout redirect for premium sessions
-  async function handleCheckoutRedirect() {
+  async function handleCheckoutRedirect(): Promise<void> {
     if (!selectedSlot) return;
     
-    const button = document.getElementById('checkout-button');
+    const button = document.getElementById('checkout-button') as HTMLButtonElement;
     if (button) {
       button.disabled = true;
       button.textContent = 'Redirecting...';

@@ -2,7 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
-import Panel from "../components/Panel.astro";
+import Panel from "../components/ui/Panel.astro";
 import "../styles/global.css";
 ---
 
@@ -13,7 +13,9 @@ import "../styles/global.css";
     <div class="max-w-3xl mx-auto pt-32 pb-16 px-4">
       <Panel class="p-8 md:p-12 text-center">
         <div class="animate-fade-up">
-          <h1 class="text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1
+            class="text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+          >
             404
           </h1>
         </div>
@@ -29,7 +31,10 @@ import "../styles/global.css";
         </div>
 
         <div class="animate-fade-up" style="animation-delay: 300ms;">
-          <a href="/" class="inline-block py-3 px-6 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+          <a
+            href="/"
+            class="inline-block py-3 px-6 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+          >
             Go Back Home
           </a>
         </div>

@@ -27,7 +27,26 @@ export interface TimeSlot {
   time: string;
   display: string;
   available: boolean;
-  entity: any;
+  entity: any; // Wix-specific slot entity
+}
+
+// Wix API types (simplified)
+interface WixService {
+  _id: string;
+  name: string;
+  [key: string]: any;
+}
+
+interface WixBookingResponse {
+  [key: string]: any;
+}
+
+interface WixRedirectResponse {
+  redirectSession?: {
+    fullUrl?: string;
+    [key: string]: any;
+  }
+  [key: string]: any;
 }
 
 // Create Wix client
@@ -36,7 +55,7 @@ const wixClient = createWixClient();
 /**
  * Get available services from Wix
  */
-export async function getServices() {
+export async function getServices(): Promise<WixService[]> {
   try {
     const { items } = await wixClient.services.queryServices().find();
     return items;
@@ -49,7 +68,7 @@ export async function getServices() {
 /**
  * Find service by type (free or premium)
  */
-export async function getServiceByType(type: 'free' | 'premium') {
+export async function getServiceByType(type: 'free' | 'premium'): Promise<WixService | undefined> {
   try {
     const services = await getServices();
     return type === 'free'
@@ -101,7 +120,11 @@ export async function getAvailableSlots(date: Date, serviceType: 'free' | 'premi
 /**
  * Create a booking
  */
-export async function createBooking(bookingData: BookingData, selectedSlot: TimeSlot, selectedDate: Date) {
+export async function createBooking(
+  bookingData: BookingData, 
+  selectedSlot: TimeSlot, 
+  selectedDate: Date
+): Promise<WixBookingResponse> {
   try {
     const booking = await wixClient.bookings.createBooking({
       bookedEntity: selectedSlot.entity,
@@ -139,9 +162,9 @@ export async function createBooking(bookingData: BookingData, selectedSlot: Time
 /**
  * Create redirect session for premium booking
  */
-export async function createRedirectSession(slot: any, returnUrl: string) {
+export async function createRedirectSession(slot: any, returnUrl: string): Promise<string | undefined> {
   try {
-    const redirect = await wixClient.redirects.createRedirectSession({
+    const redirect: WixRedirectResponse = await wixClient.redirects.createRedirectSession({
       bookingsCheckout: { 
         slotAvailability: slot, 
         timezone: "UTC" 

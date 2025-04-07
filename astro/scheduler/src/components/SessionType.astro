@@ -1,6 +1,5 @@
 ---
 import Panel from './ui/Panel.astro';
-import Button from './ui/Button.astro';
 
 interface Props {
   class?: string;
@@ -45,10 +44,10 @@ const { class: className = '' } = Astro.props;
   const premiumSessionBtn = document.getElementById('premium-session-btn');
   
   // Current session type
-  let currentType = 'free';
+  let currentType: 'free' | 'premium' = 'free';
   
   // Handle session type change
-  function handleSessionTypeChange(type) {
+  function handleSessionTypeChange(type: 'free' | 'premium'): void {
     // Early return if it's the same type
     if (type === currentType) return;
     

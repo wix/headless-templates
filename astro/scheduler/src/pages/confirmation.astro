@@ -4,7 +4,6 @@ import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import Panel from "../components/ui/Panel.astro";
 import BackButton from "../components/ui/BackButton.astro";
-import Button from "../components/ui/Button.astro";
 import Icon from "../components/ui/Icon.astro";
 import "../styles/global.css";
 import { BUSINESS_NAME } from "../utils/constants";
@@ -96,8 +95,10 @@ import { BUSINESS_NAME } from "../utils/constants";
 </Layout>
 
 <script>
+  import { BookingData } from '../utils/booking-service';
+  
   // Retrieve booking data from sessionStorage
-  function getBookingData() {
+  function getBookingData(): BookingData | null {
     const data = sessionStorage.getItem("bookingData");
 
     if (!data) {
@@ -106,28 +107,43 @@ import { BUSINESS_NAME } from "../utils/constants";
       return null;
     }
 
-    return JSON.parse(data);
+    return JSON.parse(data) as BookingData;
   }
 
   // Update confirmation page with booking data
-  function updateConfirmationDetails() {
+  function updateConfirmationDetails(): void {
     const bookingData = getBookingData();
     if (!bookingData) return;
 
     // Update email in header
-    document.getElementById('confirmation-email').textContent = bookingData.email;
+    const emailElement = document.getElementById('confirmation-email');
+    if (emailElement) {
+      emailElement.textContent = bookingData.email;
+    }
     
     // Update appointment details
-    document.getElementById('confirmation-name').textContent = bookingData.name;
-    document.getElementById('confirmation-date').textContent = bookingData.displayDate;
-    document.getElementById('confirmation-time').textContent = bookingData.displayTime;
-    document.getElementById('confirmation-email-details').textContent = bookingData.email;
-    document.getElementById('confirmation-phone').textContent = bookingData.phone;
+    updateElementText('confirmation-name', bookingData.name);
+    updateElementText('confirmation-date', bookingData.displayDate || '');
+    updateElementText('confirmation-time', bookingData.displayTime || '');
+    updateElementText('confirmation-email-details', bookingData.email);
+    updateElementText('confirmation-phone', bookingData.phone);
     
     // Handle optional notes
     if (bookingData.notes && bookingData.notes.trim()) {
-      document.getElementById('confirmation-notes').textContent = bookingData.notes;
-      document.getElementById('confirmation-notes-container').classList.remove('hidden');
+      updateElementText('confirmation-notes', bookingData.notes);
+      
+      const notesContainer = document.getElementById('confirmation-notes-container');
+      if (notesContainer) {
+        notesContainer.classList.remove('hidden');
+      }
+    }
+  }
+  
+  // Helper function to update text content of an element
+  function updateElementText(id: string, text: string): void {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = text;
     }
   }
   

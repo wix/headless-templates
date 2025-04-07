@@ -1,7 +1,6 @@
 ---
 import { getDaysOfWeek, generateDateRange, formatDisplayDate, isToday } from '../utils/date-utils';
 import Panel from './ui/Panel.astro';
-import Button from './ui/Button.astro';
 
 interface Props {
   class?: string;
@@ -38,13 +37,13 @@ const daysOfWeek = getDaysOfWeek();
 </div>
 
 <script>
-  import { startOfToday, addDays, format } from 'date-fns';
+  import { startOfToday } from 'date-fns';
   import { generateDateRange, formatDisplayDate } from '../utils/date-utils';
-  import { createElement, appendElement } from '../utils/dom-utils';
+  import { createElement } from '../utils/dom-utils';
   import { dispatchDateSelected } from '../utils/event-utils';
   
   // Initialize the date picker
-  function initDatepicker() {
+  function initDatepicker(): void {
     const today = startOfToday();
     const dates = generateDateRange(30);
     const datepicker = document.getElementById('datepicker');
@@ -75,7 +74,7 @@ const daysOfWeek = getDaysOfWeek();
   }
   
   // Handle date selection
-  function handleDateSelection(element, date) {
+  function handleDateSelection(element: HTMLButtonElement, date: Date): void {
     // Reset all date buttons
     document.querySelectorAll('#datepicker button').forEach(btn => {
       btn.classList.remove('bg-primary', 'text-white');
@@ -92,7 +91,7 @@ const daysOfWeek = getDaysOfWeek();
   }
   
   // Update the selected date display
-  function updateSelectedDateDisplay(date) {
+  function updateSelectedDateDisplay(date: Date): void {
     const selectedDateDisplay = document.getElementById('selected-date-display');
     const selectedDateText = document.getElementById('selected-date');
     
