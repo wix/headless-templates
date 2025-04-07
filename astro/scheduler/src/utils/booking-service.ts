@@ -1,13 +1,7 @@
-/**
- * Service layer for handling booking operations
- */
 import { format } from 'date-fns';
 import { createWixClient } from './wix-client';
 import { DATE_FORMAT, TIME_FORMAT } from './constants';
 
-/**
- * Booking data interface
- */
 export interface BookingData {
   name: string;
   email: string;
@@ -20,17 +14,13 @@ export interface BookingData {
   displayTime?: string;
 }
 
-/**
- * Time slot interface
- */
 export interface TimeSlot {
   time: string;
   display: string;
   available: boolean;
-  entity: any; // Wix-specific slot entity
+  entity: any;
 }
 
-// Wix API types (simplified)
 interface WixService {
   _id: string;
   name: string;
@@ -52,9 +42,6 @@ interface WixRedirectResponse {
 // Create Wix client
 const wixClient = createWixClient();
 
-/**
- * Get available services from Wix
- */
 export async function getServices(): Promise<WixService[]> {
   try {
     const { items } = await wixClient.services.queryServices().find();
@@ -65,9 +52,6 @@ export async function getServices(): Promise<WixService[]> {
   }
 }
 
-/**
- * Find service by type (free or premium)
- */
 export async function getServiceByType(type: 'free' | 'premium'): Promise<WixService | undefined> {
   try {
     const services = await getServices();
@@ -80,9 +64,6 @@ export async function getServiceByType(type: 'free' | 'premium'): Promise<WixSer
   }
 }
 
-/**
- * Get available time slots for a given date and service type
- */
 export async function getAvailableSlots(date: Date, serviceType: 'free' | 'premium'): Promise<TimeSlot[]> {
   try {
     const service = await getServiceByType(serviceType);
@@ -117,9 +98,6 @@ export async function getAvailableSlots(date: Date, serviceType: 'free' | 'premi
   }
 }
 
-/**
- * Create a booking
- */
 export async function createBooking(
   bookingData: BookingData, 
   selectedSlot: TimeSlot, 
@@ -159,9 +137,6 @@ export async function createBooking(
   }
 }
 
-/**
- * Create redirect session for premium booking
- */
 export async function createRedirectSession(slot: any, returnUrl: string): Promise<string | undefined> {
   try {
     const redirect: WixRedirectResponse = await wixClient.redirects.createRedirectSession({

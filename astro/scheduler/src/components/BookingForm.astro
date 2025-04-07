@@ -22,21 +22,13 @@ const { class: className = '' } = Astro.props;
   import { formatDisplayDate } from '../utils/date-utils';
   import { createBooking, createRedirectSession, BookingData, TimeSlot } from '../utils/booking-service';
   import { createElement, replaceContent } from '../utils/dom-utils';
-  import { 
-    onDateSelected, 
-    onTimeSlotSelected, 
-    onSessionTypeChanged 
-  } from '../utils/event-utils';
+  import { onDateSelected, onTimeSlotSelected, onSessionTypeChanged } from '../utils/event-utils';
   
-  // State
   let selectedDate: Date | null = null;
   let selectedSlot: TimeSlot | null = null;
   let sessionType: 'free' | 'premium' = 'free';
   
-  // Get container element
   const bookingFormContainer = document.getElementById('booking-form-container');
-  
-  // Register event listeners using our utility functions
   onDateSelected((date) => {
     selectedDate = date;
     updateBookingForm();
@@ -57,15 +49,12 @@ const { class: className = '' } = Astro.props;
     updateBookingForm();
   });
   
-  // Update the booking form UI
   function updateBookingForm(): void {
     if (!bookingFormContainer) return;
     
-    // Clear container
     replaceContent(bookingFormContainer, '');
     
     if (!selectedDate || !selectedSlot) {
-      // Show empty state
       const emptyState = createElement('div', { className: 'glass-panel p-6 text-center' });
       
       const icon = createElement('svg', {
@@ -96,22 +85,15 @@ const { class: className = '' } = Astro.props;
       return;
     }
     
-    // Create panel for the booking form
     const panel = createElement('div', { className: 'glass-panel' });
-    
-    // Format date and time for display
     const formattedDate = formatDisplayDate(selectedDate);
     const formattedTime = selectedSlot.display;
-    
-    // Create panel content wrapper
     const contentWrapper = createElement('div', { className: 'p-6' });
     
-    // Add header
     const header = createElement('h3', { 
       className: 'text-base font-medium mb-4' 
     }, 'Complete Your Booking');
     
-    // Add booking summary
     const summary = createElement('div', { 
       className: 'mb-6 p-3 bg-secondary/50 rounded-lg' 
     });
@@ -127,66 +109,51 @@ const { class: className = '' } = Astro.props;
     summary.appendChild(dateInfo);
     summary.appendChild(timeInfo);
     
-    // Add elements to content wrapper
     contentWrapper.appendChild(header);
     contentWrapper.appendChild(summary);
     
     if (sessionType === 'free') {
-      // Create booking form for free sessions
       const form = createElement('form', { 
         className: 'space-y-4',
         id: 'booking-submit-form'
       });
-      
-      // Create form fields
       const nameField = createFormField('name', 'Name', 'text', 'Your full name', true);
       const emailField = createFormField('email', 'Email', 'email', 'you@example.com', true);
       const phoneField = createFormField('phone', 'Phone', 'tel', 'Your phone number', true);
       const addressField = createFormField('address', 'Address', 'text', 'Your full address', true);
       const notesField = createFormField('notes', 'Notes (optional)', 'textarea', 'Any additional information...', false);
       
-      // Create submit button
       const submitButton = createElement('button', {
         className: 'w-full py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors',
         type: 'submit'
       }, 'Confirm Booking');
       
-      // Add fields to form
-      form.appendChild(nameField);
+        form.appendChild(nameField);
       form.appendChild(emailField);
       form.appendChild(phoneField);
       form.appendChild(addressField);
       form.appendChild(notesField);
       form.appendChild(submitButton);
       
-      // Add form submission handler
       form.addEventListener('submit', handleBookingSubmit);
-      
-      // Add form to content wrapper
       contentWrapper.appendChild(form);
     } else {
-      // Create checkout button for premium sessions
       const buttonWrapper = createElement('div', { className: 'text-center' });
       const checkoutButton = createElement('button', {
         className: 'w-full py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors',
         id: 'checkout-button'
       }, 'Checkout');
       
-      // Add click handler
       checkoutButton.addEventListener('click', handleCheckoutRedirect);
       
       buttonWrapper.appendChild(checkoutButton);
       contentWrapper.appendChild(buttonWrapper);
     }
     
-    // Add content wrapper to panel
     panel.appendChild(contentWrapper);
     
-    // Add panel to container
     bookingFormContainer.appendChild(panel);
   }
-  
-  // Helper function to create form fields
   function createFormField(
     id: string, 
     label: string, 
@@ -235,7 +202,6 @@ const { class: className = '' } = Astro.props;
     return fieldWrapper;
   }
   
-  // Handle booking form submission
   async function handleBookingSubmit(event: Event): Promise<void> {
     event.preventDefault();
     
@@ -244,7 +210,6 @@ const { class: className = '' } = Astro.props;
       return;
     }
     
-    // Get form data
     const form = event.target as HTMLFormElement;
     const formData: BookingData = {
       name: form.name.value,
@@ -254,7 +219,6 @@ const { class: className = '' } = Astro.props;
       notes: form.notes.value || '',
     };
     
-    // Disable submit button
     const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
     if (submitButton) {
       submitButton.disabled = true;
@@ -262,16 +226,12 @@ const { class: className = '' } = Astro.props;
     }
     
     try {
-      // Create booking through service
       await createBooking(formData, selectedSlot, selectedDate);
-      
-      // Redirect to confirmation page
       window.location.href = '/confirmation';
     } catch (error) {
       console.error('Error creating booking:', error);
       alert('There was a problem creating your booking. Please try again.');
       
-      // Re-enable submit button
       if (submitButton) {
         submitButton.disabled = false;
         submitButton.textContent = 'Confirm Booking';
@@ -279,7 +239,6 @@ const { class: className = '' } = Astro.props;
     }
   }
   
-  // Handle checkout redirect for premium sessions
   async function handleCheckoutRedirect(): Promise<void> {
     if (!selectedSlot) return;
     
@@ -290,7 +249,6 @@ const { class: className = '' } = Astro.props;
     }
     
     try {
-      // Create redirect session
       const redirectUrl = await createRedirectSession(
         selectedSlot.entity, 
         window.location.href
@@ -305,7 +263,6 @@ const { class: className = '' } = Astro.props;
       console.error('Error creating redirect session:', error);
       alert('There was a problem redirecting to checkout. Please try again.');
       
-      // Re-enable button
       if (button) {
         button.disabled = false;
         button.textContent = 'Checkout';

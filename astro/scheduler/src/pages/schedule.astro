@@ -11,10 +11,8 @@ import "../styles/global.css";
 import { createWixClient } from "../utils/wix-client";
 import { BUSINESS_NAME } from "../utils/constants";
 
-// Create Wix client for server-side operations
 const wixClient = createWixClient();
 
-// Prefetch available services
 const { items: servicesList } = await wixClient.services.queryServices().find();
 const freeService = servicesList.find(service => service.name.toLowerCase().includes("free"));
 const premiumService = servicesList.find(service => !service.name.toLowerCase().includes("free"));
@@ -25,12 +23,10 @@ const premiumService = servicesList.find(service => !service.name.toLowerCase().
     <Navbar />
 
     <div class="max-w-7xl mx-auto pt-32 pb-16 px-4">
-      <!-- Back button -->
       <div class="mb-6">
         <BackButton href="/" text="Back to Home" />
       </div>
 
-      <!-- Header -->
       <div class="text-center mb-8 animate-fade-up">
         <div class="mx-auto mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -52,23 +48,19 @@ const premiumService = servicesList.find(service => !service.name.toLowerCase().
         </p>
       </div>
       
-      <!-- Session type selector -->
       <div class="max-w-2xl mx-auto mb-8 animate-fade-up delay-100">
         <SessionType />
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Date picker -->
         <div class="animate-fade-up delay-200">
           <DatePicker />
         </div>
 
-        <!-- Time slots -->
         <div class="animate-fade-up delay-300">
           <TimeSlots />
         </div>
 
-        <!-- Booking form -->
         <div id="booking-form" class="animate-fade-up delay-400">
           <BookingForm />
         </div>
