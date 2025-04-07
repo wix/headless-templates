@@ -8,6 +8,7 @@ import { Calendar } from "./ui/calendar";
 import { useWixClient } from "../hooks/use-wix-client";
 
 interface TimeSlotsProps {
+  sessionType: "free" | "premium";
   selectedDate: Date | undefined;
   onTimeSelected: (time: string) => void;
   className?: string;
@@ -53,6 +54,7 @@ const generateTimeSlots = (date: Date) => {
 };
 
 const TimeSlots: React.FC<TimeSlotsProps> = ({
+  sessionType,
   selectedDate,
   onTimeSelected,
   className,
@@ -69,9 +71,12 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
       const fetchAvailability = async () => {
         setIsLoading(true);
         try {
-          const {
-            items: [consultingService],
-          } = await wixClient.services.queryServices().find();
+          const { items } = await wixClient.services.queryServices().find();
+
+          const consultingService =
+            sessionType === "free" ? items[1] : items[0];
+
+          console.log(items);
 
           const today = selectedDate;
           const tomorrow = new Date(today);
@@ -111,7 +116,7 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
       fetchAvailability();
       setSelectedSlot(null); // Reset selected time when date changes
     }
-  }, [selectedDate]);
+  }, [selectedDate, sessionType]);
 
   const handleTimeSelection = (slot: any) => {
     setSelectedSlot(slot);

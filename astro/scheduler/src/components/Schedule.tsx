@@ -13,6 +13,7 @@ import { Button } from "./ui/button";
 const Schedule = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
+  const [sessionType, setSessionType] = useState<"free" | "premium">("free");
   const { businessName } = useBrandConfig();
 
   const handleTimeSelected = (slot: any) => {
@@ -24,6 +25,11 @@ const Schedule = () => {
         bookingForm.scrollIntoView({ behavior: "smooth" });
       }
     }, 100);
+  };
+
+  const handleSessionTypeChange = (type: "free" | "premium") => {
+    setSessionType(type);
+    setSelectedSlot(null); // Reset selected slot when session type changes
   };
 
   return (
@@ -59,6 +65,35 @@ const Schedule = () => {
             </p>
           </AnimatedContainer>
 
+          <AnimatedContainer
+            animation="fade-up"
+            delay="100"
+            className="text-center mb-8"
+          >
+            <div className="flex justify-center space-x-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="sessionType"
+                  value="free"
+                  checked={sessionType === "free"}
+                  onChange={() => handleSessionTypeChange("free")}
+                />
+                <span>Free Session (0.5h)</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="sessionType"
+                  value="premium"
+                  checked={sessionType === "premium"}
+                  onChange={() => handleSessionTypeChange("premium")}
+                />
+                <span>Premium Session (2h, 100€)</span>
+              </label>
+            </div>
+          </AnimatedContainer>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <AnimatedContainer animation="fade-up" delay="200">
               <DatePicker date={selectedDate} setDate={setSelectedDate} />
@@ -66,6 +101,7 @@ const Schedule = () => {
 
             <AnimatedContainer animation="fade-up" delay="300">
               <TimeSlots
+                sessionType={sessionType}
                 selectedDate={selectedDate}
                 onTimeSelected={handleTimeSelected}
               />
