@@ -4,6 +4,9 @@ import { TooltipProvider } from "./ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import BrandingProvider from "./BrandingProvider";
 import type { ReactNode } from "react";
+import { availabilityCalendar, services } from "@wix/bookings";
+import { createClient, OAuthStrategy } from "@wix/sdk";
+import { WixClientContext } from "./WixClientContext";
 
 const queryClient = new QueryClient();
 

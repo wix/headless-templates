@@ -18,9 +18,7 @@ import { Textarea } from "./ui/textarea";
 import { CalendarClock } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 import AnimatedContainer from "./shared/AnimatedContainer";
-import { availabilityCalendar, services } from "@wix/bookings";
-import { createClient, OAuthStrategy } from "@wix/sdk";
-import { bookings } from "@wix/bookings";
+import { useWixClient } from "../hooks/use-wix-client";
 
 interface BookingFormProps {
   selectedDate: Date | undefined;
@@ -40,13 +38,6 @@ const bookingFormSchema = z.object({
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
 
-const wixClient = createClient({
-  modules: { services, availabilityCalendar, bookings },
-  auth: OAuthStrategy({
-    clientId: "30e9f47f-67ff-46b9-b9f0-bffcf702080d",
-  }),
-});
-
 const BookingForm: React.FC<BookingFormProps> = ({
   selectedDate,
   selectedSlot,
@@ -54,6 +45,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const wixClient = useWixClient();
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),

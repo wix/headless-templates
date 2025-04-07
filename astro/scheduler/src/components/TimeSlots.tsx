@@ -5,21 +5,13 @@ import { Button } from "./ui/button";
 import { Clock, Loader2 } from "lucide-react";
 import AnimatedContainer from "./shared/AnimatedContainer";
 import { Calendar } from "./ui/calendar";
-import { availabilityCalendar, services } from "@wix/bookings";
-import { createClient, OAuthStrategy } from "@wix/sdk";
+import { useWixClient } from "../hooks/use-wix-client";
 
 interface TimeSlotsProps {
   selectedDate: Date | undefined;
   onTimeSelected: (time: string) => void;
   className?: string;
 }
-
-const wixClient = createClient({
-  modules: { services, availabilityCalendar },
-  auth: OAuthStrategy({
-    clientId: "30e9f47f-67ff-46b9-b9f0-bffcf702080d",
-  }),
-});
 
 // In a real app, these would come from an API
 const generateTimeSlots = (date: Date) => {
@@ -70,6 +62,7 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({
     Array<{ time: string; display: string; available: boolean; entity: any }>
   >([]);
   const [isLoading, setIsLoading] = useState(false);
+  const wixClient = useWixClient();
 
   useEffect(() => {
     if (selectedDate) {
