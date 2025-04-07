@@ -29,19 +29,6 @@ export function createElement<K extends keyof HTMLElementTagNameMap>(
   return element;
 }
 
-/**
- * Creates an element and appends it to a parent
- */
-export function appendElement<K extends keyof HTMLElementTagNameMap>(
-  parent: HTMLElement,
-  tag: K,
-  attributes: Record<string, string> = {},
-  innerHTML: string = ''
-): HTMLElementTagNameMap[K] {
-  const element = createElement(tag, attributes, innerHTML);
-  parent.appendChild(element);
-  return element;
-}
 
 /**
  * Replaces the content of an element
@@ -50,22 +37,6 @@ export function replaceContent(element: HTMLElement, content: string): void {
   element.innerHTML = content;
 }
 
-/**
- * Show a temporary message in an element
- */
-export function showTemporaryMessage(
-  element: HTMLElement, 
-  message: string, 
-  className: string = 'text-center py-2', 
-  duration: number = 3000
-): void {
-  const originalContent = element.innerHTML;
-  element.innerHTML = `<div class="${className}">${message}</div>`;
-  
-  setTimeout(() => {
-    element.innerHTML = originalContent;
-  }, duration);
-}
 
 /**
  * Creates a custom event and dispatches it
@@ -79,25 +50,4 @@ export function dispatchCustomEvent<T>(
   element.dispatchEvent(event);
 }
 
-/**
- * Add a one-time event listener
- */
-export function addOneTimeEventListener<K extends keyof HTMLElementEventMap>(
-  element: HTMLElement,
-  eventName: K,
-  handler: (event: HTMLElementEventMap[K]) => void
-): void {
-  const oneTimeHandler = (event: HTMLElementEventMap[K]) => {
-    handler(event);
-    element.removeEventListener(eventName, oneTimeHandler as EventListener);
-  };
-  
-  element.addEventListener(eventName, oneTimeHandler as EventListener);
-}
 
-/**
- * Scroll to an element smoothly
- */
-export function scrollToElement(element: HTMLElement, options: ScrollIntoViewOptions = { behavior: 'smooth' }): void {
-  element.scrollIntoView(options);
-}

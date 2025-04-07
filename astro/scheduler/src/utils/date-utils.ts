@@ -40,12 +40,6 @@ export function getDaysOfWeek(): string[] {
   return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 }
 
-/**
- * Check if a date is in the past
- */
-export function isInPast(date: Date): boolean {
-  return date < startOfToday();
-}
 
 /**
  * Check if a date is today
@@ -57,23 +51,4 @@ export function isToday(date: Date): boolean {
     date.getFullYear() === today.getFullYear();
 }
 
-/**
- * Get a future date limit (for booking restrictions)
- */
-export function getMaxBookingDate(maxDays: number = 60): Date {
-  return addDays(startOfToday(), maxDays);
-}
 
-/**
- * Group dates by month for calendar display
- */
-export function groupDatesByMonth(dates: Date[]): Record<string, Date[]> {
-  return dates.reduce((acc, date) => {
-    const monthYear = formatDate(date, 'MMMM yyyy');
-    if (!acc[monthYear]) {
-      acc[monthYear] = [];
-    }
-    acc[monthYear].push(date);
-    return acc;
-  }, {} as Record<string, Date[]>);
-}

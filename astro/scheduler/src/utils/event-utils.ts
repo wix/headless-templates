@@ -64,23 +64,7 @@ export function dispatchSessionTypeChanged(type: "free" | "premium"): void {
   );
 }
 
-/**
- * Dispatch booking completed event
- */
-export function dispatchBookingCompleted(bookingData: BookingData): void {
-  dispatchCustomEvent<BookingCompletedEvent>(EVENT_NAMES.BOOKING_COMPLETED, {
-    bookingData,
-  });
-}
 
-/**
- * Dispatch booking failed event
- */
-export function dispatchBookingFailed(error: Error | unknown): void {
-  dispatchCustomEvent<BookingFailedEvent>(EVENT_NAMES.BOOKING_FAILED, {
-    error,
-  });
-}
 
 /**
  * Register date selection event listener
