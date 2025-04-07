@@ -1,0 +1,254 @@
+---
+import { formatDisplayDate } from '../utils/date-utils';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<div id="booking-form-container" class={className}>
+  <div class="glass-panel p-6 text-center">
+    <svg class="h-6 w-6 mx-auto mb-2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+      <circle cx="12" cy="15" r="3" />
+    </svg>
+    <p class="text-sm text-muted-foreground">Please select both a date and time to proceed with booking</p>
+  </div>
+</div>
+
+<script>
+  import { formatDisplayDate } from '../utils/date-utils';
+  import { createBooking, createRedirectSession } from '../utils/booking-service';
+  
+  // State
+  let selectedDate = null;
+  let selectedSlot = null;
+  let sessionType = 'free';
+  
+  // Get container element
+  const bookingFormContainer = document.getElementById('booking-form-container');
+  
+  // Listen for date selection events
+  document.addEventListener('dateSelected', (event) => {
+    selectedDate = event.detail.date;
+    updateBookingForm();
+  });
+  
+  // Listen for time slot selection events
+  document.addEventListener('timeSlotSelected', (event) => {
+    selectedSlot = event.detail.slot;
+    updateBookingForm();
+    
+    // Scroll to booking form
+    setTimeout(() => {
+      bookingFormContainer?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  });
+  
+  // Listen for session type changes
+  document.addEventListener('sessionTypeChanged', (event) => {
+    sessionType = event.detail.type;
+    updateBookingForm();
+  });
+  
+  // Update the booking form UI
+  function updateBookingForm() {
+    if (!bookingFormContainer) return;
+    
+    // Clear container
+    bookingFormContainer.innerHTML = '';
+    
+    if (!selectedDate || !selectedSlot) {
+      // Show empty state if date or time not selected
+      bookingFormContainer.innerHTML = `
+        <div class="glass-panel p-6 text-center">
+          <svg class="h-6 w-6 mx-auto mb-2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <circle cx="12" cy="15" r="3" />
+          </svg>
+          <p class="text-sm text-muted-foreground">Please select both a date and time to proceed with booking</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Create panel for the booking form
+    const panel = document.createElement('div');
+    panel.className = 'glass-panel';
+    
+    // Format date and time for display
+    const formattedDate = formatDisplayDate(selectedDate);
+    const formattedTime = selectedSlot.display;
+    
+    // Build panel content
+    let panelContent = `
+      <div class="p-6">
+        <h3 class="text-base font-medium mb-4">Complete Your Booking</h3>
+        
+        <div class="mb-6 p-3 bg-secondary/50 rounded-lg">
+          <p class="text-sm font-medium">
+            <span class="text-muted-foreground">Date: </span>
+            ${formattedDate}
+          </p>
+          <p class="text-sm font-medium">
+            <span class="text-muted-foreground">Time: </span>
+            ${formattedTime}
+          </p>
+        </div>
+    `;
+    
+    if (sessionType === 'free') {
+      // Free session booking form
+      panelContent += `
+        <form id="booking-submit-form" class="space-y-4">
+          <div>
+            <label for="name" class="block text-sm font-medium mb-1">Name</label>
+            <input type="text" id="name" name="name" placeholder="Your full name" required 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          </div>
+          
+          <div>
+            <label for="email" class="block text-sm font-medium mb-1">Email</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          </div>
+          
+          <div>
+            <label for="phone" class="block text-sm font-medium mb-1">Phone</label>
+            <input type="tel" id="phone" name="phone" placeholder="Your phone number" required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          </div>
+          
+          <div>
+            <label for="address" class="block text-sm font-medium mb-1">Address</label>
+            <input type="text" id="address" name="address" placeholder="Your full address" required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          </div>
+          
+          <div>
+            <label for="notes" class="block text-sm font-medium mb-1">Notes (optional)</label>
+            <textarea id="notes" name="notes" placeholder="Any additional information..."
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+          </div>
+          
+          <button type="submit" class="w-full py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            Confirm Booking
+          </button>
+        </form>
+      `;
+    } else {
+      // Premium session checkout button
+      panelContent += `
+        <div class="text-center">
+          <button id="checkout-button" class="w-full py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            Checkout
+          </button>
+        </div>
+      `;
+    }
+    
+    panelContent += `</div>`;
+    panel.innerHTML = panelContent;
+    
+    // Add event listeners
+    if (sessionType === 'free') {
+      const form = panel.querySelector('#booking-submit-form');
+      if (form) {
+        form.addEventListener('submit', handleBookingSubmit);
+      }
+    } else {
+      const checkoutButton = panel.querySelector('#checkout-button');
+      if (checkoutButton) {
+        checkoutButton.addEventListener('click', handleCheckoutRedirect);
+      }
+    }
+    
+    bookingFormContainer.appendChild(panel);
+  }
+  
+  // Handle booking form submission
+  async function handleBookingSubmit(event) {
+    event.preventDefault();
+    
+    if (!selectedDate || !selectedSlot) {
+      alert('Please select a date and time');
+      return;
+    }
+    
+    // Get form data
+    const form = event.target;
+    const formData = {
+      name: form.name.value,
+      email: form.email.value,
+      phone: form.phone.value,
+      address: form.address.value,
+      notes: form.notes.value || '',
+    };
+    
+    // Disable submit button
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'Confirming...';
+    }
+    
+    try {
+      // Create booking through service
+      await createBooking(formData, selectedSlot, selectedDate);
+      
+      // Redirect to confirmation page
+      window.location.href = '/confirmation';
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      alert('There was a problem creating your booking. Please try again.');
+      
+      // Re-enable submit button
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Confirm Booking';
+      }
+    }
+  }
+  
+  // Handle checkout redirect for premium sessions
+  async function handleCheckoutRedirect() {
+    if (!selectedSlot) return;
+    
+    const button = document.getElementById('checkout-button');
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Redirecting...';
+    }
+    
+    try {
+      // Create redirect session
+      const redirectUrl = await createRedirectSession(
+        selectedSlot.entity, 
+        window.location.href
+      );
+      
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        throw new Error('No redirect URL returned');
+      }
+    } catch (error) {
+      console.error('Error creating redirect session:', error);
+      alert('There was a problem redirecting to checkout. Please try again.');
+      
+      // Re-enable button
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Checkout';
+      }
+    }
+  }
+</script>

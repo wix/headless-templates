@@ -1,6 +1,7 @@
 ---
+import { BUSINESS_NAME } from '../utils/constants';
+
 const currentYear = new Date().getFullYear();
-const businessName = "Acme Consulting";
 ---
 
 <footer class="py-8 px-4 bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5">
@@ -14,7 +15,7 @@ const businessName = "Acme Consulting";
       </svg>
     </div>
     <p class="text-sm text-muted-foreground">
-      © {currentYear} {businessName}. All rights reserved.
+      © {currentYear} {BUSINESS_NAME}. All rights reserved.
     </p>
   </div>
 </footer>
