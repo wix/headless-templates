@@ -21,6 +21,7 @@ import AnimatedContainer from "./shared/AnimatedContainer";
 import { useWixClient } from "../hooks/use-wix-client";
 
 interface BookingFormProps {
+  sessionType: "free" | "premium";
   selectedDate: Date | undefined;
   selectedSlot: any | null;
   className?: string;
@@ -39,6 +40,7 @@ const bookingFormSchema = z.object({
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
 
 const BookingForm: React.FC<BookingFormProps> = ({
+  sessionType,
   selectedDate,
   selectedSlot,
   className,
@@ -68,8 +70,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
       const booking = await wixClient.bookings.createBooking({
         bookedEntity: selectedSlot.entity,
@@ -93,8 +93,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
         displayDate: format(selectedDate, "MMMM d, yyyy"),
         displayTime: selectedSlot.display,
       };
-
-      console.log({ booking, data, bookingData });
       sessionStorage.setItem("bookingData", JSON.stringify(bookingData));
       window.location.href = `/confirmation`;
     } catch (error) {
@@ -102,6 +100,14 @@ const BookingForm: React.FC<BookingFormProps> = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const createRedirect = async (slot: any) => {
+    const redirect = await wixClient.redirects.createRedirectSession({
+      bookingsCheckout: { slotAvailability: slot, timezone: "UTC" },
+      callbacks: { postFlowUrl: window.location.href },
+    });
+    window.location.href = redirect.redirectSession!.fullUrl;
   };
 
   if (!selectedDate || !selectedSlot) {
@@ -135,102 +141,113 @@ const BookingForm: React.FC<BookingFormProps> = ({
           </div>
         </AnimatedContainer>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <AnimatedContainer animation="fade-up" delay="200">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Your full name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </AnimatedContainer>
+        {sessionType === "free" ? (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <AnimatedContainer animation="fade-up" delay="200">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your full name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </AnimatedContainer>
 
-            <AnimatedContainer animation="fade-up" delay="300">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="you@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </AnimatedContainer>
+              <AnimatedContainer animation="fade-up" delay="300">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="you@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </AnimatedContainer>
 
-            <AnimatedContainer animation="fade-up" delay="400">
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Your phone number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </AnimatedContainer>
+              <AnimatedContainer animation="fade-up" delay="400">
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your phone number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </AnimatedContainer>
 
-            <AnimatedContainer animation="fade-up" delay="500">
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Your full address" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </AnimatedContainer>
+              <AnimatedContainer animation="fade-up" delay="500">
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your full address" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </AnimatedContainer>
 
-            <AnimatedContainer animation="fade-up" delay="500">
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notes (optional)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Any additional information..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </AnimatedContainer>
+              <AnimatedContainer animation="fade-up" delay="500">
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notes (optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Any additional information..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </AnimatedContainer>
 
-            <AnimatedContainer animation="fade-up" delay="500">
-              <Button
-                type="submit"
-                className="w-full rounded-lg"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Confirming..." : "Confirm Booking"}
-              </Button>
-            </AnimatedContainer>
-          </form>
-        </Form>
+              <AnimatedContainer animation="fade-up" delay="500">
+                <Button
+                  type="submit"
+                  className="w-full rounded-lg"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Confirming..." : "Confirm Booking"}
+                </Button>
+              </AnimatedContainer>
+            </form>
+          </Form>
+        ) : (
+          <div className="text-center">
+            <Button
+              className="w-full rounded-lg"
+              onClick={() => createRedirect(selectedSlot.entity)}
+            >
+              Checkout
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

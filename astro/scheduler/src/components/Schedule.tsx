@@ -113,6 +113,7 @@ const Schedule = () => {
               id="booking-form"
             >
               <BookingForm
+                sessionType={sessionType}
                 selectedDate={selectedDate}
                 selectedSlot={selectedSlot}
               />
