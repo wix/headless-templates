@@ -2,7 +2,6 @@ import * as React from "react";
 import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "../lib/utils";
-import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 
 interface DatePickerProps {
@@ -11,41 +10,39 @@ interface DatePickerProps {
   className?: string;
 }
 
-export function DatePicker({ date, setDate, className }: DatePickerProps) {
+const DatePicker: React.FC<DatePickerProps> = ({ date, setDate, className }) => {
   const today = new Date();
   const futureDate = new Date();
   futureDate.setDate(today.getDate() + 60); // Allow booking 60 days ahead
 
   return (
-    <div className={cn("flex flex-col", className)}>
-      <div className="glass-panel p-6 overflow-hidden">
-        <div className="mb-4 text-center">
-          <p className="text-sm font-medium text-muted-foreground">
-            Select a date for your appointment
+    <div className={cn(className)}>
+      <div className="mb-4 text-center">
+        <p className="text-sm font-medium text-muted-foreground">
+          Select a date for your appointment
+        </p>
+      </div>
+      <Calendar
+        mode="single"
+        selected={date}
+        onSelect={setDate}
+        disabled={(date) => date < today || date > futureDate}
+        initialFocus
+        className={cn("p-3 pointer-events-auto rounded-lg")}
+        components={{
+          IconLeft: () => <ChevronLeft className="h-4 w-4" />,
+          IconRight: () => <ChevronRight className="h-4 w-4" />,
+        }}
+      />
+      {date && (
+        <div className="mt-4 text-center animate-slideUp">
+          <p className="text-sm font-medium text-foreground">
+            Selected: <span className="font-bold">{format(date, "PPP")}</span>
           </p>
         </div>
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={setDate}
-          disabled={(date) => date < today || date > futureDate}
-          initialFocus
-          className={cn("p-3 pointer-events-auto rounded-lg")}
-          components={{
-            IconLeft: () => <ChevronLeft className="h-4 w-4" />,
-            IconRight: () => <ChevronRight className="h-4 w-4" />,
-          }}
-        />
-        {date && (
-          <div className="mt-4 text-center animate-slideUp">
-            <p className="text-sm font-medium text-foreground">
-              Selected: <span className="font-bold">{format(date, "PPP")}</span>
-            </p>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
-}
+};
 
 export default DatePicker;

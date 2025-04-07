@@ -1,5 +1,5 @@
 import { ArrowLeftIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useBrandConfig } from "../lib/brandConfig";
 import App from "./App";
 import BookingForm from "./BookingForm";
@@ -7,29 +7,31 @@ import DatePicker from "./DatePicker";
 import Logo from "./Logo";
 import Navbar from "./Navbar";
 import AnimatedContainer from "./shared/AnimatedContainer";
+import Footer from "./shared/Footer";
 import TimeSlots from "./TimeSlots";
 import { Button } from "./ui/button";
+import { format } from "date-fns";
 
+// Self-contained version without context dependencies
 const Schedule = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
   const [sessionType, setSessionType] = useState<"free" | "premium">("free");
   const { businessName } = useBrandConfig();
 
+  const handleSessionTypeChange = (type: "free" | "premium") => {
+    setSessionType(type);
+    setSelectedSlot(null); // Reset selected slot when session type changes
+  };
+
   const handleTimeSelected = (slot: any) => {
     setSelectedSlot(slot);
-    // Scroll to the booking form
     setTimeout(() => {
       const bookingForm = document.getElementById("booking-form");
       if (bookingForm) {
         bookingForm.scrollIntoView({ behavior: "smooth" });
       }
     }, 100);
-  };
-
-  const handleSessionTypeChange = (type: "free" | "premium") => {
-    setSessionType(type);
-    setSelectedSlot(null); // Reset selected slot when session type changes
   };
 
   return (
@@ -96,7 +98,15 @@ const Schedule = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <AnimatedContainer animation="fade-up" delay="200">
-              <DatePicker date={selectedDate} setDate={setSelectedDate} />
+              <div className="glass-panel p-6 overflow-hidden">
+                <div className="mb-4 text-center">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Select a date for your appointment
+                  </p>
+                </div>
+                
+                <DatePicker date={selectedDate} setDate={setSelectedDate} />
+              </div>
             </AnimatedContainer>
 
             <AnimatedContainer animation="fade-up" delay="300">
@@ -104,6 +114,7 @@ const Schedule = () => {
                 sessionType={sessionType}
                 selectedDate={selectedDate}
                 onTimeSelected={handleTimeSelected}
+                selectedSlot={selectedSlot}
               />
             </AnimatedContainer>
 
@@ -121,15 +132,7 @@ const Schedule = () => {
           </div>
         </div>
 
-        {/* Footer */}
-        <footer className="py-8 px-4 bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5">
-          <div className="max-w-7xl mx-auto text-center">
-            <Logo size="sm" className="mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} {businessName}. All rights reserved.
-            </p>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </App>
   );

@@ -1,8 +1,11 @@
 import { ArrowLeftIcon, Calendar, CheckCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useBrandConfig } from "../lib/brandConfig";
 import App from "./App";
 import Navbar from "./Navbar";
 import AnimatedContainer from "./shared/AnimatedContainer";
+import Footer from "./shared/Footer";
+import Panel from "./shared/Panel";
 import { Button } from "./ui/button";
 
 interface BookingData {
@@ -18,6 +21,7 @@ interface BookingData {
 
 const Confirmation = () => {
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
+  const { businessName } = useBrandConfig();
 
   useEffect(() => {
     // Retrieve booking data from sessionStorage
@@ -51,7 +55,7 @@ const Confirmation = () => {
             </Button>
           </AnimatedContainer>
 
-          <div className="glass-panel p-8 md:p-12 text-center">
+          <Panel className="p-8 md:p-12 text-center">
             <AnimatedContainer animation="scale-in">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
                 <CheckCircle className="h-8 w-8 text-primary" />
@@ -121,17 +125,10 @@ const Confirmation = () => {
                 </Button>
               </div>
             </AnimatedContainer>
-          </div>
+          </Panel>
         </div>
 
-        {/* Footer */}
-        <footer className="py-8 px-4 bg-secondary/30 mt-auto">
-          <div className="max-w-7xl mx-auto text-center">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Scheduler. All rights reserved.
-            </p>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </App>
   );
