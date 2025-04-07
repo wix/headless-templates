@@ -14,11 +14,11 @@ export default defineConfig({
     }),
   ],
   adapter: wix(),
-  vite: {
-    resolve: {
-      alias: {
-        jose: "../../node_modules/jose/dist/browser/index.js",
-      },
-    },
-  },
+  // vite: {
+  //   resolve: {
+  //     alias: {
+  //       jose: "../../node_modules/jose/dist/browser/index.js",
+  //     },
+  //   },
+  // },
 });
