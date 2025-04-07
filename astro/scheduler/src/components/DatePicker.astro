@@ -1,5 +1,7 @@
 ---
 import { getDaysOfWeek, generateDateRange, formatDisplayDate, isToday } from '../utils/date-utils';
+import Panel from './ui/Panel.astro';
+import Button from './ui/Button.astro';
 
 interface Props {
   class?: string;
@@ -10,7 +12,7 @@ const daysOfWeek = getDaysOfWeek();
 ---
 
 <div class={className}>
-  <div id="date-picker-container" class="glass-panel p-6">
+  <Panel id="date-picker-container">
     <div class="mb-4 text-center">
       <p class="text-sm font-medium text-muted-foreground">
         Select a date for your appointment
@@ -32,12 +34,14 @@ const daysOfWeek = getDaysOfWeek();
         Selected: <span id="selected-date" class="font-bold"></span>
       </p>
     </div>
-  </div>
+  </Panel>
 </div>
 
 <script>
   import { startOfToday, addDays, format } from 'date-fns';
   import { generateDateRange, formatDisplayDate } from '../utils/date-utils';
+  import { createElement, appendElement } from '../utils/dom-utils';
+  import { dispatchDateSelected } from '../utils/event-utils';
   
   // Initialize the date picker
   function initDatepicker() {
@@ -49,36 +53,46 @@ const daysOfWeek = getDaysOfWeek();
     
     // Add dates to the grid
     dates.forEach((date, index) => {
-      const dateEl = document.createElement('button');
-      dateEl.className = 'rounded-md h-8 w-8 flex items-center justify-center text-sm hover:bg-primary/10 transition-colors';
-      dateEl.textContent = date.getDate().toString();
-      dateEl.dataset.date = date.toISOString();
+      // Create date button
+      const dateEl = createElement('button', {
+        className: 'rounded-md h-8 w-8 flex items-center justify-center text-sm hover:bg-primary/10 transition-colors',
+        'data-date': date.toISOString()
+      }, date.getDate().toString());
       
+      // Highlight first date (today)
       if (index === 0) {
         dateEl.classList.add('font-bold');
       }
       
-      // Add date selection behavior
+      // Add date selection handler
       dateEl.addEventListener('click', () => {
         handleDateSelection(dateEl, date);
       });
       
+      // Add to grid
       datepicker.appendChild(dateEl);
     });
   }
   
   // Handle date selection
   function handleDateSelection(element, date) {
-    // Reset all buttons
-    const buttons = document.querySelectorAll('#datepicker button');
-    buttons.forEach(btn => {
+    // Reset all date buttons
+    document.querySelectorAll('#datepicker button').forEach(btn => {
       btn.classList.remove('bg-primary', 'text-white');
     });
     
-    // Style selected button
+    // Highlight selected button
     element.classList.add('bg-primary', 'text-white');
     
     // Update selected date display
+    updateSelectedDateDisplay(date);
+    
+    // Dispatch date selection event
+    dispatchDateSelected(date);
+  }
+  
+  // Update the selected date display
+  function updateSelectedDateDisplay(date) {
     const selectedDateDisplay = document.getElementById('selected-date-display');
     const selectedDateText = document.getElementById('selected-date');
     
@@ -86,12 +100,6 @@ const daysOfWeek = getDaysOfWeek();
       selectedDateText.textContent = formatDisplayDate(date);
       selectedDateDisplay.classList.remove('hidden');
     }
-    
-    // Dispatch custom event with selected date
-    const customEvent = new CustomEvent('dateSelected', { 
-      detail: { date: date }
-    });
-    document.dispatchEvent(customEvent);
   }
   
   // Initialize when the DOM is loaded

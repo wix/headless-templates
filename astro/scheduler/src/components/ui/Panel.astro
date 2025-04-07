@@ -1,0 +1,31 @@
+---
+interface Props {
+  class?: string;
+  id?: string;
+  padding?: 'none' | 'sm' | 'md' | 'lg';
+  isGlass?: boolean;
+  isEmptyState?: boolean;
+}
+
+const { 
+  id, 
+  class: className = '', 
+  padding = 'md',
+  isGlass = true,
+  isEmptyState = false,
+} = Astro.props;
+
+const paddingClass = {
+  none: '',
+  sm: 'p-3',
+  md: 'p-6',
+  lg: 'p-8'
+}[padding];
+
+const baseClass = isGlass ? 'glass-panel' : 'bg-white border border-gray-200 rounded-lg shadow-sm';
+const emptyStateClass = isEmptyState ? 'text-center' : '';
+---
+
+<div id={id} class:list={[baseClass, paddingClass, emptyStateClass, className]}>
+  <slot />
+</div>

@@ -1,5 +1,10 @@
 ---
 import { formatDisplayDate } from '../utils/date-utils';
+import Panel from './ui/Panel.astro';
+import Button from './ui/Button.astro';
+import Icon from './ui/Icon.astro';
+import EmptyState from './ui/EmptyState.astro';
+import FormField from './ui/FormField.astro';
 
 interface Props {
   class?: string;
@@ -9,21 +14,23 @@ const { class: className = '' } = Astro.props;
 ---
 
 <div id="booking-form-container" class={className}>
-  <div class="glass-panel p-6 text-center">
-    <svg class="h-6 w-6 mx-auto mb-2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-      <line x1="16" y1="2" x2="16" y2="6"></line>
-      <line x1="8" y1="2" x2="8" y2="6"></line>
-      <line x1="3" y1="10" x2="21" y2="10"></line>
-      <circle cx="12" cy="15" r="3" />
-    </svg>
-    <p class="text-sm text-muted-foreground">Please select both a date and time to proceed with booking</p>
-  </div>
+  <Panel isEmptyState={true}>
+    <EmptyState
+      icon="calendar"
+      message="Please select both a date and time to proceed with booking"
+    />
+  </Panel>
 </div>
 
 <script>
   import { formatDisplayDate } from '../utils/date-utils';
   import { createBooking, createRedirectSession } from '../utils/booking-service';
+  import { createElement, replaceContent } from '../utils/dom-utils';
+  import { 
+    onDateSelected, 
+    onTimeSlotSelected, 
+    onSessionTypeChanged 
+  } from '../utils/event-utils';
   
   // State
   let selectedDate = null;
@@ -33,15 +40,14 @@ const { class: className = '' } = Astro.props;
   // Get container element
   const bookingFormContainer = document.getElementById('booking-form-container');
   
-  // Listen for date selection events
-  document.addEventListener('dateSelected', (event) => {
-    selectedDate = event.detail.date;
+  // Register event listeners using our utility functions
+  onDateSelected((date) => {
+    selectedDate = date;
     updateBookingForm();
   });
   
-  // Listen for time slot selection events
-  document.addEventListener('timeSlotSelected', (event) => {
-    selectedSlot = event.detail.slot;
+  onTimeSlotSelected((slot) => {
+    selectedSlot = slot;
     updateBookingForm();
     
     // Scroll to booking form
@@ -50,9 +56,8 @@ const { class: className = '' } = Astro.props;
     }, 100);
   });
   
-  // Listen for session type changes
-  document.addEventListener('sessionTypeChanged', (event) => {
-    sessionType = event.detail.type;
+  onSessionTypeChanged((type) => {
+    sessionType = type;
     updateBookingForm();
   });
   
@@ -61,117 +66,171 @@ const { class: className = '' } = Astro.props;
     if (!bookingFormContainer) return;
     
     // Clear container
-    bookingFormContainer.innerHTML = '';
+    replaceContent(bookingFormContainer, '');
     
     if (!selectedDate || !selectedSlot) {
-      // Show empty state if date or time not selected
-      bookingFormContainer.innerHTML = `
-        <div class="glass-panel p-6 text-center">
-          <svg class="h-6 w-6 mx-auto mb-2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-            <circle cx="12" cy="15" r="3" />
-          </svg>
-          <p class="text-sm text-muted-foreground">Please select both a date and time to proceed with booking</p>
-        </div>
+      // Show empty state
+      const emptyState = createElement('div', { className: 'glass-panel p-6 text-center' });
+      
+      const icon = createElement('svg', {
+        className: 'h-6 w-6 mx-auto mb-2 text-muted-foreground',
+        viewBox: '0 0 24 24',
+        fill: 'none',
+        stroke: 'currentColor',
+        'stroke-width': '2',
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round'
+      });
+      
+      icon.innerHTML = `
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+        <circle cx="12" cy="15" r="3" />
       `;
+      
+      const message = createElement('p', {
+        className: 'text-sm text-muted-foreground'
+      }, 'Please select both a date and time to proceed with booking');
+      
+      emptyState.appendChild(icon);
+      emptyState.appendChild(message);
+      bookingFormContainer.appendChild(emptyState);
       return;
     }
     
     // Create panel for the booking form
-    const panel = document.createElement('div');
-    panel.className = 'glass-panel';
+    const panel = createElement('div', { className: 'glass-panel' });
     
     // Format date and time for display
     const formattedDate = formatDisplayDate(selectedDate);
     const formattedTime = selectedSlot.display;
     
-    // Build panel content
-    let panelContent = `
-      <div class="p-6">
-        <h3 class="text-base font-medium mb-4">Complete Your Booking</h3>
-        
-        <div class="mb-6 p-3 bg-secondary/50 rounded-lg">
-          <p class="text-sm font-medium">
-            <span class="text-muted-foreground">Date: </span>
-            ${formattedDate}
-          </p>
-          <p class="text-sm font-medium">
-            <span class="text-muted-foreground">Time: </span>
-            ${formattedTime}
-          </p>
-        </div>
-    `;
+    // Create panel content wrapper
+    const contentWrapper = createElement('div', { className: 'p-6' });
+    
+    // Add header
+    const header = createElement('h3', { 
+      className: 'text-base font-medium mb-4' 
+    }, 'Complete Your Booking');
+    
+    // Add booking summary
+    const summary = createElement('div', { 
+      className: 'mb-6 p-3 bg-secondary/50 rounded-lg' 
+    });
+    
+    const dateInfo = createElement('p', { 
+      className: 'text-sm font-medium' 
+    }, `<span class="text-muted-foreground">Date: </span>${formattedDate}`);
+    
+    const timeInfo = createElement('p', { 
+      className: 'text-sm font-medium' 
+    }, `<span class="text-muted-foreground">Time: </span>${formattedTime}`);
+    
+    summary.appendChild(dateInfo);
+    summary.appendChild(timeInfo);
+    
+    // Add elements to content wrapper
+    contentWrapper.appendChild(header);
+    contentWrapper.appendChild(summary);
     
     if (sessionType === 'free') {
-      // Free session booking form
-      panelContent += `
-        <form id="booking-submit-form" class="space-y-4">
-          <div>
-            <label for="name" class="block text-sm font-medium mb-1">Name</label>
-            <input type="text" id="name" name="name" placeholder="Your full name" required 
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-          </div>
-          
-          <div>
-            <label for="email" class="block text-sm font-medium mb-1">Email</label>
-            <input type="email" id="email" name="email" placeholder="you@example.com" required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-          </div>
-          
-          <div>
-            <label for="phone" class="block text-sm font-medium mb-1">Phone</label>
-            <input type="tel" id="phone" name="phone" placeholder="Your phone number" required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-          </div>
-          
-          <div>
-            <label for="address" class="block text-sm font-medium mb-1">Address</label>
-            <input type="text" id="address" name="address" placeholder="Your full address" required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-          </div>
-          
-          <div>
-            <label for="notes" class="block text-sm font-medium mb-1">Notes (optional)</label>
-            <textarea id="notes" name="notes" placeholder="Any additional information..."
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
-          </div>
-          
-          <button type="submit" class="w-full py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
-            Confirm Booking
-          </button>
-        </form>
-      `;
+      // Create booking form for free sessions
+      const form = createElement('form', { 
+        className: 'space-y-4',
+        id: 'booking-submit-form'
+      });
+      
+      // Create form fields
+      const nameField = createFormField('name', 'Name', 'text', 'Your full name', true);
+      const emailField = createFormField('email', 'Email', 'email', 'you@example.com', true);
+      const phoneField = createFormField('phone', 'Phone', 'tel', 'Your phone number', true);
+      const addressField = createFormField('address', 'Address', 'text', 'Your full address', true);
+      const notesField = createFormField('notes', 'Notes (optional)', 'textarea', 'Any additional information...', false);
+      
+      // Create submit button
+      const submitButton = createElement('button', {
+        className: 'w-full py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors',
+        type: 'submit'
+      }, 'Confirm Booking');
+      
+      // Add fields to form
+      form.appendChild(nameField);
+      form.appendChild(emailField);
+      form.appendChild(phoneField);
+      form.appendChild(addressField);
+      form.appendChild(notesField);
+      form.appendChild(submitButton);
+      
+      // Add form submission handler
+      form.addEventListener('submit', handleBookingSubmit);
+      
+      // Add form to content wrapper
+      contentWrapper.appendChild(form);
     } else {
-      // Premium session checkout button
-      panelContent += `
-        <div class="text-center">
-          <button id="checkout-button" class="w-full py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
-            Checkout
-          </button>
-        </div>
-      `;
+      // Create checkout button for premium sessions
+      const buttonWrapper = createElement('div', { className: 'text-center' });
+      const checkoutButton = createElement('button', {
+        className: 'w-full py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors',
+        id: 'checkout-button'
+      }, 'Checkout');
+      
+      // Add click handler
+      checkoutButton.addEventListener('click', handleCheckoutRedirect);
+      
+      buttonWrapper.appendChild(checkoutButton);
+      contentWrapper.appendChild(buttonWrapper);
     }
     
-    panelContent += `</div>`;
-    panel.innerHTML = panelContent;
+    // Add content wrapper to panel
+    panel.appendChild(contentWrapper);
     
-    // Add event listeners
-    if (sessionType === 'free') {
-      const form = panel.querySelector('#booking-submit-form');
-      if (form) {
-        form.addEventListener('submit', handleBookingSubmit);
-      }
-    } else {
-      const checkoutButton = panel.querySelector('#checkout-button');
-      if (checkoutButton) {
-        checkoutButton.addEventListener('click', handleCheckoutRedirect);
-      }
-    }
-    
+    // Add panel to container
     bookingFormContainer.appendChild(panel);
+  }
+  
+  // Helper function to create form fields
+  function createFormField(id, label, type, placeholder, required) {
+    const fieldWrapper = createElement('div');
+    
+    const labelElement = createElement('label', {
+      className: 'block text-sm font-medium mb-1',
+      for: id
+    }, label);
+    
+    fieldWrapper.appendChild(labelElement);
+    
+    if (type === 'textarea') {
+      const textarea = createElement('textarea', {
+        id,
+        name: id,
+        placeholder,
+        className: 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent'
+      });
+      
+      if (required) {
+        textarea.setAttribute('required', 'true');
+      }
+      
+      fieldWrapper.appendChild(textarea);
+    } else {
+      const input = createElement('input', {
+        type,
+        id,
+        name: id,
+        placeholder,
+        className: 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent'
+      });
+      
+      if (required) {
+        input.setAttribute('required', 'true');
+      }
+      
+      fieldWrapper.appendChild(input);
+    }
+    
+    return fieldWrapper;
   }
   
   // Handle booking form submission
