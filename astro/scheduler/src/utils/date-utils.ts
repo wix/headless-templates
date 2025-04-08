@@ -1,16 +1,16 @@
 /**
  * Date and time utility functions
  */
-import { DATE_FORMAT, TIME_FORMAT } from './constants';
+import { TIME_FORMAT } from "./constants";
 
 /**
  * Format a date using the standard app date format
  */
 export function formatDisplayDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   }).format(date);
 }
 
@@ -28,13 +28,13 @@ export function formatDisplayTime(dateString: string): string {
 export function generateDateRange(daysAhead: number = 30): Date[] {
   const today = startOfToday();
   const dates: Date[] = [];
-  
+
   for (let i = 0; i < daysAhead; i++) {
     const date = new Date(today);
     date.setDate(date.getDate() + i);
     dates.push(date);
   }
-  
+
   return dates;
 }
 
@@ -42,7 +42,7 @@ export function generateDateRange(daysAhead: number = 30): Date[] {
  * Get the days of the week
  */
 export function getDaysOfWeek(): string[] {
-  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 }
 
 /**
@@ -59,8 +59,9 @@ export function startOfToday(): Date {
  */
 export function isToday(date: Date): boolean {
   const today = new Date();
-  return date.getDate() === today.getDate() &&
+  return (
+    date.getDate() === today.getDate() &&
     date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear();
+    date.getFullYear() === today.getFullYear()
+  );
 }
-

@@ -16,7 +16,7 @@ export const TIME_FORMAT = {
   minute: "numeric",
   hour12: true,
   timeZone: "UTC",
-};
+} as Intl.DateTimeFormatOptions;
 
 // Brand settings
 export const BRAND_COLORS = {
