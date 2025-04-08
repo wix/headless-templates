@@ -1,5 +1,6 @@
 import { format } from "date-fns";
-import { createWixClient } from "./wix-client";
+import { services, availabilityCalendar, bookings } from "@wix/bookings";
+import { redirects } from "@wix/redirects";
 import { DATE_FORMAT, TIME_FORMAT } from "./constants";
 
 export interface BookingData {
@@ -39,12 +40,9 @@ interface WixRedirectResponse {
   [key: string]: any;
 }
 
-// Create Wix client
-const wixClient = createWixClient();
-
 export async function getServices(): Promise<WixService[]> {
   try {
-    const { items } = await wixClient.services.queryServices().find();
+    const { items } = await services.queryServices().find();
     return items;
   } catch (error) {
     console.error("Error fetching services:", error);
@@ -81,7 +79,7 @@ export async function getAvailableSlots(
     const tomorrow = new Date(date);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const availability = await wixClient.availabilityCalendar.queryAvailability(
+    const availability = await availabilityCalendar.queryAvailability(
       {
         filter: {
           serviceId: [service._id],
@@ -112,7 +110,7 @@ export async function createBooking(
   selectedDate: Date
 ): Promise<WixBookingResponse> {
   try {
-    const booking = await wixClient.bookings.createBooking({
+    const booking = await bookings.createBooking({
       bookedEntity: selectedSlot.entity,
       totalParticipants: 1,
       contactDetails: {
@@ -150,8 +148,8 @@ export async function createRedirectSession(
   returnUrl: string
 ): Promise<string | undefined> {
   try {
-    const redirect: WixRedirectResponse =
-      await wixClient.redirects.createRedirectSession({
+    const redirect: WixRedirectResponse = await redirects.createRedirectSession(
+      {
         bookingsCheckout: {
           slotAvailability: slot,
           timezone: "UTC",
@@ -159,7 +157,8 @@ export async function createRedirectSession(
         callbacks: {
           postFlowUrl: returnUrl,
         },
-      });
+      }
+    );
 
     return redirect.redirectSession?.fullUrl;
   } catch (error) {

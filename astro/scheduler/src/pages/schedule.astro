@@ -8,18 +8,7 @@ import BookingForm from "../components/BookingForm.astro";
 import SessionType from "../components/SessionType.astro";
 import BackButton from "../components/ui/BackButton.astro";
 import "../styles/global.css";
-import { createWixClient } from "../utils/wix-client";
 import { BUSINESS_NAME } from "../utils/constants";
-
-const wixClient = createWixClient();
-
-const { items: servicesList } = await wixClient.services.queryServices().find();
-const freeService = servicesList.find((service) =>
-  service.name!.toLowerCase().includes("free")
-);
-const premiumService = servicesList.find(
-  (service) => !service.name!.toLowerCase().includes("free")
-);
 ---
 
 <Layout>
