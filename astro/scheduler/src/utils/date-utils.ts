@@ -1,14 +1,17 @@
 /**
  * Date and time utility functions
  */
-import { format as formatDate, startOfToday, addDays } from 'date-fns';
 import { DATE_FORMAT, TIME_FORMAT } from './constants';
 
 /**
  * Format a date using the standard app date format
  */
 export function formatDisplayDate(date: Date): string {
-  return formatDate(date, DATE_FORMAT);
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
 }
 
 /**
@@ -27,7 +30,9 @@ export function generateDateRange(daysAhead: number = 30): Date[] {
   const dates: Date[] = [];
   
   for (let i = 0; i < daysAhead; i++) {
-    dates.push(addDays(today, i));
+    const date = new Date(today);
+    date.setDate(date.getDate() + i);
+    dates.push(date);
   }
   
   return dates;
@@ -40,15 +45,22 @@ export function getDaysOfWeek(): string[] {
   return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 }
 
+/**
+ * Get start of today with time set to 00:00:00
+ */
+export function startOfToday(): Date {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+}
 
 /**
  * Check if a date is today
  */
 export function isToday(date: Date): boolean {
-  const today = startOfToday();
+  const today = new Date();
   return date.getDate() === today.getDate() &&
     date.getMonth() === today.getMonth() &&
     date.getFullYear() === today.getFullYear();
 }
-
 

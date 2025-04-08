@@ -20,7 +20,6 @@
     "@wix/redirects": "1.0.60",
     "@wix/sdk": "^1.14.2",
     "astro": "^5.5.4",
-    "date-fns": "^3.6.0",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {

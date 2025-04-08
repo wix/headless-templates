@@ -1,7 +1,7 @@
-import { format } from "date-fns";
 import { services, availabilityCalendar, bookings } from "@wix/bookings";
 import { redirects } from "@wix/redirects";
 import { DATE_FORMAT, TIME_FORMAT } from "./constants";
+import { formatDisplayDate } from "./date-utils";
 
 export interface BookingData {
   name: string;
@@ -127,9 +127,9 @@ export async function createBooking(
     // Prepare data for confirmation page
     const confirmationData = {
       ...bookingData,
-      date: format(selectedDate, "yyyy-MM-dd"),
+      date: selectedDate.toISOString().split('T')[0], // yyyy-MM-dd format
       time: selectedSlot.time,
-      displayDate: format(selectedDate, DATE_FORMAT),
+      displayDate: formatDisplayDate(selectedDate),
       displayTime: selectedSlot.display,
     };
 
