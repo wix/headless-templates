@@ -1,0 +1,26 @@
+---
+interface Props {
+  title?: string;
+  class?: string;
+  id?: string;
+  isGlass?: boolean;
+}
+
+const { 
+  title, 
+  class: className = '', 
+  id,
+  isGlass = true
+} = Astro.props;
+
+const baseClass = isGlass 
+  ? 'glass-panel p-6 rounded-xl overflow-hidden' 
+  : 'bg-white border border-gray-200 p-6 rounded-xl shadow-sm overflow-hidden';
+---
+
+<div id={id} class={`${baseClass} ${className}`}>
+  {title && (
+    <h3 class="text-lg font-medium mb-4">{title}</h3>
+  )}
+  <slot />
+</div>

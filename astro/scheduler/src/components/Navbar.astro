@@ -1,0 +1,25 @@
+---
+import { BUSINESS_NAME } from '../utils/constants';
+---
+
+<header class="fixed top-0 left-0 w-full backdrop-blur-md bg-white/80 z-50 border-b border-gray-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center">
+        <a href="/" class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span class="ml-2 text-xl font-semibold text-primary">{BUSINESS_NAME}</span>
+        </a>
+      </div>
+      <nav class="flex space-x-4">
+        <a href="/" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors">Home</a>
+        <a href="/schedule" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors">Schedule</a>
+      </nav>
+    </div>
+  </div>
+</header>

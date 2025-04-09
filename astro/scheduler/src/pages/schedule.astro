@@ -1,0 +1,76 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import DatePicker from "../components/DatePicker.astro";
+import TimeSlots from "../components/TimeSlots.astro";
+import BookingForm from "../components/BookingForm.astro";
+import SessionType from "../components/SessionType.astro";
+import BackButton from "../components/ui/BackButton.astro";
+import "../styles/global.css";
+import { BUSINESS_NAME } from "../utils/constants";
+---
+
+<Layout>
+  <div class="min-h-screen bg-gradient-to-b from-white to-secondary/10">
+    <Navbar />
+
+    <div class="max-w-7xl mx-auto pt-32 pb-16 px-4">
+      <div class="mb-6">
+        <BackButton href="/" text="Back to Home" />
+      </div>
+
+      <div class="text-center mb-8 animate-fade-up">
+        <div class="mx-auto mb-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-12 w-12 mx-auto text-primary"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <h1
+          class="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+        >
+          Schedule Your Appointment
+        </h1>
+      </div>
+
+      <div class="text-center animate-fade-up delay-100">
+        <p class="text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Select a date and time that works for you, and fill in your details to
+          complete the booking with {BUSINESS_NAME}.
+        </p>
+      </div>
+
+      <div class="max-w-2xl mx-auto mb-8 animate-fade-up delay-100">
+        <SessionType />
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="animate-fade-up delay-200">
+          <DatePicker />
+        </div>
+
+        <div class="animate-fade-up delay-300">
+          <TimeSlots />
+        </div>
+
+        <div id="booking-form" class="animate-fade-up delay-400">
+          <BookingForm />
+        </div>
+      </div>
+    </div>
+
+    <Footer />
+  </div>
+</Layout>

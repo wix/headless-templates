@@ -1,0 +1,94 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import "../styles/global.css";
+import { BUSINESS_NAME } from "../utils/constants";
+
+const features = [
+  {
+    title: "Online Booking",
+    description: "Book appointments online 24/7 without having to call or email.",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`,
+  },
+  {
+    title: "Instant Confirmation",
+    description: "Receive immediate confirmation for your scheduled appointments.",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+  },
+  {
+    title: "Easy Rescheduling",
+    description: "Need to reschedule? No problem, change your appointment with ease.",
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+  },
+];
+---
+
+<Layout>
+  <div class="min-h-screen">
+    <Navbar />
+
+    <main>
+      <section class="bg-white pt-32 pb-20">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+          <div class="animate-fade-up">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6 text-primary">
+              Schedule With Confidence
+            </h1>
+          </div>
+          <div class="animate-fade-up" style="animation-delay: 100ms;">
+            <p class="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Book your next appointment with {BUSINESS_NAME} in just a few clicks. Simple, fast, and convenient scheduling.
+            </p>
+          </div>
+          <div class="animate-fade-up" style="animation-delay: 200ms;">
+            <a href="/schedule" class="inline-block py-3 px-6 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+              Book an Appointment
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold mb-4">Why Choose Our Scheduler</h2>
+            <p class="text-muted-foreground max-w-2xl mx-auto">
+              Our scheduling system provides a seamless experience from booking to confirmation.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow animate-fade-up" style={`animation-delay: ${index * 100 + 200}ms`}>
+                <div set:html={feature.icon} />
+                <h3 class="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p class="text-muted-foreground">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section class="py-16 bg-primary/5">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+          <div class="animate-fade-up">
+            <h2 class="text-3xl font-bold mb-4">Ready to Book Your Appointment?</h2>
+          </div>
+          <div class="animate-fade-up" style="animation-delay: 100ms;">
+            <p class="text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Our online scheduling system makes it easy to find a time that works for you.
+            </p>
+          </div>
+          <div class="animate-fade-up" style="animation-delay: 200ms;">
+            <a href="/schedule" class="inline-block py-3 px-6 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+              Schedule Now
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </div>
+</Layout>
