@@ -110,12 +110,14 @@ export async function createBooking(
   selectedDate: Date
 ): Promise<WixBookingResponse> {
   try {
+    const [firstName, ...lastName] = bookingData.name.split(" ");
+
     const booking = await bookings.createBooking({
       bookedEntity: selectedSlot.entity,
       totalParticipants: 1,
       contactDetails: {
-        firstName: bookingData.name.split(" ")[0],
-        lastName: bookingData.name.split(" ")[1] || "",
+        firstName,
+        lastName: lastName.join(" "),
         fullAddress: {
           addressLine: bookingData.address,
         },
