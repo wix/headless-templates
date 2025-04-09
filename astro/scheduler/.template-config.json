@@ -1,4 +1,7 @@
 {
   "slug": "scheduler",
-  "requiredApps": []
+  "requiredApps": [
+    "13d21c63-b5ec-5912-8397-c3a5ddb27a97",
+    "55cd9036-36bb-480b-8ddc-afda3cb2eb8d"
+  ]
 }
