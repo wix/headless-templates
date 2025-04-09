@@ -1,6 +1,7 @@
 import { services, availabilityCalendar, bookings } from "@wix/bookings";
+import { checkout } from "@wix/ecom";
 import { redirects } from "@wix/redirects";
-import { TIME_FORMAT } from "./constants";
+import { BOOKINGS_APP_ID, TIME_FORMAT } from "./constants";
 import { formatDisplayDate } from "./date-utils";
 
 export interface BookingData {
@@ -43,7 +44,7 @@ interface WixRedirectResponse {
 export async function getServices(): Promise<WixService[]> {
   try {
     const { items } = await services.queryServices().find();
-    return items;
+    return items as WixService[];
   } catch (error) {
     console.error("Error fetching services:", error);
     throw error;
@@ -110,14 +111,15 @@ export async function createBooking(
   selectedDate: Date
 ): Promise<WixBookingResponse> {
   try {
-    const [firstName, ...lastName] = bookingData.name.split(" ");
+    const [firstName, ...lastNameParts] = bookingData.name.split(" ");
+    const lastName = lastNameParts.join(" ");
 
     const booking = await bookings.createBooking({
       bookedEntity: selectedSlot.entity,
       totalParticipants: 1,
       contactDetails: {
         firstName,
-        lastName: lastName.join(" "),
+        lastName,
         fullAddress: {
           addressLine: bookingData.address,
         },
@@ -125,6 +127,33 @@ export async function createBooking(
         phone: bookingData.phone,
       },
     });
+
+    const createdCheckout = await checkout.createCheckout({
+      lineItems: [
+        {
+          quantity: 1,
+          catalogReference: {
+            appId: BOOKINGS_APP_ID,
+            catalogItemId: booking.booking!._id!,
+          },
+        },
+      ],
+      channelType: checkout.ChannelType.WEB,
+      checkoutInfo: {
+        billingInfo: {
+          contactDetails: {
+            firstName: firstName,
+            lastName: lastName,
+            phone: bookingData.phone,
+          },
+        },
+        buyerInfo: {
+          email: bookingData.email,
+        },
+      },
+    });
+
+    await checkout.createOrder(createdCheckout._id!);
 
     // Prepare data for confirmation page
     const confirmationData = {
