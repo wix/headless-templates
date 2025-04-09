@@ -16,6 +16,7 @@
     "@astrojs/tailwind": "^5.1.0",
     "@wix/astro": "^0.2.6",
     "@wix/bookings": "^1.0.667",
+    "@wix/ecom": "^1.0.1044",
     "@wix/redirects": "1.0.60",
     "@wix/sdk": "^1.14.2",
     "astro": "^5.5.4",
