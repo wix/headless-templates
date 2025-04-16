@@ -1,0 +1,180 @@
+---
+import FormField from "./FormField.astro";
+import Button from "./Button.astro";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+
+const ageGroups = [
+  { value: "under10", label: "Under 10" },
+  { value: "under12", label: "Under 12" },
+  { value: "under14", label: "Under 14" },
+  { value: "under16", label: "Under 16" },
+  { value: "under18", label: "Under 18" },
+  { value: "adult", label: "Adult (18+)" },
+];
+
+const skillLevels = [
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
+  { value: "professional", label: "Professional" },
+];
+
+const teamSizes = [
+  { value: "5", label: "5-a-side" },
+  { value: "7", label: "7-a-side" },
+  { value: "11", label: "11-a-side" },
+];
+---
+
+<form id="tournament-form" class={`form-container ${className}`} method="POST">
+  <div class="mb-6">
+    <h2 class="text-xl font-bold mb-2">Team Information</h2>
+    <div class="h-1 w-20 bg-primary mb-4"></div>
+    
+    <FormField
+      id="teamName"
+      label="Team Name"
+      placeholder="Enter your team name"
+      required
+    />
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormField
+        id="ageGroup"
+        label="Age Group"
+        type="select"
+        options={ageGroups}
+        required
+      />
+      
+      <FormField
+        id="skillLevel"
+        label="Skill Level"
+        type="select"
+        options={skillLevels}
+        required
+      />
+    </div>
+    
+    <FormField
+      id="teamSize"
+      label="Team Size"
+      type="radio"
+      options={teamSizes}
+      required
+    />
+  </div>
+  
+  <div class="mb-6">
+    <h2 class="text-xl font-bold mb-2">Contact Information</h2>
+    <div class="h-1 w-20 bg-primary mb-4"></div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormField
+        id="firstName"
+        label="First Name"
+        placeholder="Enter your first name"
+        required
+      />
+      
+      <FormField
+        id="lastName"
+        label="Last Name"
+        placeholder="Enter your last name"
+        required
+      />
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormField
+        id="email"
+        label="Email Address"
+        type="email"
+        placeholder="Enter your email address"
+        required
+      />
+      
+      <FormField
+        id="phone"
+        label="Phone Number"
+        type="tel"
+        placeholder="Enter your phone number"
+        required
+      />
+    </div>
+  </div>
+  
+  <div class="mb-6">
+    <h2 class="text-xl font-bold mb-2">Additional Information</h2>
+    <div class="h-1 w-20 bg-primary mb-4"></div>
+    
+    <FormField
+      id="previousExperience"
+      label="Has your team participated in tournaments before?"
+      type="select"
+      options={[
+        { value: "yes", label: "Yes" },
+        { value: "no", label: "No" }
+      ]}
+      required
+    />
+    
+    <FormField
+      id="specialRequirements"
+      label="Special Requirements or Requests"
+      type="textarea"
+      placeholder="Please let us know if you have any special requirements or requests"
+    />
+    
+    <FormField
+      id="agreeTerms"
+      label="Terms and Conditions"
+      type="checkbox"
+      placeholder="I agree to the terms and conditions of the tournament"
+      required
+    />
+  </div>
+  
+  <div class="flex justify-end">
+    <Button type="reset" variant="secondary" class="mr-2">
+      Reset
+    </Button>
+    
+    <Button type="submit" variant="primary">
+      Submit Registration
+    </Button>
+  </div>
+</form>
+
+<script>
+  const form = document.getElementById("tournament-form") as HTMLFormElement;
+  
+  if (form) {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      
+      const formData = new FormData(form);
+      const formDataObj = Object.fromEntries(formData.entries());
+      
+      try {
+        // In a real application, you would send this data to a server
+        // For this demo, we'll simulate a successful submission
+        console.log("Form data:", formDataObj);
+        
+        // Simulate a network request
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Redirect to success page
+        window.location.href = "/success";
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        alert("There was an error submitting your registration. Please try again.");
+      }
+    });
+  }
+</script>
