@@ -19,6 +19,17 @@ const daysOfWeek = getDaysOfWeek();
     </div>
     
     <div class="p-3 rounded-lg">
+      <div class="flex justify-between items-center mb-2">
+        <button id="prev-month" class="p-1 hover:bg-gray-100 rounded-md">
+          <span class="sr-only">Previous month</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <h3 id="current-month-display" class="text-sm font-medium"></h3>
+        <button id="next-month" class="p-1 hover:bg-gray-100 rounded-md">
+          <span class="sr-only">Next month</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
       <div id="datepicker" class="grid grid-cols-7 gap-1">
         {daysOfWeek.map(day => (
           <div class="text-center text-xs text-muted-foreground pb-1">{day}</div>
@@ -35,40 +46,149 @@ const daysOfWeek = getDaysOfWeek();
 </div>
 
 <script>
-  import { generateDateRange, formatDisplayDate, startOfToday } from '../utils/date-utils';
+  import { formatDisplayDate, startOfToday } from '../utils/date-utils';
   import { createElement } from '../utils/dom-utils';
   import { dispatchDateSelected } from '../utils/event-utils';
   
+  let currentMonth: number;
+  let currentYear: number;
+  let selectedDate: Date | null = null;
+  
   function initDatepicker(): void {
     const today = startOfToday();
-    const dates = generateDateRange(30);
-    const datepicker = document.getElementById('datepicker');
+    currentMonth = today.getMonth();
+    currentYear = today.getFullYear();
     
+    // Set up month navigation
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+    
+    if (prevMonthBtn) {
+      prevMonthBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateMonth(-1);
+      });
+    }
+    
+    if (nextMonthBtn) {
+      nextMonthBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateMonth(1);
+      });
+    }
+    
+    renderCalendar();
+    updateMonthDisplay();
+  }
+  
+  function navigateMonth(change: number): void {
+    currentMonth += change;
+    
+    // Handle year change
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+    } else if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+    }
+    
+    renderCalendar();
+    updateMonthDisplay();
+  }
+  
+  function updateMonthDisplay(): void {
+    const monthDisplay = document.getElementById('current-month-display');
+    if (monthDisplay) {
+      monthDisplay.textContent = new Intl.DateTimeFormat('en-US', { 
+        month: 'long',
+        year: 'numeric'
+      }).format(new Date(currentYear, currentMonth, 1));
+    }
+  }
+  
+  function renderCalendar(): void {
+    const datepicker = document.getElementById('datepicker');
     if (!datepicker) return;
     
-    dates.forEach((date, index) => {
+    // Get weekday header elements
+    const dayOfWeekHeaders = Array.from(datepicker.children).slice(0, 7);
+    
+    // Clear the datepicker
+    datepicker.innerHTML = '';
+    
+    // Re-add weekday headers
+    dayOfWeekHeaders.forEach(header => {
+      datepicker.appendChild(header);
+    });
+    
+    const today = startOfToday();
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+    
+    // Add empty cells for proper alignment with weekdays
+    const firstDayIndex = firstDayOfMonth.getDay(); // 0=Sunday, 1=Monday, etc.
+    
+    // Add placeholder cells before the first day of the month
+    for (let i = 0; i < firstDayIndex; i++) {
+      datepicker.appendChild(createElement('div', {
+        className: 'h-8 w-8'
+      }, ''));
+    }
+    
+    // Add buttons for each day of the month
+    for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
+      const date = new Date(currentYear, currentMonth, day);
+      const isCurrentDate = date.getDate() === today.getDate() && 
+                            date.getMonth() === today.getMonth() && 
+                            date.getFullYear() === today.getFullYear();
+      const isPastDate = date < today;
+      
       const dateEl = createElement('button', {
         className: 'rounded-md h-8 w-8 flex items-center justify-center text-sm hover:bg-primary/10 transition-colors',
-        'data-date': date.toISOString()
-      }, date.getDate().toString());
+        'data-date': date.toISOString(),
+        type: 'button'
+      }, day.toString());
       
-      if (index === 0) {
+      if (isCurrentDate) {
         dateEl.classList.add('font-bold');
       }
-      dateEl.addEventListener('click', () => {
-        handleDateSelection(dateEl, date);
-      });
+      
+      if (isPastDate) {
+        dateEl.classList.add('text-gray-300', 'cursor-not-allowed');
+      } else {
+        dateEl.addEventListener('click', () => {
+          handleDateSelection(dateEl, date);
+        });
+      }
+      
+      // If this matches our previously selected date, highlight it
+      if (selectedDate && 
+          selectedDate.getFullYear() === date.getFullYear() && 
+          selectedDate.getMonth() === date.getMonth() && 
+          selectedDate.getDate() === date.getDate()) {
+        dateEl.classList.add('bg-primary', 'text-white');
+      }
       
       datepicker.appendChild(dateEl);
-    });
+    }
+    
+    // If no date is selected yet, select today if it's in the current month
+    if (!selectedDate) {
+      const todayButton = datepicker.querySelector(`button[data-date="${today.toISOString()}"]`);
+      if (todayButton && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
+        handleDateSelection(todayButton as HTMLButtonElement, today);
+      }
+    }
   }
   
   function handleDateSelection(element: HTMLButtonElement, date: Date): void {
-    document.querySelectorAll('#datepicker button').forEach(btn => {
+    document.querySelectorAll('#datepicker button[data-date]').forEach(btn => {
       btn.classList.remove('bg-primary', 'text-white');
     });
     
     element.classList.add('bg-primary', 'text-white');
+    selectedDate = date;
     updateSelectedDateDisplay(date);
     
     dispatchDateSelected(date);
