@@ -26,8 +26,8 @@ const {
 } = Astro.props;
 ---
 
-<div class="form-field">
-  <label for={id} class="form-label">
+<div class="form-field hover:bg-gray-50 transition-colors">
+  <label for={id} class="form-label text-[#5f6368] font-normal">
     {label} {required && <span class="text-error">*</span>}
   </label>
 

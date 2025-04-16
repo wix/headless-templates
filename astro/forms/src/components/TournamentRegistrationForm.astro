@@ -31,10 +31,9 @@ const teamSizes = [
 ];
 ---
 
-<form id="tournament-form" class={`form-container ${className}`} method="POST">
-  <div class="mb-6">
-    <h2 class="text-xl font-bold mb-2">Team Information</h2>
-    <div class="h-1 w-20 bg-primary mb-4"></div>
+<form id="tournament-form" class={`form-container shadow-none ${className}`} method="POST">
+  <div class="mb-8 border-t-8 border-primary rounded-t-lg pt-4">
+    <h2 class="text-xl font-medium mb-4 text-primary">Team Information</h2>
     
     <FormField
       id="teamName"
@@ -70,9 +69,8 @@ const teamSizes = [
     />
   </div>
   
-  <div class="mb-6">
-    <h2 class="text-xl font-bold mb-2">Contact Information</h2>
-    <div class="h-1 w-20 bg-primary mb-4"></div>
+  <div class="mb-8 bg-white rounded-lg shadow-sm p-6 mt-4">
+    <h2 class="text-xl font-medium mb-4 text-primary">Contact Information</h2>
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
@@ -109,9 +107,8 @@ const teamSizes = [
     </div>
   </div>
   
-  <div class="mb-6">
-    <h2 class="text-xl font-bold mb-2">Additional Information</h2>
-    <div class="h-1 w-20 bg-primary mb-4"></div>
+  <div class="mb-8 bg-white rounded-lg shadow-sm p-6 mt-4">
+    <h2 class="text-xl font-medium mb-4 text-primary">Additional Information</h2>
     
     <FormField
       id="previousExperience"
@@ -140,13 +137,13 @@ const teamSizes = [
     />
   </div>
   
-  <div class="flex justify-end">
+  <div class="flex justify-end mt-6">
     <Button type="reset" variant="secondary" class="mr-2">
-      Reset
+      Clear form
     </Button>
     
     <Button type="submit" variant="primary">
-      Submit Registration
+      Submit
     </Button>
   </div>
 </form>
