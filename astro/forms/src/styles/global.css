@@ -17,31 +17,31 @@ body {
 }
 
 .form-field {
-  @apply mb-6;
+  @apply mb-6 p-2 rounded-md;
 }
 
 .form-label {
-  @apply block text-sm font-medium text-gray-700 mb-1;
+  @apply block text-sm font-medium text-gray-500 mb-2;
 }
 
 .form-input {
-  @apply w-full px-3 py-2 border-b border-gray-300 focus:border-primary focus:outline-none bg-gray-50/30;
+  @apply w-full px-2 py-2 border-b border-gray-300 focus:border-primary focus:outline-none bg-transparent transition-all duration-200 text-gray-800;
 }
 
 .form-textarea {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-sm focus:border-primary focus:outline-none bg-gray-50/30;
+  @apply w-full px-2 py-2 border border-gray-300 rounded-sm focus:border-primary focus:outline-none transition-all duration-200 min-h-[100px] text-gray-800;
 }
 
 .form-select {
-  @apply w-full px-3 py-2 border-b border-gray-300 focus:border-primary focus:outline-none bg-gray-50/30;
+  @apply w-full px-2 py-2 border-b border-gray-300 focus:border-primary focus:outline-none bg-transparent transition-all duration-200 text-gray-800;
 }
 
 .form-checkbox {
-  @apply h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded;
+  @apply h-4 w-4 text-primary focus:ring-0 border-gray-400 rounded transition-colors;
 }
 
 .form-radio {
-  @apply h-4 w-4 text-primary focus:ring-primary border-gray-300;
+  @apply h-4 w-4 text-primary focus:ring-0 border-gray-400 transition-colors;
 }
 
 .error-text {
