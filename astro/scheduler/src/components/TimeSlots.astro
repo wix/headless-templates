@@ -48,7 +48,12 @@ const { class: className = "" } = Astro.props;
   onSessionTypeChanged((type) => {
     sessionType = type;
     selectedSlot = null;
-
+    
+    // Always reset the UI when changing session type
+    timeSlots = [];
+    updateTimeSlotsUI();
+    
+    // Fetch new time slots if we have a date selected
     if (selectedDate) {
       fetchTimeSlots();
     }
