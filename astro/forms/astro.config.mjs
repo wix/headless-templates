@@ -1,12 +1,15 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import wix from "@wix/astro";
-import tailwindcss from "@tailwindcss/vite";
+import tailwind from "@astrojs/tailwind";
 
 // https://astro.build/config
 export default defineConfig({
-  adapter: wix(),
-  vite: {
-    plugins: [tailwindcss()]
-  }
+  integrations: [
+    tailwind({
+      // Use global CSS file
+      applyBaseStyles: false,
+    }),
+  ],
+  // adapter: wix(),
 });
