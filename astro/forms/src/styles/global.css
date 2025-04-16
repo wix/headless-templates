@@ -8,8 +8,8 @@
 
 body {
   font-family: var(--font-family);
-  background-color: #F0EBF8;
-  color: #202124;
+  background-color: #F6F7F8;
+  color: #20455E;
 }
 
 .form-container {
@@ -21,7 +21,7 @@ body {
 }
 
 .form-label {
-  @apply block text-sm font-medium text-gray-500 mb-2;
+  @apply block text-sm font-medium text-[#162D3D] mb-2;
 }
 
 .form-input {
