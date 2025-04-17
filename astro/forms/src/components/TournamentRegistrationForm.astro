@@ -142,12 +142,7 @@ const skillLevels = [
     if (errorContainer) {
       errorContainer.textContent = message;
       errorContainer.classList.remove("hidden");
-
-      // Scroll to error
       errorContainer.scrollIntoView({ behavior: "smooth", block: "center" });
-    } else {
-      // Fallback if error container not found
-      alert(message);
     }
   }
 
@@ -163,43 +158,30 @@ const skillLevels = [
       event.preventDefault();
       clearError();
 
-      // Disable submit button and show loading state
+      // Set loading state
       if (submitButton) {
         submitButton.disabled = true;
-        const originalText = submitButton.textContent || "Submit";
         submitButton.textContent = "Submitting...";
       }
 
       try {
+        // Get form data
         const formData = new FormData(form);
         const formDataObj = Object.fromEntries(formData.entries());
 
-        console.log("Form data:", formDataObj);
-
-        // Submit the form data
+        // Submit the form
         const result = await submitTournamentRegistration(formDataObj);
 
         if (result.success) {
-          // Store the registration ID in session storage
-          if (result.id) {
-            sessionStorage.setItem("registrationId", result.id);
-          }
-
-          // Redirect to success page
-          window.location.href = "/success";
+          // window.location.href = "/success";
         } else {
-          showError(
-            result.error ||
-              "An error occurred during submission. Please try again."
-          );
+          showError(result.error || "Please check your form and try again.");
         }
       } catch (error) {
-        console.error("Error submitting form:", error);
-        showError(
-          error instanceof Error ? error.message : "An unknown error occurred"
-        );
+        console.error("Error:", error);
+        showError("Something went wrong. Please try again later.");
       } finally {
-        // Re-enable submit button and restore text
+        // Reset button state
         if (submitButton) {
           submitButton.disabled = false;
           submitButton.textContent = "Submit";
