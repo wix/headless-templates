@@ -1,6 +1,10 @@
 ---
 import FormField from "./FormField.astro";
 import Button from "./Button.astro";
+import { submissions } from "@wix/forms";
+import { services, availabilityCalendar, bookings } from "@wix/bookings";
+
+console.log(submissions);
 
 interface Props {
   class?: string;
@@ -31,17 +35,23 @@ const teamSizes = [
 ];
 ---
 
-<form id="tournament-form" class={`form-container shadow-none ${className}`} method="POST">
-  <div class="mb-8 border-t-8 border-primary rounded-lg pt-6 px-6 pb-6 bg-white shadow-sm shadow-gray-200">
+<form
+  id="tournament-form"
+  class={`form-container shadow-none ${className}`}
+  method="POST"
+>
+  <div
+    class="mb-8 border-t-8 border-primary rounded-lg pt-6 px-6 pb-6 bg-white shadow-sm shadow-gray-200"
+  >
     <h2 class="text-xl font-medium mb-4 text-primary">Team Information</h2>
-    
+
     <FormField
       id="teamName"
       label="Team Name"
       placeholder="Enter your team name"
       required
     />
-    
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         id="ageGroup"
@@ -50,7 +60,7 @@ const teamSizes = [
         options={ageGroups}
         required
       />
-      
+
       <FormField
         id="skillLevel"
         label="Skill Level"
@@ -59,19 +69,13 @@ const teamSizes = [
         required
       />
     </div>
-    
-    <FormField
-      id="teamSize"
-      label="Team Size"
-      type="radio"
-      options={teamSizes}
-      required
-    />
   </div>
-  
-  <div class="mb-8 border-t-8 border-teal-500 rounded-lg pt-6 px-6 pb-6 bg-white shadow-sm mt-4 shadow-gray-200">
+
+  <div
+    class="mb-8 border-t-8 border-teal-500 rounded-lg pt-6 px-6 pb-6 bg-white shadow-sm mt-4 shadow-gray-200"
+  >
     <h2 class="text-xl font-medium mb-4 text-teal-600">Contact Information</h2>
-    
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         id="firstName"
@@ -79,7 +83,7 @@ const teamSizes = [
         placeholder="Enter your first name"
         required
       />
-      
+
       <FormField
         id="lastName"
         label="Last Name"
@@ -87,7 +91,7 @@ const teamSizes = [
         required
       />
     </div>
-    
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         id="email"
@@ -96,7 +100,7 @@ const teamSizes = [
         placeholder="Enter your email address"
         required
       />
-      
+
       <FormField
         id="phone"
         label="Phone Number"
@@ -106,76 +110,68 @@ const teamSizes = [
       />
     </div>
   </div>
-  
-  <div class="mb-8 border-t-8 border-orange-400 rounded-lg pt-6 px-6 pb-6 bg-white shadow-sm shadow-gray-200 mt-4">
-    <h2 class="text-xl font-medium mb-4 text-orange-500">Additional Information</h2>
-    
+
+  <div
+    class="mb-8 border-t-8 border-orange-400 rounded-lg pt-6 px-6 pb-6 bg-white shadow-sm shadow-gray-200 mt-4"
+  >
+    <h2 class="text-xl font-medium mb-4 text-orange-500">
+      Additional Information
+    </h2>
+
     <FormField
       id="previousExperience"
       label="Has your team participated in tournaments before?"
       type="select"
       options={[
         { value: "yes", label: "Yes" },
-        { value: "no", label: "No" }
+        { value: "no", label: "No" },
       ]}
       required
     />
-    
+
     <FormField
       id="specialRequirements"
       label="Special Requirements or Requests"
       type="textarea"
       placeholder="Please let us know if you have any special requirements or requests"
     />
-    
-    <FormField
-      id="agreeTerms"
-      label="Terms and Conditions"
-      type="checkbox"
-      placeholder="I agree to the terms and conditions of the tournament"
-      required
-    />
   </div>
-  
+
   <div class="flex justify-between items-center mt-8">
     <div>
       <span class="text-xs text-gray-500">* Required question</span>
     </div>
     <div>
-      <Button type="reset" variant="secondary" class="mr-2">
-        Clear form
-      </Button>
-      
-      <Button type="submit" variant="primary">
-        Submit
-      </Button>
+      <Button type="submit" variant="primary"> Submit </Button>
     </div>
   </div>
 </form>
 
 <script>
   const form = document.getElementById("tournament-form") as HTMLFormElement;
-  
+
   if (form) {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      
+
       const formData = new FormData(form);
       const formDataObj = Object.fromEntries(formData.entries());
-      
+
       try {
         // In a real application, you would send this data to a server
         // For this demo, we'll simulate a successful submission
         console.log("Form data:", formDataObj);
-        
+
         // Simulate a network request
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         // Redirect to success page
         window.location.href = "/success";
       } catch (error) {
         console.error("Error submitting form:", error);
-        alert("There was an error submitting your registration. Please try again.");
+        alert(
+          "There was an error submitting your registration. Please try again."
+        );
       }
     });
   }
