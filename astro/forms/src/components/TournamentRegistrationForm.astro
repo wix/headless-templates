@@ -1,9 +1,6 @@
 ---
 import FormField from "./FormField.astro";
 import Button from "./Button.astro";
-import { submissions } from "@wix/forms";
-
-console.log(submissions);
 
 interface Props {
   class?: string;
@@ -51,7 +48,6 @@ const skillLevels = [
         label="Age Group"
         type="select"
         options={ageGroups}
-        required
       />
 
       <FormField
@@ -59,7 +55,6 @@ const skillLevels = [
         label="Skill Level"
         type="select"
         options={skillLevels}
-        required
       />
     </div>
   </div>
@@ -74,14 +69,12 @@ const skillLevels = [
         id="firstName"
         label="First Name"
         placeholder="Enter your first name"
-        required
       />
 
       <FormField
         id="lastName"
         label="Last Name"
         placeholder="Enter your last name"
-        required
       />
     </div>
 
@@ -91,7 +84,6 @@ const skillLevels = [
         label="Email Address"
         type="email"
         placeholder="Enter your email address"
-        required
       />
 
       <FormField
@@ -99,7 +91,6 @@ const skillLevels = [
         label="Phone Number"
         type="tel"
         placeholder="Enter your phone number"
-        required
       />
     </div>
   </div>
@@ -112,22 +103,18 @@ const skillLevels = [
     </h2>
 
     <FormField
-      id="previousExperience"
-      label="Has your team participated in tournaments before?"
-      type="select"
-      options={[
-        { value: "yes", label: "Yes" },
-        { value: "no", label: "No" },
-      ]}
-      required
-    />
-
-    <FormField
       id="specialRequirements"
       label="Special Requirements or Requests"
       type="textarea"
       placeholder="Please let us know if you have any special requirements or requests"
     />
+  </div>
+
+  <!-- Error message container -->
+  <div
+    id="form-error"
+    class="hidden p-4 mb-4 text-sm text-white bg-error rounded-md"
+  >
   </div>
 
   <div class="flex justify-between items-center mt-8">
@@ -141,30 +128,82 @@ const skillLevels = [
 </form>
 
 <script>
+  import { submitTournamentRegistration } from "../utils/form-service";
+
   const form = document.getElementById("tournament-form") as HTMLFormElement;
+  const errorContainer = document.getElementById(
+    "form-error"
+  ) as HTMLDivElement;
+  const submitButton = document.querySelector(
+    "button[type='submit']"
+  ) as HTMLButtonElement;
+
+  function showError(message: string) {
+    if (errorContainer) {
+      errorContainer.textContent = message;
+      errorContainer.classList.remove("hidden");
+
+      // Scroll to error
+      errorContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      // Fallback if error container not found
+      alert(message);
+    }
+  }
+
+  function clearError() {
+    if (errorContainer) {
+      errorContainer.textContent = "";
+      errorContainer.classList.add("hidden");
+    }
+  }
 
   if (form) {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
+      clearError();
 
-      const formData = new FormData(form);
-      const formDataObj = Object.fromEntries(formData.entries());
+      // Disable submit button and show loading state
+      if (submitButton) {
+        submitButton.disabled = true;
+        const originalText = submitButton.textContent || "Submit";
+        submitButton.textContent = "Submitting...";
+      }
 
       try {
-        // In a real application, you would send this data to a server
-        // For this demo, we'll simulate a successful submission
+        const formData = new FormData(form);
+        const formDataObj = Object.fromEntries(formData.entries());
+
         console.log("Form data:", formDataObj);
 
-        // Simulate a network request
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Submit the form data
+        const result = await submitTournamentRegistration(formDataObj);
 
-        // Redirect to success page
-        window.location.href = "/success";
+        if (result.success) {
+          // Store the registration ID in session storage
+          if (result.id) {
+            sessionStorage.setItem("registrationId", result.id);
+          }
+
+          // Redirect to success page
+          window.location.href = "/success";
+        } else {
+          showError(
+            result.error ||
+              "An error occurred during submission. Please try again."
+          );
+        }
       } catch (error) {
         console.error("Error submitting form:", error);
-        alert(
-          "There was an error submitting your registration. Please try again."
+        showError(
+          error instanceof Error ? error.message : "An unknown error occurred"
         );
+      } finally {
+        // Re-enable submit button and restore text
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Submit";
+        }
       }
     });
   }
