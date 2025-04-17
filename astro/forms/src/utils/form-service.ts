@@ -1,67 +1,60 @@
+import { submissions } from "@wix/forms";
+
 export interface FormData {
-  // Team Information
   teamName: string;
   ageGroup: string;
   skillLevel: string;
-
-  // Contact Information
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
-
-  // Additional Information
   specialRequirements?: string;
 }
 
-/**
- * Submits a tournament registration form to the backend.
- * In a real application, this would make an API call to a server.
- *
- * @param formData The form data to submit
- * @returns A promise that resolves to the submission result
- */
+type SubmissionResult = {
+  success: boolean;
+  id?: string;
+  error?: string;
+};
+
 export async function submitTournamentRegistration(
-  formData: Record<string, any>
-): Promise<{ success: boolean; id?: string; error?: string }> {
+  formData: FormData
+): Promise<SubmissionResult> {
   try {
-    // Validate required fields
-    const requiredFields = ["teamName", "email"];
+    const requiredFields = ["teamName", "email"] as const;
     const missingFields = requiredFields.filter((field) => !formData[field]);
 
     if (missingFields.length > 0) {
       return {
         success: false,
-        error: `Please fill in all required fields: ${missingFields.join(", ")}`,
+        error: `Missing required fields: ${missingFields.join(", ")}`,
       };
     }
 
-    // Validate email if provided
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       return {
         success: false,
-        error: "Please enter a valid email address.",
+        error: "Invalid email format",
       };
     }
 
-    // Simulate network latency (shorter delay)
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    const submission = {
+      formId: "2fc1513a-7ad0-4a5e-a731-1d0fb6e0e7e1",
+      submissions: {
+        email_0d10: "",
+      },
+    };
 
-    // Generate a registration ID
-    const registrationId = Math.random().toString(36).substring(2, 10);
-
-    console.log({ formData });
+    const { status } = await submissions.createSubmission(submission);
 
     return {
-      success: true,
-      id: registrationId,
+      success: status === "PENDING" || status === "CONFIRMED",
     };
   } catch (error) {
-    console.error("Error submitting form:", error);
+    console.error("Form submission error:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "An unknown error occurred",
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
