@@ -11,5 +11,5 @@ export default defineConfig({
       applyBaseStyles: false,
     }),
   ],
-  // adapter: wix(),
+  adapter: wix(),
 });
