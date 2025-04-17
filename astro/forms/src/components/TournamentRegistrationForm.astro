@@ -2,7 +2,6 @@
 import FormField from "./FormField.astro";
 import Button from "./Button.astro";
 import { submissions } from "@wix/forms";
-import { services, availabilityCalendar, bookings } from "@wix/bookings";
 
 console.log(submissions);
 
@@ -26,12 +25,6 @@ const skillLevels = [
   { value: "intermediate", label: "Intermediate" },
   { value: "advanced", label: "Advanced" },
   { value: "professional", label: "Professional" },
-];
-
-const teamSizes = [
-  { value: "5", label: "5-a-side" },
-  { value: "7", label: "7-a-side" },
-  { value: "11", label: "11-a-side" },
 ];
 ---
 
