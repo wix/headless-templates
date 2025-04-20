@@ -509,6 +509,7 @@ export async function createCheckoutUrl(postFlowUrl: string) {
     channelType: currentCart.ChannelType.OTHER_PLATFORM,
   });
 
+  const createRedirectSessionStart = Date.now();
   const { redirectSession } = await redirects.createRedirectSession({
     ecomCheckout: { checkoutId: currentCheckout.checkoutId },
     callbacks: {
@@ -516,5 +517,18 @@ export async function createCheckoutUrl(postFlowUrl: string) {
     },
   });
 
+  console.log(`Redirect session creation took ${Date.now() - createRedirectSessionStart}ms`);
+
   return redirectSession?.fullUrl!;
+}
+
+export async function createCheckoutId() {
+  const createCheckoutFromCurrentCartStart = Date.now();
+  const currentCheckout = await currentCart.createCheckoutFromCurrentCart({
+    channelType: currentCart.ChannelType.OTHER_PLATFORM,
+  });
+
+  console.log(`createCheckoutFromCurrentCart took ${Date.now() - createCheckoutFromCurrentCartStart}ms`);
+
+  return currentCheckout.checkoutId;
 }

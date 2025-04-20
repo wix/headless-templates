@@ -7,7 +7,7 @@ import wix from "@wix/astro";
 export default defineConfig({
   output: "server",
   integrations: [tailwind()],
-  adapter: wix(),
+  adapter: wix({preWarmRedirectSession: true}),
   image: {
     domains: ["static.wixstatic.com"],
   },

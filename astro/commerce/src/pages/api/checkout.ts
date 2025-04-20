@@ -1,8 +1,8 @@
 import type { APIRoute } from "astro";
-import { createCheckoutUrl } from "../../lib/wix";
+import { createCheckoutId } from "../../lib/wix";
 
-export const GET: APIRoute = async ({ redirect, request }) => {
-  const checkoutUrl = await createCheckoutUrl(new URL(request.url).origin);
+export const GET: APIRoute = async ({ }) => {
+  const checkoutId = await createCheckoutId();
 
-  return redirect(checkoutUrl);
+  return new Response(JSON.stringify({ checkoutId }), { status: 200 });;
 };
