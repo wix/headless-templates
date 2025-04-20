@@ -1,4 +1,4 @@
-# Astro Forms Template
+# Astro Registration Template
 
 A simple and minimal forms template built with Astro. This template includes a form for soccer tournament registration with various field types and responsive design.
 
