@@ -1,21 +1,11 @@
 import { submissions } from "@wix/forms";
+import { FormFieldsWixIds, WIX_FORM_ID } from "./constants";
 
 type SubmissionResult = {
   success: boolean;
   id?: string;
   error?: string;
 };
-
-export enum FormFieldsWixIds {
-  teamName = "team_name",
-  ageGroup = "age_group_1",
-  skillLevel = "skill_level",
-  firstName = "first_name_1536",
-  lastName = "last_name_7eec",
-  email = "email_8874",
-  phone = "phone_f28a",
-  specialRequirements = "special_requirements_or_requests",
-}
 
 export async function submitTournamentRegistration(
   formData: Record<string, string>
@@ -42,7 +32,7 @@ export async function submitTournamentRegistration(
     }
 
     const submission = {
-      formId: "2fc1513a-7ad0-4a5e-a731-1d0fb6e0e7e1",
+      formId: WIX_FORM_ID,
       submissions: formData,
     };
 

@@ -1,6 +1,6 @@
 ---
 import { forms } from "@wix/forms";
-import { FormFieldsWixIds } from "../utils/form-service";
+import { FormFieldsWixIds, WIX_FORM_ID } from "../utils/constants";
 import Button from "./Button.astro";
 import FormField from "./FormField.astro";
 
@@ -10,8 +10,8 @@ interface Props {
 
 const { class: className = "" } = Astro.props;
 
-const form = await forms.getForm("2fc1513a-7ad0-4a5e-a731-1d0fb6e0e7e1");
-const formFieldsSettings = form.fieldsV2
+const wixForm = await forms.getForm(WIX_FORM_ID);
+const formFieldsSettings = wixForm.fieldsV2
   .filter((field) => field.fieldType === "INPUT" && !field.hidden)
   .reduce((acc, field) => {
     acc[field.inputOptions.target] = field.inputOptions;
