@@ -1,0 +1,106 @@
+---
+interface Props {
+  id: string;
+  label: string;
+  type?:
+    | "text"
+    | "email"
+    | "tel"
+    | "number"
+    | "date"
+    | "textarea"
+    | "select"
+    | "radio"
+    | "checkbox";
+  placeholder?: string;
+  required?: boolean;
+  options?: Array<{ value: string; label: string }>;
+  value?: string;
+  checked?: boolean;
+  min?: string | number;
+  max?: string | number;
+}
+
+const {
+  id,
+  label,
+  type = "text",
+  placeholder = "",
+  required = false,
+  options = [],
+  value = "",
+  checked = false,
+  min,
+  max,
+} = Astro.props;
+---
+
+<div class="form-field hover:bg-gray-50/50 transition-colors duration-200">
+  <label for={id} class="form-label font-normal">
+    {label}
+    {required && <span class="text-error">*</span>}
+  </label>
+
+  {
+    type === "textarea" ? (
+      <textarea
+        id={id}
+        name={id}
+        placeholder={placeholder}
+        class="form-textarea"
+        required={required}
+      />
+    ) : type === "select" ? (
+      <select id={id} name={id} class="form-select" required={required}>
+        <option value="">Select an option</option>
+        {options.map((option) => (
+          <option value={option.value}>{option.label}</option>
+        ))}
+      </select>
+    ) : type === "radio" ? (
+      <div class="space-y-3 mt-2">
+        {options.map((option) => (
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id={`${id}-${option.value}`}
+              name={id}
+              value={option.value}
+              class="form-radio mr-2"
+              required={required}
+            />
+            <label for={`${id}-${option.value}`} class="text-sm text-gray-700">
+              {option.label}
+            </label>
+          </div>
+        ))}
+      </div>
+    ) : type === "checkbox" ? (
+      <div class="flex items-center mt-2">
+        <input
+          type="checkbox"
+          id={id}
+          name={id}
+          class="form-checkbox mr-2"
+          required={required}
+          checked={checked}
+        />
+        <label for={id} class="text-sm text-gray-700">
+          {placeholder}
+        </label>
+      </div>
+    ) : (
+      <input
+        type={type}
+        id={id}
+        name={id}
+        placeholder={placeholder}
+        value={value}
+        class="form-input"
+        required={required}
+        min={min}
+        max={max}
+      />
+    )
+  }
+</div>

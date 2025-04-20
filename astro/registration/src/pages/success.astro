@@ -1,0 +1,20 @@
+---
+import Layout from "../layouts/Layout.astro";
+import SuccessMessage from "../components/SuccessMessage.astro";
+import Button from "../components/Button.astro";
+---
+
+<Layout title="Registration Successful | Soccer Tournament">
+  <div class="max-w-2xl mx-auto py-8">
+    <SuccessMessage
+      title="Registration Complete!"
+      message="Your team has been successfully registered for the soccer tournament. You will receive a confirmation email with further details shortly."
+    >
+      <div class="mt-6">
+        <a href="/" class="inline-block">
+          <Button variant="primary">Return to Home</Button>
+        </a>
+      </div>
+    </SuccessMessage>
+  </div>
+</Layout>

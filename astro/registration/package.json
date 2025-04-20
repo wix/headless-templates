@@ -1,0 +1,24 @@
+{
+  "name": "@wix/astro-registration-template",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "deploy:prod": "wix edge deploy --prod",
+    "deploy:preview": "wix edge deploy"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "^5.1.0",
+    "@wix/astro": "^0.2.9",
+    "@wix/forms": "^1.0.0",
+    "@wix/sdk": "^1.14.2",
+    "astro": "^5.4.3"
+  },
+  "devDependencies": {
+    "@wix/cli-edge": "^1.1.77",
+    "tailwindcss": "^4.0.13"
+  }
+}
