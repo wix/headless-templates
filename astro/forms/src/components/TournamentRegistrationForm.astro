@@ -1,6 +1,8 @@
 ---
-import FormField from "./FormField.astro";
+import { forms } from "@wix/forms";
+import { FormFieldsIds } from "../utils/form-service";
 import Button from "./Button.astro";
+import FormField from "./FormField.astro";
 
 interface Props {
   class?: string;
@@ -20,6 +22,14 @@ const skillLevels = [
   { value: "Advanced", label: "Advanced" },
   { value: "Professional", label: "Professional" },
 ];
+
+const form = await forms.getForm("2fc1513a-7ad0-4a5e-a731-1d0fb6e0e7e1");
+const formFieldsSettings = form.fieldsV2
+  .filter((field) => field.fieldType === "INPUT" && !field.hidden)
+  .reduce((acc, field) => {
+    acc[field.inputOptions.target] = field.inputOptions;
+    return acc;
+  }, {});
 ---
 
 <form
@@ -33,25 +43,31 @@ const skillLevels = [
     <h2 class="text-xl font-medium mb-4 text-primary">Team Information</h2>
 
     <FormField
-      id="teamName"
-      label="Team Name"
-      placeholder="Enter your team name"
-      required
+      id={FormFieldsIds.teamName}
+      label={formFieldsSettings[FormFieldsIds.teamName].stringOptions
+        .textInputOptions.label}
+      required={formFieldsSettings[FormFieldsIds.teamName].required}
     />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
-        id="ageGroup"
-        label="Age Group"
         type="select"
-        options={ageGroups}
+        id={FormFieldsIds.ageGroup}
+        label={formFieldsSettings[FormFieldsIds.ageGroup].stringOptions
+          .dropdownOptions.label}
+        required={formFieldsSettings[FormFieldsIds.ageGroup].required}
+        options={formFieldsSettings[FormFieldsIds.ageGroup].stringOptions
+          .dropdownOptions.options}
       />
 
       <FormField
-        id="skillLevel"
-        label="Skill Level"
         type="select"
-        options={skillLevels}
+        id={FormFieldsIds.skillLevel}
+        label={formFieldsSettings[FormFieldsIds.skillLevel].stringOptions
+          .dropdownOptions.label}
+        required={formFieldsSettings[FormFieldsIds.skillLevel].required}
+        options={formFieldsSettings[FormFieldsIds.skillLevel].stringOptions
+          .dropdownOptions.options}
       />
     </div>
   </div>
@@ -63,31 +79,35 @@ const skillLevels = [
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
-        id="firstName"
-        label="First Name"
-        placeholder="Enter your first name"
+        id={FormFieldsIds.firstName}
+        label={formFieldsSettings[FormFieldsIds.firstName].stringOptions
+          .textInputOptions.label}
+        required={formFieldsSettings[FormFieldsIds.firstName].required}
       />
 
       <FormField
-        id="lastName"
-        label="Last Name"
-        placeholder="Enter your last name"
+        id={FormFieldsIds.lastName}
+        label={formFieldsSettings[FormFieldsIds.lastName].stringOptions
+          .textInputOptions.label}
+        required={formFieldsSettings[FormFieldsIds.lastName].required}
       />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
-        id="email"
-        label="Email Address"
         type="email"
-        placeholder="Enter your email address"
+        id={FormFieldsIds.email}
+        label={formFieldsSettings[FormFieldsIds.email].stringOptions
+          .textInputOptions.label}
+        required={formFieldsSettings[FormFieldsIds.email].required}
       />
 
       <FormField
-        id="phone"
-        label="Phone Number"
         type="tel"
-        placeholder="Enter your phone number"
+        id={FormFieldsIds.phone}
+        label={formFieldsSettings[FormFieldsIds.phone].stringOptions
+          .phoneInputOptions.label}
+        required={formFieldsSettings[FormFieldsIds.phone].required}
       />
     </div>
   </div>
@@ -100,10 +120,11 @@ const skillLevels = [
     </h2>
 
     <FormField
-      id="specialRequirements"
-      label="Special Requirements or Requests"
       type="textarea"
-      placeholder="Please let us know if you have any special requirements or requests"
+      id={FormFieldsIds.phone}
+      label={formFieldsSettings[FormFieldsIds.specialRequirements].stringOptions
+        .textInputOptions.label}
+      required={formFieldsSettings[FormFieldsIds.specialRequirements].required}
     />
   </div>
 

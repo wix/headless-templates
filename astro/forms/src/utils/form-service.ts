@@ -1,5 +1,4 @@
 import { submissions } from "@wix/forms";
-import { createClient, OAuthStrategy } from "@wix/sdk";
 
 export interface FormData {
   teamName: string;
@@ -17,6 +16,17 @@ type SubmissionResult = {
   id?: string;
   error?: string;
 };
+
+export enum FormFieldsIds {
+  teamName = "team_name",
+  ageGroup = "age_group_1",
+  skillLevel = "skill_level",
+  firstName = "first_name_1536",
+  lastName = "last_name_7eec",
+  email = "email_8874",
+  phone = "phone_f28a",
+  specialRequirements = "special_requirements_or_requests",
+}
 
 export async function submitTournamentRegistration(
   formData: FormData
@@ -42,14 +52,14 @@ export async function submitTournamentRegistration(
     const submission = {
       formId: "2fc1513a-7ad0-4a5e-a731-1d0fb6e0e7e1",
       submissions: {
-        team_name: formData.teamName,
-        age_group_1: formData.ageGroup,
-        skill_level: formData.skillLevel,
-        first_name_1536: formData.firstName,
-        last_name_7eec: formData.lastName,
-        email_8874: formData.email,
-        phone_f28a: formData.phone,
-        special_requirements_or_requests: formData.specialRequirements,
+        [FormFieldsIds.teamName]: formData.teamName,
+        [FormFieldsIds.ageGroup]: formData.ageGroup,
+        [FormFieldsIds.skillLevel]: formData.skillLevel,
+        [FormFieldsIds.firstName]: formData.firstName,
+        [FormFieldsIds.lastName]: formData.lastName,
+        [FormFieldsIds.email]: formData.email,
+        [FormFieldsIds.phone]: formData.phone,
+        [FormFieldsIds.specialRequirements]: formData.specialRequirements,
       },
     };
 
