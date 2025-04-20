@@ -1,6 +1,6 @@
 ---
 import { forms } from "@wix/forms";
-import { FormFieldsIds } from "../utils/form-service";
+import { FormFieldsWixIds } from "../utils/form-service";
 import Button from "./Button.astro";
 import FormField from "./FormField.astro";
 
@@ -9,19 +9,6 @@ interface Props {
 }
 
 const { class: className = "" } = Astro.props;
-
-const ageGroups = [
-  { value: "Under 10", label: "Under 10" },
-  { value: "Under 18", label: "Under 18" },
-  { value: "Adult (18+)", label: "Adult (18+)" },
-];
-
-const skillLevels = [
-  { value: "Beginner", label: "Beginner" },
-  { value: "Intermediate", label: "Intermediate" },
-  { value: "Advanced", label: "Advanced" },
-  { value: "Professional", label: "Professional" },
-];
 
 const form = await forms.getForm("2fc1513a-7ad0-4a5e-a731-1d0fb6e0e7e1");
 const formFieldsSettings = form.fieldsV2
@@ -43,30 +30,30 @@ const formFieldsSettings = form.fieldsV2
     <h2 class="text-xl font-medium mb-4 text-primary">Team Information</h2>
 
     <FormField
-      id={FormFieldsIds.teamName}
-      label={formFieldsSettings[FormFieldsIds.teamName].stringOptions
+      id={FormFieldsWixIds.teamName}
+      label={formFieldsSettings[FormFieldsWixIds.teamName].stringOptions
         .textInputOptions.label}
-      required={formFieldsSettings[FormFieldsIds.teamName].required}
+      required={formFieldsSettings[FormFieldsWixIds.teamName].required}
     />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         type="select"
-        id={FormFieldsIds.ageGroup}
-        label={formFieldsSettings[FormFieldsIds.ageGroup].stringOptions
+        id={FormFieldsWixIds.ageGroup}
+        label={formFieldsSettings[FormFieldsWixIds.ageGroup].stringOptions
           .dropdownOptions.label}
-        required={formFieldsSettings[FormFieldsIds.ageGroup].required}
-        options={formFieldsSettings[FormFieldsIds.ageGroup].stringOptions
+        required={formFieldsSettings[FormFieldsWixIds.ageGroup].required}
+        options={formFieldsSettings[FormFieldsWixIds.ageGroup].stringOptions
           .dropdownOptions.options}
       />
 
       <FormField
         type="select"
-        id={FormFieldsIds.skillLevel}
-        label={formFieldsSettings[FormFieldsIds.skillLevel].stringOptions
+        id={FormFieldsWixIds.skillLevel}
+        label={formFieldsSettings[FormFieldsWixIds.skillLevel].stringOptions
           .dropdownOptions.label}
-        required={formFieldsSettings[FormFieldsIds.skillLevel].required}
-        options={formFieldsSettings[FormFieldsIds.skillLevel].stringOptions
+        required={formFieldsSettings[FormFieldsWixIds.skillLevel].required}
+        options={formFieldsSettings[FormFieldsWixIds.skillLevel].stringOptions
           .dropdownOptions.options}
       />
     </div>
@@ -79,35 +66,35 @@ const formFieldsSettings = form.fieldsV2
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
-        id={FormFieldsIds.firstName}
-        label={formFieldsSettings[FormFieldsIds.firstName].stringOptions
+        id={FormFieldsWixIds.firstName}
+        label={formFieldsSettings[FormFieldsWixIds.firstName].stringOptions
           .textInputOptions.label}
-        required={formFieldsSettings[FormFieldsIds.firstName].required}
+        required={formFieldsSettings[FormFieldsWixIds.firstName].required}
       />
 
       <FormField
-        id={FormFieldsIds.lastName}
-        label={formFieldsSettings[FormFieldsIds.lastName].stringOptions
+        id={FormFieldsWixIds.lastName}
+        label={formFieldsSettings[FormFieldsWixIds.lastName].stringOptions
           .textInputOptions.label}
-        required={formFieldsSettings[FormFieldsIds.lastName].required}
+        required={formFieldsSettings[FormFieldsWixIds.lastName].required}
       />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         type="email"
-        id={FormFieldsIds.email}
-        label={formFieldsSettings[FormFieldsIds.email].stringOptions
+        id={FormFieldsWixIds.email}
+        label={formFieldsSettings[FormFieldsWixIds.email].stringOptions
           .textInputOptions.label}
-        required={formFieldsSettings[FormFieldsIds.email].required}
+        required={formFieldsSettings[FormFieldsWixIds.email].required}
       />
 
       <FormField
         type="tel"
-        id={FormFieldsIds.phone}
-        label={formFieldsSettings[FormFieldsIds.phone].stringOptions
+        id={FormFieldsWixIds.phone}
+        label={formFieldsSettings[FormFieldsWixIds.phone].stringOptions
           .phoneInputOptions.label}
-        required={formFieldsSettings[FormFieldsIds.phone].required}
+        required={formFieldsSettings[FormFieldsWixIds.phone].required}
       />
     </div>
   </div>
@@ -121,10 +108,11 @@ const formFieldsSettings = form.fieldsV2
 
     <FormField
       type="textarea"
-      id={FormFieldsIds.phone}
-      label={formFieldsSettings[FormFieldsIds.specialRequirements].stringOptions
-        .textInputOptions.label}
-      required={formFieldsSettings[FormFieldsIds.specialRequirements].required}
+      id={FormFieldsWixIds.phone}
+      label={formFieldsSettings[FormFieldsWixIds.specialRequirements]
+        .stringOptions.textInputOptions.label}
+      required={formFieldsSettings[FormFieldsWixIds.specialRequirements]
+        .required}
     />
   </div>
 
@@ -191,7 +179,7 @@ const formFieldsSettings = form.fieldsV2
         const result = await submitTournamentRegistration(formDataObj);
 
         if (result.success) {
-          // window.location.href = "/success";
+          window.location.href = "/success";
         } else {
           showError(result.error || "Please check your form and try again.");
         }

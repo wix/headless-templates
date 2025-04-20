@@ -1,23 +1,12 @@
 import { submissions } from "@wix/forms";
 
-export interface FormData {
-  teamName: string;
-  ageGroup: string;
-  skillLevel: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  specialRequirements?: string;
-}
-
 type SubmissionResult = {
   success: boolean;
   id?: string;
   error?: string;
 };
 
-export enum FormFieldsIds {
+export enum FormFieldsWixIds {
   teamName = "team_name",
   ageGroup = "age_group_1",
   skillLevel = "skill_level",
@@ -29,10 +18,13 @@ export enum FormFieldsIds {
 }
 
 export async function submitTournamentRegistration(
-  formData: FormData
+  formData: Record<string, string>
 ): Promise<SubmissionResult> {
   try {
-    const requiredFields = ["teamName", "email"] as const;
+    const requiredFields = [
+      FormFieldsWixIds.teamName,
+      FormFieldsWixIds.email,
+    ] as const;
     const missingFields = requiredFields.filter((field) => !formData[field]);
 
     if (missingFields.length > 0) {
@@ -42,7 +34,7 @@ export async function submitTournamentRegistration(
       };
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData[FormFieldsWixIds.email])) {
       return {
         success: false,
         error: "Invalid email format",
@@ -52,14 +44,14 @@ export async function submitTournamentRegistration(
     const submission = {
       formId: "2fc1513a-7ad0-4a5e-a731-1d0fb6e0e7e1",
       submissions: {
-        [FormFieldsIds.teamName]: formData.teamName,
-        [FormFieldsIds.ageGroup]: formData.ageGroup,
-        [FormFieldsIds.skillLevel]: formData.skillLevel,
-        [FormFieldsIds.firstName]: formData.firstName,
-        [FormFieldsIds.lastName]: formData.lastName,
-        [FormFieldsIds.email]: formData.email,
-        [FormFieldsIds.phone]: formData.phone,
-        [FormFieldsIds.specialRequirements]: formData.specialRequirements,
+        [FormFieldsWixIds.teamName]: formData.teamName,
+        [FormFieldsWixIds.ageGroup]: formData.ageGroup,
+        [FormFieldsWixIds.skillLevel]: formData.skillLevel,
+        [FormFieldsWixIds.firstName]: formData.firstName,
+        [FormFieldsWixIds.lastName]: formData.lastName,
+        [FormFieldsWixIds.email]: formData.email,
+        [FormFieldsWixIds.phone]: formData.phone,
+        [FormFieldsWixIds.specialRequirements]: formData.specialRequirements,
       },
     };
 
