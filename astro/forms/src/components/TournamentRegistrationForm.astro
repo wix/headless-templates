@@ -1,5 +1,5 @@
 ---
-import { forms } from "@wix/forms";
+import { forms, FormFieldV2, FormFieldV2InputField } from "@wix/forms";
 import { FormFieldsWixIds, WIX_FORM_ID } from "../utils/constants";
 import Button from "./Button.astro";
 import FormField from "./FormField.astro";
@@ -12,8 +12,8 @@ const { class: className = "" } = Astro.props;
 
 const wixForm = await forms.getForm(WIX_FORM_ID);
 const formFieldsSettings = wixForm.fieldsV2
-  .filter((field) => field.fieldType === "INPUT" && !field.hidden)
-  .reduce((acc, field) => {
+  .filter((field: FormFieldV2) => field.fieldType === "INPUT" && !field.hidden)
+  .reduce((acc: Record<string, FormFieldV2InputField>, field: FormFieldV2) => {
     acc[field.inputOptions.target] = field.inputOptions;
     return acc;
   }, {});
@@ -173,7 +173,10 @@ const formFieldsSettings = wixForm.fieldsV2
       try {
         // Get form data
         const formData = new FormData(form);
-        const formDataObj = Object.fromEntries(formData.entries());
+        const formDataObj = Object.fromEntries(formData.entries()) as Record<
+          string,
+          string
+        >;
 
         // Submit the form
         const result = await submitTournamentRegistration(formDataObj);
