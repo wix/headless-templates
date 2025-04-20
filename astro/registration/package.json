@@ -14,6 +14,7 @@
     "@astrojs/tailwind": "^5.1.0",
     "@wix/astro": "^0.2.9",
     "@wix/forms": "^1.0.0",
+    "@wix/sdk": "^1.14.2",
     "astro": "^5.4.3"
   },
   "devDependencies": {

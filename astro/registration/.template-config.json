@@ -1,7 +1,4 @@
 {
   "slug": "registration",
-  "requiredApps": [
-    "13d21c63-b5ec-5912-8397-c3a5ddb27a97",
-    "55cd9036-36bb-480b-8ddc-afda3cb2eb8d"
-  ]
+  "requiredApps": ["14ce1214-b278-a7e4-1373-00cebd1bef7c"]
 }
