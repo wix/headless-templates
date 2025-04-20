@@ -43,16 +43,7 @@ export async function submitTournamentRegistration(
 
     const submission = {
       formId: "2fc1513a-7ad0-4a5e-a731-1d0fb6e0e7e1",
-      submissions: {
-        [FormFieldsWixIds.teamName]: formData.teamName,
-        [FormFieldsWixIds.ageGroup]: formData.ageGroup,
-        [FormFieldsWixIds.skillLevel]: formData.skillLevel,
-        [FormFieldsWixIds.firstName]: formData.firstName,
-        [FormFieldsWixIds.lastName]: formData.lastName,
-        [FormFieldsWixIds.email]: formData.email,
-        [FormFieldsWixIds.phone]: formData.phone,
-        [FormFieldsWixIds.specialRequirements]: formData.specialRequirements,
-      },
+      submissions: formData,
     };
 
     const { status } = await submissions.createSubmission(submission);
