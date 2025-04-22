@@ -1,49 +1,73 @@
+@import "tailwindcss";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --font-family:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --primary-color: #3899ec;
+  --error-color: #e21e1e;
 }
 
 body {
   font-family: var(--font-family);
-  background-color: #F6F7F8;
-  color: #20455E;
+  background-color: #f6f7f8;
+  color: #20455e;
 }
 
 .form-container {
-  @apply mx-auto max-w-3xl p-6 bg-white rounded-lg shadow-sm;
+  @apply mx-auto max-w-[48rem] p-[1.5rem] bg-[#ffffff] rounded-[0.5rem] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)];
 }
 
 .form-field {
-  @apply mb-6 p-2 rounded-md;
+  @apply mb-[1.5rem] p-[0.5rem] rounded-[0.375rem];
 }
 
 .form-label {
-  @apply block text-sm font-medium text-[#162D3D] mb-2;
+  @apply block text-[0.875rem] font-[500] text-[#162D3D] mb-[0.5rem];
 }
 
 .form-input {
-  @apply w-full px-2 py-2 border-b border-gray-300 focus:border-primary focus:outline-none bg-transparent transition-all duration-200 text-gray-800;
+  @apply w-full px-[0.5rem] py-[0.5rem] border-b border-[#d1d5db] focus:outline-none bg-transparent transition-all duration-200 text-[#1f2937];
+}
+.form-input:focus {
+  border-color: var(--primary-color, #3899ec);
 }
 
 .form-textarea {
-  @apply w-full px-2 py-2 border border-gray-300 rounded-sm focus:border-primary focus:outline-none transition-all duration-200 min-h-[100px] text-gray-800;
+  @apply w-full px-[0.5rem] py-[0.5rem] border border-[#d1d5db] rounded-[0.125rem] focus:outline-none transition-all duration-200 min-h-[100px] text-[#1f2937];
+}
+.form-textarea:focus {
+  border-color: var(--primary-color, #3899ec);
 }
 
 .form-select {
-  @apply w-full px-2 py-2 border-b border-gray-300 focus:border-primary focus:outline-none bg-transparent transition-all duration-200 text-gray-800;
+  @apply w-full px-[0.5rem] py-[0.5rem] border-b border-[#d1d5db] focus:outline-none bg-transparent transition-all duration-200 text-[#1f2937];
+}
+.form-select:focus {
+  border-color: var(--primary-color, #3899ec);
 }
 
 .form-checkbox {
-  @apply h-4 w-4 text-primary focus:ring-0 border-gray-400 rounded transition-colors;
+  @apply h-[1rem] w-[1rem] border-[#9ca3af] rounded-[0.25rem] transition-colors;
+  color: var(--primary-color, #3899ec);
+}
+.form-checkbox:focus {
+  outline: none;
 }
 
 .form-radio {
-  @apply h-4 w-4 text-primary focus:ring-0 border-gray-400 transition-colors;
+  @apply h-[1rem] w-[1rem] border-[#9ca3af] transition-colors;
+  color: var(--primary-color, #3899ec);
+}
+.form-radio:focus {
+  outline: none;
 }
 
 .error-text {
-  @apply text-sm text-error mt-1;
+  @apply text-[0.875rem] mt-[0.25rem];
+  color: var(--error-color, #e21e1e);
 }
