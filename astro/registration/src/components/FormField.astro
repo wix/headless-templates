@@ -35,10 +35,10 @@ const {
 } = Astro.props;
 ---
 
-<div class="form-field hover:bg-gray-50/50 transition-colors duration-200">
+<div class="form-field hover:bg-[#f9fafb]/50 transition-colors duration-200">
   <label for={id} class="form-label font-normal">
     {label}
-    {required && <span class="text-error">*</span>}
+    {required && <span style="color: var(--error-color, #E21E1E);">*</span>}
   </label>
 
   {
@@ -58,7 +58,7 @@ const {
         ))}
       </select>
     ) : type === "radio" ? (
-      <div class="space-y-3 mt-2">
+      <div class="space-y-[0.75rem] mt-[0.5rem]">
         {options.map((option) => (
           <div class="flex items-center">
             <input
@@ -66,26 +66,26 @@ const {
               id={`${id}-${option.value}`}
               name={id}
               value={option.value}
-              class="form-radio mr-2"
+              class="form-radio mr-[0.5rem]"
               required={required}
             />
-            <label for={`${id}-${option.value}`} class="text-sm text-gray-700">
+            <label for={`${id}-${option.value}`} class="text-[0.875rem] text-[#374151]">
               {option.label}
             </label>
           </div>
         ))}
       </div>
     ) : type === "checkbox" ? (
-      <div class="flex items-center mt-2">
+      <div class="flex items-center mt-[0.5rem]">
         <input
           type="checkbox"
           id={id}
           name={id}
-          class="form-checkbox mr-2"
+          class="form-checkbox mr-[0.5rem]"
           required={required}
           checked={checked}
         />
-        <label for={id} class="text-sm text-gray-700">
+        <label for={id} class="text-[0.875rem] text-[#374151]">
           {placeholder}
         </label>
       </div>
