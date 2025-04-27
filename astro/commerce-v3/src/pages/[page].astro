@@ -1,0 +1,35 @@
+---
+import Footer from "../components/layout/footer.astro";
+import Layout from "../components/layout/layout.astro";
+import Prose from "../components/prose.astro";
+import { getPage } from "../lib/wix";
+
+const params = Astro.params;
+const page = await getPage(params.page!);
+
+if (!page) {
+  return new Response(null, { status: 404 });
+}
+---
+
+<Layout>
+  <div class="w-full">
+    <div class="mx-8 max-w-2xl py-20 sm:mx-auto">
+      <h1 class="mb-8 text-5xl font-bold">{page.title}</h1>
+      <Prose class="mb-8" html={page.body} />
+      <p class="text-sm italic">
+        {
+          `This document was last updated on ${new Intl.DateTimeFormat(
+            undefined,
+            {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            }
+          ).format(new Date(page.updatedAt))}.`
+        }
+      </p>
+    </div>
+  </div>
+  <Footer />
+</Layout>

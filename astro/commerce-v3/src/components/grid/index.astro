@@ -1,0 +1,13 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import clsx from "clsx";
+
+type Props = HTMLAttributes<"ul">;
+---
+
+<ul
+  class={clsx("grid grid-flow-row gap-4", Astro.props.class)}
+  {...Astro.props}
+>
+  <slot />
+</ul>
