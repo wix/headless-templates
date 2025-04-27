@@ -1,0 +1,41 @@
+---
+import { getProductRecommendations } from "../../lib/wix";
+import GridTileImage from "../grid/tile.astro";
+
+type Props = {
+  id: string;
+};
+
+const relatedProducts = await getProductRecommendations(Astro.props.id);
+
+if (!relatedProducts.length) return null;
+---
+
+<div class="py-8">
+  <h2 class="mb-4 text-2xl font-bold">Related Products</h2>
+  <ul class="flex w-full gap-4 overflow-x-auto pt-1">
+    {
+      relatedProducts.map((product) => (
+        <li class="aspect-square w-full flex-none min-[475px]:w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5">
+          <a
+            class="relative h-full w-full"
+            href={`/product/${product.handle}`}
+            data-astro-prefetch
+          >
+            <GridTileImage
+              alt={product.title}
+              label={{
+                title: product.title,
+                amount: product.priceRange.maxVariantPrice.amount,
+                currencyCode: product.priceRange.maxVariantPrice.currencyCode,
+              }}
+              inferSize
+              src={product.featuredImage?.url}
+              sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, (min-width: 475px) 50vw, 100vw"
+            />
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>
