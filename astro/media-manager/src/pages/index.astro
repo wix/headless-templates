@@ -1,0 +1,11 @@
+---
+import Layout from "../layouts/Layout.astro";
+import MediaManager from "../components/MediaManager";
+---
+
+<Layout title="Media Manager">
+  <main class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-8">Media Manager</h1>
+    <MediaManager client:load />
+  </main>
+</Layout>
