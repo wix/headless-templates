@@ -1,6 +1,12 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import MediaManager from "../components/MediaManager";
+
+import { files } from "@wix/media";
+
+const filesList = await files.listFiles();
+
+console.log({ filesList });
 ---
 
 <Layout title="Media Manager">
