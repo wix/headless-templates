@@ -8,7 +8,7 @@ interface MediaViewerProps {
 const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
   if (!item) {
     return (
-      <div className="h-full flex items-center justify-center text-gray-500">
+      <div className="h-full flex items-center justify-center text-secondary">
         <p>Select a media item to view</p>
       </div>
     );
@@ -16,7 +16,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
 
   return (
     <div className="space-y-4">
-      <div className="aspect-video bg-black rounded-lg overflow-hidden">
+      <div className="aspect-video bg-background rounded-lg overflow-hidden">
         {item.type.startsWith("image/") ? (
           <img
             src={item.url}
@@ -28,9 +28,9 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
         )}
       </div>
       <div className="space-y-2">
-        <h3 className="font-medium">{item.name}</h3>
-        <p className="text-sm text-gray-500">Type: {item.type}</p>
-        <p className="text-sm text-gray-500">
+        <h3 className="font-medium text-secondary">{item.name}</h3>
+        <p className="text-sm text-secondary/70">Type: {item.type}</p>
+        <p className="text-sm text-secondary/70">
           Uploaded: {new Date(item.uploadDate).toLocaleString()}
         </p>
       </div>

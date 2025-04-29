@@ -16,8 +16,8 @@ const MediaCatalog: React.FC<MediaCatalogProps> = ({
 }) => {
   if (items.length === 0) {
     return (
-      <div className="text-center p-4 bg-gray-50 rounded-lg">
-        <p className="text-gray-500">No media items uploaded yet</p>
+      <div className="text-center p-4 bg-background rounded-lg">
+        <p className="text-secondary">No media items uploaded yet</p>
       </div>
     );
   }
@@ -28,7 +28,7 @@ const MediaCatalog: React.FC<MediaCatalogProps> = ({
         <div
           key={item.id}
           className={`relative group rounded-lg overflow-hidden border ${
-            selectedId === item.id ? "border-blue-500" : "border-gray-200"
+            selectedId === item.id ? "border-primary" : "border-secondary/20"
           }`}
         >
           {item.type.startsWith("image/") ? (
@@ -43,7 +43,7 @@ const MediaCatalog: React.FC<MediaCatalogProps> = ({
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity flex items-center justify-center opacity-0 group-hover:opacity-100">
             <button
               onClick={() => onSelect(item)}
-              className="bg-white text-gray-800 rounded-full p-2 mx-1 hover:bg-blue-500 hover:text-white transition-colors"
+              className="bg-white text-secondary rounded-full p-2 mx-1 hover:bg-primary hover:text-white transition-colors"
             >
               <svg
                 className="w-4 h-4"
@@ -67,7 +67,7 @@ const MediaCatalog: React.FC<MediaCatalogProps> = ({
             </button>
             <button
               onClick={() => onDelete(item.id)}
-              className="bg-white text-gray-800 rounded-full p-2 mx-1 hover:bg-red-500 hover:text-white transition-colors"
+              className="bg-white text-secondary rounded-full p-2 mx-1 hover:bg-error hover:text-white transition-colors"
             >
               <svg
                 className="w-4 h-4"
@@ -84,7 +84,7 @@ const MediaCatalog: React.FC<MediaCatalogProps> = ({
               </svg>
             </button>
           </div>
-          <div className="p-2 text-sm truncate">{item.name}</div>
+          <div className="p-2 text-sm truncate text-secondary">{item.name}</div>
         </div>
       ))}
     </div>
