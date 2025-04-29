@@ -7,11 +7,15 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "deploy:prod": "wix edge deploy --prod",
+    "deploy:preview": "wix edge deploy"
   },
   "dependencies": {
     "@astrojs/react": "^3.0.10",
     "@tailwindcss/vite": "^4.1.4",
+    "@wix/astro": "^0.2.9",
+    "@wix/sdk": "^1.14.2",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "astro": "^5.4.3",
