@@ -33,6 +33,16 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
         <p className="text-sm text-secondary/70">
           Uploaded: {new Date(item.uploadDate).toLocaleString()}
         </p>
+        <div className="mt-4">
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Download
+          </a>
+        </div>
       </div>
     </div>
   );

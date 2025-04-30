@@ -4,4 +4,5 @@ export interface MediaItem {
   type: string;
   url: string;
   uploadDate: string;
+  thumbnailUrl?: string;
 }

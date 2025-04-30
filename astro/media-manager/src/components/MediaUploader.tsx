@@ -1,15 +1,74 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
+import { files } from "@wix/media";
 
 interface MediaUploaderProps {
-  onUpload: (files: FileList) => void;
+  onUpload: (file: any) => void;
 }
 
 const MediaUploader: React.FC<MediaUploaderProps> = ({ onUpload }) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const uploadToWixMedia = async (file: File) => {
+    try {
+      setIsUploading(true);
+      // Generate upload URL using Wix Media SDK
+      const response = await files.generateFileUploadUrl(file.type, {
+        fileName: file.name,
+      });
+
+      // Upload the file to the generated URL
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open(
+        "PUT",
+        response.uploadUrl + "?filename=" + encodeURIComponent(file.name)
+      );
+      xhr.setRequestHeader("Content-Type", file.type);
+
+      // Track upload progress
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(progress);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const responseData = JSON.parse(xhr.responseText);
+          onUpload(responseData.file);
+          setIsUploading(false);
+          setUploadProgress(0);
+        } else {
+          console.error("Upload failed:", xhr.statusText);
+          setIsUploading(false);
+          setUploadProgress(0);
+        }
+      };
+
+      xhr.onerror = () => {
+        console.error("Upload error");
+        setIsUploading(false);
+        setUploadProgress(0);
+      };
+
+      xhr.send(file);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      if (e.dataTransfer.files) {
-        onUpload(e.dataTransfer.files);
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const file = e.dataTransfer.files[0];
+        uploadToWixMedia(file);
       }
     },
     [onUpload]
@@ -17,8 +76,9 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUpload }) => {
 
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) {
-        onUpload(e.target.files);
+      if (e.target.files && e.target.files.length > 0) {
+        const file = e.target.files[0];
+        uploadToWixMedia(file);
         e.target.value = ""; // Reset input
       }
     },
@@ -33,7 +93,6 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUpload }) => {
     >
       <input
         type="file"
-        multiple
         onChange={handleFileInput}
         className="hidden"
         id="fileInput"
@@ -57,12 +116,24 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUpload }) => {
           />
         </svg>
         <span className="text-secondary">
-          Drag and drop files here, or click to select files
+          {isUploading
+            ? `Uploading... ${uploadProgress}%`
+            : "Drag and drop files here, or click to select files"}
         </span>
         <span className="text-sm text-secondary/70 mt-2">
           Supports images and videos
         </span>
       </label>
+      {isUploading && (
+        <div className="w-full mt-4">
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div
+              className="bg-primary h-2.5 rounded-full"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

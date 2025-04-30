@@ -33,7 +33,7 @@ const MediaCatalog: React.FC<MediaCatalogProps> = ({
         >
           {item.type.startsWith("image/") ? (
             <img
-              src={item.url}
+              src={item.thumbnailUrl || item.url}
               alt={item.name}
               className="w-full h-32 object-cover"
             />
