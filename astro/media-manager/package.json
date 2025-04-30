@@ -17,11 +17,13 @@
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "@wix/astro": "^0.2.9",
+    "@wix/image": "^1.380.0",
     "@wix/media": "^1.0.159",
     "@wix/sdk": "^1.14.2",
     "astro": "^5.4.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "sass-embedded": "^1.87.0",
     "tailwindcss": "^4.1.4"
   },
   "devDependencies": {
