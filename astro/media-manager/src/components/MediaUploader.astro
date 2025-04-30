@@ -1,0 +1,197 @@
+---
+// Front matter script for MediaUploader.astro
+---
+
+<div
+  id="upload-area"
+  class="border-2 border-dashed rounded-lg p-8 text-center transition-all border-gray-300 hover:border-blue-400"
+>
+  <input type="file" id="fileInput" class="hidden" accept="image/*,video/*" />
+  <label for="fileInput" class="cursor-pointer flex flex-col items-center">
+    <div id="upload-idle" class="block">
+      <div
+        class="w-20 h-20 mb-4 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 border border-blue-100"
+      >
+        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+          <path
+            d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
+          ></path>
+        </svg>
+      </div>
+      <p class="text-gray-800 font-medium mb-2">
+        Drag and drop your files here
+      </p>
+      <p class="text-gray-500 text-sm mb-4">
+        Supports JPG, PNG, GIF, MP4, and more
+      </p>
+      <button
+        id="browse-button"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+      >
+        Browse Files
+      </button>
+    </div>
+  </label>
+
+  <!-- Upload progress UI (hidden by default) -->
+  <div id="upload-progress" class="w-full flex flex-col items-center hidden">
+    <div
+      class="w-16 h-16 mb-4 rounded-full border-4 border-gray-200 border-t-blue-600 animate-spin"
+    >
+    </div>
+    <p class="text-gray-700 mb-3 font-medium">
+      Uploading... <span id="progress-percent">0</span>%
+    </p>
+    <div class="w-full max-w-xs bg-gray-200 rounded-full h-2.5 mb-2">
+      <div
+        id="progress-bar"
+        class="bg-blue-600 h-2.5 rounded-full transition-all"
+        style="width: 0%"
+      >
+      </div>
+    </div>
+    <p class="text-xs text-gray-500">Please wait</p>
+  </div>
+</div>
+
+<script>
+  // Get references to DOM elements
+  const uploadArea = document.getElementById("upload-area");
+  const fileInput = document.getElementById("fileInput");
+  const uploadIdle = document.getElementById("upload-idle");
+  const uploadProgress = document.getElementById("upload-progress");
+  const progressBar = document.getElementById("progress-bar");
+  const progressPercent = document.getElementById("progress-percent");
+  const browseButton = document.getElementById("browse-button");
+
+  // Set up drag and drop functionality
+  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+    uploadArea.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  ["dragenter", "dragover"].forEach((eventName) => {
+    uploadArea.addEventListener(eventName, highlight, false);
+  });
+
+  ["dragleave", "drop"].forEach((eventName) => {
+    uploadArea.addEventListener(eventName, unhighlight, false);
+  });
+
+  function highlight() {
+    uploadArea.classList.add("border-blue-500", "bg-blue-50");
+    uploadArea.classList.remove("border-gray-300");
+  }
+
+  function unhighlight() {
+    uploadArea.classList.remove("border-blue-500", "bg-blue-50");
+    uploadArea.classList.add("border-gray-300");
+  }
+
+  // Handle file drop
+  uploadArea.addEventListener("drop", handleDrop, false);
+
+  function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+
+    if (files.length > 0) {
+      handleFiles(files[0]);
+    }
+  }
+
+  // Handle file input change
+  fileInput.addEventListener("change", function () {
+    if (this.files.length > 0) {
+      handleFiles(this.files[0]);
+    }
+  });
+
+  // Handle file upload
+  async function handleFiles(file) {
+    showUploadProgress();
+
+    try {
+      // Import the files API dynamically for client-side use
+      const { files } = await import("@wix/media");
+
+      // Generate upload URL using Wix Media SDK
+      const response = await files.generateFileUploadUrl(file.type, {
+        fileName: file.name,
+      });
+
+      // Upload the file to the generated URL
+      const xhr = new XMLHttpRequest();
+      xhr.open(
+        "PUT",
+        response.uploadUrl + "?filename=" + encodeURIComponent(file.name)
+      );
+      xhr.setRequestHeader("Content-Type", file.type);
+
+      // Track upload progress
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          updateProgress(progress);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const responseData = JSON.parse(xhr.responseText);
+
+          // Dispatch an event that upload is complete
+          const event = new CustomEvent("upload:complete", {
+            detail: { file: responseData.file },
+          });
+          document.dispatchEvent(event);
+
+          resetUploadUI();
+        } else {
+          console.error("Upload failed:", xhr.statusText);
+          alert("Upload failed. Please try again.");
+          resetUploadUI();
+        }
+      };
+
+      xhr.onerror = () => {
+        console.error("Upload error");
+        alert("Upload error. Please try again.");
+        resetUploadUI();
+      };
+
+      xhr.send(file);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Error uploading file. Please try again.");
+      resetUploadUI();
+    }
+  }
+
+  function showUploadProgress() {
+    uploadIdle.classList.add("hidden");
+    uploadProgress.classList.remove("hidden");
+    updateProgress(0);
+  }
+
+  function updateProgress(percent) {
+    progressBar.style.width = `${percent}%`;
+    progressPercent.textContent = percent;
+  }
+
+  function resetUploadUI() {
+    uploadIdle.classList.remove("hidden");
+    uploadProgress.classList.add("hidden");
+    fileInput.value = "";
+  }
+
+  // Handle browse button click
+  browseButton.addEventListener("click", function (e) {
+    e.preventDefault();
+    fileInput.click();
+  });
+</script>

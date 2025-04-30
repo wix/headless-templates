@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { sdk } from "@wix/image-kit";
 import type { MediaItem } from "../types";
 
 interface MediaViewerProps {
@@ -6,7 +7,37 @@ interface MediaViewerProps {
 }
 
 const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
-  if (!item) {
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(item);
+
+  // Listen for item:selected events from the Astro component
+  useEffect(() => {
+    const handleItemSelected = (event: CustomEvent) => {
+      setSelectedItem(event.detail.item);
+    };
+
+    // Add event listener for item selection
+    document.addEventListener(
+      "item:selected",
+      handleItemSelected as EventListener
+    );
+
+    // Clean up event listener when component unmounts
+    return () => {
+      document.removeEventListener(
+        "item:selected",
+        handleItemSelected as EventListener
+      );
+    };
+  }, []);
+
+  // When the item prop changes directly
+  useEffect(() => {
+    if (item) {
+      setSelectedItem(item);
+    }
+  }, [item]);
+
+  if (!selectedItem) {
     return (
       <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-gray-500 bg-gray-50 rounded-lg p-4">
         <svg
@@ -33,6 +64,33 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
     return "1.2 MB";
   };
 
+  // Generate optimized image URL using Wix Image Kit
+  const getOptimizedImageUrl = (url: string) => {
+    if (!url || !url.includes("wixstatic.com")) {
+      return url; // Return original URL if not a Wix media URL
+    }
+
+    try {
+      // Extract the relative part of the URL after the domain
+      const relativeUrl = url.split("wixstatic.com/")[1];
+
+      // Use Wix Image Kit to generate an optimized version
+      // We're assuming a default size for demo purposes
+      // In a real app, you'd calculate these based on container size
+      return sdk.getScaleToFillImageURL(
+        relativeUrl,
+        1200, // Original width (assumed for demo)
+        800, // Original height (assumed for demo)
+        800, // Target width
+        600, // Target height
+        { quality: 90 }
+      );
+    } catch (error) {
+      console.error("Error generating optimized image URL:", error);
+      return url; // Fallback to original URL
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50">
@@ -42,14 +100,18 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
       {/* Preview area */}
       <div className="flex-grow overflow-hidden bg-gray-100 relative">
         <div className="aspect-video bg-black flex items-center justify-center overflow-hidden">
-          {item.type.startsWith("image/") ? (
+          {selectedItem.type.startsWith("image/") ? (
             <img
-              src={item.url}
-              alt={item.name}
+              src={getOptimizedImageUrl(selectedItem.url)}
+              alt={selectedItem.name}
               className="max-w-full max-h-full object-contain"
             />
           ) : (
-            <video src={item.url} controls className="max-w-full max-h-full" />
+            <video
+              src={selectedItem.url}
+              controls
+              className="max-w-full max-h-full"
+            />
           )}
         </div>
       </div>
@@ -57,9 +119,11 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
       {/* File info */}
       <div className="p-4 border-t border-gray-200">
         <div className="mb-3">
-          <h4 className="font-medium text-gray-800 truncate">{item.name}</h4>
+          <h4 className="font-medium text-gray-800 truncate">
+            {selectedItem.name}
+          </h4>
           <span className="text-xs text-gray-500">
-            Uploaded on {new Date(item.uploadDate).toLocaleDateString()}
+            Uploaded on {new Date(selectedItem.uploadDate).toLocaleDateString()}
           </span>
         </div>
 
@@ -67,13 +131,13 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
           <div className="flex justify-between">
             <span className="text-gray-500">Type</span>
             <span className="text-gray-800 font-medium">
-              {item.type.split("/")[0].toUpperCase()}
+              {selectedItem.type.split("/")[0].toUpperCase()}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Size</span>
             <span className="text-gray-800 font-medium">
-              {formatFileSize(item.url)}
+              {formatFileSize(selectedItem.url)}
             </span>
           </div>
         </div>
@@ -81,8 +145,8 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
         {/* Actions */}
         <div className="mt-6 flex gap-2">
           <a
-            href={item.url}
-            download={item.name}
+            href={selectedItem.url}
+            download={selectedItem.name}
             className="flex-1 flex justify-center items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
           >
             <svg
@@ -96,8 +160,8 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
           </a>
           <button
             className="px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm flex items-center"
-            title="Delete"
-            onClick={() => window.open(item.url, "_blank")}
+            title="Open"
+            onClick={() => window.open(selectedItem.url, "_blank")}
           >
             <svg
               className="w-4 h-4 mr-2"
