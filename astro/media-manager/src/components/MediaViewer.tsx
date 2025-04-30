@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 // Import to be used when properly configured
-// import { Image } from "@wix/image";
+import { Image } from "@wix/image";
 import type { MediaItem } from "../types";
 
 interface MediaViewerProps {
@@ -99,18 +99,12 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
       <div className="flex-grow overflow-hidden bg-gray-100 relative">
         <div className="aspect-video bg-black flex items-center justify-center overflow-hidden">
           {selectedItem.type.startsWith("image/") ? (
-            // Note: Replace with @wix/image component when properly configured
-            // <Image
-            //   uri={getImageIdFromUrl(selectedItem.url) || ""}
-            //   width={800}
-            //   height={600}
-            //   displayMode="fit"
-            //   alt={selectedItem.name}
-            // />
-            <img
-              src={selectedItem.url}
+            <Image
+              uri="c5f754_91888de5fb744645ac065265c664ebce~mv2.jpg"
+              width={3000}
+              height={2977}
+              displayMode="fill"
               alt={selectedItem.name}
-              className="max-w-full max-h-full object-contain"
             />
           ) : (
             <video
