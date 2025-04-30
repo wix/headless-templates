@@ -3,12 +3,14 @@ import Layout from "../layouts/Layout.astro";
 import MediaManager from "../components/MediaManager";
 ---
 
-<Layout title="Media Manager">
-  <main class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-8 text-primary">Wix Media Manager</h1>
-    <p class="mb-8 text-secondary">
-      Upload, view, and manage your media files using Wix Media SDK.
-    </p>
-    <MediaManager client:load />
-  </main>
+<Layout title="Wix Media Manager">
+  <div class="bg-white border-b border-gray-200 shadow-sm">
+    <header class="container mx-auto p-4">
+      <div class="flex items-center">
+        <div class="font-bold text-2xl text-blue-600">Wix Media Manager</div>
+      </div>
+    </header>
+  </div>
+
+  <MediaManager client:load />
 </Layout>
