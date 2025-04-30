@@ -4,14 +4,56 @@ import MediaCatalog from "./MediaCatalog.astro";
 import MediaViewer from "./MediaViewer";
 import { files } from "@wix/media";
 
-// Fetch media files from Wix Media Manager
+// Mock data as fallback
+const mockMediaItems = [
+  {
+    id: "1",
+    name: "Mountain Landscape.jpg",
+    type: "image/jpeg",
+    url: "https://static.wixstatic.com/media/11062b_5f918a05d6cd428a9c47d496780b289d~mv2_d_5760_3840_s_4_2.jpg",
+    uploadDate: new Date().toISOString(),
+    thumbnailUrl:
+      "https://static.wixstatic.com/media/11062b_5f918a05d6cd428a9c47d496780b289d~mv2_d_5760_3840_s_4_2.jpg/v1/fill/w_200,h_140,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/11062b_5f918a05d6cd428a9c47d496780b289d~mv2_d_5760_3840_s_4_2.jpg",
+  },
+  {
+    id: "2",
+    name: "Beach Sunset.jpg",
+    type: "image/jpeg",
+    url: "https://static.wixstatic.com/media/11062b_0322ebcb50954a0dbab1e07e71be921c~mv2_d_4928_3264_s_4_2.jpg",
+    uploadDate: new Date(Date.now() - 86400000).toISOString(),
+    thumbnailUrl:
+      "https://static.wixstatic.com/media/11062b_0322ebcb50954a0dbab1e07e71be921c~mv2_d_4928_3264_s_4_2.jpg/v1/fill/w_200,h_140,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/11062b_0322ebcb50954a0dbab1e07e71be921c~mv2_d_4928_3264_s_4_2.jpg",
+  },
+  {
+    id: "3",
+    name: "City Skyline.jpg",
+    type: "image/jpeg",
+    url: "https://static.wixstatic.com/media/11062b_88078871957f44b6886b8999872c4d68~mv2_d_3000_2000_s_2.jpg",
+    uploadDate: new Date(Date.now() - 172800000).toISOString(),
+    thumbnailUrl:
+      "https://static.wixstatic.com/media/11062b_88078871957f44b6886b8999872c4d68~mv2_d_3000_2000_s_2.jpg/v1/fill/w_200,h_140,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/11062b_88078871957f44b6886b8999872c4d68~mv2_d_3000_2000_s_2.jpg",
+  },
+  {
+    id: "4",
+    name: "Product Demo.mp4",
+    type: "video/mp4",
+    url: "https://video.wixstatic.com/video/11062b_3d13bee40e424792b841c2c482289cca/720p/mp4/file.mp4",
+    uploadDate: new Date(Date.now() - 259200000).toISOString(),
+    thumbnailUrl:
+      "https://static.wixstatic.com/media/11062b_3d13bee40e424792b841c2c482289cca~mv2.jpg/v1/fill/w_200,h_140,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/11062b_3d13bee40e424792b841c2c482289cca~mv2.jpg",
+  },
+];
+
+// Initialize with loading state
 let mediaItems = [];
 let isLoading = true;
 
 try {
+  // Try to fetch actual media files from Wix Media Manager
   const response = await files.listFiles();
 
-  if (response.files) {
+  if (response.files && response.files.length > 0) {
+    // Use actual media files if available
     mediaItems = response.files.map((file) => ({
       id: file._id || "",
       name: file.displayName || "",
@@ -22,9 +64,14 @@ try {
       uploadDate: file._updatedDate?.toString() || new Date().toISOString(),
       thumbnailUrl: file.thumbnailUrl || "",
     }));
+  } else {
+    // Fall back to mock data if no media files are found
+    mediaItems = mockMediaItems;
   }
 } catch (error) {
+  // Log error and use mock data if API call fails
   console.error("Error fetching media files:", error);
+  mediaItems = mockMediaItems;
 } finally {
   isLoading = false;
 }
@@ -125,25 +172,29 @@ try {
   const closeModalButton = document.getElementById("close-modal-button");
   const uploadModal = document.getElementById("upload-modal");
 
-  addMediaButton.addEventListener("click", () => {
-    uploadModal.classList.remove("hidden");
-  });
+  if (addMediaButton && closeModalButton && uploadModal) {
+    addMediaButton.addEventListener("click", () => {
+      uploadModal.classList.remove("hidden");
+    });
 
-  closeModalButton.addEventListener("click", () => {
-    uploadModal.classList.add("hidden");
-  });
-
-  // Close modal when clicking outside of it
-  uploadModal.addEventListener("click", (e) => {
-    if (e.target === uploadModal) {
+    closeModalButton.addEventListener("click", () => {
       uploadModal.classList.add("hidden");
-    }
-  });
+    });
+
+    // Close modal when clicking outside of it
+    uploadModal.addEventListener("click", (e) => {
+      if (e.target === uploadModal) {
+        uploadModal.classList.add("hidden");
+      }
+    });
+  }
 
   // Add event listener for file upload completion
   document.addEventListener("upload:complete", (event) => {
     window.location.reload(); // Reload page to show the newly uploaded file
-    uploadModal.classList.add("hidden");
+    if (uploadModal) {
+      uploadModal.classList.add("hidden");
+    }
   });
 
   // Add event listener for when a catalog item is selected

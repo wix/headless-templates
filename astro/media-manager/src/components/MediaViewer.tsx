@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Image } from "@wix/image";
+// Import to be used when properly configured
+// import { Image } from "@wix/image";
 import type { MediaItem } from "../types";
 
 interface MediaViewerProps {
@@ -64,30 +65,27 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
     return "1.2 MB";
   };
 
-  // Generate optimized image URL using Wix Image Kit
-  const getOptimizedImageUrl = (url: string) => {
+  // Extract image ID from Wix URL if available
+  const getImageIdFromUrl = (url: string): string | null => {
     if (!url || !url.includes("wixstatic.com")) {
-      return url; // Return original URL if not a Wix media URL
+      return null;
     }
 
     try {
-      // Extract the relative part of the URL after the domain
-      const relativeUrl = url.split("wixstatic.com/")[1];
+      // Example URL: https://static.wixstatic.com/media/11062b_5f918a05d6cd428a9c47d496780b289d~mv2_d_5760_3840_s_4_2.jpg
+      const urlParts = url.split("/");
+      const mediaSegment = urlParts.findIndex((part) => part === "media");
 
-      // Use Wix Image Kit to generate an optimized version
-      // We're assuming a default size for demo purposes
-      // In a real app, you'd calculate these based on container size
-      return sdk.getScaleToFillImageURL(
-        relativeUrl,
-        1200, // Original width (assumed for demo)
-        800, // Original height (assumed for demo)
-        800, // Target width
-        600, // Target height
-        { quality: 90 }
-      );
+      if (mediaSegment !== -1 && mediaSegment + 1 < urlParts.length) {
+        // Extract the ID part (everything before file extension if present)
+        const idWithExtension = urlParts[mediaSegment + 1];
+        return idWithExtension.split(".")[0];
+      }
+
+      return null;
     } catch (error) {
-      console.error("Error generating optimized image URL:", error);
-      return url; // Fallback to original URL
+      console.error("Error extracting image ID:", error);
+      return null;
     }
   };
 
@@ -101,7 +99,19 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
       <div className="flex-grow overflow-hidden bg-gray-100 relative">
         <div className="aspect-video bg-black flex items-center justify-center overflow-hidden">
           {selectedItem.type.startsWith("image/") ? (
-            <Image uri="8dfd06_3e3feaf389cf47fd9c781e5977a89c3d~mv2.jpg" />
+            // Note: Replace with @wix/image component when properly configured
+            // <Image
+            //   uri={getImageIdFromUrl(selectedItem.url) || ""}
+            //   width={800}
+            //   height={600}
+            //   displayMode="fit"
+            //   alt={selectedItem.name}
+            // />
+            <img
+              src={selectedItem.url}
+              alt={selectedItem.name}
+              className="max-w-full max-h-full object-contain"
+            />
           ) : (
             <video
               src={selectedItem.url}
