@@ -2329,13 +2329,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wix/image-kit@npm:^1.104.0":
-  version: 1.104.0
-  resolution: "@wix/image-kit@npm:1.104.0"
+"@wix/image-kit@npm:^1.107.0":
+  version: 1.107.0
+  resolution: "@wix/image-kit@npm:1.107.0"
   dependencies:
     "@babel/runtime": ^7.26.0
     tslib: ^2.8.1
-  checksum: 278ffeeb5f0ae96bf2ad6aec22242f8d918cae302f098fe5a7dc4308fa0a29e3ab3b665d70bd308d7beb0a96851d990a04e96772996cf7eb93a964050dd45cae
+  checksum: 9c13d159a7f25e16e4dbeb50135ca9201b2fd4a6e133e8d5224765f265c03ac881459f0428552c26368163d99d0a8f6c743b626978088f7ca34a9b0d8f13f2cc
   languageName: node
   linkType: hard
 
@@ -2480,10 +2480,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wix/monitoring-types@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "@wix/monitoring-types@npm:0.9.0"
-  checksum: 28f70f03f291d7434053553a0ab4dda9a73b4f9ea7dd31ddd6c82fc589390dbe2edc618c9e4404921a2d8d79e213c94eb093bea7d819e5f0d84ebdcac57ed325
+"@wix/monitoring-types@npm:^0.12.0":
+  version: 0.12.0
+  resolution: "@wix/monitoring-types@npm:0.12.0"
+  checksum: 22fa9c4c0a43946316764c3ca20c4f18611833af9998797600044b1e91902602953815a042b51dec5a3e74f172204e9a970d5ca6e20c34724e62a237329ef6b5
   languageName: node
   linkType: hard
 
@@ -2600,13 +2600,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wix/sdk-runtime@npm:0.3.39":
-  version: 0.3.39
-  resolution: "@wix/sdk-runtime@npm:0.3.39"
+"@wix/sdk-runtime@npm:0.3.46":
+  version: 0.3.46
+  resolution: "@wix/sdk-runtime@npm:0.3.46"
   dependencies:
     "@wix/sdk-context": 0.0.1
-    "@wix/sdk-types": ^1.13.6
-  checksum: 6e90927ba402dcc3a8a2a94e270a0fa94ecd457f4a91c66dadf0c608b43bd870d5d74be16e6950e015de922ceb0f7433a46284b365b58dba5c20e2be7a12e05b
+    "@wix/sdk-types": ^1.13.14
+  checksum: 92e3de476995a6efd14c4c0887c437e89a64622b5804d24fb10cb3faa277b131870fde7db8cd4cabaf56dbaaa0d578a02d79079ef5ea18485c7a7f4e2c72a87e
   languageName: node
   linkType: hard
 
@@ -2627,32 +2627,33 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wix/sdk-types@npm:^1.13.6":
-  version: 1.13.6
-  resolution: "@wix/sdk-types@npm:1.13.6"
+"@wix/sdk-types@npm:^1.13.14":
+  version: 1.13.14
+  resolution: "@wix/sdk-types@npm:1.13.14"
   dependencies:
-    "@wix/monitoring-types": ^0.9.0
-  checksum: 03378d1d61859b029f283eb495b1b64ab98189d9a92d5910d0820382815dcaab4d4954934f8c0e8cf8c2a4257cb760697c25dd0a56923fea685dc71d3dbaaa8d
+    "@wix/monitoring-types": ^0.12.0
+    type-fest: ^4.40.0
+  checksum: c7d323efda9e740d2d9c8c83d020c44b76e8b2df3bc2eb32c63ea8e5840a92a0c00fbeb7223ed6e29736be132629ce344f0eac9bf1aae4bfc50b57a7f309eff1
   languageName: node
   linkType: hard
 
 "@wix/sdk@npm:^1.14.3, @wix/sdk@npm:^1.5.0":
-  version: 1.15.16
-  resolution: "@wix/sdk@npm:1.15.16"
+  version: 1.15.20
+  resolution: "@wix/sdk@npm:1.15.20"
   dependencies:
     "@wix/identity": ^1.0.104
-    "@wix/image-kit": ^1.104.0
+    "@wix/image-kit": ^1.107.0
     "@wix/redirects": ^1.0.70
     "@wix/sdk-context": 0.0.1
-    "@wix/sdk-runtime": 0.3.39
-    "@wix/sdk-types": ^1.13.6
+    "@wix/sdk-runtime": 0.3.46
+    "@wix/sdk-types": ^1.13.14
     graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
     jose: ^5.10.0
-    type-fest: ^4.37.0
+    type-fest: ^4.40.0
   dependenciesMeta:
     graphql:
       optional: true
-  checksum: 2bec4f945fb20d75a440aa2c805b34dacd5cdb994fb2928714d673f24c87ea3b35b88b336fa59dce9ed6a6eb6f7adde4aa253a9ded80a849106eed44960a060e
+  checksum: a471489f5f8fa13e792bc83f019e53c46c03deacd0d42c86b3899385e0341abe28f227f8c4b861cde21aaadef4f46c8dc71a4e0370012c2c7d5935e24e0c35a8
   languageName: node
   linkType: hard
 
@@ -10344,10 +10345,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.37.0":
-  version: 4.38.0
-  resolution: "type-fest@npm:4.38.0"
-  checksum: 85fd7f3feff42bab6eac99f9f056d67932c36f834da87d68b0e89c040671415a902848c81be4d0f02919d157d7eae70dccf42c42dd2e2000d80e3ae1b97a9101
+"type-fest@npm:^4.40.0":
+  version: 4.40.1
+  resolution: "type-fest@npm:4.40.1"
+  checksum: cb0f48afdd1f718bd2d5e64f355512afd5a672d7eb39edf601d3b37f2b92fa1be0301ba845a3d9212befc6325c6f9b1b7680b2f201845061f39d2a35bb6931dc
   languageName: node
   linkType: hard
 
