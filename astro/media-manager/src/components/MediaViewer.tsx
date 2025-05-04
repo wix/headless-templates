@@ -100,10 +100,15 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
         <div className="aspect-video bg-black flex items-center justify-center overflow-hidden">
           {selectedItem.type.startsWith("image/") ? (
             <Image
-              uri="c5f754_91888de5fb744645ac065265c664ebce~mv2.jpg"
-              width={3000}
-              height={2977}
+              uri="11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg"
+              width={5000}
+              height={2763}
               displayMode="fill"
+              containerWidth={100}
+              containerHeight={100}
+              isInFirstFold
+              isSEOBot
+              shouldUseLQIP
               alt={selectedItem.name}
             />
           ) : (
