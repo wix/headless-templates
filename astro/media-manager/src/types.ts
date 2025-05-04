@@ -1,8 +1,8 @@
 export interface MediaItem {
   id: string;
   name: string;
-  type: string;
+  mediaType: string;
   url: string;
-  uploadDate: string;
+  _createdDate: string;
   thumbnailUrl?: string;
 }

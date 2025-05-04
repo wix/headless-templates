@@ -134,7 +134,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
               className="bg-black flex items-center justify-center overflow-hidden"
               style={{ width: "100%", height: "400px" }}
             >
-              {selectedItem.type.startsWith("image/") ? (
+              {selectedItem.mediaType === "IMAGE" ? (
                 // @ts-expect-error Ignoring the type error for now as this will be properly configured later
                 <Image
                   uri="11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg"
@@ -166,7 +166,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
               </h4>
               <span className="text-xs text-gray-500">
                 Uploaded on{" "}
-                {new Date(selectedItem.uploadDate).toLocaleDateString()}
+                {new Date(selectedItem._createdDate).toLocaleDateString()}
               </span>
             </div>
 
@@ -174,7 +174,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
               <div className="flex justify-between">
                 <span className="text-gray-500">Type</span>
                 <span className="text-gray-800 font-medium">
-                  {selectedItem.type.split("/")[0].toUpperCase()}
+                  {selectedItem.mediaType}
                 </span>
               </div>
               <div className="flex justify-between">

@@ -9,39 +9,33 @@ const mockMediaItems = [
   {
     id: "1",
     name: "Mountain Landscape.jpg",
-    type: "image/jpeg",
-    url: "https://static.wixstatic.com/media/11062b_5f918a05d6cd428a9c47d496780b289d~mv2_d_5760_3840_s_4_2.jpg",
-    uploadDate: new Date().toISOString(),
-    thumbnailUrl:
-      "https://static.wixstatic.com/media/11062b_5f918a05d6cd428a9c47d496780b289d~mv2_d_5760_3840_s_4_2.jpg/v1/fill/w_200,h_140,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/11062b_5f918a05d6cd428a9c47d496780b289d~mv2_d_5760_3840_s_4_2.jpg",
+    mediaType: "IMAGE",
+    url: "https://static.wixstatic.com/media/8dfd06_3e3feaf389cf47fd9c781e5977a89c3d~mv2.png",
+    _createdDate: new Date().toISOString(),
   },
   {
     id: "2",
     name: "Beach Sunset.jpg",
-    type: "image/jpeg",
-    url: "https://static.wixstatic.com/media/11062b_0322ebcb50954a0dbab1e07e71be921c~mv2_d_4928_3264_s_4_2.jpg",
-    uploadDate: new Date(Date.now() - 86400000).toISOString(),
-    thumbnailUrl:
-      "https://static.wixstatic.com/media/11062b_0322ebcb50954a0dbab1e07e71be921c~mv2_d_4928_3264_s_4_2.jpg/v1/fill/w_200,h_140,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/11062b_0322ebcb50954a0dbab1e07e71be921c~mv2_d_4928_3264_s_4_2.jpg",
+    mediaType: "IMAGE",
+    url: "https://static.wixstatic.com/media/8dfd06_3e3feaf389cf47fd9c781e5977a89c3d~mv2.png",
+    _createdDate: new Date(Date.now() - 86400000).toISOString(),
   },
   {
     id: "3",
     name: "City Skyline.jpg",
-    type: "image/jpeg",
-    url: "https://static.wixstatic.com/media/11062b_88078871957f44b6886b8999872c4d68~mv2_d_3000_2000_s_2.jpg",
-    uploadDate: new Date(Date.now() - 172800000).toISOString(),
-    thumbnailUrl:
-      "https://static.wixstatic.com/media/11062b_88078871957f44b6886b8999872c4d68~mv2_d_3000_2000_s_2.jpg/v1/fill/w_200,h_140,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/11062b_88078871957f44b6886b8999872c4d68~mv2_d_3000_2000_s_2.jpg",
+    mediaType: "IMAGE",
+    url: "https://static.wixstatic.com/media/8dfd06_3e3feaf389cf47fd9c781e5977a89c3d~mv2.png",
+    _createdDate: new Date(Date.now() - 172800000).toISOString(),
   },
-  {
-    id: "4",
-    name: "Product Demo.mp4",
-    type: "video/mp4",
-    url: "https://video.wixstatic.com/video/11062b_3d13bee40e424792b841c2c482289cca/720p/mp4/file.mp4",
-    uploadDate: new Date(Date.now() - 259200000).toISOString(),
-    thumbnailUrl:
-      "https://static.wixstatic.com/media/11062b_3d13bee40e424792b841c2c482289cca~mv2.jpg/v1/fill/w_200,h_140,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/11062b_3d13bee40e424792b841c2c482289cca~mv2.jpg",
-  },
+  // {
+  //   id: "4",
+  //   name: "Product Demo.mp4",
+  //   type: "video/mp4",
+  //   url: "https://video.wixstatic.com/video/11062b_3d13bee40e424792b841c2c482289cca/720p/mp4/file.mp4",
+  //   uploadDate: new Date(Date.now() - 259200000).toISOString(),
+  //   thumbnailUrl:
+  //     "https://static.wixstatic.com/media/11062b_3d13bee40e424792b841c2c482289cca~mv2.jpg/v1/fill/w_200,h_140,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/11062b_3d13bee40e424792b841c2c482289cca~mv2.jpg",
+  // },
 ];
 
 // Initialize with loading state
@@ -57,11 +51,9 @@ try {
     mediaItems = response.files.map((file) => ({
       id: file._id || "",
       name: file.displayName || "",
-      type: file.mediaType?.toLowerCase().includes("image")
-        ? "image/jpeg"
-        : "video/mp4",
+      mediaType: file.mediaType ? "IMAGE" : "VIDEO",
       url: file.url || "",
-      uploadDate: file._updatedDate?.toString() || new Date().toISOString(),
+      _createdDate: file._createdDate?.toString() || new Date().toISOString(),
       thumbnailUrl: file.thumbnailUrl || "",
     }));
   } else {

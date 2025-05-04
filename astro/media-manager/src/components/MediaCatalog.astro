@@ -2,9 +2,9 @@
 interface MediaItem {
   id: string;
   name: string;
-  type: string;
+  mediaType: string;
   url: string;
-  uploadDate: string;
+  _createdDate: string;
   thumbnailUrl?: string;
 }
 
@@ -50,7 +50,7 @@ const { items, selectedId = "" } = Astro.props;
           }`}
         >
           <div class="aspect-square bg-gray-50 relative">
-            {item.type.startsWith("image/") ? (
+            {item.mediaType === "IMAGE" ? (
               <img
                 src={item.thumbnailUrl || item.url}
                 alt={item.name}
@@ -141,7 +141,7 @@ const { items, selectedId = "" } = Astro.props;
           </div>
           <div class="p-2">
             <div class="text-xs truncate text-gray-700 font-medium">{item.name}</div>
-            <div class="text-xs text-gray-500">{new Date(item.uploadDate).toLocaleDateString()}</div>
+            <div class="text-xs text-gray-500">{new Date(item._createdDate).toLocaleDateString()}</div>
           </div>
         </div>
       ))}
@@ -156,7 +156,7 @@ const { items, selectedId = "" } = Astro.props;
     name: string;
     type: string;
     url: string;
-    uploadDate: string;
+    _createdDate: string;
     thumbnailUrl?: string;
   }
 
