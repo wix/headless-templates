@@ -76,14 +76,14 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
     }
 
     try {
-      // Example URL: https://static.wixstatic.com/media/11062b_5f918a05d6cd428a9c47d496780b289d~mv2_d_5760_3840_s_4_2.jpg
+      // Example URL: https://static.wixstatic.com/media/8dfd06_3e3feaf389cf47fd9c781e5977a89c3d~mv2.png
       const urlParts = url.split("/");
       const mediaSegment = urlParts.findIndex((part) => part === "media");
 
       if (mediaSegment !== -1 && mediaSegment + 1 < urlParts.length) {
-        // Extract the ID part (everything before file extension if present)
-        const idWithExtension = urlParts[mediaSegment + 1];
-        return idWithExtension.split(".")[0];
+        // Get the full segment that includes both the ID and format
+        const fullMediaId = urlParts[mediaSegment + 1];
+        return fullMediaId;
       }
 
       return null;
@@ -137,7 +137,10 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
               {selectedItem.mediaType === "IMAGE" ? (
                 // @ts-expect-error Ignoring the type error for now as this will be properly configured later
                 <Image
-                  uri="11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg"
+                  uri={
+                    getImageIdFromUrl(selectedItem.url) ||
+                    "11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg"
+                  }
                   width={5000}
                   height={2763}
                   displayMode="fill"
