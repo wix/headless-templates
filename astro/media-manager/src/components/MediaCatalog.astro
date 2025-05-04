@@ -17,29 +17,22 @@ interface Props {
 
 const { items, selectedId = "" } = Astro.props;
 
-// Helper function to extract image ID from Wix URL
 function getImageIdFromUrl(url: string): string | null {
-  if (!url || !url.includes("wixstatic.com")) {
-    return null;
-  }
-
+  if (!url || !url.includes("wixstatic.com")) return null;
+  
   try {
-    // Example URL: https://static.wixstatic.com/media/8dfd06_3e3feaf389cf47fd9c781e5977a89c3d~mv2.png
     const urlParts = url.split("/");
     const mediaSegment = urlParts.findIndex((part) => part === "media");
-
+    
     if (mediaSegment !== -1 && mediaSegment + 1 < urlParts.length) {
-      // Get the full segment that includes both the ID and format
-      const fullMediaId = urlParts[mediaSegment + 1];
-      return fullMediaId;
+      return urlParts[mediaSegment + 1];
     }
-
     return null;
   } catch (error) {
-    console.error("Error extracting image ID:", error);
     return null;
   }
 }
+
 ---
 
 <!-- Hidden div to store items data for client-side JavaScript -->
@@ -79,27 +72,21 @@ function getImageIdFromUrl(url: string): string | null {
           >
             <div class="aspect-square bg-gray-50 relative">
               {item.mediaType === "IMAGE" ? (
-                // <img
-                //   src={item.thumbnailUrl || item.url}
-                //   alt={item.name}
-                //   class="w-full h-full object-cover"
-                //   data-wix-image={imageId || ""}
-                // />
-                     <Image
-                  uri={
-                    item.url
-                  }
-                  width={5000}
-                  height={2763}
-                  displayMode="fill"
-                  containerWidth={280}
-                  containerHeight={280}
-                  isInFirstFold
-                  isSEOBot
-                  shouldUseLQIP
-                  alt={item.name}
-                  client:only="react"
-                />
+                <div class="w-full h-full">
+                  <Image
+                    uri={imageId || "11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg"}
+                    width={280}
+                    height={280}
+                    displayMode="fill"
+                    containerWidth={280}
+                    containerHeight={280}
+                    isInFirstFold={true}
+                    isSEOBot={false}
+                    shouldUseLQIP={true}
+                    alt={item.name}
+                    client:only="react"
+                  />
+                </div>
               ) : (
                 <div class="relative w-full h-full">
                   <video src={item.url} class="w-full h-full object-cover" muted />

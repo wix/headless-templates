@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-// Import to be used when properly configured
 import { Image } from "@wix/image";
 import type { MediaItem } from "../types";
 
@@ -7,34 +6,21 @@ interface MediaViewerProps {
   item: MediaItem | null;
 }
 
-const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
-  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(item);
+const MediaViewer: React.FC<MediaViewerProps> = () => {
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  // Listen for item:selected events from the Astro component
   useEffect(() => {
-    const handleItemSelected = (event: CustomEvent) => {
+    const handleItemSelected = (event: CustomEvent<{ item: MediaItem }>) => {
       setSelectedItem(event.detail.item);
-      setIsOpen(true); // Open the modal when an item is selected through the preview button
+      setIsOpen(true);
     };
 
-    // Add event listener for item selection
     document.addEventListener(
       "item:selected",
       handleItemSelected as EventListener
     );
 
-    // Clean up event listener when component unmounts
-    return () => {
-      document.removeEventListener(
-        "item:selected",
-        handleItemSelected as EventListener
-      );
-    };
-  }, []);
-
-  // Add event listener for Escape key
-  useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (isOpen && event.key === "Escape") {
         closeModal();
@@ -44,64 +30,48 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
     document.addEventListener("keydown", handleEscapeKey);
 
     return () => {
+      document.removeEventListener(
+        "item:selected",
+        handleItemSelected as EventListener
+      );
       document.removeEventListener("keydown", handleEscapeKey);
     };
   }, [isOpen]);
-
-  // When the item prop changes directly
-  useEffect(() => {
-    if (item) {
-      setSelectedItem(item);
-    }
-  }, [item]);
 
   const closeModal = () => {
     setIsOpen(false);
   };
 
-  // If no item selected or modal is closed, return an empty fragment
   if (!selectedItem || !isOpen) {
     return null;
   }
 
-  const formatFileSize = (url: string) => {
-    // This is a placeholder - in real apps you'd calculate actual file size
-    return "1.2 MB";
-  };
-
-  // Extract image ID from Wix URL if available
   const getImageIdFromUrl = (url: string): string | null => {
-    if (!url || !url.includes("wixstatic.com")) {
-      return null;
-    }
-
+    if (!url || !url.includes("wixstatic.com")) return null;
     try {
-      // Example URL: https://static.wixstatic.com/media/8dfd06_3e3feaf389cf47fd9c781e5977a89c3d~mv2.png
       const urlParts = url.split("/");
       const mediaSegment = urlParts.findIndex((part) => part === "media");
-
       if (mediaSegment !== -1 && mediaSegment + 1 < urlParts.length) {
-        // Get the full segment that includes both the ID and format
-        const fullMediaId = urlParts[mediaSegment + 1];
-        return fullMediaId;
+        return urlParts[mediaSegment + 1];
       }
-
       return null;
-    } catch (error) {
-      console.error("Error extracting image ID:", error);
+    } catch {
       return null;
     }
   };
 
-  // Only showing modal view
+  const imageId =
+    getImageIdFromUrl(selectedItem.url) ||
+    "11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg";
+
+  // For compatibility with the Image component
+  const WixImage = Image as any;
+
   return (
     <div
       className="fixed inset-0 bg-gray-100 bg-opacity-15 flex items-center justify-center z-50"
       onClick={(e) => {
-        // Close modal when clicking on the backdrop (not when clicking on the modal content)
-        if (e.target === e.currentTarget) {
-          closeModal();
-        }
+        if (e.target === e.currentTarget) closeModal();
       }}
     >
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
@@ -128,29 +98,32 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
             </button>
           </div>
 
-          {/* Preview area */}
           <div className="flex-grow overflow-hidden bg-gray-100 relative">
             <div
               className="bg-black flex items-center justify-center overflow-hidden"
               style={{ width: "100%", height: "400px" }}
             >
               {selectedItem.mediaType === "IMAGE" ? (
-                // @ts-expect-error Ignoring the type error for now as this will be properly configured later
-                <Image
-                  uri={
-                    getImageIdFromUrl(selectedItem.url) ||
-                    "11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg"
-                  }
-                  width={5000}
-                  height={2763}
-                  displayMode="fill"
-                  containerWidth={800}
-                  containerHeight={400}
-                  isInFirstFold
-                  isSEOBot
-                  shouldUseLQIP
-                  alt={selectedItem.name}
-                />
+                <div
+                  style={{
+                    width: "800px",
+                    height: "400px",
+                    position: "relative",
+                  }}
+                >
+                  <Image
+                    uri={imageId}
+                    width={800}
+                    height={400}
+                    displayMode="fill"
+                    containerWidth={800}
+                    containerHeight={400}
+                    isInFirstFold={true}
+                    isSEOBot={false}
+                    shouldUseLQIP={true}
+                    alt={selectedItem.name}
+                  />
+                </div>
               ) : (
                 <video
                   src={selectedItem.url}
@@ -161,7 +134,6 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
             </div>
           </div>
 
-          {/* File info */}
           <div className="p-4 border-t border-gray-200">
             <div className="mb-3">
               <h4 className="font-medium text-gray-800 truncate">
@@ -180,15 +152,8 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
                   {selectedItem.mediaType}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Size</span>
-                <span className="text-gray-800 font-medium">
-                  {formatFileSize(selectedItem.url)}
-                </span>
-              </div>
             </div>
 
-            {/* Actions */}
             <div className="mt-6 flex gap-2">
               <a
                 href={selectedItem.url}
@@ -206,7 +171,6 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
               </a>
               <button
                 className="px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm flex items-center"
-                title="Open"
                 onClick={() => window.open(selectedItem.url, "_blank")}
               >
                 <svg

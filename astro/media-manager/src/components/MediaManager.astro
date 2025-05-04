@@ -3,6 +3,7 @@ import MediaUploader from "./MediaUploader.astro";
 import MediaCatalog from "./MediaCatalog.astro";
 import MediaViewer from "./MediaViewer";
 import { files } from "@wix/media";
+import type { MediaItem } from "../types";
 
 // Mock data as fallback
 const mockMediaItems = [
@@ -39,7 +40,7 @@ const mockMediaItems = [
 ];
 
 // Initialize with loading state
-let mediaItems = [];
+let mediaItems: MediaItem[] = [];
 let isLoading = true;
 
 try {
@@ -187,7 +188,7 @@ try {
   }
 
   // Add event listener for file upload completion
-  document.addEventListener("upload:complete", (event) => {
+  document.addEventListener("upload:complete", () => {
     window.location.reload(); // Reload page to show the newly uploaded file
     if (uploadModal) {
       uploadModal.classList.add("hidden");
