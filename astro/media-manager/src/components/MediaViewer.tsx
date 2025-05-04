@@ -97,15 +97,18 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
 
       {/* Preview area */}
       <div className="flex-grow overflow-hidden bg-gray-100 relative">
-        <div className="aspect-video bg-black flex items-center justify-center overflow-hidden">
+        <div
+          className="aspect-video bg-black flex items-center justify-center overflow-hidden"
+          style={{ width: "500px", height: "500px" }}
+        >
           {selectedItem.type.startsWith("image/") ? (
             <Image
               uri="11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg"
               width={5000}
               height={2763}
               displayMode="fill"
-              containerWidth={100}
-              containerHeight={100}
+              containerWidth={500}
+              containerHeight={500}
               isInFirstFold
               isSEOBot
               shouldUseLQIP
