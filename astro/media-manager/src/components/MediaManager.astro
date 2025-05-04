@@ -2,7 +2,7 @@
 import MediaUploader from "./MediaUploader.astro";
 import MediaCatalog from "./MediaCatalog.astro";
 import MediaViewer from "./MediaViewer";
-import { files } from "@wix/media";
+import { fetchMediaItems } from "../utils/mediaApi";
 import type { MediaItem } from "../types";
 
 // Mock data as fallback
@@ -39,35 +39,7 @@ const mockMediaItems = [
   // },
 ];
 
-// Initialize with loading state
-let mediaItems: MediaItem[] = [];
-let isLoading = true;
-
-try {
-  // Try to fetch actual media files from Wix Media Manager
-  const response = await files.listFiles();
-
-  if (response.files && response.files.length > 0) {
-    // Use actual media files if available
-    mediaItems = response.files.map((file) => ({
-      id: file._id || "",
-      name: file.displayName || "",
-      mediaType: file.mediaType ? "IMAGE" : "VIDEO",
-      url: file.url || "",
-      _createdDate: file._createdDate?.toString() || new Date().toISOString(),
-      thumbnailUrl: file.thumbnailUrl || "",
-    }));
-  } else {
-    // Fall back to mock data if no media files are found
-    mediaItems = mockMediaItems;
-  }
-} catch (error) {
-  // Log error and use mock data if API call fails
-  console.error("Error fetching media files:", error);
-  mediaItems = mockMediaItems;
-} finally {
-  isLoading = false;
-}
+const { mediaItems, isLoading } = await fetchMediaItems();
 
 // Client-side script for handling modal and actions
 ---
@@ -158,6 +130,8 @@ try {
 </div>
 
 <script>
+  import { toggleElement } from "../utils/domUtils";
+
   // Handle modal visibility
   const addMediaButton = document.getElementById("add-media-button");
   const closeModalButton = document.getElementById("close-modal-button");
@@ -165,24 +139,28 @@ try {
 
   if (addMediaButton && closeModalButton && uploadModal) {
     addMediaButton.addEventListener("click", () => {
-      uploadModal.classList.remove("hidden");
+      toggleElement(uploadModal, true);
     });
 
     closeModalButton.addEventListener("click", () => {
-      uploadModal.classList.add("hidden");
+      toggleElement(uploadModal, false);
     });
 
     // Close modal when clicking outside of it
     uploadModal.addEventListener("click", (e) => {
       if (e.target === uploadModal) {
-        uploadModal.classList.add("hidden");
+        toggleElement(uploadModal, false);
       }
     });
 
     // Close modal when pressing Escape key
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !uploadModal.classList.contains("hidden")) {
-        uploadModal.classList.add("hidden");
+      if (
+        e.key === "Escape" &&
+        uploadModal &&
+        !uploadModal.classList.contains("hidden")
+      ) {
+        toggleElement(uploadModal, false);
       }
     });
   }
@@ -191,7 +169,7 @@ try {
   document.addEventListener("upload:complete", () => {
     window.location.reload(); // Reload page to show the newly uploaded file
     if (uploadModal) {
-      uploadModal.classList.add("hidden");
+      toggleElement(uploadModal, false);
     }
   });
 

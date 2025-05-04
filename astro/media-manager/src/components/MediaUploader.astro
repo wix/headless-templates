@@ -55,26 +55,27 @@
 </div>
 
 <script>
-  const uploadArea = document.getElementById("upload-area") as HTMLElement;
-  const fileInput = document.getElementById("fileInput") as HTMLInputElement;
-  const uploadIdle = document.getElementById("upload-idle") as HTMLElement;
-  const uploadProgress = document.getElementById(
-    "upload-progress"
-  ) as HTMLElement;
-  const progressBar = document.getElementById("progress-bar") as HTMLElement;
-  const progressPercent = document.getElementById(
-    "progress-percent"
-  ) as HTMLElement;
-  const browseButton = document.getElementById("browse-button") as HTMLElement;
+  import {
+    getElement,
+    toggleElement,
+    setElementWidth,
+    updateElementText,
+    preventEvent,
+  } from "../utils/domUtils";
+  import { uploadMediaFile } from "../utils/mediaApi";
+  import { dispatchUploadCompleteEvent } from "../utils/eventUtils";
+
+  const uploadArea = getElement<HTMLElement>("upload-area");
+  const fileInput = getElement<HTMLInputElement>("fileInput");
+  const uploadIdle = getElement<HTMLElement>("upload-idle");
+  const uploadProgress = getElement<HTMLElement>("upload-progress");
+  const progressBar = getElement<HTMLElement>("progress-bar");
+  const progressPercent = getElement<HTMLElement>("progress-percent");
+  const browseButton = getElement<HTMLElement>("browse-button");
 
   ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-    uploadArea?.addEventListener(eventName, preventDefaults, false);
+    uploadArea?.addEventListener(eventName, preventEvent, false);
   });
-
-  function preventDefaults(e: Event) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
 
   ["dragenter", "dragover"].forEach((eventName) => {
     uploadArea?.addEventListener(eventName, highlight, false);
@@ -115,45 +116,9 @@
     showUploadProgress();
 
     try {
-      const { files } = await import("@wix/media");
-      const response = await files.generateFileUploadUrl(file.type, {
-        fileName: file.name,
-      });
-
-      const xhr = new XMLHttpRequest();
-      xhr.open(
-        "PUT",
-        response.uploadUrl + "?filename=" + encodeURIComponent(file.name)
-      );
-      xhr.setRequestHeader("Content-Type", file.type);
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
-          updateProgress(progress);
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          const responseData = JSON.parse(xhr.responseText);
-          const event = new CustomEvent("upload:complete", {
-            detail: { file: responseData.file },
-          });
-          document.dispatchEvent(event);
-          resetUploadUI();
-        } else {
-          alert("Upload failed. Please try again.");
-          resetUploadUI();
-        }
-      };
-
-      xhr.onerror = () => {
-        alert("Upload error. Please try again.");
-        resetUploadUI();
-      };
-
-      xhr.send(file);
+      const result = await uploadMediaFile(file, updateProgress);
+      dispatchUploadCompleteEvent(result.file);
+      resetUploadUI();
     } catch (error) {
       alert("Error uploading file. Please try again.");
       resetUploadUI();
@@ -161,19 +126,19 @@
   }
 
   function showUploadProgress() {
-    uploadIdle?.classList.add("hidden");
-    uploadProgress?.classList.remove("hidden");
+    toggleElement(uploadIdle, false);
+    toggleElement(uploadProgress, true);
     updateProgress(0);
   }
 
   function updateProgress(percent: number) {
-    if (progressBar) progressBar.style.width = `${percent}%`;
-    if (progressPercent) progressPercent.textContent = percent.toString();
+    setElementWidth(progressBar, percent);
+    updateElementText(progressPercent, percent.toString());
   }
 
   function resetUploadUI() {
-    uploadIdle?.classList.remove("hidden");
-    uploadProgress?.classList.add("hidden");
+    toggleElement(uploadIdle, true);
+    toggleElement(uploadProgress, false);
     if (fileInput) fileInput.value = "";
   }
 

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Image } from "@wix/image";
 import type { MediaItem } from "../types";
+import { getImageId } from "../utils/imageUtils";
 
 interface MediaViewerProps {
   item: MediaItem | null;
 }
+
+// Workaround for TypeScript issue with Wix Image component
+const WixImage = Image as any;
 
 const MediaViewer: React.FC<MediaViewerProps> = () => {
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
@@ -46,26 +50,7 @@ const MediaViewer: React.FC<MediaViewerProps> = () => {
     return null;
   }
 
-  const getImageIdFromUrl = (url: string): string | null => {
-    if (!url || !url.includes("wixstatic.com")) return null;
-    try {
-      const urlParts = url.split("/");
-      const mediaSegment = urlParts.findIndex((part) => part === "media");
-      if (mediaSegment !== -1 && mediaSegment + 1 < urlParts.length) {
-        return urlParts[mediaSegment + 1];
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
-  const imageId =
-    getImageIdFromUrl(selectedItem.url) ||
-    "11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg";
-
-  // For compatibility with the Image component
-  const WixImage = Image as any;
+  const imageId = getImageId(selectedItem.url);
 
   return (
     <div
@@ -111,7 +96,7 @@ const MediaViewer: React.FC<MediaViewerProps> = () => {
                     position: "relative",
                   }}
                 >
-                  <Image
+                  <WixImage
                     uri={imageId}
                     width={800}
                     height={400}

@@ -1,14 +1,7 @@
 ---
 import { Image } from "@wix/image";
-
-interface MediaItem {
-  id: string;
-  name: string;
-  mediaType: string;
-  url: string;
-  _createdDate: string;
-  thumbnailUrl?: string;
-}
+import { getImageId } from "../utils/imageUtils";
+import type { MediaItem } from "../types";
 
 interface Props {
   items: MediaItem[];
@@ -62,7 +55,7 @@ function getImageIdFromUrl(url: string): string | null {
   <div class="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden">
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
       {items.map((item) => {
-        const imageId = getImageIdFromUrl(item.thumbnailUrl || item.url);
+        const imageId = getImageId(item.thumbnailUrl || item.url);
         return (
           <div
             data-id={item.id}
@@ -74,7 +67,7 @@ function getImageIdFromUrl(url: string): string | null {
               {item.mediaType === "IMAGE" ? (
                 <div class="w-full h-full">
                   <Image
-                    uri={imageId || "11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg"}
+                    uri={imageId}
                     width={280}
                     height={280}
                     displayMode="fill"
@@ -182,35 +175,22 @@ function getImageIdFromUrl(url: string): string | null {
 )}
 
 <script>
-  // Define type for media items
-  interface MediaItem {
-    id: string;
-    name: string;
-    type: string;
-    url: string;
-    _createdDate: string;
-    thumbnailUrl?: string;
-  }
+  import { dispatchItemSelectedEvent } from "../utils/eventUtils";
+  import { deleteMediaFile } from "../utils/mediaApi";
+  import { getDataFromElement } from "../utils/domUtils";
+  import type { MediaItem } from "../types";
 
-  // Store the items data for client-side use
   const itemsDataElement = document.querySelector('#media-items-data');
-  const itemsJson = itemsDataElement?.getAttribute('data-items') || '[]';
-  const items: MediaItem[] = JSON.parse(itemsJson);
+  const items = getDataFromElement<MediaItem[]>(itemsDataElement!) || [];
   
-  // Handle item selection
   document.querySelectorAll('.media-item').forEach(item => {
     item.addEventListener('click', () => {
       const itemId = item.getAttribute('data-id');
-      const selectedItem = items.find((i: MediaItem) => i.id === itemId);
+      const selectedItem = items.find((i) => i.id === itemId);
       
       if (selectedItem) {
-        // Dispatch a custom event with the selected item data
-        const event = new CustomEvent('item:selected', { 
-          detail: { item: selectedItem }
-        });
-        document.dispatchEvent(event);
+        dispatchItemSelectedEvent(selectedItem);
         
-        // Update UI to show this item as selected
         document.querySelectorAll('.media-item').forEach(el => {
           el.classList.remove('border-blue-500', 'ring-2', 'ring-blue-200');
           el.classList.add('border-gray-200');
@@ -222,46 +202,32 @@ function getImageIdFromUrl(url: string): string | null {
     });
   });
   
-  // Handle preview button click
   document.querySelectorAll('.preview-button').forEach(button => {
     button.addEventListener('click', (e) => {
       e.stopPropagation();
       const itemId = button.getAttribute('data-id');
-      const selectedItem = items.find((i: MediaItem) => i.id === itemId);
+      const selectedItem = items.find((i) => i.id === itemId);
       
       if (selectedItem) {
-        const event = new CustomEvent('item:selected', { 
-          detail: { item: selectedItem }
-        });
-        document.dispatchEvent(event);
+        dispatchItemSelectedEvent(selectedItem);
       }
     });
   });
   
-  // Handle delete button click
   document.querySelectorAll('.delete-button').forEach(button => {
     button.addEventListener('click', async (e) => {
       e.stopPropagation();
       if (confirm('Are you sure you want to delete this file?')) {
         const itemId = button.getAttribute('data-id');
         
-        try {
-          // Try to use the Wix Media API if available
-          try {
-            const { files } = await import('@wix/media');
-            await files.bulkDeleteFiles([itemId as string]);
+        if (itemId) {
+          const success = await deleteMediaFile(itemId);
+          if (success) {
             alert('File deleted successfully!');
-          } catch (importError) {
-            console.warn('Wix Media API not available, simulating deletion for demo purposes:', importError);
-            // Simulate successful deletion for the demo
-            alert('File deleted successfully! (Demo mode)');
+            window.location.reload();
+          } else {
+            alert('Failed to delete file. Please try again.');
           }
-          
-          // Reload the page to reflect changes
-          window.location.reload();
-        } catch (error) {
-          console.error('Error deleting file:', error);
-          alert('Failed to delete file. Please try again.');
         }
       }
     });
