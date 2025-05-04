@@ -232,4 +232,27 @@ function getImageIdFromUrl(url: string): string | null {
       }
     });
   });
+
+  // Listen for media updated events
+  document.addEventListener('media:updated', (e) => {
+    const customEvent = e as CustomEvent<{ item: MediaItem }>;
+    const updatedItem = customEvent.detail.item;
+    
+    if (updatedItem) {
+      // Find and update the name in the UI
+      const mediaItemEl = document.querySelector(`.media-item[data-id="${updatedItem.id}"]`);
+      if (mediaItemEl) {
+        const nameEl = mediaItemEl.querySelector('.text-xs.truncate.text-gray-700');
+        if (nameEl) {
+          nameEl.textContent = updatedItem.name;
+        }
+      }
+      
+      // Update the item in our local items array
+      const itemIndex = items.findIndex(item => item.id === updatedItem.id);
+      if (itemIndex !== -1) {
+        items[itemIndex].name = updatedItem.name;
+      }
+    }
+  });
 </script> 

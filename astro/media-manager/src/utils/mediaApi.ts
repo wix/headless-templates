@@ -106,3 +106,19 @@ export async function uploadMediaFile(
     throw new Error("Error uploading file");
   }
 }
+
+export async function updateFileDescriptor(
+  fileId: string,
+  displayName: string
+): Promise<boolean> {
+  try {
+    await files.updateFileDescriptor({
+      _id: fileId,
+      displayName,
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating file descriptor:", error);
+    return false;
+  }
+}

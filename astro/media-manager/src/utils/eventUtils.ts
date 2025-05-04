@@ -13,3 +13,10 @@ export function dispatchUploadCompleteEvent(file: any): void {
   });
   document.dispatchEvent(event);
 }
+
+export function dispatchMediaUpdatedEvent(item: MediaItem): void {
+  const event = new CustomEvent("media:updated", {
+    detail: { item },
+  });
+  document.dispatchEvent(event);
+}

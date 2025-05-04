@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Image } from "@wix/image";
 import type { MediaItem } from "../types";
 import { getImageId } from "../utils/imageUtils";
+import { updateFileDescriptor } from "../utils/mediaApi";
+import { dispatchMediaUpdatedEvent } from "../utils/eventUtils";
 
 interface MediaViewerProps {
   item: MediaItem | null;
@@ -13,10 +15,14 @@ const WixImage = Image as any;
 const MediaViewer: React.FC<MediaViewerProps> = () => {
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editedName, setEditedName] = useState<string>("");
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   useEffect(() => {
     const handleItemSelected = (event: CustomEvent<{ item: MediaItem }>) => {
       setSelectedItem(event.detail.item);
+      setEditedName(event.detail.item.name);
       setIsOpen(true);
     };
 
@@ -44,6 +50,52 @@ const MediaViewer: React.FC<MediaViewerProps> = () => {
 
   const closeModal = () => {
     setIsOpen(false);
+    setIsEditing(false);
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSaveName = async () => {
+    if (!selectedItem || editedName.trim() === "") return;
+
+    setIsSaving(true);
+    const success = await updateFileDescriptor(selectedItem.id, editedName);
+
+    if (success) {
+      const updatedItem = {
+        ...selectedItem,
+        name: editedName,
+      };
+
+      setSelectedItem(updatedItem);
+      setIsEditing(false);
+
+      // Use the shared utility function to dispatch the event
+      dispatchMediaUpdatedEvent(updatedItem);
+    } else {
+      alert("Failed to update file name. Please try again.");
+    }
+
+    setIsSaving(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditedName(selectedItem?.name || "");
+    setIsEditing(false);
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditedName(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSaveName();
+    } else if (e.key === "Escape") {
+      handleCancelEdit();
+    }
   };
 
   if (!selectedItem || !isOpen) {
@@ -121,9 +173,58 @@ const MediaViewer: React.FC<MediaViewerProps> = () => {
 
           <div className="p-4 border-t border-gray-200">
             <div className="mb-3">
-              <h4 className="font-medium text-gray-800 truncate">
-                {selectedItem.name}
-              </h4>
+              {isEditing ? (
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    value={editedName}
+                    onChange={handleNameChange}
+                    onKeyDown={handleKeyDown}
+                    className="flex-grow mr-2 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    autoFocus
+                  />
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={handleSaveName}
+                      disabled={isSaving}
+                      className="px-2 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    >
+                      {isSaving ? "Saving..." : "Save"}
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="px-2 py-1 text-xs border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <h4 className="font-medium text-gray-800 truncate flex-grow">
+                    {selectedItem.name}
+                  </h4>
+                  <button
+                    onClick={handleEditClick}
+                    className="text-gray-500 hover:text-blue-600 ml-2"
+                    title="Edit name"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
               <span className="text-xs text-gray-500">
                 Uploaded on{" "}
                 {new Date(selectedItem._createdDate).toLocaleDateString()}
