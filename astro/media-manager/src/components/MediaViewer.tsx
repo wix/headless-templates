@@ -136,31 +136,20 @@ const MediaViewer: React.FC<MediaViewerProps> = () => {
           </div>
 
           <div className="flex-grow overflow-hidden bg-gray-100 relative">
-            <div
-              className="bg-black flex items-center justify-center overflow-hidden"
-              style={{ width: "100%", height: "400px" }}
-            >
+            <div className="bg-black flex items-center justify-center overflow-hidden">
               {selectedItem.mediaType === "IMAGE" ? (
-                <div
-                  style={{
-                    width: "800px",
-                    height: "400px",
-                    position: "relative",
-                  }}
-                >
-                  <WixImage
-                    uri={imageId}
-                    width={800}
-                    height={400}
-                    displayMode="fill"
-                    containerWidth={800}
-                    containerHeight={400}
-                    isInFirstFold={true}
-                    isSEOBot={false}
-                    shouldUseLQIP={true}
-                    alt={selectedItem.name}
-                  />
-                </div>
+                <WixImage
+                  uri={imageId}
+                  width={1500}
+                  height={1500}
+                  displayMode="fit"
+                  containerWidth={800}
+                  containerHeight={400}
+                  isInFirstFold={true}
+                  isSEOBot={false}
+                  shouldUseLQIP={true}
+                  alt={selectedItem.name}
+                />
               ) : (
                 <video
                   src={selectedItem.url}
