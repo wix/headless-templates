@@ -44,26 +44,9 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
     setIsOpen(false);
   };
 
-  if (!selectedItem) {
-    return (
-      <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-gray-500 bg-gray-50 rounded-lg p-4">
-        <svg
-          className="w-12 h-12 text-gray-300 mb-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-        <p className="text-gray-700 font-medium">No media selected</p>
-        <p className="text-gray-500 text-sm mt-1">Select an item to preview</p>
-      </div>
-    );
+  // If no item selected or modal is closed, return an empty fragment
+  if (!selectedItem || !isOpen) {
+    return null;
   }
 
   const formatFileSize = (url: string) => {
@@ -95,137 +78,126 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
     }
   };
 
-  // Content to display in both the modal and the sidebar
-  const viewerContent = (
-    <div className="flex flex-col h-full">
-      <div className="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-        <h3 className="font-medium text-gray-700 text-sm">File Details</h3>
-        {isOpen && (
-          <button
-            onClick={closeModal}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+  // Only showing modal view
+  return (
+    <div className="fixed inset-0 bg-gray-100 bg-opacity-30 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
+        <div className="flex flex-col h-full">
+          <div className="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+            <h3 className="font-medium text-gray-700 text-sm">File Details</h3>
+            <button
+              onClick={closeModal}
+              className="text-gray-500 hover:text-gray-700"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        )}
-      </div>
-
-      {/* Preview area */}
-      <div className="flex-grow overflow-hidden bg-gray-100 relative">
-        <div
-          className="bg-black flex items-center justify-center overflow-hidden"
-          style={{ width: "100%", height: isOpen ? "400px" : "300px" }}
-        >
-          {selectedItem.type.startsWith("image/") ? (
-            // @ts-expect-error Ignoring the type error for now as this will be properly configured later
-            <Image
-              uri="11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg"
-              width={5000}
-              height={2763}
-              displayMode="fill"
-              containerWidth={isOpen ? 800 : 500}
-              containerHeight={isOpen ? 400 : 300}
-              isInFirstFold
-              isSEOBot
-              shouldUseLQIP
-              alt={selectedItem.name}
-            />
-          ) : (
-            <video
-              src={selectedItem.url}
-              controls
-              className="max-w-full max-h-full"
-            />
-          )}
-        </div>
-      </div>
-
-      {/* File info */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="mb-3">
-          <h4 className="font-medium text-gray-800 truncate">
-            {selectedItem.name}
-          </h4>
-          <span className="text-xs text-gray-500">
-            Uploaded on {new Date(selectedItem.uploadDate).toLocaleDateString()}
-          </span>
-        </div>
-
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-500">Type</span>
-            <span className="text-gray-800 font-medium">
-              {selectedItem.type.split("/")[0].toUpperCase()}
-            </span>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Size</span>
-            <span className="text-gray-800 font-medium">
-              {formatFileSize(selectedItem.url)}
-            </span>
-          </div>
-        </div>
 
-        {/* Actions */}
-        <div className="mt-6 flex gap-2">
-          <a
-            href={selectedItem.url}
-            download={selectedItem.name}
-            className="flex-1 flex justify-center items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-          >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="currentColor"
-              viewBox="0 0 24 24"
+          {/* Preview area */}
+          <div className="flex-grow overflow-hidden bg-gray-100 relative">
+            <div
+              className="bg-black flex items-center justify-center overflow-hidden"
+              style={{ width: "100%", height: "400px" }}
             >
-              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-            </svg>
-            Download
-          </a>
-          <button
-            className="px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm flex items-center"
-            title="Open"
-            onClick={() => window.open(selectedItem.url, "_blank")}
-          >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
-            </svg>
-            Open
-          </button>
+              {selectedItem.type.startsWith("image/") ? (
+                // @ts-expect-error Ignoring the type error for now as this will be properly configured later
+                <Image
+                  uri="11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg"
+                  width={5000}
+                  height={2763}
+                  displayMode="fill"
+                  containerWidth={800}
+                  containerHeight={400}
+                  isInFirstFold
+                  isSEOBot
+                  shouldUseLQIP
+                  alt={selectedItem.name}
+                />
+              ) : (
+                <video
+                  src={selectedItem.url}
+                  controls
+                  className="max-w-full max-h-full"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* File info */}
+          <div className="p-4 border-t border-gray-200">
+            <div className="mb-3">
+              <h4 className="font-medium text-gray-800 truncate">
+                {selectedItem.name}
+              </h4>
+              <span className="text-xs text-gray-500">
+                Uploaded on{" "}
+                {new Date(selectedItem.uploadDate).toLocaleDateString()}
+              </span>
+            </div>
+
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Type</span>
+                <span className="text-gray-800 font-medium">
+                  {selectedItem.type.split("/")[0].toUpperCase()}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Size</span>
+                <span className="text-gray-800 font-medium">
+                  {formatFileSize(selectedItem.url)}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="mt-6 flex gap-2">
+              <a
+                href={selectedItem.url}
+                download={selectedItem.name}
+                className="flex-1 flex justify-center items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                </svg>
+                Download
+              </a>
+              <button
+                className="px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm flex items-center"
+                title="Open"
+                onClick={() => window.open(selectedItem.url, "_blank")}
+              >
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                </svg>
+                Open
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-
-  // Modal view when isOpen is true
-  if (isOpen) {
-    return (
-      <div className="fixed inset-0 bg-gray-100 bg-opacity-30 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
-          {viewerContent}
-        </div>
-      </div>
-    );
-  }
-
-  // Regular view in the sidebar
-  return viewerContent;
 };
 
 export default MediaViewer;
