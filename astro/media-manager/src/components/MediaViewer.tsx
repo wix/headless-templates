@@ -33,6 +33,21 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
     };
   }, []);
 
+  // Add event listener for Escape key
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (isOpen && event.key === "Escape") {
+        closeModal();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscapeKey);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, [isOpen]);
+
   // When the item prop changes directly
   useEffect(() => {
     if (item) {
@@ -80,7 +95,15 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
 
   // Only showing modal view
   return (
-    <div className="fixed inset-0 bg-gray-100 bg-opacity-30 flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 bg-gray-100 bg-opacity-15 flex items-center justify-center z-50"
+      onClick={(e) => {
+        // Close modal when clicking on the backdrop (not when clicking on the modal content)
+        if (e.target === e.currentTarget) {
+          closeModal();
+        }
+      }}
+    >
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
         <div className="flex flex-col h-full">
           <div className="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50">
