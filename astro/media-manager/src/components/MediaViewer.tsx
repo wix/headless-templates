@@ -9,11 +9,13 @@ interface MediaViewerProps {
 
 const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(item);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   // Listen for item:selected events from the Astro component
   useEffect(() => {
     const handleItemSelected = (event: CustomEvent) => {
       setSelectedItem(event.detail.item);
+      setIsOpen(true); // Open the modal when an item is selected through the preview button
     };
 
     // Add event listener for item selection
@@ -37,6 +39,10 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
       setSelectedItem(item);
     }
   }, [item]);
+
+  const closeModal = () => {
+    setIsOpen(false);
+  };
 
   if (!selectedItem) {
     return (
@@ -89,26 +95,48 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
     }
   };
 
-  return (
+  // Content to display in both the modal and the sidebar
+  const viewerContent = (
     <div className="flex flex-col h-full">
       <div className="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50">
         <h3 className="font-medium text-gray-700 text-sm">File Details</h3>
+        {isOpen && (
+          <button
+            onClick={closeModal}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Preview area */}
       <div className="flex-grow overflow-hidden bg-gray-100 relative">
         <div
-          className="aspect-video bg-black flex items-center justify-center overflow-hidden"
-          style={{ width: "500px", height: "500px" }}
+          className="bg-black flex items-center justify-center overflow-hidden"
+          style={{ width: "100%", height: isOpen ? "400px" : "300px" }}
         >
           {selectedItem.type.startsWith("image/") ? (
+            // @ts-expect-error Ignoring the type error for now as this will be properly configured later
             <Image
               uri="11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg"
               width={5000}
               height={2763}
               displayMode="fill"
-              containerWidth={500}
-              containerHeight={500}
+              containerWidth={isOpen ? 800 : 500}
+              containerHeight={isOpen ? 400 : 300}
               isInFirstFold
               isSEOBot
               shouldUseLQIP
@@ -184,6 +212,20 @@ const MediaViewer: React.FC<MediaViewerProps> = ({ item }) => {
       </div>
     </div>
   );
+
+  // Modal view when isOpen is true
+  if (isOpen) {
+    return (
+      <div className="fixed inset-0 bg-gray-100 bg-opacity-30 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
+          {viewerContent}
+        </div>
+      </div>
+    );
+  }
+
+  // Regular view in the sidebar
+  return viewerContent;
 };
 
 export default MediaViewer;
