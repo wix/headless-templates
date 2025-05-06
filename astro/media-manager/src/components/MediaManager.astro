@@ -96,7 +96,7 @@ const { mediaItems, isLoading } = await fetchMediaItems();
   </div>
 
   <!-- Add MediaViewer outside the grid, but keep it for modal functionality -->
-  <MediaViewer item={null} />
+  <MediaViewer client:load item={null} />
 
   <!-- Upload Modal (hidden by default) -->
   <div
