@@ -9,9 +9,6 @@ interface MediaViewerProps {
   item: MediaItem | null;
 }
 
-// Workaround for TypeScript issue with Wix Image component
-const WixImage = Image as any;
-
 const MediaViewer: React.FC<MediaViewerProps> = () => {
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -138,7 +135,7 @@ const MediaViewer: React.FC<MediaViewerProps> = () => {
           <div className="flex-grow overflow-hidden bg-gray-100 relative">
             <div className="bg-black flex items-center justify-center overflow-hidden">
               {selectedItem.mediaType === "IMAGE" ? (
-                <WixImage
+                <Image
                   uri={imageId}
                   width={1500}
                   height={1500}
