@@ -34,6 +34,7 @@ export async function fetchMediaItems(): Promise<{
 
   try {
     const response = await files.listFiles();
+
     if (response.files?.length > 0) {
       mediaItems = response.files.map((file) => ({
         id: file._id || "",
@@ -47,6 +48,7 @@ export async function fetchMediaItems(): Promise<{
       mediaItems = mockMediaItems;
     }
   } catch (error) {
+    console.error("Error fetching media items:", error);
     mediaItems = mockMediaItems;
   } finally {
     isLoading = false;
