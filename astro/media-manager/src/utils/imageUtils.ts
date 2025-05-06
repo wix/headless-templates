@@ -14,9 +14,6 @@ export function getImageIdFromUrl(url: string): string | null {
   }
 }
 
-export const DEFAULT_IMAGE_ID =
-  "11062b_9c53b59db1dc4bd4ad7a47340f0594b4~mv2.jpg";
-
 export function getImageId(url: string): string {
-  return getImageIdFromUrl(url) || DEFAULT_IMAGE_ID;
+  return getImageIdFromUrl(url) || "";
 }

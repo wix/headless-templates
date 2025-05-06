@@ -1,6 +1,6 @@
 import React from "react";
-import { Image } from "@wix/image";
+import { Image, type ImageProps } from "@wix/image";
 
-export default function WixImage(props) {
+export default function WixImage(props: ImageProps) {
   return <Image {...props} />;
 }
