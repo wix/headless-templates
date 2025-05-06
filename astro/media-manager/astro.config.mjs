@@ -8,5 +8,8 @@ export default defineConfig({
   adapter: wix(),
   vite: {
     plugins: [tailwindcss()],
+    ssr: {
+      noExternal: ["@wix/image"],
+    },
   },
 });
