@@ -1,6 +1,6 @@
 import type { MediaItem } from "../types";
 import { files } from "@wix/media";
-import { multiply } from "../backend/my-web-method.web.js";
+import { listFiles } from "../backend/list-files.web.js";
 
 export async function fetchMediaItems(): Promise<{
   mediaItems: MediaItem[];
@@ -33,7 +33,7 @@ export async function fetchMediaItems(): Promise<{
   let mediaItems: MediaItem[] = [];
   let isLoading = true;
 
-  const res = await multiply(1, 2);
+  const res = await listFiles();
   console.log({ res });
 
   try {
