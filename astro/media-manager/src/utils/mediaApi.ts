@@ -1,5 +1,6 @@
 import type { MediaItem } from "../types";
 import { files } from "@wix/media";
+import { multiply } from "../backend/my-web-method.web.js";
 
 export async function fetchMediaItems(): Promise<{
   mediaItems: MediaItem[];
@@ -32,23 +33,27 @@ export async function fetchMediaItems(): Promise<{
   let mediaItems: MediaItem[] = [];
   let isLoading = true;
 
-  try {
-    const response = await files.listFiles();
+  const res = await multiply(1, 2);
+  console.log({ res });
 
-    if (response.files?.length > 0) {
-      mediaItems = response.files.map((file) => ({
-        id: file._id || "",
-        name: file.displayName || "",
-        mediaType: file.mediaType ? "IMAGE" : "VIDEO",
-        url: file.url || "",
-        _createdDate: file._createdDate?.toString() || new Date().toISOString(),
-        thumbnailUrl: file.thumbnailUrl || "",
-      }));
-    } else {
-      mediaItems = mockMediaItems;
-    }
+  try {
+    // const response = await files.listFiles();
+
+    // if (response.files?.length > 0) {
+    //   mediaItems = response.files.map((file) => ({
+    //     id: file._id || "",
+    //     name: file.displayName || "",
+    //     mediaType: file.mediaType ? "IMAGE" : "VIDEO",
+    //     url: file.url || "",
+    //     _createdDate: file._createdDate?.toString() || new Date().toISOString(),
+    //     thumbnailUrl: file.thumbnailUrl || "",
+    //   }));
+    // } else {
+    //   mediaItems = mockMediaItems;
+    // }
+    mediaItems = mockMediaItems;
   } catch (error) {
-    console.error("Error fetching media items:", error);
+    // console.error("Error fetching media items:", error);
     mediaItems = mockMediaItems;
   } finally {
     isLoading = false;

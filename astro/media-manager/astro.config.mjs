@@ -9,7 +9,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     ssr: {
-      noExternal: ["@wix/image"],
+      noExternal: ["@wix/image", "@wix/web-methods"],
     },
   },
 });
