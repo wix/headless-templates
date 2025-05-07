@@ -23,8 +23,8 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@types/node": "^22.5.5",
     "@wix/cli-edge": "^1.1.74",
+    "@types/node": "^22.5.5",
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3"
   },
