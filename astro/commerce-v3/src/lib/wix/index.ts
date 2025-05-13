@@ -321,7 +321,7 @@ export async function getCategoryProducts({
         $matchItems: [
           {
             id: {
-              $in: ['5bc8b077-ff55-4e78-89ee-941d58e0b95b'],
+              $in: [resolvedCategory._id],
             },
           },
         ],
