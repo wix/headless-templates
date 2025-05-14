@@ -4,6 +4,10 @@ import MediaCatalog from "./MediaCatalog.astro";
 import MediaViewer from "./MediaViewer";
 import { fetchMediaItems } from "../utils/mediaApi";
 import type { MediaItem } from "../types";
+import { actions } from "astro:actions";
+
+// const res = Astro.getActionResult(actions.listFiles);
+const res = await Astro.callAction(actions.listFiles, {});
 
 // Mock data as fallback
 const mockMediaItems = [

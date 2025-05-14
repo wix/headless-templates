@@ -1,6 +1,6 @@
 import type { MediaItem } from "../types";
 import { files } from "@wix/media";
-import { listFiles } from "../backend/list-files.web.js";
+// import { actions } from "astro:actions";
 
 export async function fetchMediaItems(): Promise<{
   mediaItems: MediaItem[];
@@ -33,8 +33,8 @@ export async function fetchMediaItems(): Promise<{
   let mediaItems: MediaItem[] = [];
   let isLoading = true;
 
-  const res = await listFiles();
-  console.log({ res });
+  // const res = Astro.getActionResult(actions.listFiles);
+  // console.log({ res });
 
   try {
     // const response = await files.listFiles();
