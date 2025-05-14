@@ -1,7 +1,7 @@
 ---
 import { Image } from "@wix/image";
-import { getImageId } from "../utils/imageUtils";
 import type { MediaItem } from "../types";
+import { getImageId } from "../utils/imageUtils";
 
 interface Props {
   items: MediaItem[];
@@ -175,9 +175,9 @@ function getImageIdFromUrl(url: string): string | null {
 
 <script>
   import { dispatchItemSelectedEvent } from "../utils/eventUtils";
-  import { deleteMediaFile } from "../utils/mediaApi";
   import { getDataFromElement } from "../utils/domUtils";
   import type { MediaItem } from "../types";
+  import { actions } from "astro:actions";
 
   const itemsDataElement = document.querySelector('#media-items-data');
   const items = getDataFromElement<MediaItem[]>(itemsDataElement!) || [];
@@ -220,7 +220,7 @@ function getImageIdFromUrl(url: string): string | null {
         const itemId = button.getAttribute('data-id');
         
         if (itemId) {
-          const success = await deleteMediaFile(itemId);
+          const { data: success } = await Astro.callAction(actions.deleteMediaFile, { fileId: itemId });
           if (success) {
             alert('File deleted successfully!');
             window.location.reload();

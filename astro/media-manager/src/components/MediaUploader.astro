@@ -62,8 +62,8 @@
     updateElementText,
     preventEvent,
   } from "../utils/domUtils";
-  import { uploadMediaFile } from "../utils/mediaApi";
   import { dispatchUploadCompleteEvent } from "../utils/eventUtils";
+  import { actions } from "astro:actions";
 
   const uploadArea = getElement<HTMLElement>("upload-area");
   const fileInput = getElement<HTMLInputElement>("fileInput");
@@ -114,11 +114,39 @@
 
   async function handleFiles(file: File) {
     showUploadProgress();
-
     try {
-      const result = await uploadMediaFile(file, updateProgress);
-      dispatchUploadCompleteEvent(result.file);
-      resetUploadUI();
+      // Get upload URL from server action
+      const { data } = await Astro.callAction(actions.uploadMediaFile, {
+        file,
+      });
+      if (!data?.uploadUrl) throw new Error("No upload URL received");
+      // Now upload the file using XMLHttpRequest
+      const xhr = new XMLHttpRequest();
+      xhr.open(
+        "PUT",
+        data.uploadUrl + "?filename=" + encodeURIComponent(file.name)
+      );
+      xhr.setRequestHeader("Content-Type", file.type);
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          updateProgress(progress);
+        }
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          dispatchUploadCompleteEvent({ file });
+          resetUploadUI();
+        } else {
+          alert("Upload failed");
+          resetUploadUI();
+        }
+      };
+      xhr.onerror = () => {
+        alert("Upload error");
+        resetUploadUI();
+      };
+      xhr.send(file);
     } catch (error) {
       alert("Error uploading file. Please try again.");
       resetUploadUI();

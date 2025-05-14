@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
 import { Image } from "@wix/image";
+import React, { useEffect, useState } from "react";
 import type { MediaItem } from "../types";
-import { getImageId } from "../utils/imageUtils";
-import { updateFileDescriptor } from "../utils/mediaApi";
 import { dispatchMediaUpdatedEvent } from "../utils/eventUtils";
+import { getImageId } from "../utils/imageUtils";
 
 interface MediaViewerProps {
   item: MediaItem | null;
@@ -58,7 +57,16 @@ const MediaViewer: React.FC<MediaViewerProps> = () => {
     if (!selectedItem || editedName.trim() === "") return;
 
     setIsSaving(true);
-    const success = await updateFileDescriptor(selectedItem.id, editedName);
+    // Astro.callAction is not available in React components; use fetch to call an API route
+    const response = await fetch("/api/updateFileDescriptor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileId: selectedItem.id,
+        displayName: editedName,
+      }),
+    });
+    const { success } = await response.json();
 
     if (success) {
       const updatedItem = {
