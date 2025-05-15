@@ -1,0 +1,148 @@
+---
+import { actions } from "astro:actions";
+import MediaCatalog from "./MediaCatalog.astro";
+import MediaUploader from "./MediaUploader.astro";
+import MediaViewer from "./MediaViewer";
+
+const { data, error } = await Astro.callAction(actions.fetchMediaItems, {});
+const mediaItems = data?.mediaItems || [];
+const isLoading = data?.isLoading || false;
+
+const res = await Astro.callAction(actions.listFiles, {});
+---
+
+<div class="bg-gray-50 min-h-screen">
+  <!-- Action bar with filters and upload button -->
+  <div class="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+    <div class="container mx-auto px-4 py-3">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <div class="font-medium text-gray-700">All Media</div>
+          <div class="text-sm text-gray-500">
+            {mediaItems.length} item{mediaItems.length !== 1 ? "s" : ""}
+          </div>
+        </div>
+        <button
+          id="add-media-button"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width={2}
+              d="M12 4v16m8-8H4"></path>
+          </svg>
+          Add Media
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="container mx-auto px-4 py-6">
+    <div class="grid grid-cols-1">
+      <!-- Catalog - Takes full width -->
+      <div>
+        {
+          isLoading ? (
+            <div class="flex justify-center items-center h-40 bg-white rounded-lg shadow">
+              <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+            </div>
+          ) : (
+            <MediaCatalog items={mediaItems} selectedId="" />
+          )
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Add MediaViewer outside the grid, but keep it for modal functionality -->
+  <MediaViewer client:load item={null} />
+
+  <!-- Upload Modal (hidden by default) -->
+  <div
+    id="upload-modal"
+    class="fixed inset-0 bg-gray-100 bg-opacity-15 flex items-center justify-center z-50 hidden"
+  >
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">Upload Media</h3>
+        <button
+          id="close-modal-button"
+          class="text-gray-500 hover:text-gray-700"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width={2}
+              d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <MediaUploader />
+    </div>
+  </div>
+</div>
+
+<script>
+  import { toggleElement } from "../utils/domUtils";
+
+  // Handle modal visibility
+  const addMediaButton = document.getElementById("add-media-button");
+  const closeModalButton = document.getElementById("close-modal-button");
+  const uploadModal = document.getElementById("upload-modal");
+
+  if (addMediaButton && closeModalButton && uploadModal) {
+    addMediaButton.addEventListener("click", () => {
+      toggleElement(uploadModal, true);
+    });
+
+    closeModalButton.addEventListener("click", () => {
+      toggleElement(uploadModal, false);
+    });
+
+    // Close modal when clicking outside of it
+    uploadModal.addEventListener("click", (e) => {
+      if (e.target === uploadModal) {
+        toggleElement(uploadModal, false);
+      }
+    });
+
+    // Close modal when pressing Escape key
+    document.addEventListener("keydown", (e) => {
+      if (
+        e.key === "Escape" &&
+        uploadModal &&
+        !uploadModal.classList.contains("hidden")
+      ) {
+        toggleElement(uploadModal, false);
+      }
+    });
+  }
+
+  // Add event listener for file upload completion
+  document.addEventListener("upload:complete", () => {
+    window.location.reload(); // Reload page to show the newly uploaded file
+    if (uploadModal) {
+      toggleElement(uploadModal, false);
+    }
+  });
+
+  // Add event listener for when a catalog item is selected
+  document.addEventListener("item:selected", (event) => {
+    // This will be handled in the MediaViewer component using a custom event
+    // that will be dispatched from the MediaCatalog component
+  });
+</script>
