@@ -12,4 +12,8 @@ export default defineConfig({
       noExternal: ["@wix/image", "@wix/web-methods"],
     },
   },
+  server: {
+    // This setting is necessary to enable webhook integration when running the dev command.
+    allowedHosts: true,
+  },
 });

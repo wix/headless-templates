@@ -7,6 +7,8 @@ import MediaViewer from "./MediaViewer";
 const { data, error } = await Astro.callAction(actions.fetchMediaItems, {});
 const mediaItems = data?.mediaItems || [];
 const isLoading = data?.isLoading || false;
+
+const res = await Astro.callAction(actions.listFiles, {});
 ---
 
 <div class="bg-gray-50 min-h-screen">

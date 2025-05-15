@@ -1,4 +1,5 @@
 {
-  "appId": "1f86b23c-735d-41c9-ac2b-9f842f1d4116",
-  "projectId": "baccbe41-e354-4ba1-9d6f-47bdf24651f7"
+  "$schema": "https://dev.wix.com/wix-cli/schemas/wix-config.json",
+  "appId": "e0238b71-37f4-40b0-9028-e8b3efebfd84",
+  "projectId": "my-media-manager"
 }
