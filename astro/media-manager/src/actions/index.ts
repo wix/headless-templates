@@ -1,9 +1,7 @@
-import { defineAction } from "astro:actions";
 import { auth } from "@wix/essentials";
 import { files } from "@wix/media";
-import { createClient, ApiKeyStrategy } from "@wix/sdk";
-
-import.meta.env.API_KEY;
+import { ApiKeyStrategy, createClient } from "@wix/sdk";
+import { defineAction } from "astro:actions";
 
 const { API_KEY, SITE_ID, ACCOUNT_ID } = import.meta.env;
 
@@ -19,73 +17,41 @@ const myWixClient = createClient({
 });
 
 export const server = {
-  listFiles: defineAction({
-    handler: async () => {
-      try {
-        const listOptions = {
-          mediaTypes: ["IMAGE"] as any,
-        };
-        // const elevatedListFiles = auth.elevate(files.listFiles);
-        // const images = await elevatedListFiles(listOptions);
-        const images = await myWixClient.files.listFiles(listOptions);
-
-        console.log(images);
-
-        return { files: images.files };
-      } catch (error) {
-        console.error(error);
-        throw new Error("Failed to list files");
-      }
-    },
-  }),
   fetchMediaItems: defineAction({
     handler: async () => {
-      const mockMediaItems = [
-        {
-          id: "1",
-          name: "Acme Circles T-Shirt",
-          mediaType: "IMAGE",
-          url: "https://static.wixstatic.com/media/8dfd06_3e3feaf389cf47fd9c781e5977a89c3d~mv2.png",
-          _createdDate: new Date().toISOString(),
-        },
-        {
-          id: "2",
-          name: "Acme Baby Cap",
-          mediaType: "IMAGE",
-          url: "https://static.wixstatic.com/media/8dfd06_2a67ecfa18c94f25bb01709559f1351e~mv2.png",
-          _createdDate: new Date(Date.now() - 86400000).toISOString(),
-        },
-        {
-          id: "3",
-          name: "Acme Dog Sweater",
-          mediaType: "IMAGE",
-          url: "https://static.wixstatic.com/media/8dfd06_b20ae557929844e58f2f2d1e0071d167~mv2.png",
-          _createdDate: new Date(Date.now() - 172800000).toISOString(),
-        },
-      ];
-      let mediaItems = [];
+      let mediaItems;
       let isLoading = true;
+
       try {
         // const elevatedListFiles = auth.elevate(files.listFiles);
         // const response = await elevatedListFiles();
-        // if (response.files?.length > 0) {
-        //   mediaItems = response.files.map((file) => ({
-        //     id: file._id || "",
-        //     name: file.displayName || "",
-        //     mediaType: file.mediaType ? "IMAGE" : "VIDEO",
-        //     url: file.url || "",
-        //     _createdDate: file._createdDate?.toString() || new Date().toISOString(),
-        //     thumbnailUrl: file.thumbnailUrl || "",
-        //   }));
-        // } else {
-        //   mediaItems = mockMediaItems;
-        // }
-        mediaItems = mockMediaItems;
+        const { files: listFiles } = await myWixClient.files.listFiles();
+
+        if (listFiles?.length > 0) {
+          mediaItems = listFiles.map((file) => {
+            const {
+              _id: id,
+              displayName: name,
+              mediaType,
+              url,
+              _createdDate,
+            } = file;
+
+            return {
+              id,
+              name,
+              mediaType,
+              url,
+              _createdDate,
+            };
+          });
+        }
       } catch (error) {
-        mediaItems = mockMediaItems;
+        console.error(error);
       } finally {
         isLoading = false;
       }
+
       return { mediaItems, isLoading };
     },
   }),
