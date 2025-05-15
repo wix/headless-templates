@@ -1,6 +1,22 @@
 import { defineAction } from "astro:actions";
 import { auth } from "@wix/essentials";
 import { files } from "@wix/media";
+import { createClient, ApiKeyStrategy } from "@wix/sdk";
+
+import.meta.env.API_KEY;
+
+const { API_KEY, SITE_ID, ACCOUNT_ID } = import.meta.env;
+
+const myWixClient = createClient({
+  auth: ApiKeyStrategy({
+    apiKey: API_KEY,
+    siteId: SITE_ID,
+    accountId: ACCOUNT_ID,
+  }),
+  modules: {
+    files,
+  },
+});
 
 export const server = {
   listFiles: defineAction({
@@ -9,8 +25,11 @@ export const server = {
         const listOptions = {
           mediaTypes: ["IMAGE"] as any,
         };
-        const elevatedListFiles = auth.elevate(files.listFiles);
-        const images = await elevatedListFiles(listOptions);
+        // const elevatedListFiles = auth.elevate(files.listFiles);
+        // const images = await elevatedListFiles(listOptions);
+        const images = await myWixClient.files.listFiles(listOptions);
+
+        console.log(images);
 
         return { files: images.files };
       } catch (error) {
