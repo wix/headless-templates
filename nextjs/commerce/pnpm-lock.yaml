@@ -22,7 +22,7 @@ importers:
         version: 1.0.943
       '@wix/redirects':
         specifier: ^1.0.70
-        version: 1.0.76
+        version: 1.0.78
       '@wix/sdk':
         specifier: ^1.15.9
         version: 1.15.16
@@ -577,8 +577,8 @@ packages:
   '@wix/auto_sdk_identity_verification@1.0.0':
     resolution: {integrity: sha512-nQbL5SP4OfnXpUmlMK+1OpYpj7ncmu8iU5l8Mom0GkznP3sZV1b8VLlP0T99gCS1JxCY3Ryl2LEvoSuFOAzioQ==}
 
-  '@wix/auto_sdk_redirects_redirects@1.0.2':
-    resolution: {integrity: sha512-/mE9YQLxQDP9LFYxJnxoqNU7+3UOTChuFFgNqZ2t/P5AsDG9pnKgVvztBPloCWUNB56k8PGcr9jC7EbVbpQYLg==}
+  '@wix/auto_sdk_redirects_redirects@1.0.4':
+    resolution: {integrity: sha512-9byn+KBwwfCaPKasqotknoWPBrBws9zZYsqP421EBN/BeKGoFRO5Vp0H4WjhQ/SOnTPoCVHMPqaXgYYVKoL69w==}
 
   '@wix/data@1.0.201':
     resolution: {integrity: sha512-v3RDT3N8IpIDJadKpyJuqf7QQePBCTt90cyRwp2SeeXm75TCa1mKy6V811HTb3O+ulL/swsnO5AyljxW7eX1JA==}
@@ -619,17 +619,26 @@ packages:
   '@wix/image-kit@1.104.0':
     resolution: {integrity: sha512-Qbw0UnVcJJMCSKnD8+TPceuDA1K6Lk0uSAKQuEnI14CCqJKGGgkpgKY4n1F0I0LNDSp0aJhhrL9IPlrwo0SOWQ==}
 
+  '@wix/monitoring-types@0.12.0':
+    resolution: {integrity: sha512-nlv4jwQMewjzPIWFF9rnKf9WhVojj67oLtvilYXfi+lnhXyVlYOfqCnL3qLJuKtJ6wT5XIJdt0Fj0su2NM5taQ==}
+
   '@wix/monitoring-types@0.9.0':
     resolution: {integrity: sha512-ce9McMEVzCUmal5HxdXVdZfVKHhXw3AIUOxquFy8A9zpQHt5FiHoGkSDR27PtoW9e77+muhBHgl81UcnQqfAsA==}
 
-  '@wix/redirects@1.0.76':
-    resolution: {integrity: sha512-QFfbRi40Sl4YMv5AOaJuLAV/FtdCiRN5U7gbuBWklqT/DuSVwchP4Fhp7tCZB7smiS47Y4ami5wlS4R7rYOPSQ==}
+  '@wix/redirects@1.0.78':
+    resolution: {integrity: sha512-kZCElcwGgXtXrZZpnZcUrhUtjITc0hiy8wYSUUU1guqMQFN9xyFgR+a1esjHCrOIZqQqnOI+SL9AtV24CRyggQ==}
 
   '@wix/sdk-context@0.0.1':
     resolution: {integrity: sha512-ziSzrceUC0KFn4IJIVBn1cXXKrZ49ZKG5tQ6fl+TpontyUw5p/Z4VofFUUsnqNl9JYCpYNTzIXpzwok93Vrl8A==}
 
   '@wix/sdk-runtime@0.3.39':
     resolution: {integrity: sha512-NEeBVwjpJHMsYdZXJZQJawvt5g90UWprTFcKVaIuhEznfA4IxDbSwEHgeD4gyuUhGMrPqVj4kzqEO7SgUAIRqQ==}
+
+  '@wix/sdk-runtime@0.3.49':
+    resolution: {integrity: sha512-I2Dcsiz/NFia7LDA8U5JGVnBmBMhvJcV7W1zeJH2QLq8vRNNrJC78t5k3WsevIXPV/AtT14sXYpydOqCLLA7hw==}
+
+  '@wix/sdk-types@1.13.21':
+    resolution: {integrity: sha512-tsJtd9nxOK2bwpaHjeXEg1o8FY1A/liYMc2CdwEimQ0miINp7BTbLDAbRGuvMjK181WKKn0Wwkr8tauUzk3cDA==}
 
   '@wix/sdk-types@1.13.6':
     resolution: {integrity: sha512-EgkfsF3A3JP1PPd3yzJgw1PJ9hnwTMwKiY5jbRH7JUtdDZm5XnP/KY8ss4SRm89d6f8uIE22VxOL4BVTeZz5ow==}
@@ -1013,6 +1022,10 @@ packages:
 
   type-fest@4.38.0:
     resolution: {integrity: sha512-2dBz5D5ycHIoliLYLi0Q2V7KRaDlH0uWIvmk7TYlAg5slqwiPv1ezJdZm1QEM0xgk29oYWMCbIG7E6gHpvChlg==}
+    engines: {node: '>=16'}
+
+  type-fest@4.41.0:
+    resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
     engines: {node: '>=16'}
 
   typescript@5.7.3:
@@ -1562,10 +1575,10 @@ snapshots:
       '@wix/sdk-runtime': 0.3.39
       '@wix/sdk-types': 1.13.6
 
-  '@wix/auto_sdk_redirects_redirects@1.0.2':
+  '@wix/auto_sdk_redirects_redirects@1.0.4':
     dependencies:
-      '@wix/sdk-runtime': 0.3.39
-      '@wix/sdk-types': 1.13.6
+      '@wix/sdk-runtime': 0.3.49
+      '@wix/sdk-types': 1.13.21
 
   '@wix/data@1.0.201':
     dependencies:
@@ -1683,11 +1696,13 @@ snapshots:
       '@babel/runtime': 7.27.0
       tslib: 2.8.1
 
+  '@wix/monitoring-types@0.12.0': {}
+
   '@wix/monitoring-types@0.9.0': {}
 
-  '@wix/redirects@1.0.76':
+  '@wix/redirects@1.0.78':
     dependencies:
-      '@wix/auto_sdk_redirects_redirects': 1.0.2
+      '@wix/auto_sdk_redirects_redirects': 1.0.4
 
   '@wix/sdk-context@0.0.1': {}
 
@@ -1695,6 +1710,16 @@ snapshots:
     dependencies:
       '@wix/sdk-context': 0.0.1
       '@wix/sdk-types': 1.13.6
+
+  '@wix/sdk-runtime@0.3.49':
+    dependencies:
+      '@wix/sdk-context': 0.0.1
+      '@wix/sdk-types': 1.13.21
+
+  '@wix/sdk-types@1.13.21':
+    dependencies:
+      '@wix/monitoring-types': 0.12.0
+      type-fest: 4.41.0
 
   '@wix/sdk-types@1.13.6':
     dependencies:
@@ -1704,7 +1729,7 @@ snapshots:
     dependencies:
       '@wix/identity': 1.0.124
       '@wix/image-kit': 1.104.0
-      '@wix/redirects': 1.0.76
+      '@wix/redirects': 1.0.78
       '@wix/sdk-context': 0.0.1
       '@wix/sdk-runtime': 0.3.39
       '@wix/sdk-types': 1.13.6
@@ -2053,6 +2078,8 @@ snapshots:
   tslib@2.8.1: {}
 
   type-fest@4.38.0: {}
+
+  type-fest@4.41.0: {}
 
   typescript@5.7.3: {}
 
