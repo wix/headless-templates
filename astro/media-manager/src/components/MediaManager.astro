@@ -2,7 +2,7 @@
 import { actions } from "astro:actions";
 import MediaCatalog from "./MediaCatalog.astro";
 import MediaUploader from "./MediaUploader.astro";
-import MediaViewer from "./MediaViewer";
+import MediaViewer from "./MediaViewer.astro";
 
 const { data } = await Astro.callAction(actions.fetchMediaItems, {});
 
@@ -61,8 +61,8 @@ const isLoading = data?.isLoading || false;
     </div>
   </div>
 
-  <!-- Add MediaViewer outside the grid, but keep it for modal functionality -->
-  <MediaViewer client:load item={null} />
+  <!-- MediaViewer modal, controlled by selected item -->
+  <div id="media-viewer-container"></div>
 
   <!-- Upload Modal (hidden by default) -->
   <div
@@ -139,9 +139,148 @@ const isLoading = data?.isLoading || false;
     }
   });
 
+  // Helper function to render the modal HTML
+  /**
+   * @param {import("../types").MediaItem} item
+   */
+  function renderMediaViewerModal(item) {
+    return `
+      <div
+        id="media-viewer-modal"
+        data-file-id="${item.id}"
+        class="fixed inset-0 bg-gray-100 bg-opacity-15 flex items-center justify-center z-50"
+      >
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl">
+          <div class="flex flex-col h-full">
+            <div class="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+              <h3 class="font-medium text-gray-700 text-sm">File Details</h3>
+              <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div class="flex-grow overflow-hidden bg-gray-100 relative">
+              <div class="bg-black flex items-center justify-center overflow-hidden">
+                ${
+                  item.mediaType === "IMAGE"
+                    ? `<img src="${item.url}" alt="${item.name}" class="max-w-full max-h-96 object-contain" />`
+                    : `<video src="${item.url}" controls class="max-w-full max-h-full"></video>`
+                }
+              </div>
+            </div>
+            <div class="p-4 border-t border-gray-200">
+              <div class="mb-3 flex items-center" id="name-edit-row">
+                <h4 id="media-name" class="font-medium text-gray-800 truncate flex-grow">${item.name}</h4>
+                <button id="edit-name-btn" class="ml-2 px-2 py-1 text-xs border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">Edit</button>
+                <input id="edit-name-input" class="hidden flex-grow mr-2 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" value="${item.name}" />
+                <button id="save-name-btn" class="hidden px-2 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Save</button>
+                <button id="cancel-edit-btn" class="hidden px-2 py-1 text-xs border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   // Add event listener for when a catalog item is selected
   document.addEventListener("item:selected", (event) => {
-    // This will be handled in the MediaViewer component using a custom event
-    // that will be dispatched from the MediaCatalog component
+    const customEvent = event as CustomEvent<{
+      item: import("../types").MediaItem;
+    }>;
+    const container = document.getElementById("media-viewer-container");
+    if (!container) return;
+    container.innerHTML = "";
+    const selectedItem = customEvent.detail?.item;
+    if (selectedItem) {
+      container.innerHTML = renderMediaViewerModal(selectedItem);
+      // Attach modal interactivity (edit, save, cancel, close)
+      const modal = document.getElementById("media-viewer-modal");
+      const closeModalBtn = document.getElementById("close-modal-btn");
+      const nameEl = document.getElementById("media-name");
+      const editBtn = document.getElementById("edit-name-btn");
+      const inputEl = document.getElementById(
+        "edit-name-input"
+      ) as HTMLInputElement | null;
+      const saveBtn = document.getElementById("save-name-btn");
+      const cancelBtn = document.getElementById("cancel-edit-btn");
+      const fileId = modal?.getAttribute("data-file-id") || "";
+      let isEditing = false;
+      let isSaving = false;
+
+      function openEdit() {
+        if (!nameEl || !editBtn || !inputEl || !saveBtn || !cancelBtn) return;
+        isEditing = true;
+        nameEl.classList.add("hidden");
+        editBtn.classList.add("hidden");
+        inputEl.classList.remove("hidden");
+        saveBtn.classList.remove("hidden");
+        cancelBtn.classList.remove("hidden");
+        inputEl.value = nameEl.textContent || "";
+        inputEl.focus();
+      }
+      function closeEdit() {
+        if (!nameEl || !editBtn || !inputEl || !saveBtn || !cancelBtn) return;
+        isEditing = false;
+        nameEl.classList.remove("hidden");
+        editBtn.classList.remove("hidden");
+        inputEl.classList.add("hidden");
+        saveBtn.classList.add("hidden");
+        cancelBtn.classList.add("hidden");
+        inputEl.value = nameEl.textContent || "";
+      }
+      function handleSave() {
+        if (!inputEl || !saveBtn || !nameEl) return;
+        if (!inputEl.value.trim() || isSaving) return;
+        isSaving = true;
+        saveBtn.textContent = "Saving...";
+        // Use Astro action via fetch (since actions are not available in this script)
+        fetch("/api/updateFileDescriptor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileId, displayName: inputEl.value }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              nameEl.textContent = inputEl.value;
+              closeEdit();
+              // Optionally dispatch a custom event to update the catalog
+              document.dispatchEvent(
+                new CustomEvent("media:updated", {
+                  detail: { item: { ...selectedItem, name: inputEl.value } },
+                })
+              );
+            } else {
+              alert("Failed to update file name. Please try again.");
+            }
+          })
+          .catch(() => {
+            alert("Failed to update file name. Please try again.");
+          })
+          .finally(() => {
+            isSaving = false;
+            saveBtn.textContent = "Save";
+          });
+      }
+      if (editBtn) editBtn.addEventListener("click", openEdit);
+      if (cancelBtn) cancelBtn.addEventListener("click", closeEdit);
+      if (saveBtn) saveBtn.addEventListener("click", handleSave);
+      if (inputEl)
+        inputEl.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") handleSave();
+          if (e.key === "Escape") closeEdit();
+        });
+      if (closeModalBtn && modal)
+        closeModalBtn.addEventListener("click", () => {
+          modal.remove();
+        });
+      // Optional: close modal on background click
+      if (modal)
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) modal.remove();
+        });
+    }
   });
 </script>
