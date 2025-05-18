@@ -67,17 +67,20 @@ export const server = {
     },
   }),
   uploadMediaFile: defineAction({
-    handler: async ({ file }) => {
-      try {
-        const elevatedGenerateUrl = auth.elevate(files.generateFileUploadUrl);
-        const response = await elevatedGenerateUrl(file.type, {
-          fileName: file.name,
-        });
-        // The actual upload via XMLHttpRequest should be handled client-side after getting the URL
-        return { uploadUrl: response.uploadUrl };
-      } catch (error) {
-        throw new Error("Error uploading file");
-      }
+    handler: async (file) => {
+      console.log({ file });
+      // try {
+      //   const response = await myWixClient.files.generateFileUploadUrl(
+      //     {
+      //       fileName: file.name,
+      //     }
+      //   );
+      //   console.log({ response });
+      //   return { uploadUrl: response.uploadUrl };
+      // } catch (error) {
+      //   console.log({ error });
+      //   throw new Error("Error uploading file");
+      // }
     },
   }),
   updateFileDescriptor: defineAction({

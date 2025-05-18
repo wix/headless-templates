@@ -115,12 +115,9 @@
   async function handleFiles(file: File) {
     showUploadProgress();
     try {
-      // Get upload URL from server action
-      const { data } = await Astro.callAction(actions.uploadMediaFile, {
-        file,
-      });
+      console.log("handleFiles", file);
+      const { data } = await actions.uploadMediaFile(file);
       if (!data?.uploadUrl) throw new Error("No upload URL received");
-      // Now upload the file using XMLHttpRequest
       const xhr = new XMLHttpRequest();
       xhr.open(
         "PUT",
