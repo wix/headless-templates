@@ -7,7 +7,9 @@ import { categories } from "@wix/categories";
 import type { Cart, Collection, Menu, Page, Product } from "./types";
 import {
   InventoryAvailabilityStatus,
-  SingleEntityOpsRequestedFields
+  SingleEntityOpsRequestedFields,
+  RequestedFields,
+  WixCommonSortOrder
 } from "@wix/auto_sdk_stores_products-v-3";
 
 const cartesian = <T>(data: T[][]) =>
@@ -241,32 +243,6 @@ export async function getCart(): Promise<Cart | undefined> {
   }
 }
 
-export async function getCategoriesPoc(
-    handle: string
-): Promise<Collection | undefined> {
-  try {
-    const { items } = await categories.queryCategories({
-      treeReference: {
-        appNamespace: "@wix/stores"
-      }
-    })
-        .eq("slug", handle)
-        .find();
-
-    const category = items[0];
-    if (!category) {
-      return undefined;
-    }
-
-    return reshapeCategory(category);
-  } catch (e) {
-    if ((e as any).code === "404") {
-      return undefined;
-    }
-    throw e;
-  }
-}
-
 export async function getCategoryProducts({
                                               collection,
                                               reverse,
@@ -310,23 +286,25 @@ export async function getCategoryProducts({
     return [];
   }
 
-  const searchOptions: any = {
-    sort: [{
-      fieldName: sortParam,
-      order: reverse ? "DESC" : "ASC"
-    }],
-    fields: ['PLAIN_DESCRIPTION', 'MEDIA_ITEMS_INFO', 'CURRENCY', 'THUMBNAIL', 'DIRECT_CATEGORIES_INFO'],
-    filter: {
-      'directCategoriesInfo.categories': {
-        $matchItems: [
-          {
-            id: {
-              $in: [resolvedCategory._id],
+  const searchOptions = {
+    search: {
+      sort: [{
+        fieldName: sortParam,
+        order: reverse ? WixCommonSortOrder.DESC : WixCommonSortOrder.ASC
+      }],
+      filter: {
+        'directCategoriesInfo.categories': {
+          $matchItems: [
+            {
+              id: {
+                $in: [resolvedCategory._id],
+              },
             },
-          },
-        ],
+          ],
+        },
       },
     },
+    fields: [RequestedFields.PLAIN_DESCRIPTION, RequestedFields.MEDIA_ITEMS_INFO, RequestedFields.CURRENCY, RequestedFields.THUMBNAIL, RequestedFields.DIRECT_CATEGORIES_INFO],
   };
 
   const response = await productsV3.searchProducts(searchOptions);
