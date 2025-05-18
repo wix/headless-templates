@@ -1,0 +1,35 @@
+---
+import type { Product } from "../../lib/wix/types";
+import GridTileImage from "./tile.astro";
+
+type Props = {
+  item: Product;
+  size: "full" | "half";
+};
+---
+
+<div
+  class={Astro.props.size === "full"
+    ? "md:col-span-4 md:row-span-2"
+    : "md:col-span-2 md:row-span-1"}
+>
+  <a
+    class="relative block aspect-square h-full w-full"
+    href={`/product/${Astro.props.item.handle}`}
+  >
+    <GridTileImage
+      src={Astro.props.item.featuredImage.url}
+      inferSize
+      sizes={Astro.props.size === "full"
+        ? "(min-width: 768px) 66vw, 100vw"
+        : "(min-width: 768px) 33vw, 100vw"}
+      alt={Astro.props.item.title}
+      label={{
+        position: Astro.props.size === "full" ? "center" : "bottom",
+        title: Astro.props.item.title as string,
+        amount: Astro.props.item.priceRange.maxVariantPrice.amount,
+        currencyCode: Astro.props.item.priceRange.maxVariantPrice.currencyCode,
+      }}
+    />
+  </a>
+</div>
