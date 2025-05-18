@@ -86,9 +86,15 @@ export const server = {
   updateFileDescriptor: defineAction({
     handler: async ({ fileId, displayName }) => {
       try {
-        const elevatedUpdate = auth.elevate(files.updateFileDescriptor);
-        await elevatedUpdate({ _id: fileId, displayName });
-        return true;
+        // const elevatedUpdate = auth.elevate(files.updateFileDescriptor);
+        // await elevatedUpdate({ _id: fileId, displayName });
+
+        const { state } = await myWixClient.files.updateFileDescriptor({
+          _id: fileId,
+          displayName,
+        });
+
+        return state === "OK";
       } catch (error) {
         console.error("Error updating file descriptor:", error);
         return false;

@@ -2,7 +2,6 @@
 import { actions } from "astro:actions";
 import MediaCatalog from "./MediaCatalog.astro";
 import MediaUploader from "./MediaUploader.astro";
-import MediaViewer from "./MediaViewer.astro";
 
 const { data } = await Astro.callAction(actions.fetchMediaItems, {});
 
@@ -97,6 +96,7 @@ const isLoading = data?.isLoading || false;
 
 <script>
   import { toggleElement } from "../utils/domUtils";
+  import { actions } from "astro:actions";
 
   // Handle modal visibility
   const addMediaButton = document.getElementById("add-media-button");
@@ -247,39 +247,34 @@ const isLoading = data?.isLoading || false;
         cancelBtn.classList.add("hidden");
         inputEl.value = nameEl.textContent || "";
       }
-      function handleSave() {
+      async function handleSave() {
         if (!inputEl || !saveBtn || !nameEl) return;
         if (!inputEl.value.trim() || isSaving) return;
         isSaving = true;
         saveBtn.textContent = "Saving...";
-        // Use Astro action via fetch (since actions are not available in this script)
-        fetch("/api/updateFileDescriptor", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fileId, displayName: inputEl.value }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.success) {
-              nameEl.textContent = inputEl.value;
-              closeEdit();
-              // Optionally dispatch a custom event to update the catalog
-              document.dispatchEvent(
-                new CustomEvent("media:updated", {
-                  detail: { item: { ...selectedItem, name: inputEl.value } },
-                })
-              );
-            } else {
-              alert("Failed to update file name. Please try again.");
-            }
-          })
-          .catch(() => {
-            alert("Failed to update file name. Please try again.");
-          })
-          .finally(() => {
-            isSaving = false;
-            saveBtn.textContent = "Save";
+        try {
+          const { data: success } = await actions.updateFileDescriptor({
+            fileId,
+            displayName: inputEl.value,
           });
+          if (success) {
+            nameEl.textContent = inputEl.value;
+            closeEdit();
+            // Optionally dispatch a custom event to update the catalog
+            document.dispatchEvent(
+              new CustomEvent("media:updated", {
+                detail: { item: { ...selectedItem, name: inputEl.value } },
+              })
+            );
+          } else {
+            alert("Failed to update file name. Please try again.");
+          }
+        } catch (error) {
+          alert("Failed to update file name. Please try again.");
+        } finally {
+          isSaving = false;
+          saveBtn.textContent = "Save";
+        }
       }
       if (editBtn) editBtn.addEventListener("click", openEdit);
       if (cancelBtn) cancelBtn.addEventListener("click", closeEdit);
