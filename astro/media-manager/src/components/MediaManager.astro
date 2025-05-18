@@ -154,11 +154,20 @@ const isLoading = data?.isLoading || false;
           <div class="flex flex-col h-full">
             <div class="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50">
               <h3 class="font-medium text-gray-700 text-sm">File Details</h3>
-              <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <div class="flex items-center gap-2">
+                <button id="open-media-btn" class="text-gray-500 hover:text-blue-600" title="Open in new window">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="2" points="15 3 21 3 21 9" />
+                    <line stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                </button>
+                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700" title="Close">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
             <div class="flex-grow overflow-hidden bg-gray-100 relative">
               <div class="bg-black flex items-center justify-center overflow-hidden">
@@ -195,9 +204,10 @@ const isLoading = data?.isLoading || false;
     const selectedItem = customEvent.detail?.item;
     if (selectedItem) {
       container.innerHTML = renderMediaViewerModal(selectedItem);
-      // Attach modal interactivity (edit, save, cancel, close)
+      // Attach modal interactivity (edit, save, cancel, close, open in new window)
       const modal = document.getElementById("media-viewer-modal");
       const closeModalBtn = document.getElementById("close-modal-btn");
+      const openMediaBtn = document.getElementById("open-media-btn");
       const nameEl = document.getElementById("media-name");
       const editBtn = document.getElementById("edit-name-btn");
       const inputEl = document.getElementById(
@@ -208,6 +218,13 @@ const isLoading = data?.isLoading || false;
       const fileId = modal?.getAttribute("data-file-id") || "";
       let isEditing = false;
       let isSaving = false;
+
+      if (openMediaBtn) {
+        openMediaBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          window.open(selectedItem.url, "_blank");
+        });
+      }
 
       function openEdit() {
         if (!nameEl || !editBtn || !inputEl || !saveBtn || !cancelBtn) return;
