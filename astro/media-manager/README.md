@@ -1,8 +1,8 @@
-# Astro Media Manager Template
+# 🚀 Wix Astro Media Manager Template
 
-A modern and responsive media management template built with Astro and React. This template provides a user-friendly interface for uploading, viewing, and managing media files like images and videos.
+A modern, responsive media management template built with **Astro** and **Wix Headless**. This template provides a user-friendly interface for uploading, viewing, and managing media files like images and videos, leveraging Wix APIs and Astro's fast, component-driven architecture.
 
-## Features
+## ✨ Features
 
 - Drag and drop file upload
 - Image and video support
@@ -11,45 +11,70 @@ A modern and responsive media management template built with Astro and React. Th
 - Detailed media viewer
 - Delete functionality
 - Modern UI with Tailwind CSS
+- Built with Astro and Wix Headless APIs
+
+## 📖 Table of Contents
+
+- [Features](#-features)
+- [Getting Started](#-getting-started)
+- [Project Structure](#-project-structure)
+- [Commands](#-commands)
+- [How It Works](#-how-it-works)
+- [Deployment](#-deployment)
+- [Resources](#-resources)
 
 ## 🚀 Getting Started
 
-1. Create a new project using this template:
+### 1️⃣ Create a new project using this template
 
 ```bash
-npm create astro@latest -- --template media-manager
+npm create astro@latest -- --template wix/headless-templates/astro/media-manager
 ```
 
-2. Install dependencies:
+### 2️⃣ Install dependencies
 
 ```bash
 npm install
 ```
 
-3. Start the development server:
+### 3️⃣ Start the development server
 
 ```bash
 npm run dev
 ```
 
-4. Open your browser and visit `http://localhost:4321`
+Visit [http://localhost:4321](http://localhost:4321) to view your site.
+
+### 4️⃣ Environment Variables
+
+If you use Wix APIs, set your `WIX_CLIENT_ID` in a `.env.local` file:
+
+```properties
+WIX_CLIENT_ID=your-wix-client-id
+```
+
+[How to get a Wix Client ID?](https://dev.wix.com/docs/go-headless/getting-started/setup/authentication/create-an-oauth-app-for-visitors-and-members)
 
 ## 📦 Project Structure
 
 ```
 /
 ├── src/
+│   ├── actions/
 │   ├── components/
-│   │   ├── MediaManager.tsx
-│   │   ├── MediaUploader.tsx
-│   │   ├── MediaCatalog.tsx
-│   │   └── MediaViewer.tsx
+│   │   ├── MediaManager.astro
+│   │   ├── MediaUploader.astro
+│   │   └── MediaCatalog.astro
 │   ├── layouts/
 │   │   └── Layout.astro
 │   ├── pages/
 │   │   └── index.astro
-│   └── types.ts
-└── package.json
+│   ├── styles/
+│   │   └── global.css
+│   ├── types.ts
+│   └── utils/
+├── package.json
+└── ...
 ```
 
 ## 🧞 Commands
@@ -64,6 +89,25 @@ All commands are run from the root of the project, from a terminal:
 | `npm run preview`   | Preview your build locally, before deploying     |
 | `npm run astro ...` | Run CLI commands like `astro add`, `astro check` |
 
-## 👀 Want to learn more?
+## 🛠 How It Works
 
-Check out [Astro's documentation](https://docs.astro.build) or jump into their [Discord server](https://astro.build/chat).
+- **Media Management**: Upload, preview, and delete images and videos.
+- **Wix Integration**: (If enabled) Connects to Wix APIs for media storage and management.
+- **Modern UI**: Built with Tailwind CSS for a clean, responsive experience.
+
+## 🚀 Deployment
+
+To deploy your site, run:
+
+```bash
+npm run build
+```
+
+Then deploy the `dist/` folder to your preferred hosting provider (Vercel, Netlify, etc).
+
+## 📚 Resources
+
+- [Astro Documentation](https://docs.astro.build)
+- [Wix Headless Documentation](https://dev.wix.com/docs/go-headless)
+- [Wix SDK Documentation](https://dev.wix.com/docs/sdk)
+- [Community on Discord](https://discord.gg/n6TBrSnYTp)
