@@ -9,11 +9,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     ssr: {
-      noExternal: ["@wix/image", "@wix/web-methods"],
+      noExternal: ["@wix/image"],
     },
-  },
-  server: {
-    // This setting is necessary to enable webhook integration when running the dev command.
-    allowedHosts: true,
   },
 });
