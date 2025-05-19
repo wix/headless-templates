@@ -40,21 +40,9 @@ export const server = {
       return { mediaItems, isLoading };
     },
   }),
-  deleteMediaFile: defineAction({
-    handler: async ({ fileId }) => {
-      try {
-        await auth.elevate(files.bulkDeleteFiles)([fileId]);
 
-        return true;
-      } catch (error) {
-        console.error("Error deleting file:", error);
-        return false;
-      }
-    },
-  }),
   uploadMediaFile: defineAction({
     handler: async ({ mimeType, options }) => {
-      console.log({ mimeType, options });
       try {
         const result = await auth.elevate(files.generateFileUploadUrl)(
           mimeType,
@@ -67,6 +55,7 @@ export const server = {
       }
     },
   }),
+
   updateFileDescriptor: defineAction({
     handler: async ({ fileId, displayName }) => {
       try {
@@ -78,6 +67,18 @@ export const server = {
         return state === "OK";
       } catch (error) {
         console.error("Error updating file descriptor:", error);
+        return false;
+      }
+    },
+  }),
+
+  deleteMediaFile: defineAction({
+    handler: async ({ fileId }) => {
+      try {
+        await auth.elevate(files.bulkDeleteFiles)([fileId]);
+        return true;
+      } catch (error) {
+        console.error("Error deleting file:", error);
         return false;
       }
     },
