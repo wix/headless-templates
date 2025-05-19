@@ -58,10 +58,11 @@ export const server = {
   deleteMediaFile: defineAction({
     handler: async ({ fileId }) => {
       try {
-        const elevatedBulkDelete = auth.elevate(files.bulkDeleteFiles);
-        await elevatedBulkDelete([fileId]);
+        await myWixClient.files.bulkDeleteFiles([fileId]);
+
         return true;
       } catch (error) {
+        console.error("Error deleting file:", error);
         return false;
       }
     },
