@@ -1,0 +1,187 @@
+<div
+  id="upload-area"
+  class="border-2 border-dashed rounded-lg p-8 text-center transition-all border-gray-300 hover:border-blue-400"
+>
+  <input type="file" id="fileInput" class="hidden" accept="image/*,video/*" />
+  <label for="fileInput" class="cursor-pointer flex flex-col items-center">
+    <div id="upload-idle" class="block">
+      <div
+        class="w-20 h-20 mb-4 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 border border-blue-100"
+      >
+        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+          <path
+            d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
+          ></path>
+        </svg>
+      </div>
+      <p class="text-gray-800 font-medium mb-2">
+        Drag and drop your files here
+      </p>
+      <p class="text-gray-500 text-sm mb-4">
+        Supports JPG, PNG, GIF, MP4, and more
+      </p>
+      <button
+        id="browse-button"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+      >
+        Browse Files
+      </button>
+    </div>
+  </label>
+
+  <!-- Upload progress UI (hidden by default) -->
+  <div id="upload-progress" class="w-full flex flex-col items-center hidden">
+    <div
+      class="w-16 h-16 mb-4 rounded-full border-4 border-gray-200 border-t-blue-600 animate-spin"
+    >
+    </div>
+    <p class="text-gray-700 mb-3 font-medium">
+      Uploading... <span id="progress-percent">0</span>%
+    </p>
+    <div class="w-full max-w-xs bg-gray-200 rounded-full h-2.5 mb-2">
+      <div
+        id="progress-bar"
+        class="bg-blue-600 h-2.5 rounded-full transition-all"
+        style="width: 0%"
+      >
+      </div>
+    </div>
+    <p class="text-xs text-gray-500">Please wait</p>
+  </div>
+</div>
+
+<script>
+  import {
+    getElement,
+    toggleElement,
+    setElementWidth,
+    updateElementText,
+    preventEvent,
+  } from "../utils/domUtils";
+  import { dispatchUploadCompleteEvent } from "../utils/eventUtils";
+  import { actions } from "astro:actions";
+
+  const uploadArea = getElement<HTMLElement>("upload-area");
+  const fileInput = getElement<HTMLInputElement>("fileInput");
+  const uploadIdle = getElement<HTMLElement>("upload-idle");
+  const uploadProgress = getElement<HTMLElement>("upload-progress");
+  const progressBar = getElement<HTMLElement>("progress-bar");
+  const progressPercent = getElement<HTMLElement>("progress-percent");
+  const browseButton = getElement<HTMLElement>("browse-button");
+
+  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+    uploadArea?.addEventListener(eventName, preventEvent, false);
+  });
+
+  ["dragenter", "dragover"].forEach((eventName) => {
+    uploadArea?.addEventListener(eventName, highlight, false);
+  });
+
+  ["dragleave", "drop"].forEach((eventName) => {
+    uploadArea?.addEventListener(eventName, unhighlight, false);
+  });
+
+  function highlight() {
+    uploadArea?.classList.add("border-blue-500", "bg-blue-50");
+    uploadArea?.classList.remove("border-gray-300");
+  }
+
+  function unhighlight() {
+    uploadArea?.classList.remove("border-blue-500", "bg-blue-50");
+    uploadArea?.classList.add("border-gray-300");
+  }
+
+  uploadArea?.addEventListener("drop", handleDrop, false);
+
+  function handleDrop(e: DragEvent) {
+    const dt = e.dataTransfer;
+    const files = dt?.files;
+
+    if (files && files.length > 0) {
+      handleFiles(files[0]);
+    }
+  }
+
+  fileInput?.addEventListener("change", function () {
+    if (this.files && this.files.length > 0) {
+      handleFiles(this.files[0]);
+    }
+  });
+
+  async function handleFiles(file: File) {
+    showUploadProgress();
+    try {
+      const { data } = await actions.uploadMediaFile({
+        mimeType: file.type || "application/octet-stream",
+        options: { fileName: file.name },
+      });
+      if (!data) throw new Error("No response from uploadMediaFile");
+      if (!data.uploadUrl) throw new Error("No upload URL received");
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open(
+          "PUT",
+          data.uploadUrl + "?filename=" + encodeURIComponent(file.name),
+          true
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          file.type || "application/octet-stream"
+        );
+
+        xhr.upload.onprogress = function (event) {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            updateProgress(percent);
+          }
+        };
+
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            updateProgress(100);
+            dispatchUploadCompleteEvent({ file });
+            resetUploadUI();
+            resolve();
+          } else {
+            alert("Upload failed");
+            resetUploadUI();
+            reject();
+          }
+        };
+
+        xhr.onerror = function () {
+          alert("Error uploading file. Please try again.");
+          resetUploadUI();
+          reject();
+        };
+
+        xhr.send(file);
+      });
+    } catch (error) {
+      alert("Error uploading file. Please try again.");
+      resetUploadUI();
+    }
+  }
+
+  function showUploadProgress() {
+    toggleElement(uploadIdle, false);
+    toggleElement(uploadProgress, true);
+    updateProgress(0);
+  }
+
+  function updateProgress(percent: number) {
+    setElementWidth(progressBar, percent);
+    updateElementText(progressPercent, percent.toString());
+  }
+
+  function resetUploadUI() {
+    toggleElement(uploadIdle, true);
+    toggleElement(uploadProgress, false);
+    if (fileInput) fileInput.value = "";
+  }
+
+  browseButton?.addEventListener("click", function (e) {
+    e.preventDefault();
+    fileInput?.click();
+  });
+</script>
