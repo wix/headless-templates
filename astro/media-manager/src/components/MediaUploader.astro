@@ -114,30 +114,53 @@
 
   async function handleFiles(file: File) {
     showUploadProgress();
-    console.log({ file });
     try {
       const { data } = await actions.uploadMediaFile({
         mimeType: file.type || "application/octet-stream",
         options: { fileName: file.name },
       });
-      if (!data?.uploadUrl) throw new Error("No upload URL received");
-      const response = await fetch(
-        data.uploadUrl + "?filename=" + encodeURIComponent(file.name),
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": file.type || "application/octet-stream",
-          },
-          body: file,
-        }
-      );
-      if (response.ok) {
-        dispatchUploadCompleteEvent({ file });
-        resetUploadUI();
-      } else {
-        alert("Upload failed");
-        resetUploadUI();
-      }
+      if (!data) throw new Error("No response from uploadMediaFile");
+      if (!data.uploadUrl) throw new Error("No upload URL received");
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open(
+          "PUT",
+          data.uploadUrl + "?filename=" + encodeURIComponent(file.name),
+          true
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          file.type || "application/octet-stream"
+        );
+
+        xhr.upload.onprogress = function (event) {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            updateProgress(percent);
+          }
+        };
+
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            updateProgress(100);
+            dispatchUploadCompleteEvent({ file });
+            resetUploadUI();
+            resolve();
+          } else {
+            alert("Upload failed");
+            resetUploadUI();
+            reject();
+          }
+        };
+
+        xhr.onerror = function () {
+          alert("Error uploading file. Please try again.");
+          resetUploadUI();
+          reject();
+        };
+
+        xhr.send(file);
+      });
     } catch (error) {
       alert("Error uploading file. Please try again.");
       resetUploadUI();
