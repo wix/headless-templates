@@ -1,5 +1,5 @@
 {
-  "name": "@wix/astro-media-manager",
+  "name": "@wix/astro-media-manager-template",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -20,7 +20,6 @@
     "@wix/image": "^1.380.0",
     "@wix/media": "^1.0.159",
     "@wix/sdk": "^1.14.2",
-    "@wix/web-methods": "^1.0.10",
     "astro": "^5.4.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -29,7 +28,6 @@
   },
   "devDependencies": {
     "@wix/cli-edge": "^1.1.77",
-    "@wix/cli-one": "^2.0.1",
     "@wix/essentials": "^0.1.20"
   }
 }
