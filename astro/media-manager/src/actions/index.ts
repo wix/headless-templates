@@ -1,20 +1,6 @@
 import { auth } from "@wix/essentials";
 import { files } from "@wix/media";
-import { ApiKeyStrategy, createClient } from "@wix/sdk";
 import { defineAction } from "astro:actions";
-
-const { API_KEY, SITE_ID, ACCOUNT_ID } = import.meta.env;
-
-const myWixClient = createClient({
-  auth: ApiKeyStrategy({
-    apiKey: API_KEY,
-    siteId: SITE_ID,
-    accountId: ACCOUNT_ID,
-  }),
-  modules: {
-    files,
-  },
-});
 
 export const server = {
   fetchMediaItems: defineAction({
@@ -23,9 +9,8 @@ export const server = {
       let isLoading = true;
 
       try {
-        // const elevatedListFiles = auth.elevate(files.listFiles);
-        // const response = await elevatedListFiles();
-        const { files: listFiles } = await myWixClient.files.listFiles();
+        const elevatedListFiles = auth.elevate(files.listFiles);
+        const { files: listFiles } = await elevatedListFiles();
 
         if (listFiles?.length > 0) {
           mediaItems = listFiles.map((file) => {
@@ -58,7 +43,7 @@ export const server = {
   deleteMediaFile: defineAction({
     handler: async ({ fileId }) => {
       try {
-        await myWixClient.files.bulkDeleteFiles([fileId]);
+        await auth.elevate(files.bulkDeleteFiles)([fileId]);
 
         return true;
       } catch (error) {
@@ -71,7 +56,7 @@ export const server = {
     handler: async ({ mimeType, options }) => {
       console.log({ mimeType, options });
       try {
-        const result = await myWixClient.files.generateFileUploadUrl(
+        const result = await auth.elevate(files.generateFileUploadUrl)(
           mimeType,
           options
         );
@@ -85,10 +70,7 @@ export const server = {
   updateFileDescriptor: defineAction({
     handler: async ({ fileId, displayName }) => {
       try {
-        // const elevatedUpdate = auth.elevate(files.updateFileDescriptor);
-        // await elevatedUpdate({ _id: fileId, displayName });
-
-        const { state } = await myWixClient.files.updateFileDescriptor({
+        const { state } = await auth.elevate(files.updateFileDescriptor)({
           _id: fileId,
           displayName,
         });
