@@ -1,7 +1,6 @@
 ---
 import { Image } from "@wix/image";
 import type { MediaItem } from "../types";
-import { getImageId } from "../utils/imageUtils";
 
 interface Props {
   items: MediaItem[];
@@ -39,7 +38,6 @@ const { items, selectedId = "" } = Astro.props;
   <div class="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden">
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
       {items.map((item) => {
-        const imageId = getImageId(item.thumbnailUrl || item.url);
         return (
           <div
             data-id={item.id}
@@ -51,7 +49,7 @@ const { items, selectedId = "" } = Astro.props;
               {item.mediaType === "IMAGE" ? (
                 <div class="w-full h-full">
                   <Image
-                    uri={imageId}
+                    uri={item.id}
                     width={1500}
                     height={1500}
                     displayMode="fit"
