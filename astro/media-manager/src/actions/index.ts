@@ -68,20 +68,18 @@ export const server = {
     },
   }),
   uploadMediaFile: defineAction({
-    handler: async (file) => {
-      console.log({ file });
-      // try {
-      //   const response = await myWixClient.files.generateFileUploadUrl(
-      //     {
-      //       fileName: file.name,
-      //     }
-      //   );
-      //   console.log({ response });
-      //   return { uploadUrl: response.uploadUrl };
-      // } catch (error) {
-      //   console.log({ error });
-      //   throw new Error("Error uploading file");
-      // }
+    handler: async ({ mimeType, options }) => {
+      console.log({ mimeType, options });
+      try {
+        const result = await myWixClient.files.generateFileUploadUrl(
+          mimeType,
+          options
+        );
+        return result;
+      } catch (error) {
+        console.error("Error generating upload URL:", error);
+        return false;
+      }
     },
   }),
   updateFileDescriptor: defineAction({

@@ -114,36 +114,30 @@
 
   async function handleFiles(file: File) {
     showUploadProgress();
+    console.log({ file });
     try {
-      console.log("handleFiles", file);
-      const { data } = await actions.uploadMediaFile(file);
+      const { data } = await actions.uploadMediaFile({
+        mimeType: file.type || "application/octet-stream",
+        options: { fileName: file.name },
+      });
       if (!data?.uploadUrl) throw new Error("No upload URL received");
-      const xhr = new XMLHttpRequest();
-      xhr.open(
-        "PUT",
-        data.uploadUrl + "?filename=" + encodeURIComponent(file.name)
+      const response = await fetch(
+        data.uploadUrl + "?filename=" + encodeURIComponent(file.name),
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+          },
+          body: file,
+        }
       );
-      xhr.setRequestHeader("Content-Type", file.type);
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
-          updateProgress(progress);
-        }
-      };
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          dispatchUploadCompleteEvent({ file });
-          resetUploadUI();
-        } else {
-          alert("Upload failed");
-          resetUploadUI();
-        }
-      };
-      xhr.onerror = () => {
-        alert("Upload error");
+      if (response.ok) {
+        dispatchUploadCompleteEvent({ file });
         resetUploadUI();
-      };
-      xhr.send(file);
+      } else {
+        alert("Upload failed");
+        resetUploadUI();
+      }
     } catch (error) {
       alert("Error uploading file. Please try again.");
       resetUploadUI();
