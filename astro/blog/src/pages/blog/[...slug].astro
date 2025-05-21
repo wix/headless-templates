@@ -1,21 +1,21 @@
 ---
-import RicosViewer from '@wix/astro-ricos';
-import { renameKeysFromSDKRequestToRESTRequest } from "@wix/sdk-runtime/rename-all-nested-keys";
-import { type CollectionEntry, getCollection } from 'astro:content';
-import BlogPost from '../../layouts/BlogPost.astro';
+import { RicosViewer, quickStartViewerPlugins } from "@wix/ricos";
+import { type CollectionEntry, getCollection } from "astro:content";
+import BlogPost from "../../layouts/BlogPost.astro";
 
 export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
+  const posts = await getCollection("blog");
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: post,
+  }));
 }
-type Props = CollectionEntry<'blog'>;
+type Props = CollectionEntry<"blog">;
 
 const post = Astro.props;
+const plugins = quickStartViewerPlugins();
 ---
 
 <BlogPost {...post.data}>
-	 <RicosViewer content={renameKeysFromSDKRequestToRESTRequest(post.data.richContent)} />
+  <RicosViewer content={post.data.richContent} plugins={plugins} />
 </BlogPost>
