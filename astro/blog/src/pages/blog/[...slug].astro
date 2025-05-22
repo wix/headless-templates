@@ -22,5 +22,5 @@ const post = Astro.props;
   }
 </script>
 <BlogPost {...post.data}>
-  <RicosViewerWrapper content={post.data.richContent} />
+  <RicosViewerWrapper client:load content={post.data.richContent} />
 </BlogPost>
