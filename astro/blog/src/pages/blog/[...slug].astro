@@ -15,8 +15,6 @@ type Props = CollectionEntry<"blog">;
 
 const post = Astro.props;
 const plugins = quickStartViewerPlugins();
-
-console.log(post.data.richContent);
 ---
 
 <script>
@@ -26,5 +24,5 @@ console.log(post.data.richContent);
   }
 </script>
 <BlogPost {...post.data}>
-  <RicosViewer content={post.data.richContent} plugins={plugins} />
+  <RicosViewer client:only content={post.data.richContent} plugins={plugins} />
 </BlogPost>
