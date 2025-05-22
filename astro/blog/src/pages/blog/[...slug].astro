@@ -1,8 +1,7 @@
 ---
-import { RicosViewer, quickStartViewerPlugins } from "@wix/ricos";
 import { type CollectionEntry, getCollection } from "astro:content";
+import RicosViewerWrapper from "../../components/RicosViewerWrapper";
 import BlogPost from "../../layouts/BlogPost.astro";
-import "@wix/ricos/css/all-plugins-viewer.css";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
@@ -14,7 +13,6 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<"blog">;
 
 const post = Astro.props;
-const plugins = quickStartViewerPlugins();
 ---
 
 <script>
@@ -24,5 +22,5 @@ const plugins = quickStartViewerPlugins();
   }
 </script>
 <BlogPost {...post.data}>
-  <RicosViewer client:only content={post.data.richContent} plugins={plugins} />
+  <RicosViewerWrapper content={post.data.richContent} />
 </BlogPost>
