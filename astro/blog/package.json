@@ -14,7 +14,7 @@
     "@astrojs/react": "^4.2.7",
     "@astrojs/rss": "^4.0.11",
     "@astrojs/sitemap": "^3.2.1",
-    "@wix/astro": "^1.0.2",
+    "@wix/astro": "^0.2.6",
     "@wix/ricos": "^10.130.1",
     "astro": "^5.2.4",
     "react": "^18.3.1",

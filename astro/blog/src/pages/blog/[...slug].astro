@@ -25,5 +25,9 @@ const plugins = quickStartViewerPlugins();
   }
 </script>
 <BlogPost {...post.data}>
-  <RicosViewer client:load content={post.data.richContent} plugins={plugins} />
+  <RicosViewer
+    client:load
+    content={renameKeysFromSDKRequestToRESTRequest(post.data.richContent)}
+    plugins={plugins}
+  />
 </BlogPost>
