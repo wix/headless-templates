@@ -1,7 +1,9 @@
 ---
 import { RicosViewer, quickStartViewerPlugins } from "@wix/ricos";
 import { type CollectionEntry, getCollection } from "astro:content";
+import { renameKeysFromSDKRequestToRESTRequest } from "@wix/sdk-runtime/rename-all-nested-keys";
 import BlogPost from "../../layouts/BlogPost.astro";
+import "@wix/ricos/css/all-plugins-viewer.css";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
@@ -16,6 +18,12 @@ const post = Astro.props;
 const plugins = quickStartViewerPlugins();
 ---
 
+<script>
+  if (typeof window !== "undefined") {
+    console.log("wds draft-js fix global, needed only for dev env");
+    window.global = window;
+  }
+</script>
 <BlogPost {...post.data}>
-  <RicosViewer content={post.data.richContent} plugins={plugins} />
+  <RicosViewer client:load content={post.data.richContent} plugins={plugins} />
 </BlogPost>
