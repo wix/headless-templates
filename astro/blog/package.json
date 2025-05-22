@@ -16,6 +16,7 @@
     "@astrojs/sitemap": "^3.2.1",
     "@wix/astro": "^0.2.6",
     "@wix/ricos": "^10.130.1",
+    "@wix/blog": "^1.0.423",
     "astro": "^5.2.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

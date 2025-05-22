@@ -1,7 +1,6 @@
 ---
 import { RicosViewer, quickStartViewerPlugins } from "@wix/ricos";
 import { type CollectionEntry, getCollection } from "astro:content";
-import { renameKeysFromSDKRequestToRESTRequest } from "@wix/sdk-runtime/rename-all-nested-keys";
 import BlogPost from "../../layouts/BlogPost.astro";
 import "@wix/ricos/css/all-plugins-viewer.css";
 
@@ -16,6 +15,8 @@ type Props = CollectionEntry<"blog">;
 
 const post = Astro.props;
 const plugins = quickStartViewerPlugins();
+
+console.log(post.data.richContent);
 ---
 
 <script>
@@ -25,9 +26,5 @@ const plugins = quickStartViewerPlugins();
   }
 </script>
 <BlogPost {...post.data}>
-  <RicosViewer
-    client:load
-    content={renameKeysFromSDKRequestToRESTRequest(post.data.richContent)}
-    plugins={plugins}
-  />
+  <RicosViewer content={post.data.richContent} plugins={plugins} />
 </BlogPost>
