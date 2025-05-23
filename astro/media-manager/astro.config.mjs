@@ -4,8 +4,7 @@ import wix from "@wix/astro";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  integrations: [react()],
-  adapter: wix(),
+  integrations: [wix(), react()],
   vite: {
     plugins: [tailwindcss()],
     ssr: {
