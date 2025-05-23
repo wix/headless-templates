@@ -8,21 +8,14 @@
     "build": "astro build"
   },
   "dependencies": {
-    "@astrojs/react": "^3.0.10",
     "@tailwindcss/vite": "^4.1.4",
-    "@types/react": "^18.2.48",
-    "@types/react-dom": "^18.2.18",
     "@wix/astro": "1.0.5",
+    "@wix/essentials": "^0.1.20",
     "@wix/image": "^1.380.0",
     "@wix/media": "^1.0.159",
-    "@wix/sdk": "^1.14.2",
     "astro": "^5.8.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "sass-embedded": "^1.87.0",
-    "tailwindcss": "^4.1.4"
+    "tailwindcss": "^4.1.4",
+    "typescript": "^5.8.3"
   },
-  "devDependencies": {
-    "@wix/essentials": "^0.1.20"
-  }
+  "devDependencies": {}
 }

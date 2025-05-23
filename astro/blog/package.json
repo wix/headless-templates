@@ -13,6 +13,7 @@
     "@wix/astro": "1.0.5",
     "@wix/astro-ricos": "^0.0.2",
     "@wix/blog": "^1.0.424",
-    "astro": "^5.8.0"
+    "astro": "^5.8.0",
+    "typescript": "^5.8.3"
   }
 }

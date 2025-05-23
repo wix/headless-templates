@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@wix/astro": "1.0.5",
-    "astro": "^5.8.0"
+    "astro": "^5.8.0",
+    "typescript": "^5.8.3"
   },
   "devDependencies": {}
 }

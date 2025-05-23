@@ -1,3 +1,6 @@
+# wix integration
+.wix/
+
 # build output
 dist/
 
@@ -22,5 +25,3 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
-
-.wix
