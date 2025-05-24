@@ -58,7 +58,7 @@ const {
         ))}
       </select>
     ) : type === "radio" ? (
-      <div class="space-y-[0.75rem] mt-[0.5rem]">
+      <div class="space-y-3 mt-2">
         {options.map((option) => (
           <div class="flex items-center">
             <input
@@ -66,7 +66,7 @@ const {
               id={`${id}-${option.value}`}
               name={id}
               value={option.value}
-              class="form-radio mr-[0.5rem]"
+              class="form-radio mr-2"
               required={required}
             />
             <label for={`${id}-${option.value}`} class="text-[0.875rem] text-[#374151]">
@@ -76,12 +76,12 @@ const {
         ))}
       </div>
     ) : type === "checkbox" ? (
-      <div class="flex items-center mt-[0.5rem]">
+      <div class="flex items-center mt-2">
         <input
           type="checkbox"
           id={id}
           name={id}
-          class="form-checkbox mr-[0.5rem]"
+          class="form-checkbox mr-2"
           required={required}
           checked={checked}
         />

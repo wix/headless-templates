@@ -69,7 +69,7 @@ const cart = await getCart();
         </div>
       ) : (
         <div class="flex h-full flex-col justify-between overflow-hidden p-1">
-          <ul class="flex-grow overflow-auto py-4">
+          <ul class="grow overflow-auto py-4">
             {cart.lines
               .sort((a, b) =>
                 a.merchandise.product.title.localeCompare(

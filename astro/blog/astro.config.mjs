@@ -6,6 +6,5 @@ import wix from "@wix/astro";
 // https://astro.build/config
 export default defineConfig({
   site: "https://example.com",
-  integrations: [sitemap()],
-  adapter: wix(),
+  integrations: [wix(), sitemap()]
 });

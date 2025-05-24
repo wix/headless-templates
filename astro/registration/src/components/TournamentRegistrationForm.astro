@@ -1,5 +1,5 @@
 ---
-import { forms, FormFieldV2, FormFieldV2InputField } from "@wix/forms";
+import { forms } from "@wix/forms";
 import { FormFieldsWixIds, WIX_FORM_ID } from "../utils/constants";
 import Button from "./Button.astro";
 import FormField from "./FormField.astro";
@@ -12,9 +12,11 @@ const { class: className = "" } = Astro.props;
 
 const wixForm = await forms.getForm(WIX_FORM_ID);
 const formFieldsSettings = wixForm.fieldsV2
-  .filter((field: FormFieldV2) => field.fieldType === "INPUT" && !field.hidden)
-  .reduce((acc: Record<string, FormFieldV2InputField>, field: FormFieldV2) => {
-    acc[field.inputOptions.target] = field.inputOptions;
+  .filter((field: forms.FormFieldV2) => field.fieldType === "INPUT" && !field.hidden)
+  .reduce((acc: Record<string, forms.FormFieldV2InputField>, field: forms.FormFieldV2) => {
+    if (field.inputOptions?.target) {
+      acc[field.inputOptions.target] = field.inputOptions;
+    }
     return acc;
   }, {});
 ---
@@ -25,84 +27,90 @@ const formFieldsSettings = wixForm.fieldsV2
   method="POST"
 >
   <div
-    class="mb-[2rem] border-t-8 border-[#3899EC] rounded-[0.5rem] pt-[1.5rem] px-[1.5rem] pb-[1.5rem] bg-[#ffffff] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] shadow-[#e5e7eb]"
+    class="mb-8 border-t-8 border-[#3899EC] rounded-lg pt-6 px-6 pb-6 bg-[#ffffff] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] shadow-[#e5e7eb]"
   >
-    <h2 class="text-xl font-[500] mb-[1rem] text-[#3899EC]">Team Information</h2>
+    <h2 class="text-xl font-medium mb-4 text-[#3899EC]">Team Information</h2>
 
     <FormField
       id={FormFieldsWixIds.teamName}
-      label={formFieldsSettings[FormFieldsWixIds.teamName].stringOptions
-        .textInputOptions.label}
-      required={formFieldsSettings[FormFieldsWixIds.teamName].required}
+      label={formFieldsSettings[FormFieldsWixIds.teamName]?.stringOptions
+        ?.textInputOptions?.label || "Team Name"}
+      required={formFieldsSettings[FormFieldsWixIds.teamName]?.required || false}
     />
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-[1rem]">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         type="select"
         id={FormFieldsWixIds.ageGroup}
-        label={formFieldsSettings[FormFieldsWixIds.ageGroup].stringOptions
-          .dropdownOptions.label}
-        required={formFieldsSettings[FormFieldsWixIds.ageGroup].required}
-        options={formFieldsSettings[FormFieldsWixIds.ageGroup].stringOptions
-          .dropdownOptions.options}
+        label={formFieldsSettings[FormFieldsWixIds.ageGroup]?.stringOptions
+          ?.dropdownOptions?.label || "Age Group"}
+        required={formFieldsSettings[FormFieldsWixIds.ageGroup]?.required || false}
+        options={formFieldsSettings[FormFieldsWixIds.ageGroup]?.stringOptions
+          ?.dropdownOptions?.options?.map((option: any) => ({
+            value: option.value || option.label || "",
+            label: option.label || option.value || ""
+          }))}
       />
 
       <FormField
         type="select"
         id={FormFieldsWixIds.skillLevel}
-        label={formFieldsSettings[FormFieldsWixIds.skillLevel].stringOptions
-          .dropdownOptions.label}
-        required={formFieldsSettings[FormFieldsWixIds.skillLevel].required}
-        options={formFieldsSettings[FormFieldsWixIds.skillLevel].stringOptions
-          .dropdownOptions.options}
+        label={formFieldsSettings[FormFieldsWixIds.skillLevel]?.stringOptions
+          ?.dropdownOptions?.label || "Skill Level"}
+        required={formFieldsSettings[FormFieldsWixIds.skillLevel]?.required || false}
+        options={formFieldsSettings[FormFieldsWixIds.skillLevel]?.stringOptions
+          ?.dropdownOptions?.options?.map((option: any) => ({
+            value: option.value || option.label || "",
+            label: option.label || option.value || ""
+          }))}
       />
     </div>
   </div>
 
   <div
-    class="mb-[2rem] border-t-8 border-[#14b8a6] rounded-[0.5rem] pt-[1.5rem] px-[1.5rem] pb-[1.5rem] bg-[#ffffff] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] mt-[1rem] shadow-[#e5e7eb]"
+    class="mb-8 border-t-8 border-[#14b8a6] rounded-lg pt-6 px-6 pb-6 bg-[#ffffff] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] mt-4 shadow-[#e5e7eb]"
   >
-    <h2 class="text-xl font-[500] mb-[1rem] text-[#0d9488]">Contact Information</h2>
+    <h2 class="text-xl font-medium mb-4 text-[#0d9488]">Contact Information</h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-[1rem]">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         id={FormFieldsWixIds.firstName}
-        label={formFieldsSettings[FormFieldsWixIds.firstName].stringOptions
-          .textInputOptions.label}
-        required={formFieldsSettings[FormFieldsWixIds.firstName].required}
+        label={formFieldsSettings[FormFieldsWixIds.firstName]?.stringOptions
+          ?.textInputOptions?.label || "First Name"}
+        required={formFieldsSettings[FormFieldsWixIds.firstName]?.required || false}
       />
 
       <FormField
         id={FormFieldsWixIds.lastName}
-        label={formFieldsSettings[FormFieldsWixIds.lastName].stringOptions
-          .textInputOptions.label}
-        required={formFieldsSettings[FormFieldsWixIds.lastName].required}
+        label={formFieldsSettings[FormFieldsWixIds.lastName]?.stringOptions
+          ?.textInputOptions?.label || "Last Name"}
+        required={formFieldsSettings[FormFieldsWixIds.lastName]?.required || false}
       />
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-[1rem]">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         type="email"
         id={FormFieldsWixIds.email}
-        label={formFieldsSettings[FormFieldsWixIds.email].stringOptions
-          .textInputOptions.label}
-        required={formFieldsSettings[FormFieldsWixIds.email].required}
+        label={formFieldsSettings[FormFieldsWixIds.email]?.stringOptions
+          ?.textInputOptions?.label || "Email"}
+        required={formFieldsSettings[FormFieldsWixIds.email]?.required || false}
       />
 
       <FormField
         type="tel"
         id={FormFieldsWixIds.phone}
-        label={formFieldsSettings[FormFieldsWixIds.phone].stringOptions
-          .phoneInputOptions.label}
-        required={formFieldsSettings[FormFieldsWixIds.phone].required}
+        label={formFieldsSettings[FormFieldsWixIds.phone]?.stringOptions
+          ?.phoneInputOptions?.label || "Phone"}
+        required={formFieldsSettings[FormFieldsWixIds.phone]?.required || false}
       />
     </div>
   </div>
 
   <div
-    class="mb-[2rem] border-t-8 border-[#fb923c] rounded-[0.5rem] pt-[1.5rem] px-[1.5rem] pb-[1.5rem] bg-[#ffffff] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] shadow-[#e5e7eb] mt-[1rem]"
+    class="mb-8 border-t-8 border-[#fb923c] rounded-lg pt-6 px-6 pb-6 bg-[#ffffff] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] shadow-[#e5e7eb] mt-4"
   >
-    <h2 class="text-xl font-[500] mb-[1rem] text-[#f97316]">
+    <h2 class="text-xl font-medium mb-4 text-[#f97316]">
       Additional Information
     </h2>
 
@@ -110,21 +118,21 @@ const formFieldsSettings = wixForm.fieldsV2
       type="textarea"
       id={FormFieldsWixIds.specialRequirements}
       label={formFieldsSettings[FormFieldsWixIds.specialRequirements]
-        .stringOptions.textInputOptions.label}
+        ?.stringOptions?.textInputOptions?.label || "Special Requirements"}
       required={formFieldsSettings[FormFieldsWixIds.specialRequirements]
-        .required}
+        ?.required || false}
     />
   </div>
 
   <!-- Error message container -->
   <div
     id="form-error"
-    class="hidden p-[1rem] mb-[1rem] text-[0.875rem] text-[#ffffff] rounded-[0.375rem]"
+    class="hidden p-4 mb-4 text-[0.875rem] text-[#ffffff] rounded-md"
     style="background-color: var(--error-color, #E21E1E);"
   >
   </div>
 
-  <div class="flex justify-between items-center mt-[2rem]">
+  <div class="flex justify-between items-center mt-8">
     <div>
       <span class="text-[0.75rem] text-[#6b7280]">* Required question</span>
     </div>

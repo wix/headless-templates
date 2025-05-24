@@ -1,26 +1,19 @@
 {
-  "name": "@wix/astro-blog-template",
+  "name": "wix-astro-blog",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
     "astro": "astro",
-    "deploy:preview": "wix edge deploy",
-    "deploy:prod": "wix edge deploy --prod"
+    "dev": "astro dev",
+    "build": "astro build"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.11",
     "@astrojs/sitemap": "^3.2.1",
-    "@wix/astro": "^0.2.6",
+    "@wix/astro": "1.0.5",
     "@wix/astro-ricos": "^0.0.2",
-    "astro": "^5.2.4"
-  },
-  "devDependencies": {
-    "@wix/cli-edge": "^1.1.74"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "@wix/blog": "^1.0.424",
+    "astro": "^5.8.0",
+    "typescript": "^5.8.3"
   }
 }
