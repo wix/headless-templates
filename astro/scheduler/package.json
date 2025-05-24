@@ -8,15 +8,14 @@
     "build": "astro build"
   },
   "dependencies": {
-    "@astrojs/tailwind": "^5.1.0",
+    "@tailwindcss/vite": "^4.1.7",
     "@wix/astro": "1.0.5",
     "@wix/bookings": "^1.0.667",
     "@wix/ecom": "^1.0.1044",
     "@wix/redirects": "1.0.60",
     "astro": "^5.8.0",
-    "tailwindcss": "^3.4.11",
+    "tailwindcss": "^4.1.7",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.8.3"
-  },
-  "devDependencies": {}
+  }
 }

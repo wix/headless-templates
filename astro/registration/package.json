@@ -8,12 +8,11 @@
     "build": "astro build"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.4",
+    "@tailwindcss/vite": "^4.1.7",
     "@wix/astro": "1.0.5",
     "@wix/forms": "^1.0.259",
     "astro": "^5.8.0",
-    "tailwindcss": "^4.1.4",
+    "tailwindcss": "^4.1.7",
     "typescript": "^5.8.3"
-  },
-  "devDependencies": {}
+  }
 }

@@ -8,9 +8,7 @@
     "build": "astro build"
   },
   "dependencies": {
-    "@astrojs/tailwind": "5.1.4",
-    "@tailwindcss/container-queries": "^0.1.1",
-    "@tailwindcss/typography": "^0.5.15",
+    "@tailwindcss/vite": "^4.1.7",
     "@wix/astro": "1.0.5",
     "@wix/data": "1.0.168",
     "@wix/ecom": "1.0.806",
@@ -18,8 +16,7 @@
     "@wix/sdk": "^1.14.2",
     "@wix/stores": "1.0.280",
     "astro": "5.8.0",
-    "tailwindcss": "^3.4.14",
+    "tailwindcss": "^4.1.7",
     "typescript": "^5.8.3"
-  },
-  "devDependencies": {}
+  }
 }
