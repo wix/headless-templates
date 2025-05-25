@@ -2,6 +2,8 @@ import { auth } from "@wix/essentials";
 import { files } from "@wix/media";
 import { defineAction } from "astro:actions";
 
+const VISITOR_UPLOADS_FOLDER_ID = "visitor-uploads";
+
 export const server = {
   fetchMediaItems: defineAction({
     handler: async () => {
@@ -10,7 +12,9 @@ export const server = {
 
       try {
         const elevatedListFiles = auth.elevate(files.listFiles);
-        const { files: listFiles } = await elevatedListFiles();
+        const { files: listFiles } = await elevatedListFiles({
+          parentFolderId: VISITOR_UPLOADS_FOLDER_ID,
+        });
 
         if (listFiles?.length > 0) {
           mediaItems = listFiles.map((file) => {
@@ -42,11 +46,14 @@ export const server = {
   }),
 
   uploadMediaFile: defineAction({
-    handler: async ({ mimeType, options }) => {
+    handler: async ({ mimeType, fileName }) => {
       try {
         const result = await auth.elevate(files.generateFileUploadUrl)(
           mimeType,
-          options
+          {
+            fileName,
+            parentFolderId: VISITOR_UPLOADS_FOLDER_ID,
+          }
         );
         return result;
       } catch (error) {

@@ -112,8 +112,8 @@
     showUploadProgress();
     try {
       const { data } = await actions.uploadMediaFile({
+        fileName: file.name,
         mimeType: file.type || "application/octet-stream",
-        options: { fileName: file.name },
       });
       if (!data) throw new Error("No response from uploadMediaFile");
       if (!data.uploadUrl) throw new Error("No upload URL received");
