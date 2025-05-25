@@ -165,7 +165,7 @@ const isLoading = data?.isLoading || false;
                 </button>
               </div>
             </div>
-            <div class="flex-grow overflow-hidden bg-gray-100 relative">
+            <div class="grow overflow-hidden bg-gray-100 relative">
               <div class="bg-black flex items-center justify-center overflow-hidden">
                 ${
                   item.mediaType === "IMAGE"
@@ -176,9 +176,9 @@ const isLoading = data?.isLoading || false;
             </div>
             <div class="p-4 border-t border-gray-200">
               <div class="mb-3 flex items-center" id="name-edit-row">
-                <h4 id="media-name" class="font-medium text-gray-800 truncate flex-grow">${item.name}</h4>
+                <h4 id="media-name" class="font-medium text-gray-800 truncate grow">${item.name}</h4>
                 <button id="edit-name-btn" class="ml-2 px-2 py-1 text-xs border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">Edit</button>
-                <input id="edit-name-input" class="hidden flex-grow mr-2 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" value="${item.name}" />
+                <input id="edit-name-input" class="hidden grow mr-2 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" value="${item.name}" />
                 <button id="save-name-btn" class="hidden px-2 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Save</button>
                 <button id="cancel-edit-btn" class="hidden px-2 py-1 text-xs border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">Cancel</button>
               </div>

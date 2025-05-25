@@ -1,34 +1,22 @@
 {
-  "name": "astro-vercel-commerce",
+  "name": "wix-astro-commerce",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
+    "astro": "astro",
     "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro check && astro build",
-    "preview": "astro preview",
-    "deploy:preview": "wix edge deploy",
-    "deploy:prod": "wix edge deploy --prod",
-    "astro": "astro"
+    "build": "astro build"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.4",
-    "@astrojs/react": "4.1.2",
-    "@astrojs/tailwind": "5.1.4",
-    "@tailwindcss/container-queries": "^0.1.1",
-    "@tailwindcss/typography": "^0.5.15",
-    "@wix/astro": "^0.2.6",
+    "@tailwindcss/vite": "^4.1.7",
+    "@wix/astro": "1.0.5",
     "@wix/data": "1.0.168",
     "@wix/ecom": "1.0.806",
     "@wix/redirects": "1.0.60",
     "@wix/sdk": "^1.14.2",
     "@wix/stores": "1.0.280",
-    "astro": "5.1.1",
-    "tailwindcss": "^3.4.14",
-    "typescript": "^5.6.3"
-  },
-  "devDependencies": {
-    "@wix/cli-edge": "^1.1.74"
-  },
-  "packageManager": "yarn@4.5.3"
+    "astro": "5.8.0",
+    "tailwindcss": "^4.1.7",
+    "typescript": "^5.8.3"
+  }
 }

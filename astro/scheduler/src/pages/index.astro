@@ -60,7 +60,7 @@ const features = [
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow animate-fade-up" style={`animation-delay: ${index * 100 + 200}ms`}>
+              <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-xs hover:shadow-md transition-shadow animate-fade-up" style={`animation-delay: ${index * 100 + 200}ms`}>
                 <div set:html={feature.icon} />
                 <h3 class="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p class="text-muted-foreground">{feature.description}</p>

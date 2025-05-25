@@ -1,11 +1,10 @@
 import { defineConfig } from "astro/config";
-import react from "@astrojs/react";
 import wix from "@wix/astro";
 import tailwindcss from "@tailwindcss/vite";
+import react from "@astrojs/react";
 
 export default defineConfig({
-  integrations: [react()],
-  adapter: wix(),
+  integrations: [wix(), react()],
   vite: {
     plugins: [tailwindcss()],
     ssr: {

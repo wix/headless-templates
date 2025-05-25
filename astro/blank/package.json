@@ -1,24 +1,15 @@
 {
-  "name": "blank",
+  "name": "wix-astro-blank",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
     "astro": "astro",
-    "deploy:prod": "wix edge deploy --prod",
-    "deploy:preview": "wix edge deploy"
+    "dev": "astro dev",
+    "build": "astro build"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.0.13",
-    "@wix/astro": "^0.2.9",
-    "astro": "^5.4.3",
-    "tailwindcss": "^4.0.13"
-  },
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.0.13",
-    "@wix/cli-edge": "^1.1.77",
-    "tailwindcss": "^4.0.13"
+    "@wix/astro": "1.0.5",
+    "astro": "^5.8.0",
+    "typescript": "^5.8.3"
   }
 }
