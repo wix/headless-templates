@@ -1,6 +1,7 @@
 import { media } from "@wix/sdk";
 import { categories, posts, tags } from "@wix/blog";
 import type { Loader, LoaderContext } from "astro/loaders";
+import { getWixClient } from "./client.js";
 
 enum PostFieldField {
   RICH_CONTENT = "RICH_CONTENT",
@@ -8,21 +9,28 @@ enum PostFieldField {
 }
 
 export function wixBlogLoader(transform = (item: any) => item): Loader {
+  console.log("wixBlogLoader");
   return {
     name: "wix-blog-loader",
     load: async (context: LoaderContext) => {
-      const { items } = await posts.queryPosts({
-        fieldsets: [PostFieldField.RICH_CONTENT, PostFieldField.CONTENT_TEXT],
-      }).find();
+      const { items } = await getWixClient()
+        .use(posts)
+        .queryPosts({
+          fieldsets: [PostFieldField.RICH_CONTENT, PostFieldField.CONTENT_TEXT],
+        })
+        .find();
+
+      const useCategories = getWixClient().use(categories);
+      const useTags = getWixClient().use(tags);
 
       for (const item of items) {
         const categoriesResponse = await Promise.all(
           (item.categoryIds || []).map(async (categoryId) => {
-            const { category } = await categories.getCategory(categoryId);
+            const { category } = await useCategories.getCategory(categoryId);
             return category;
           })
         );
-        const { items: tagsResponse } = await tags.queryTags().find();
+        const { items: tagsResponse } = await useTags.queryTags().find();
 
         const data = transform({
           ...item,

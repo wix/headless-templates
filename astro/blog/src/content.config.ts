@@ -1,5 +1,5 @@
 import { z } from "astro/zod";
-import { posts } from '@wix/blog';
+import { posts } from "@wix/blog";
 import { defineCollection } from "astro:content";
 import { wixBlogLoader } from "./loaders";
 
@@ -18,8 +18,8 @@ const blog = defineCollection({
     id: item.slug,
     title: item.title,
     description: item.excerpt,
-    pubDate: new Date(item.firstPublishedDate ?? ''),
-    updatedDate: new Date(item.lastPublishedDate ?? ''),
+    pubDate: new Date(item.firstPublishedDate ?? ""),
+    updatedDate: new Date(item.lastPublishedDate ?? ""),
     heroImage: item.media?.wixMedia?.image,
     richContent: item.richContent,
   })),

@@ -13,6 +13,8 @@
     "@astrojs/sitemap": "^3.2.1",
     "@wix/astro": "1.0.5",
     "@wix/blog": "^1.0.424",
+    "@wix/data": "^1.0.194",
+    "@wix/sdk": "^1.15.20",
     "astro": "^5.8.0",
     "typescript": "^5.8.3",
     "@wix/ricos": "^10.130.1",
