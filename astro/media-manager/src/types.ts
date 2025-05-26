@@ -5,4 +5,6 @@ export interface MediaItem {
   url: string;
   _createdDate: string;
   thumbnailUrl?: string;
+  cmsItemId: string;
+  description?: string;
 }

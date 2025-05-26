@@ -1,8 +1,10 @@
 import { auth } from "@wix/essentials";
 import { files } from "@wix/media";
+import { items } from "@wix/data";
 import { defineAction } from "astro:actions";
 
 const VISITOR_UPLOADS_FOLDER_ID = "visitor-uploads";
+const MEDIA_COLLECTION_ID = "Medias";
 
 export const server = {
   fetchMediaItems: defineAction({
@@ -16,7 +18,21 @@ export const server = {
           parentFolderId: VISITOR_UPLOADS_FOLDER_ID,
         });
 
-        if (listFiles?.length > 0) {
+        if (listFiles && listFiles.length > 0) {
+          const elevatedQueryItems = auth.elevate(items.query);
+          const { items: cmsItems } =
+            await elevatedQueryItems(MEDIA_COLLECTION_ID).find();
+
+          const cmsItemsMap = new Map(
+            cmsItems.map((item: any) => [
+              item.image,
+              {
+                id: item._id,
+                description: item.description,
+              },
+            ])
+          );
+
           mediaItems = listFiles.map((file) => {
             const {
               _id: id,
@@ -32,6 +48,8 @@ export const server = {
               mediaType,
               url,
               _createdDate,
+              cmsItemId: cmsItemsMap.get(url)?.id,
+              description: cmsItemsMap.get(url)?.description || "",
             };
           });
         }
@@ -55,6 +73,7 @@ export const server = {
             parentFolderId: VISITOR_UPLOADS_FOLDER_ID,
           }
         );
+
         return result;
       } catch (error) {
         console.error("Error generating upload URL:", error);
@@ -80,12 +99,30 @@ export const server = {
   }),
 
   deleteMediaFile: defineAction({
-    handler: async ({ fileId }) => {
+    handler: async ({ fileId, cmsItemId }) => {
       try {
         await auth.elevate(files.bulkDeleteFiles)([fileId]);
+        await auth.elevate(items.remove)(MEDIA_COLLECTION_ID, cmsItemId);
         return true;
       } catch (error) {
         console.error("Error deleting file:", error);
+        return false;
+      }
+    },
+  }),
+
+  addMediaItem: defineAction({
+    handler: async ({ description, image }) => {
+      try {
+        const elevatedInsert = auth.elevate(items.insert);
+        const result = await elevatedInsert(MEDIA_COLLECTION_ID, {
+          description,
+          image,
+        });
+
+        return result;
+      } catch (error) {
+        console.error("Error inserting media item:", error);
         return false;
       }
     },
