@@ -1,8 +1,10 @@
 import { auth } from "@wix/essentials";
 import { files } from "@wix/media";
 import { defineAction } from "astro:actions";
+// import { data } from "@wix/data";
 
 const VISITOR_UPLOADS_FOLDER_ID = "visitor-uploads";
+// const MEDIA_COLLECTION_NAME = "MediaItems";
 
 export const server = {
   fetchMediaItems: defineAction({
@@ -17,6 +19,17 @@ export const server = {
         });
 
         if (listFiles?.length > 0) {
+          // Get all CMS items
+          // const elevatedQueryItems = auth.elevate(data.queryItems);
+          // const { items: cmsItems } = await elevatedQueryItems({
+          //   collectionName: MEDIA_COLLECTION_NAME,
+          // });
+
+          // // Create a map of fileId to description
+          // const descriptionMap = new Map(
+          //   cmsItems.map((item: any) => [item.fileId, item.description])
+          // );
+
           mediaItems = listFiles.map((file) => {
             const {
               _id: id,
@@ -32,6 +45,8 @@ export const server = {
               mediaType,
               url,
               _createdDate,
+              // description: descriptionMap.get(id) || "",
+              // description: "My",
             };
           });
         }
@@ -55,6 +70,21 @@ export const server = {
             parentFolderId: VISITOR_UPLOADS_FOLDER_ID,
           }
         );
+
+        // if (result?.uploadUrl) {
+        //   // Create a CMS item with the description
+        //   const elevatedCreateItem = auth.elevate(data.createItem);
+        //   await elevatedCreateItem({
+        //     collectionName: MEDIA_COLLECTION_NAME,
+        //     item: {
+        //       title: fileName,
+        //       description: description || "",
+        //       fileId: result.fileId,
+        //       uploadDate: new Date().toISOString(),
+        //     },
+        //   });
+        // }
+
         return result;
       } catch (error) {
         console.error("Error generating upload URL:", error);

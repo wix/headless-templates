@@ -147,6 +147,9 @@ const { items, selectedId = "" } = Astro.props;
             <div class="p-2">
               <div class="text-xs truncate text-gray-700 font-medium">{item.name}</div>
               <div class="text-xs text-gray-500">{new Date(item._createdDate).toLocaleDateString()}</div>
+              {item.description && (
+                <div class="text-xs text-gray-600 mt-1 line-clamp-2">{item.description}</div>
+              )}
             </div>
           </div>
         );
