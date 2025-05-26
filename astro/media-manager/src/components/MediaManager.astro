@@ -182,6 +182,12 @@ const isLoading = data?.isLoading || false;
                 <button id="save-name-btn" class="hidden px-2 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Save</button>
                 <button id="cancel-edit-btn" class="hidden px-2 py-1 text-xs border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">Cancel</button>
               </div>
+              <div class="mt-4">
+                <div class="flex items-start mb-1">
+                  <span class="text-sm font-medium text-gray-700">Description:</span>
+                </div>
+                <p class="text-sm text-gray-600 whitespace-pre-wrap">${item.description || "No description"}</p>
+              </div>
             </div>
           </div>
         </div>
