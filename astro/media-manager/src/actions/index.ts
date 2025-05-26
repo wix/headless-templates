@@ -25,7 +25,7 @@ export const server = {
 
           const cmsItemsMap = new Map(
             cmsItems.map((item: any) => [
-              item.uri,
+              item.image,
               {
                 id: item._id,
                 description: item.description,
@@ -48,8 +48,8 @@ export const server = {
               mediaType,
               url,
               _createdDate,
-              cmsItemId: cmsItemsMap.get(id)?.id,
-              description: cmsItemsMap.get(id)?.description || "",
+              cmsItemId: cmsItemsMap.get(url)?.id,
+              description: cmsItemsMap.get(url)?.description || "",
             };
           });
         }
@@ -112,12 +112,12 @@ export const server = {
   }),
 
   addMediaItem: defineAction({
-    handler: async ({ uri, description }) => {
+    handler: async ({ description, image }) => {
       try {
         const elevatedInsert = auth.elevate(items.insert);
         const result = await elevatedInsert(MEDIA_COLLECTION_ID, {
-          uri,
           description,
+          image,
         });
 
         return result;

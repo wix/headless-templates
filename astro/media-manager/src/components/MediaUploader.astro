@@ -251,7 +251,6 @@
       const { data } = await actions.uploadMediaFile({
         fileName: selectedFile.name,
         mimeType: selectedFile.type || "application/octet-stream",
-        // description: description,
       });
       if (!data) throw new Error("No response from uploadMediaFile");
       if (!data.uploadUrl) throw new Error("No upload URL received");
@@ -282,8 +281,8 @@
             const { file } = JSON.parse(xhr.response);
 
             await actions.addMediaItem({
-              uri: file.id,
               description,
+              image: file.url,
             });
 
             dispatchUploadCompleteEvent({ file: selectedFile! });
