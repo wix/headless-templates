@@ -23,8 +23,14 @@ export const server = {
           const { items: cmsItems } =
             await elevatedQueryItems(MEDIA_COLLECTION_ID).find();
 
-          const descriptionMap = new Map(
-            cmsItems.map((item: any) => [item.uri, item.description])
+          const cmsItemsMap = new Map(
+            cmsItems.map((item: any) => [
+              item.uri,
+              {
+                id: item._id,
+                description: item.description,
+              },
+            ])
           );
 
           mediaItems = listFiles.map((file) => {
@@ -42,7 +48,8 @@ export const server = {
               mediaType,
               url,
               _createdDate,
-              description: descriptionMap.get(id) || "",
+              cmsItemId: cmsItemsMap.get(id)?.id,
+              description: cmsItemsMap.get(id)?.description || "",
             };
           });
         }
@@ -92,9 +99,10 @@ export const server = {
   }),
 
   deleteMediaFile: defineAction({
-    handler: async ({ fileId }) => {
+    handler: async ({ fileId, cmsItemId }) => {
       try {
         await auth.elevate(files.bulkDeleteFiles)([fileId]);
+        await auth.elevate(items.remove)(MEDIA_COLLECTION_ID, cmsItemId);
         return true;
       } catch (error) {
         console.error("Error deleting file:", error);

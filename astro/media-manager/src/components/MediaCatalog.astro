@@ -126,6 +126,7 @@ const { items, selectedId = "" } = Astro.props;
                     class="delete-button bg-white text-gray-700 rounded-full p-2 hover:bg-red-500 hover:text-white transition-colors"
                     title="Delete"
                     data-id={item.id}
+                    data-cms-item-id={item.cmsItemId}
                   >
                     <svg
                       class="w-4 h-4"
@@ -199,10 +200,11 @@ const { items, selectedId = "" } = Astro.props;
     button.addEventListener('click', async (e) => {
       e.stopPropagation();
       if (confirm('Are you sure you want to delete this file?')) {
-        const itemId = button.getAttribute('data-id');
+        const fileId = button.getAttribute('data-id');
+        const cmsItemId = button.getAttribute('data-cms-item-id');
         
-        if (itemId) {
-          const status = await actions.deleteMediaFile({ fileId: itemId });
+        if (fileId) {
+          const status = await actions.deleteMediaFile({ fileId, cmsItemId });
 
           if (status) {
             alert('File deleted successfully!');
