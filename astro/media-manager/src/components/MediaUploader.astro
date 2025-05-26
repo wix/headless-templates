@@ -276,9 +276,16 @@
           }
         };
 
-        xhr.onload = function () {
+        xhr.onload = async function () {
           if (xhr.status >= 200 && xhr.status < 300) {
             updateProgress(100);
+            const { file } = JSON.parse(xhr.response);
+
+            await actions.addMediaItem({
+              uri: file.id,
+              description,
+            });
+
             dispatchUploadCompleteEvent({ file: selectedFile! });
             resetUploadUI();
             resolve();

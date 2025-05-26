@@ -1,10 +1,11 @@
 import { auth } from "@wix/essentials";
 import { files } from "@wix/media";
+import { items } from "@wix/data";
 import { defineAction } from "astro:actions";
 // import { data } from "@wix/data";
 
 const VISITOR_UPLOADS_FOLDER_ID = "visitor-uploads";
-// const MEDIA_COLLECTION_NAME = "MediaItems";
+const MEDIA_COLLECTION_ID = "Medias";
 
 export const server = {
   fetchMediaItems: defineAction({
@@ -71,20 +72,6 @@ export const server = {
           }
         );
 
-        // if (result?.uploadUrl) {
-        //   // Create a CMS item with the description
-        //   const elevatedCreateItem = auth.elevate(data.createItem);
-        //   await elevatedCreateItem({
-        //     collectionName: MEDIA_COLLECTION_NAME,
-        //     item: {
-        //       title: fileName,
-        //       description: description || "",
-        //       fileId: result.fileId,
-        //       uploadDate: new Date().toISOString(),
-        //     },
-        //   });
-        // }
-
         return result;
       } catch (error) {
         console.error("Error generating upload URL:", error);
@@ -116,6 +103,23 @@ export const server = {
         return true;
       } catch (error) {
         console.error("Error deleting file:", error);
+        return false;
+      }
+    },
+  }),
+
+  addMediaItem: defineAction({
+    handler: async ({ uri, description }) => {
+      try {
+        const elevatedInsert = auth.elevate(items.insert);
+        const result = await elevatedInsert(MEDIA_COLLECTION_ID, {
+          uri,
+          description,
+        });
+
+        return result;
+      } catch (error) {
+        console.error("Error inserting media item:", error);
         return false;
       }
     },
