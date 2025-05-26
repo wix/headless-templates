@@ -2,7 +2,6 @@ import { auth } from "@wix/essentials";
 import { files } from "@wix/media";
 import { items } from "@wix/data";
 import { defineAction } from "astro:actions";
-// import { data } from "@wix/data";
 
 const VISITOR_UPLOADS_FOLDER_ID = "visitor-uploads";
 const MEDIA_COLLECTION_ID = "Medias";
@@ -19,17 +18,14 @@ export const server = {
           parentFolderId: VISITOR_UPLOADS_FOLDER_ID,
         });
 
-        if (listFiles?.length > 0) {
-          // Get all CMS items
-          // const elevatedQueryItems = auth.elevate(data.queryItems);
-          // const { items: cmsItems } = await elevatedQueryItems({
-          //   collectionName: MEDIA_COLLECTION_NAME,
-          // });
+        if (listFiles && listFiles.length > 0) {
+          const elevatedQueryItems = auth.elevate(items.query);
+          const { items: cmsItems } =
+            await elevatedQueryItems(MEDIA_COLLECTION_ID).find();
 
-          // // Create a map of fileId to description
-          // const descriptionMap = new Map(
-          //   cmsItems.map((item: any) => [item.fileId, item.description])
-          // );
+          const descriptionMap = new Map(
+            cmsItems.map((item: any) => [item.uri, item.description])
+          );
 
           mediaItems = listFiles.map((file) => {
             const {
@@ -46,8 +42,7 @@ export const server = {
               mediaType,
               url,
               _createdDate,
-              // description: descriptionMap.get(id) || "",
-              // description: "My",
+              description: descriptionMap.get(id) || "",
             };
           });
         }
