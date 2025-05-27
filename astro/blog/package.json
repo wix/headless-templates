@@ -10,7 +10,9 @@
   "dependencies": {
     "@astrojs/rss": "^4.0.11",
     "@astrojs/sitemap": "^3.2.1",
-    "@wix/astro": "1.0.5",
+    "@wix/astro": "^1.0.8",
+    "@wix/dashboard": "^1.3.36",
+    "@wix/sdk": "^1.15.22",
     "@wix/astro-ricos": "^0.0.2",
     "@wix/blog": "^1.0.424",
     "astro": "^5.8.0",
