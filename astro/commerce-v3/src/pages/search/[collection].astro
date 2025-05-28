@@ -1,0 +1,35 @@
+---
+import Grid from "../../components/grid/index.astro";
+import Layout from "../../components/layout/layout.astro";
+import ProductGridItems from "../../components/layout/product-grid-items.astro";
+import { defaultSort, sorting } from "../../lib/constants";
+import { getCategoryProducts } from "../../lib/wix";
+import SearchLayout from "../../components/layout/search/layout.astro";
+
+const searchParams = Object.fromEntries(Astro.url.searchParams.entries());
+const params = Astro.params;
+const { sort } = searchParams;
+const { sortKey, reverse } =
+  sorting.find((item) => item.slug === sort) || defaultSort;
+const products = await getCategoryProducts({
+  collection: params.collection!,
+  sortKey,
+  reverse,
+});
+---
+
+<Layout>
+  <SearchLayout>
+    <section>
+      {
+        products.length === 0 ? (
+          <p class="py-3 text-lg">{`No products found in this collection`}</p>
+        ) : (
+          <Grid class="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <ProductGridItems products={products} />
+          </Grid>
+        )
+      }
+    </section>
+  </SearchLayout>
+</Layout>
