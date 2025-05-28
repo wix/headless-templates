@@ -25,3 +25,4 @@ pnpm-debug.log*
 .idea/
 
 astro/**/*-lock.json
+**/wix.config.json

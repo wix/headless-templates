@@ -19,18 +19,18 @@ const { title, description = "Soccer Tournament Registration Form" } = Astro.pro
   </head>
   <body>
     <div class="min-h-screen flex flex-col">
-      <header class="text-[#ffffff] py-[1rem]" style="background-color: var(--primary-color, #3899EC);">
-        <div class="container mx-auto px-[1rem]">
-          <h1 class="text-2xl font-[700]">Soccer Tournament Registration</h1>
+      <header class="text-[#ffffff] py-4" style="background-color: var(--primary-color, #3899EC);">
+        <div class="container mx-auto px-4">
+          <h1 class="text-2xl font-bold">Soccer Tournament Registration</h1>
         </div>
       </header>
       
-      <main class="flex-grow container mx-auto px-[1rem] py-[2rem]">
+      <main class="grow container mx-auto px-4 py-8">
         <slot />
       </main>
       
-      <footer class="bg-[#f3f4f6] py-[1rem] mt-auto">
-        <div class="container mx-auto px-[1rem] text-center text-[#4b5563] text-[0.875rem]">
+      <footer class="bg-[#f3f4f6] py-4 mt-auto">
+        <div class="container mx-auto px-4 text-center text-[#4b5563] text-[0.875rem]">
           &copy; {new Date().getFullYear()} Soccer Tournament Registration. All rights reserved.
         </div>
       </footer>
