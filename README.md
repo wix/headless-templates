@@ -94,6 +94,18 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Events, Wix Members</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/nextjs/commerce">Next.js Commerce</a></td>
+      <td>The <a href="https://github.com/vercel/commerce">Next.js Commerce</a> template with headless integration using Wix.</td>
+      <td></td>
+      <td>Wix Stores</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/nextjs/external-identity-provider">External Identity Provider</a></td>
+      <td>A template for integrating external identity providers (e.g Github) using Next.js and Wix Headless.</td>
+      <td></td>
+      <td>Wix Members</td>
+    </tr>
+    <tr>
       <td colspan="4" align="center"><strong>React Native (Expo)</strong></td>
     </tr>
     <tr>
