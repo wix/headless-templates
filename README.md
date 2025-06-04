@@ -66,31 +66,31 @@ Here are some useful links for getting started with Wix Headless and the availab
     <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/nextjs/minimal-examples">Minimal Examples</a></td>
       <td>Concise examples for Next.js projects integrated with Wix Headless.</td>
-      <td><a href="https://minimal-examples-demo.wix.dev">Minimal Examples Demo</a></td>
+      <td><a href="https://wix-headless-example.vercel.app">Minimal Examples Demo</a></td>
       <td>Wix Stores, Wix Bookings, Wix Events</td>
     </tr>
     <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/nextjs/appointments-subscriptions">Appointments Subscriptions</a></td>
       <td>A template for managing appointments and subscriptions using Next.js and Wix Headless.</td>
-      <td><a href="https://appointments-subscriptions-demo.wix.dev">Appointments Subscriptions Demo</a></td>
+      <td><a href="https://netlify.bookings-appointments-demo.wix.dev">Appointments Subscriptions Demo</a></td>
       <td>Wix Bookings, Wix Members</td>
     </tr>
     <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/nextjs/classes-subscriptions">Classes Subscriptions</a></td>
       <td>A template for managing class subscriptions using Next.js and Wix Headless.</td>
-      <td><a href="https://classes-subscriptions-demo.wix.dev">Classes Subscriptions Demo</a></td>
+      <td><a href="https://netlify.bookings-classes-demo.wix.dev">Classes Subscriptions Demo</a></td>
       <td>Wix Bookings, Wix Members</td>
     </tr>
     <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/nextjs/cms-education">CMS Education</a></td>
       <td>Uses Wix Headless to leverage the Wix CMS for managing content on an education site.</td>
-      <td><a href="https://cms-education-demo.wix.dev">CMS Education Demo</a></td>
+      <td><a href="https://netlify.cms-demo.wix.dev/">CMS Education Demo</a></td>
       <td>CMS</td>
     </tr>
     <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/nextjs/commerce-ticketing">Commerce Ticketing</a></td>
       <td>A template for an online store and event ticketing using Next.js and Wix Headless.</td>
-      <td><a href="https://commerce-ticketing-demo.wix.dev">Commerce Ticketing Demo</a></td>
+      <td><a href="https://netlify.commerce-ticketing-demo.wix.dev/">Commerce Ticketing Demo</a></td>
       <td>Wix Events, Wix Members</td>
     </tr>
     <tr>
