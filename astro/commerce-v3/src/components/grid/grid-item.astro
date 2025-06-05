@@ -1,0 +1,12 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import clsx from "clsx";
+type Props = HTMLAttributes<"li">;
+---
+
+<li
+  class={clsx("aspect-square transition-opacity", Astro.props.class)}
+  {...Astro.props}
+>
+  <slot />
+</li>
