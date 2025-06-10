@@ -1,0 +1,15 @@
+---
+import type { ListItem } from ".";
+import PathFilterItem from "./path-filter-item.astro";
+import SortFilterItem from "./sort-filter-item.astro";
+
+type Props = { item: ListItem };
+---
+
+{
+  "path" in Astro.props.item ? (
+    <PathFilterItem item={Astro.props.item} />
+  ) : (
+    <SortFilterItem item={Astro.props.item} />
+  )
+}
