@@ -17,7 +17,7 @@
     "@wix/essentials": "^0.1.23",
     "@wix/image": "^1.380.0",
     "@wix/media": "^1.0.159",
-    "@wix/sdk": "^1.15.22",
+    "@wix/sdk": "^1.15.23",
     "astro": "^5.8.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",

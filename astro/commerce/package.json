@@ -15,7 +15,7 @@
     "@wix/ecom": "1.0.806",
     "@wix/essentials": "^0.1.23",
     "@wix/redirects": "1.0.60",
-    "@wix/sdk": "^1.15.22",
+    "@wix/sdk": "^1.15.23",
     "@wix/stores": "1.0.280",
     "astro": "5.8.0",
     "tailwindcss": "^4.1.7",

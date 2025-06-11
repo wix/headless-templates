@@ -15,7 +15,7 @@
     "@wix/blog": "^1.0.424",
     "@wix/dashboard": "^1.3.36",
     "@wix/essentials": "^0.1.23",
-    "@wix/sdk": "^1.15.22",
+    "@wix/sdk": "^1.15.23",
     "astro": "^5.8.0",
     "typescript": "^5.8.3"
   }
