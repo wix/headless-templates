@@ -39,6 +39,8 @@ Click the quick start deployment link below to automatically authorize your temp
 
 Authentication credentials are automatically incorporated into the template, making it easy to get started coding and customizing.
 
+> **Note:** You must add at least one **Authorization Redirect URI** to ensure authentication works properly. The URI must exactly match the address in your site or app where Wix should redirect members after they log in via a Wix-managed authentication page. For security reasons, Wix only redirects site members to URIs you've explicitly approved. For step-by-step instructions, see [Add Allowed Authorization Redirect URIs](https://dev.wix.com/docs/go-headless/get-started/setup/manage-urls/add-allowed-authorization-redirect-uris).
+
 ---
 
 ##### Netlify
