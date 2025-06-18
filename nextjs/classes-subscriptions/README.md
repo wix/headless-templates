@@ -15,6 +15,8 @@ Prerequisites:
 3. Authorize the template with [quick start deployment](https://manage.wix.com/headless-funnel-nextjs/select-platform?templateName=classes-subscriptions) or by [creating an OAuth app](https://dev.wix.com/docs/go-headless/getting-started/setup/authorization/create-an-o-auth-app-for-visitors-and-members)
 4. [Set up your project's eCommerce settings](https://www.wix.com/my-account/site-selector/?buttonText=Select%20Site&title=Select%20a%20Site&autoSelectOnSingleSite=true&actionUrl=https:%2F%2Fwww.wix.com%2Fdashboard%2F%7B%7BmetaSiteId%7D%7D%2Fstore/settings)
 
+> **Note:** You must add at least one **Authorization Redirect URI** to ensure authentication works properly. The URI must exactly match the address in your site or app where Wix should redirect members after they log in via a Wix-managed authentication page. For security reasons, Wix only redirects site members to URIs you've explicitly approved. For step-by-step instructions, see [Add Allowed Authorization Redirect URIs](https://dev.wix.com/docs/go-headless/get-started/setup/manage-urls/add-allowed-authorization-redirect-uris).
+
 Set up environment variables to consume Wix Headless APIs:
 
 1. In the template's root folder, create a file for the local environment variables:
