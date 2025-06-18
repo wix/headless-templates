@@ -39,7 +39,7 @@ Click the quick start deployment link below to automatically authorize your temp
 
 Authentication credentials are automatically incorporated into the template, making it easy to get started coding and customizing.
 
-> **Note:** You must manually add the correct authorization redirect URIs in your Wix project's OAuth app settings to ensure authentication works properly. An **authorization redirect URI** is the exact address in your site or app where Wix redirects site members after they login via a Wix-managed authentication page. For security, Wix only redirects site members to URIs you allow in advance. For step-by-step instructions, see [Add Allowed Authorization Redirect URIs](https://dev.wix.com/docs/go-headless/get-started/setup/manage-urls/add-allowed-authorization-redirect-uris).
+> **Note:** You must add at least one **Authorization Redirect URI** to ensure authentication works properly. The URI must exactly match the address in your site or app where Wix should redirect members after they log in via a Wix-managed authentication page. For security reasons, Wix only redirects site members to URIs you've explicitly approved. For step-by-step instructions, see [Add Allowed Authorization Redirect URIs](https://dev.wix.com/docs/go-headless/get-started/setup/manage-urls/add-allowed-authorization-redirect-uris).
 
 ---
 
