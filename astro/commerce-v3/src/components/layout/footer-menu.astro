@@ -1,0 +1,35 @@
+---
+import type { Menu } from "../../lib/wix/types";
+import clsx from "clsx";
+
+type Props = {
+  menu: Menu[];
+};
+
+if (!Astro.props.menu.length) return null;
+---
+
+<nav>
+  <ul>
+    {
+      Astro.props.menu.map((item) => (
+        <Fragment>
+          <li>
+            <a
+              href={item.path === "//" ? "/" : item.path}
+              class={clsx(
+                "block p-2 text-lg underline-offset-4 hover:text-black hover:underline md:inline-block md:text-sm dark:hover:text-neutral-300",
+                {
+                  "text-black dark:text-neutral-300":
+                    Astro.url.pathname === item.path,
+                }
+              )}
+            >
+              {item.title}
+            </a>
+          </li>
+        </Fragment>
+      ))
+    }
+  </ul>
+</nav>
