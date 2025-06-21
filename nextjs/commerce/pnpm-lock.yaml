@@ -22,7 +22,7 @@ importers:
         version: 1.0.943
       '@wix/redirects':
         specifier: ^1.0.70
-        version: 1.0.76
+        version: 1.0.87
       '@wix/sdk':
         specifier: ^1.15.9
         version: 1.15.16
@@ -90,6 +90,10 @@ packages:
 
   '@babel/runtime@7.27.0':
     resolution: {integrity: sha512-VtPOkrdPHZsKc/clNqyi9WUA8TINkZ4cGk63UUE3u4pmB2k+ZMQRDuIOagv8UVd6j7k0T3+RRIb7beKTebNbcw==}
+    engines: {node: '>=6.9.0'}
+
+  '@babel/runtime@7.27.6':
+    resolution: {integrity: sha512-vbavdySgbTTrmFE+EsiqUTzlOr5bzlnJtUv9PynGCAKvfQqjIXbvFdumPM/GxMDfyuGMJaJAU6TO4zc1Jf1i8Q==}
     engines: {node: '>=6.9.0'}
 
   '@emnapi/runtime@1.3.1':
@@ -577,8 +581,8 @@ packages:
   '@wix/auto_sdk_identity_verification@1.0.0':
     resolution: {integrity: sha512-nQbL5SP4OfnXpUmlMK+1OpYpj7ncmu8iU5l8Mom0GkznP3sZV1b8VLlP0T99gCS1JxCY3Ryl2LEvoSuFOAzioQ==}
 
-  '@wix/auto_sdk_redirects_redirects@1.0.2':
-    resolution: {integrity: sha512-/mE9YQLxQDP9LFYxJnxoqNU7+3UOTChuFFgNqZ2t/P5AsDG9pnKgVvztBPloCWUNB56k8PGcr9jC7EbVbpQYLg==}
+  '@wix/auto_sdk_redirects_redirects@1.0.15':
+    resolution: {integrity: sha512-2i3uQPT95FDYHHB7mciexy9Zz+Dl3Or1uZfweRYEEtHgRBm/AWrXDyNDSeU0k5ZPnYAIqKeDJgl2sKnOQwEANQ==}
 
   '@wix/data@1.0.201':
     resolution: {integrity: sha512-v3RDT3N8IpIDJadKpyJuqf7QQePBCTt90cyRwp2SeeXm75TCa1mKy6V811HTb3O+ulL/swsnO5AyljxW7eX1JA==}
@@ -610,6 +614,9 @@ packages:
   '@wix/ecom_app-extensions@1.0.12':
     resolution: {integrity: sha512-uEDzsZ5Rlu8TLRcNH5IFqnOja7B+X7gM5bGReDi8gvLrQ4HlZDk8j8+ubGysZBvV4V5IxVzNTiNPrXPxBibzAw==}
 
+  '@wix/error-handler-types@1.9.0':
+    resolution: {integrity: sha512-X/g0z8BaxY3oYwVj00jSmgia9r+mc5Pg3IOFk3TQg+Fe43K1wxqS1SyQiTjJsf/kPaOGv/f3S6cmVUsgUA9J3g==}
+
   '@wix/filter-builder@1.0.106':
     resolution: {integrity: sha512-BqiQboudYKtWLGvGv0kZEJbtHSZeQvs73vF99M/wiDzu8FfVKi3FYdlrQobne2i+vKIsKvteA9QqaTmxGFjlkw==}
 
@@ -619,17 +626,26 @@ packages:
   '@wix/image-kit@1.104.0':
     resolution: {integrity: sha512-Qbw0UnVcJJMCSKnD8+TPceuDA1K6Lk0uSAKQuEnI14CCqJKGGgkpgKY4n1F0I0LNDSp0aJhhrL9IPlrwo0SOWQ==}
 
+  '@wix/monitoring-types@0.12.0':
+    resolution: {integrity: sha512-nlv4jwQMewjzPIWFF9rnKf9WhVojj67oLtvilYXfi+lnhXyVlYOfqCnL3qLJuKtJ6wT5XIJdt0Fj0su2NM5taQ==}
+
   '@wix/monitoring-types@0.9.0':
     resolution: {integrity: sha512-ce9McMEVzCUmal5HxdXVdZfVKHhXw3AIUOxquFy8A9zpQHt5FiHoGkSDR27PtoW9e77+muhBHgl81UcnQqfAsA==}
 
-  '@wix/redirects@1.0.76':
-    resolution: {integrity: sha512-QFfbRi40Sl4YMv5AOaJuLAV/FtdCiRN5U7gbuBWklqT/DuSVwchP4Fhp7tCZB7smiS47Y4ami5wlS4R7rYOPSQ==}
+  '@wix/redirects@1.0.87':
+    resolution: {integrity: sha512-lImsENxuxiUhokACH4/dxTJVqgO38su5tRQeobckC+hSLKxBy3FJ7ykpTrw6KXcCk1NGiMpHYGTEL+iBGojFgw==}
 
   '@wix/sdk-context@0.0.1':
     resolution: {integrity: sha512-ziSzrceUC0KFn4IJIVBn1cXXKrZ49ZKG5tQ6fl+TpontyUw5p/Z4VofFUUsnqNl9JYCpYNTzIXpzwok93Vrl8A==}
 
   '@wix/sdk-runtime@0.3.39':
     resolution: {integrity: sha512-NEeBVwjpJHMsYdZXJZQJawvt5g90UWprTFcKVaIuhEznfA4IxDbSwEHgeD4gyuUhGMrPqVj4kzqEO7SgUAIRqQ==}
+
+  '@wix/sdk-runtime@0.3.56':
+    resolution: {integrity: sha512-ueTMUWa+zEmJoN4ylXnackI7y9mqPuIcD9/zBupPgpY+hwAeEmXeQQmT4fDprSExgSQUQDq1+wqP541gNxl1IA==}
+
+  '@wix/sdk-types@1.13.31':
+    resolution: {integrity: sha512-LTpyp6l3Y9SK9jJA6t+6YIm/Ao/2aURvVK8j6UINq8cp7conC2h08YqdFeAeRSCJOKv0VTTCeTmGni+xGN86uA==}
 
   '@wix/sdk-types@1.13.6':
     resolution: {integrity: sha512-EgkfsF3A3JP1PPd3yzJgw1PJ9hnwTMwKiY5jbRH7JUtdDZm5XnP/KY8ss4SRm89d6f8uIE22VxOL4BVTeZz5ow==}
@@ -1015,6 +1031,10 @@ packages:
     resolution: {integrity: sha512-2dBz5D5ycHIoliLYLi0Q2V7KRaDlH0uWIvmk7TYlAg5slqwiPv1ezJdZm1QEM0xgk29oYWMCbIG7E6gHpvChlg==}
     engines: {node: '>=16'}
 
+  type-fest@4.41.0:
+    resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
+    engines: {node: '>=16'}
+
   typescript@5.7.3:
     resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
     engines: {node: '>=14.17'}
@@ -1033,6 +1053,8 @@ snapshots:
   '@babel/runtime@7.27.0':
     dependencies:
       regenerator-runtime: 0.14.1
+
+  '@babel/runtime@7.27.6': {}
 
   '@emnapi/runtime@1.3.1':
     dependencies:
@@ -1562,10 +1584,10 @@ snapshots:
       '@wix/sdk-runtime': 0.3.39
       '@wix/sdk-types': 1.13.6
 
-  '@wix/auto_sdk_redirects_redirects@1.0.2':
+  '@wix/auto_sdk_redirects_redirects@1.0.15':
     dependencies:
-      '@wix/sdk-runtime': 0.3.39
-      '@wix/sdk-types': 1.13.6
+      '@wix/sdk-runtime': 0.3.56
+      '@wix/sdk-types': 1.13.31
 
   '@wix/data@1.0.201':
     dependencies:
@@ -1665,6 +1687,10 @@ snapshots:
       '@wix/sdk-runtime': 0.3.39
       '@wix/sdk-types': 1.13.6
 
+  '@wix/error-handler-types@1.9.0':
+    dependencies:
+      '@babel/runtime': 7.27.6
+
   '@wix/filter-builder@1.0.106':
     dependencies:
       '@babel/runtime': 7.27.0
@@ -1683,11 +1709,13 @@ snapshots:
       '@babel/runtime': 7.27.0
       tslib: 2.8.1
 
+  '@wix/monitoring-types@0.12.0': {}
+
   '@wix/monitoring-types@0.9.0': {}
 
-  '@wix/redirects@1.0.76':
+  '@wix/redirects@1.0.87':
     dependencies:
-      '@wix/auto_sdk_redirects_redirects': 1.0.2
+      '@wix/auto_sdk_redirects_redirects': 1.0.15
 
   '@wix/sdk-context@0.0.1': {}
 
@@ -1695,6 +1723,17 @@ snapshots:
     dependencies:
       '@wix/sdk-context': 0.0.1
       '@wix/sdk-types': 1.13.6
+
+  '@wix/sdk-runtime@0.3.56':
+    dependencies:
+      '@wix/sdk-context': 0.0.1
+      '@wix/sdk-types': 1.13.31
+
+  '@wix/sdk-types@1.13.31':
+    dependencies:
+      '@wix/error-handler-types': 1.9.0
+      '@wix/monitoring-types': 0.12.0
+      type-fest: 4.41.0
 
   '@wix/sdk-types@1.13.6':
     dependencies:
@@ -1704,7 +1743,7 @@ snapshots:
     dependencies:
       '@wix/identity': 1.0.124
       '@wix/image-kit': 1.104.0
-      '@wix/redirects': 1.0.76
+      '@wix/redirects': 1.0.87
       '@wix/sdk-context': 0.0.1
       '@wix/sdk-runtime': 0.3.39
       '@wix/sdk-types': 1.13.6
@@ -2053,6 +2092,8 @@ snapshots:
   tslib@2.8.1: {}
 
   type-fest@4.38.0: {}
+
+  type-fest@4.41.0: {}
 
   typescript@5.7.3: {}
 
