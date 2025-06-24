@@ -64,7 +64,6 @@ export default function Examples() {
                 </label>
                 <hr />
             </div>
-           )}
             <div className={styles.grid}>
                 {uninstalledExamples.map((example) => {
                     if (installedAppsList.includes(example.data.orderId - 1)) {
