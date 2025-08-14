@@ -332,10 +332,8 @@ export async function getCollections(): Promise<Collection[]> {
 
 export async function getMenu(handle: string): Promise<Menu[]> {
   const { items: menus } = await items
-    .queryDataItems({
-      dataCollectionId: "Menus",
-      includeReferencedItems: ["pages"],
-    })
+    .query("Menus")
+    .include("pages")
     .eq("slug", handle)
     .find()
     .catch((e) => {
@@ -361,9 +359,7 @@ export async function getMenu(handle: string): Promise<Menu[]> {
 
 export async function getPage(handle: string): Promise<Page | undefined> {
   const { items: pages } = await items
-    .queryDataItems({
-      dataCollectionId: "Pages",
-    })
+    .query("Pages")
     .eq("slug", handle)
     .find()
     .catch((e) => {
@@ -400,9 +396,7 @@ export async function getPage(handle: string): Promise<Page | undefined> {
 
 export async function getPages(): Promise<Page[]> {
   const { items: pages } = await items
-    .queryDataItems({
-      dataCollectionId: "Pages2",
-    })
+    .query("Pages2")
     .find()
     .catch((e) => {
       if (e.details.applicationError.code === "WDE0025") {
