@@ -1,4 +1,4 @@
-# Wix Astro Blog Template
+# Wix Astro Registration Template
 
 Our Astro templates are still in development and subject to change.
 
