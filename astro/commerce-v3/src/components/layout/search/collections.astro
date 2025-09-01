@@ -1,0 +1,9 @@
+---
+import { getCategories } from "../../../lib/wix";
+import FilterList from "./filter/filter-list.astro";
+import type {ListItem} from "./filter";
+
+const collections = await getCategories() as ListItem[];
+---
+
+<FilterList list={collections} title="Collections" />
