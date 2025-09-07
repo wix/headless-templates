@@ -3,7 +3,7 @@
 import React from 'react';
 import '@wix/ricos/css/all-plugins-viewer.css';
 import { quickStartViewerPlugins, RicosViewer } from '@wix/ricos';
-import { wixEventsV2 } from '@wix/events';  
+import { wixEventsV2 } from '@wix/events';
 
 interface EventRichTextProps {
   richText?: wixEventsV2.RichContent | null;
@@ -11,7 +11,7 @@ interface EventRichTextProps {
 }
 
 const EventRichText = ({ richText, title }: EventRichTextProps) => {
-  if (!richText ) {
+  if (!richText) {
     return null;
   }
 
