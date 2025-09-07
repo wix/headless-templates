@@ -57,12 +57,12 @@ export default async function EventPage({ params }: any) {
           eventId: [event._id!],
           limit: 100,
         }),
-        wixClient.wixEventsRichText
-          .queryRichContent()
+        wixClient.wixEvents
+          .queryEvents()
           .limit(1)
-          .eq('eventId', event._id!)
+          .eq('_id', event._id!)
           .find()
-          .then((evRichTexts) => evRichTexts.items?.[0]),
+          .then((ev) => ev.items?.[0]?.description),
       ])
     : [];
 
