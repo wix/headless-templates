@@ -3,15 +3,15 @@
 import React from 'react';
 import '@wix/ricos/css/all-plugins-viewer.css';
 import { quickStartViewerPlugins, RicosViewer } from '@wix/ricos';
-import { ricos as richText } from '@wix/events';
+import { wixEventsV2 } from '@wix/events';  
 
 interface EventRichTextProps {
-  richText?: richText.RichContent | null;
+  richText?: wixEventsV2.RichContent | null;
   title?: React.ReactNode;
 }
 
 const EventRichText = ({ richText, title }: EventRichTextProps) => {
-  if (!richText || !richText.content) {
+  if (!richText ) {
     return null;
   }
 
@@ -20,7 +20,7 @@ const EventRichText = ({ richText, title }: EventRichTextProps) => {
       {title && <>{title}</>}
       <RicosViewer
         plugins={quickStartViewerPlugins()}
-        content={richText.content as any}
+        content={richText as any}
       />
     </>
   );

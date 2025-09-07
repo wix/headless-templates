@@ -20,7 +20,7 @@
     "@wix/redirects": "^1.0.13",
     "@wix/ricos": "^10.112.0",
     "@wix/sdk": "^1.5.0",
-    "@wix/stores": "^1.0.71",
+    "@wix/stores": "^1.0.510",
     "body-scroll-lock": "^4.0.0-beta.0",
     "cookie": "^0.5.0",
     "date-fns": "^2.29.3",
