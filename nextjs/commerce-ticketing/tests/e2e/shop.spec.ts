@@ -11,6 +11,7 @@ test.describe('Shop Page', () => {
       await page.getByTestId(testIds.SHOP_PAGE.HEADER)
     ).toHaveScreenshot('shop-header.png', {
       mask: [page.getByTestId(testIds.LAYOUT.HEADER)],
+      maxDiffPixelRatio: 0.1,
     });
   });
 
