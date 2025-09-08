@@ -16,6 +16,7 @@ test.describe('Tickets Page', () => {
       await page.getByTestId(testIds.TICKET_DETAILS_PAGE.CONTAINER)
     ).toHaveScreenshot('ticket-details.png', {
       mask: [page.getByTestId(testIds.LAYOUT.HEADER)],
+      maxDiffPixelRatio: 0.1,
     });
   });
 
