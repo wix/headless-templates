@@ -2119,13 +2119,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wix/auto_sdk_redirects_redirects@npm:1.0.22":
-  version: 1.0.22
-  resolution: "@wix/auto_sdk_redirects_redirects@npm:1.0.22"
+"@wix/auto_sdk_redirects_redirects@npm:1.0.24":
+  version: 1.0.24
+  resolution: "@wix/auto_sdk_redirects_redirects@npm:1.0.24"
   dependencies:
     "@wix/sdk-runtime": ^0.3.55
     "@wix/sdk-types": ^1.13.35
-  checksum: fc3fd64a37437a0969ffa793008220690dea7ed179cc5918e35e0825bc636178ed2d9de5037328410331ad34df26385d7a36bcaa6cd00bb971fca990bfef5750
+  checksum: f044e1acf53387810b62bdef6606f9a52f75e101dab389b981f5db4032109fd5c8bdd0861e1923f04c44ececd2b530087fd69c437bba6e1fdbde60092c4e609c
   languageName: node
   linkType: hard
 
@@ -3483,31 +3483,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wix/redirects@npm:^1.0.13, @wix/redirects@npm:^1.0.70":
-  version: 1.0.71
-  resolution: "@wix/redirects@npm:1.0.71"
+"@wix/redirects@npm:^1.0.13, @wix/redirects@npm:^1.0.70, @wix/redirects@npm:^1.0.83":
+  version: 1.0.96
+  resolution: "@wix/redirects@npm:1.0.96"
   dependencies:
-    "@wix/redirects_redirects": 1.0.40
-  checksum: e42206ac08e4304173f3ac5f466836f4cf5bb215d1d16623a05ce1941f9b1d50236e1edcd75b5fe5abf1592b1f522133be4e79568b41f7ae4965308580c0b935
-  languageName: node
-  linkType: hard
-
-"@wix/redirects@npm:^1.0.83":
-  version: 1.0.94
-  resolution: "@wix/redirects@npm:1.0.94"
-  dependencies:
-    "@wix/auto_sdk_redirects_redirects": 1.0.22
-  checksum: 8ad7e3abbad3761deda2eab90433233cd6622c41cd049e9768c2d6d5c679059646e358fad638f1e8f940e19cea93e16054cca38ac280f7d1504321ddc622322f
-  languageName: node
-  linkType: hard
-
-"@wix/redirects_redirects@npm:1.0.40":
-  version: 1.0.40
-  resolution: "@wix/redirects_redirects@npm:1.0.40"
-  dependencies:
-    "@wix/sdk-runtime": ^0.3.22
-    "@wix/sdk-types": ^1.12.4
-  checksum: 0ca48d2a40323ab550db1d88ab40dc434e1e225e0b5c4865d7006d6cbd1046a3b402f5860fc68c7d2f54e0c9afb211257282730d7d287a610275079571eb453a
+    "@wix/auto_sdk_redirects_redirects": 1.0.24
+  checksum: 94f6fe0e39ee99f4aefba58f5f001df8229ab9349f46c6a07a8428e929dec66966b7236c6fab719cdb971c0f1a2f60b6bd91ad09e08f98e296f365e042f8b274
   languageName: node
   linkType: hard
 
