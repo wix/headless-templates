@@ -1,0 +1,23 @@
+---
+import type { ListItem } from ".";
+import FilterItemDropdown from "./dropdown.astro";
+import FilterItemList from "./filter-item-list.astro";
+
+type Props = { list: ListItem[]; title?: string };
+---
+
+<nav>
+  {
+    Astro.props.title ? (
+      <h3 class="hidden text-xs text-neutral-500 md:block dark:text-neutral-400">
+        {Astro.props.title}
+      </h3>
+    ) : null
+  }
+  <ul class="hidden md:block">
+    <FilterItemList list={Astro.props.list} />
+  </ul>
+  <ul class="md:hidden">
+    <FilterItemDropdown list={Astro.props.list} />
+  </ul>
+</nav>
