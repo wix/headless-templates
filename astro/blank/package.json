@@ -8,7 +8,7 @@
     "build": "astro build"
   },
   "dependencies": {
-    "@wix/astro": "^1.0.8",
+    "@wix/astro": "^2.13.0",
     "@wix/dashboard": "^1.3.36",
     "@wix/essentials": "^0.1.23",
     "@wix/sdk": "^1.15.23",

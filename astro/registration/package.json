@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.7",
-    "@wix/astro": "^1.0.8",
+    "@wix/astro": "^2.13.0",
     "@wix/dashboard": "^1.3.36",
     "@wix/essentials": "^0.1.23",
     "@wix/forms": "^1.0.259",
