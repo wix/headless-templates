@@ -11,14 +11,20 @@ interface Props {
 const { class: className = "" } = Astro.props;
 
 const wixForm = await forms.getForm(WIX_FORM_ID);
-const formFieldsSettings = wixForm.fieldsV2
-  .filter((field: forms.FormFieldV2) => field.fieldType === "INPUT" && !field.hidden)
-  .reduce((acc: Record<string, forms.FormFieldV2InputField>, field: forms.FormFieldV2) => {
-    if (field.inputOptions?.target) {
-      acc[field.inputOptions.target] = field.inputOptions;
-    }
-    return acc;
-  }, {});
+const formFieldsSettings = wixForm.formFields
+  ?.filter(
+    (field: forms.Field) =>
+      field.fieldType === "INPUT" && !field.hidden,
+  )
+  .reduce(
+    (acc: Record<string, forms.InputField>, field: forms.Field) => {
+      if (field.inputOptions?.target) {
+        acc[field.inputOptions.target] = field.inputOptions;
+      }
+      return acc;
+    },
+    {},
+  );
 ---
 
 <form
