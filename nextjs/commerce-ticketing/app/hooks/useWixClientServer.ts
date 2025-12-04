@@ -4,7 +4,7 @@ import { orders, currentCart, checkout as ecomCheckout } from '@wix/ecom';
 import { redirects } from '@wix/redirects';
 import {
   wixEventsV2 as wixEvents,
-  schedule,
+schedule,
   orders as eventOrders,
 } from '@wix/events';
 import { cookies } from 'next/headers';

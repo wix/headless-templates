@@ -28,7 +28,7 @@ export default async function Home() {
     );
   } catch (e) {}
 
-  let events: wixEvents.V3Event[] = [];
+  let events: wixEvents.Event[] = [];
   try {
     events = (
       await wixClient.wixEvents

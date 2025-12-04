@@ -9,7 +9,7 @@ export function HomeScreen({
   events,
   productsForCategories,
 }: {
-  events: wixEvents.V3Event[];
+  events: wixEvents.Event[];
   productsForCategories: { category: string; product: products.Product }[];
 }) {
   return (
