@@ -6884,7 +6884,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next@npm:^13.4.9":
+"next@npm:^13.5.11":
   version: 13.5.11
   resolution: "next@npm:13.5.11"
   dependencies:
@@ -8391,7 +8391,7 @@ __metadata:
     eslint-config-next: "npm:^13.4.9"
     js-cookie: "npm:^3.0.5"
     jwt-decode: "npm:^4.0.0"
-    next: "npm:^13.4.9"
+    next: "npm:^13.5.11"
     react: "npm:18.2.0"
     react-dom: "npm:18.2.0"
   languageName: unknown

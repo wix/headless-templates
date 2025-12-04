@@ -12,7 +12,7 @@
     "lint": "next lint --fix"
   },
   "dependencies": {
-    "@netlify/plugin-nextjs": "^4.36.0",
+    "@netlify/plugin-nextjs": "^5.0.0",
     "@tanstack/react-query": "^4.18.0",
     "@types/js-cookie": "^3.0.3",
     "@wix/ecom": "^1.0.474",
@@ -28,7 +28,7 @@
     "flowbite-react": "^0.4.4",
     "js-cookie": "^3.0.1",
     "jsurl": "^0.1.5",
-    "next": "^13.4.9",
+    "next": "^13.5.11",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-google-recaptcha-enterprise": "^1.0.3"

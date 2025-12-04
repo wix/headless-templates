@@ -12,12 +12,12 @@
     "lint": "next lint --fix"
   },
   "dependencies": {
-    "@netlify/plugin-nextjs": "^4.36.0",
+    "@netlify/plugin-nextjs": "^5.0.0",
     "@wix/data": "^1.0.47",
     "@wix/sdk": "^1.5.0",
     "flowbite": "^1.5.4",
     "flowbite-react": "^0.4.4",
-    "next": "^13.4.9",
+    "next": "^13.5.11",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
