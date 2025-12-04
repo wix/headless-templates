@@ -37,7 +37,10 @@
     "typescript": "4.8.4"
   },
   "engines": {
-    "node": "22.x"
+    "node": "24.x"
   },
-  "packageManager": "yarn@3.3.0"
+  "resolutions": {
+    "@wix/wix-data-items-common@1.0.273": "1.0.276"
+  },
+  "packageManager": "yarn@4.12.0"
 }
