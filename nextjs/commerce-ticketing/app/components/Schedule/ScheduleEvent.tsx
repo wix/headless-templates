@@ -7,7 +7,7 @@ export function ScheduleEvent({
   items,
   slug,
 }: {
-  event: wixEvents.V3Event;
+  event: wixEvents.Event;
   slug: string;
   items: schedule.ScheduleItem[] | undefined;
 }) {

@@ -5,7 +5,7 @@ import { wixEventsV2 as wixEvents } from '@wix/events';
 import { useState } from 'react';
 import testIds from '@app/utils/test-ids';
 
-export const Events = ({ events }: { events: wixEvents.V3Event[] }) => {
+export const Events = ({ events }: { events: wixEvents.Event[] }) => {
   const [expendEventDescription, setExpendEventDescription] = useState(
     {} as Record<string, boolean>
   );

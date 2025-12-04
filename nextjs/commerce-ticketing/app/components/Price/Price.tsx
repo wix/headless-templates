@@ -19,7 +19,7 @@ export function Price({
 }: {
   ticket: TicketDefinitionExtended;
   setTickets: Function;
-  event: wixEvents.V3Event;
+  event: wixEvents.Event;
   disabled: boolean;
   option?: api.PricingOption;
   selectedTickets: Record<string, { quantity: number; price: number }>;

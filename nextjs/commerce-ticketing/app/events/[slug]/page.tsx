@@ -115,10 +115,12 @@ export default async function EventPage({ params }: any) {
                   Buy Tickets
                 </a>
               )}
-              {[
-                wixEvents.RegistrationStatusStatus.CLOSED_MANUALLY,
-                wixEvents.RegistrationStatusStatus.CLOSED_AUTOMATICALLY,
-              ].includes(event.registration?.status!) && (
+              {(
+                [
+                  wixEvents.RegistrationStatusStatus.CLOSED_MANUALLY,
+                  wixEvents.RegistrationStatusStatus.CLOSED_AUTOMATICALLY,
+                ] as wixEvents.RegistrationStatusStatusWithLiterals[]
+              ).includes(event.registration?.status!) && (
                 <div>
                   <p className="border-2 inline-block p-3">
                     Registration is closed
@@ -162,10 +164,12 @@ export default async function EventPage({ params }: any) {
                 Buy Tickets
               </a>
             )}
-            {[
-              wixEvents.RegistrationStatusStatus.CLOSED_MANUALLY,
-              wixEvents.RegistrationStatusStatus.OPEN_TICKETS,
-            ].includes(event.registration?.status!) && (
+            {(
+              [
+                wixEvents.RegistrationStatusStatus.CLOSED_MANUALLY,
+                wixEvents.RegistrationStatusStatus.OPEN_TICKETS,
+              ] as wixEvents.RegistrationStatusStatusWithLiterals[]
+            ).includes(event.registration?.status!) && (
               <div className="my-4 sm:my-10">
                 <h2 className="mt-7">TICKETS</h2>
                 <TicketsTable tickets={tickets!} event={event} />
@@ -241,11 +245,14 @@ export default async function EventPage({ params }: any) {
 export async function generateStaticParams(): Promise<{ slug?: string }[]> {
   const wixClient = await getWixClient();
   return wixClient.wixEvents
-    .queryEvents({})
-    .limit(10)
-    .ascending('dateAndTimeSettings.startDate')
-    .find()
-    .then(({ items: events }) => {
+    .queryEvents(
+      {
+        sort: [{ fieldName: 'dateAndTimeSettings.startDate', order: 'ASC' }],
+        paging: { limit: 10 },
+      },
+      {}
+    )
+    .then(({ events }) => {
       return events!.map((event) => ({
         slug: event.slug,
       }));

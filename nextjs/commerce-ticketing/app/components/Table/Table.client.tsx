@@ -20,7 +20,7 @@ export function TicketsTable({
   event,
 }: {
   tickets: TicketDefinitionExtended[];
-  event: wixEvents.V3Event;
+  event: wixEvents.Event;
 }) {
   const wixClient = useWixClient();
   const [selectedTickets, setSelectedTickets] = useState<

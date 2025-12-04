@@ -7,12 +7,13 @@ import { plans } from '@wix/pricing-plans';
 import testIds from '@app/utils/test-ids';
 
 const durationPeriodFormatter = (
-  period: plans.PeriodUnit = plans.PeriodUnit.UNDEFINED
+  period: plans.PeriodUnitWithLiterals = plans.PeriodUnit.UNDEFINED
 ): { plural: string; singular: string } => {
   switch (period) {
     case plans.PeriodUnit.DAY:
       return { plural: 'Days', singular: 'Day' };
     case plans.PeriodUnit.WEEK:
+    case 'DAY':
       return { plural: 'Weeks', singular: 'Week' };
     case plans.PeriodUnit.MONTH:
       return { plural: 'Months', singular: 'Month' };
