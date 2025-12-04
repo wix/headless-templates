@@ -14,6 +14,7 @@
     "extends": "next/core-web-vitals"
   },
   "dependencies": {
+    "@netlify/plugin-nextjs": "^5.0.0",
     "@wix/bookings": "^1.0.127",
     "@wix/data": "^1.0.2",
     "@wix/ecom": "^1.0.164",
@@ -27,7 +28,7 @@
     "eslint-config-next": "^13.4.9",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
-    "next": "^13.4.9",
+    "next": "^13.5.11",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },

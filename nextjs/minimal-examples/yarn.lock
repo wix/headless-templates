@@ -245,6 +245,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@netlify/plugin-nextjs@npm:^5.0.0":
+  version: 5.14.7
+  resolution: "@netlify/plugin-nextjs@npm:5.14.7"
+  checksum: 10c0/df1e0388abd7b341906ae20978b5531ffb3121059789f87293ac154890bde94494afe50fd73218a920f473937de66b9eec5c47ca5cce2f4b50fba1d401981fe9
+  languageName: node
+  linkType: hard
+
 "@next/env@npm:13.5.11":
   version: 13.5.11
   resolution: "@next/env@npm:13.5.11"
@@ -6884,7 +6891,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next@npm:^13.4.9":
+"next@npm:^13.5.11":
   version: 13.5.11
   resolution: "next@npm:13.5.11"
   dependencies:
@@ -8377,6 +8384,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "wix-headless-example@workspace:."
   dependencies:
+    "@netlify/plugin-nextjs": "npm:^5.0.0"
     "@playwright/test": "npm:^1.34.3"
     "@wix/bookings": "npm:^1.0.127"
     "@wix/data": "npm:^1.0.2"
@@ -8391,7 +8399,7 @@ __metadata:
     eslint-config-next: "npm:^13.4.9"
     js-cookie: "npm:^3.0.5"
     jwt-decode: "npm:^4.0.0"
-    next: "npm:^13.4.9"
+    next: "npm:^13.5.11"
     react: "npm:18.2.0"
     react-dom: "npm:18.2.0"
   languageName: unknown
