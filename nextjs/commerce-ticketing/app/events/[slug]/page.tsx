@@ -246,8 +246,8 @@ export async function generateStaticParams(): Promise<{ slug?: string }[]> {
   const wixClient = await getWixClient();
   return wixClient.wixEvents
     .queryEvents({} as wixEvents.QueryEventsOptions)
-    .limit(10)
     .ascending('dateAndTimeSettings.startDate')
+    .limit(10)
     .find()
     .then(({ items: events }) => {
       return events!.map((event) => ({
