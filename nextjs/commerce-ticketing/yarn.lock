@@ -5384,7 +5384,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wix/sdk-types@npm:1.14.0, @wix/sdk-types@npm:^1.13.35, @wix/sdk-types@npm:^1.13.41":
+"@wix/sdk-types@npm:1.14.0":
   version: 1.14.0
   resolution: "@wix/sdk-types@npm:1.14.0"
   dependencies:
@@ -5392,6 +5392,17 @@ __metadata:
     "@wix/monitoring-types": "npm:^0.12.0"
     type-fest: "npm:^4.41.0"
   checksum: 10c0/e108529ff78c90cdba2265a26e024368b8fd5b3a98bd5a0da5cbfe37b5e6e37fc18a2d5dceb800a42f6a64c1f397101e30ca39806538a7d23cb9740f5176ed7e
+  languageName: node
+  linkType: hard
+
+"@wix/sdk-types@npm:^1.13.35, @wix/sdk-types@npm:^1.13.41, @wix/sdk-types@npm:^1.15.0":
+  version: 1.16.0
+  resolution: "@wix/sdk-types@npm:1.16.0"
+  dependencies:
+    "@wix/error-handler-types": "npm:^1.19.0"
+    "@wix/monitoring-types": "npm:^0.12.0"
+    type-fest: "npm:^4.41.0"
+  checksum: 10c0/330865f2658c827136152c54468df7f5cb63b2fd5551b854abbff53e72f25edf4f16d63cac298d2830dc200be78bd4f84f43439b02afcb4a2b362086bf22c3ef
   languageName: node
   linkType: hard
 
