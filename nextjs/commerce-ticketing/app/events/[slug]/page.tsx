@@ -245,11 +245,11 @@ export default async function EventPage({ params }: any) {
 export async function generateStaticParams(): Promise<{ slug?: string }[]> {
   const wixClient = await getWixClient();
   return wixClient.wixEvents
-    .queryEvents({} as wixEvents.QueryEventsOptions)
-    .ascending('dateAndTimeSettings.startDate')
-    .limit(10)
-    .find()
-    .then(({ items: events }) => {
+    .queryEvents({
+      sort: [{ fieldName: 'dateAndTimeSettings.startDate', order: 'ASC' }],
+      paging: { limit: 10 },
+    }, {})
+    .then(({ events }) => {
       return events!.map((event) => ({
         slug: event.slug,
       }));
