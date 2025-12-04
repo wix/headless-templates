@@ -5,7 +5,7 @@ import { getCheckoutUrl } from '@app/model/paid-plans/paid-plans-checkout';
 import testIds from '@app/utils/test-ids';
 
 const durationPeriodFormatter = (
-  period: plans.PeriodUnit = plans.PeriodUnit.UNDEFINED
+  period: plans.PeriodUnitWithLiterals = plans.PeriodUnit.UNDEFINED
 ): { plural: string; singular: string } => {
   switch (period) {
     case plans.PeriodUnit.DAY:

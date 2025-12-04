@@ -3,5 +3,5 @@ import { members } from '@wix/members';
 
 export const getCurrentMember = (wixSession: WixSession) =>
   wixSession.wixClient!.members.getCurrentMember({
-    fieldSet: members.Set.FULL,
+    fieldsets: [members.Set.FULL],
   });
