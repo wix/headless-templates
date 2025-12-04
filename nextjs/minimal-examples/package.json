@@ -14,7 +14,6 @@
     "extends": "next/core-web-vitals"
   },
   "dependencies": {
-    "@netlify/plugin-nextjs": "^5.0.0",
     "@wix/bookings": "^1.0.127",
     "@wix/data": "^1.0.2",
     "@wix/ecom": "^1.0.164",
