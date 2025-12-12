@@ -17,7 +17,7 @@
     "@wix/sdk": "^1.5.0",
     "flowbite": "^1.5.4",
     "flowbite-react": "^0.4.4",
-    "next": "^13.5.11",
+    "next": "14.2.35",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
