@@ -1,0 +1,15 @@
+@keyframes scanMask {
+  0% {
+      mask-position: 0% 200%;
+  }
+  100% {
+      mask-position: 0% -100%;
+  }
+}
+
+img[src*='12d367_71ebdd7141d041e4be3d91d80d4578dd'] {
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 1) 50%, transparent 100%);
+  mask-size: 100% 200%;
+  mask-repeat: no-repeat;
+  animation: scanMask 2s linear infinite;
+}
