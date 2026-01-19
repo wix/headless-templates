@@ -43,7 +43,7 @@ A modern, full-featured Wix Astro template built with React, TypeScript, and Tai
 
 1. **Install dependencies**:
    ```bash
-   npm run install-template
+   npm install
    ```
 
 2. **Set up environment variables**:
@@ -99,7 +99,6 @@ This template includes a comprehensive set of UI components built with Radix UI 
 - `npm run env` - Pull environment variables
 - `npm run check` - Type check with Astro
 - `npm run test:run` - Run tests
-- `npm run install-template` - Install dependencies
 
 ## 🧪 Testing
 
