@@ -7,7 +7,7 @@
     "build": "wix build",
     "preview": "wix preview",
     "release": "wix release",
-    "env": "wix env pull",
+    "env": "wix env",
     "check": "npx astro check --js-only",
     "test:run": "vitest run"
   },
