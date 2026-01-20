@@ -48,7 +48,6 @@ export default defineConfig({
       },
     } : undefined,
   },
-  ...(isBuild && { adapter: cloudProviderFetchAdapter({}) }),
   devToolbar: {
     enabled: false,
   },
