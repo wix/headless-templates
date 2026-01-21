@@ -1,8 +1,8 @@
 export default async function loadFramewire(withInit) {
   try {
     if (!globalThis.framewire) {
-      const url = getFramewireUrl();
-      const framewireModule = await import(url);
+      const url = getFramewireUrl();  
+      const framewireModule = await import(/* @vite-ignore */ url);
       globalThis.framewire = framewireModule;
       console.log("Framewire loaded");
     }
