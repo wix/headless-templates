@@ -7,7 +7,7 @@
     "build": "wix build",
     "preview": "wix preview",
     "release": "wix release",
-    "env": "wix env pull",
+    "env": "wix env",
     "check": "npx astro check --js-only",
     "test:run": "vitest run"
   },
@@ -134,7 +134,7 @@
     "@types/three": "^0",
     "@typescript-eslint/eslint-plugin": "8.47.0",
     "@typescript-eslint/parser": "8.47.0",
-    "@wix/cli": "1.1.123",
+    "@wix/cli": "^1.1.154",
     "csstype": "^3.1.3",
     "eslint": "^9.26.0",
     "eslint-plugin-astro": "^1.3.1",
