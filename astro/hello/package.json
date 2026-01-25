@@ -63,6 +63,7 @@
     "@wix/seo": "^1.0.27",
     "@wix/services-manager": "^1.0.1",
     "@wix/services-manager-react": "^1.0.2",
+    "@wix/wix-vibe-plugins": "^0.0.8",
     "astro": "^5.12.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
