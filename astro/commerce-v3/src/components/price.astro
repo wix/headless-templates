@@ -1,0 +1,26 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import clsx from "clsx";
+
+type Props = {
+  amount: string;
+  class?: string;
+  currencyCode?: string;
+  currencyCodeClass?: string;
+} & HTMLAttributes<"p">;
+
+const currencyCode = Astro.props.currencyCode || "USD";
+---
+
+<p class={Astro.props.class}>
+  {
+    `${new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currencyCode,
+      currencyDisplay: "narrowSymbol",
+    }).format(parseFloat(Astro.props.amount))}`
+  }
+  <span class={clsx("ml-1 inline", Astro.props.currencyCodeClass)}
+    >{`${currencyCode}`}</span
+  >
+</p>
