@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createContext, ReactNode } from 'react';
 import { ManagedUIContext } from './context';
 import { createClient, OAuthStrategy } from '@wix/sdk';
-import { collections, products } from '@wix/stores';
+import { collections, productsV3 } from '@wix/stores';
 import { currentCart, backInStockNotifications } from '@wix/ecom';
 import { wixEventsV2 as wixEvents, orders as checkout } from '@wix/events';
 import { redirects } from '@wix/redirects';
@@ -15,7 +15,7 @@ const refreshToken = JSON.parse(Cookies.get(WIX_REFRESH_TOKEN) || '{}');
 
 const wixClient = createClient({
   modules: {
-    products,
+    productsV3,
     collections,
     currentCart,
     backInStockNotifications,

@@ -6,24 +6,31 @@ export default async function StoresCategoryPage({ params }: any) {
     return;
   }
   const wixClient = await getWixClient();
-  const { items } = await wixClient.products
-    .queryProducts()
-    .eq('slug', decodeURIComponent(params.slug))
-    .limit(1)
-    .find();
-  const product = items[0];
-  return <ProductView product={product} />;
+  const { product } = await wixClient.productsV3.getProductBySlug(
+    decodeURIComponent(params.slug),
+    {
+      fields: [
+        'PLAIN_DESCRIPTION',
+        'CURRENCY',
+        'MEDIA_ITEMS_INFO',
+        'INFO_SECTION',
+        'INFO_SECTION_PLAIN_DESCRIPTION',
+        'VARIANT_OPTION_CHOICE_NAMES',
+      ],
+    }
+  );
+  return <ProductView product={product!} />;
 }
 
 export async function generateStaticParams(): Promise<{ slug?: string }[]> {
   const wixClient = await getWixClient();
-  return wixClient.products
+  return wixClient.productsV3
     .queryProducts()
     .limit(10)
     .find()
     .then(({ items }) => {
       return items.map((product) => ({
-        slug: product.slug,
+        slug: product.slug ?? undefined,
       }));
     })
     .catch((err) => {

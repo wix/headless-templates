@@ -1,17 +1,17 @@
-import { products } from '@wix/stores';
+import { productsV3 } from '@wix/stores';
 
 export type SelectedOptions = Record<string, string | null>;
 import { Dispatch, SetStateAction } from 'react';
 
 export function selectDefaultOptionFromProduct(
-  product: products.Product,
+  product: productsV3.V3Product,
   updater: Dispatch<SetStateAction<SelectedOptions>>
 ) {
   // Selects the default option
-  product.productOptions?.forEach((option) => {
+  product.options?.forEach((option) => {
     updater((choices) => ({
       ...choices,
-      [option.name!]: option.choices![0].description!,
+      [option.name!]: option.choicesSettings?.choices?.[0]?.name!,
     }));
   });
 }

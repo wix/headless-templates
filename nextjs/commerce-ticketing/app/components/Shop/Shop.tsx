@@ -1,8 +1,8 @@
-import { products } from '@wix/stores';
+import { productsV3 } from '@wix/stores';
 import testIds from '@app/utils/test-ids';
 import { WixMediaImage } from '@app/components/Image/WixMediaImage';
 
-export function Shop({ items }: { items: products.Product[] }) {
+export function Shop({ items }: { items: productsV3.V3Product[] }) {
   return (
     <div className="mx-auto">
       <div
@@ -11,8 +11,8 @@ export function Shop({ items }: { items: products.Product[] }) {
       >
         <h1 className="uppercase text-3xl sm:text-6xl">Merch</h1>
         <p className="text-sm sm:text-base mx-auto px-8 sm:max-w-[50%] my-10">
-          I’m a paragraph. I’m a great space to write about what makes the
-          products special and explain how customers can benefit from these
+          I&apos;m a paragraph. I&apos;m a great space to write about what makes
+          the products special and explain how customers can benefit from these
           items.
         </p>
       </div>
@@ -34,15 +34,14 @@ export function Shop({ items }: { items: products.Product[] }) {
                 >
                   <div className="h-auto max-w-full">
                     <WixMediaImage
-                      media={item.media?.mainMedia?.image?.url}
+                      media={item.media?.main?.image}
                       height={560}
                       width={560}
-                      alt={
-                        item.media?.mainMedia?.image?.altText || 'main image'
-                      }
+                      alt={item.media?.main?.altText || 'main image'}
                     />
                   </div>
-                  {!item.manageVariants && item.stock?.inStock ? (
+                  {(item.options?.length ?? 0) === 0 &&
+                  item.inventory?.availabilityStatus !== 'OUT_OF_STOCK' ? (
                     <a
                       data-testid={testIds.PRODUCT_ITEM.BUY_NOW_CTA}
                       className="btn-main absolute -mt-10 left-0 cursor-pointer"
@@ -62,7 +61,7 @@ export function Shop({ items }: { items: products.Product[] }) {
                     <span>{item.name}</span>
                     <br />
                     <span className="text-xs">
-                      {item.price!.formatted!.price}
+                      {item.actualPriceRange?.minValue?.formattedAmount ?? ''}
                     </span>
                   </div>
                 </a>

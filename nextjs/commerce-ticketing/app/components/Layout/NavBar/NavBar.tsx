@@ -66,7 +66,7 @@ export function NavBar() {
       </button>
       <nav
         className={`${
-          isMenuShown ? 'w-full opacity-100' : 'w-0 opacity-0'
+          isMenuShown ? 'w-full sm:w-1/3 opacity-100' : 'w-0 opacity-0'
         } transition-all duration-500 ease-in-out block overflow-hidden fixed animate-sideways-once h-screen bg-black text-white pt-8 z-40 top-0 right-0`}
       >
         <div className="relative flex flex-col-reverse sm:flex-col gap-2">

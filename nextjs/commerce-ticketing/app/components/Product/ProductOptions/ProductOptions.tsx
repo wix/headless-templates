@@ -1,10 +1,10 @@
 'use client';
 import Swatch from '@app/components/Product/Swatch/Swatch';
 import { Option } from '@app/components/Product/Option/Option';
-import { products } from '@wix/stores';
+import { productsV3 } from '@wix/stores';
 
 interface ProductOptionsProps {
-  options: products.ProductOption[];
+  options: productsV3.ConnectedOption[];
   selectedOptions: any;
   setSelectedOptions: React.Dispatch<React.SetStateAction<any>>;
 }
@@ -28,21 +28,25 @@ export const ProductOptions: React.FC<ProductOptionsProps> = ({
         <div className="mb-4" key={opt.name}>
           <span className="text-xs tracking-wide">{opt.name}</span>
           <div role="listbox" className="flex flex-row gap-2 my-2 relative">
-            {opt.optionType === 'color' &&
-              opt.choices!.map((v, i: number) => {
+            {opt.optionRenderType === 'SWATCH_CHOICES' &&
+              opt.choicesSettings?.choices!.map((v, i: number) => {
                 const active = selectedOptions[opt.name!];
                 return (
                   <Swatch
-                    key={`${v}-${i}`}
-                    active={v.description === active}
-                    variant={v.description}
-                    color={v.value}
-                    label={v.description}
-                    onClick={() => setSelected({ [opt.name!]: v.description! })}
+                    key={`${v.name}-${i}`}
+                    active={v.name === active}
+                    variant={v.name!}
+                    color={v.colorCode!}
+                    label={v.name!}
+                    onClick={() =>
+                      setSelected({
+                        [opt.name!]: v.name!,
+                      })
+                    }
                   />
                 );
               })}
-            {opt.optionType !== 'color' && (
+            {opt.optionRenderType !== 'SWATCH_CHOICES' && (
               <Option
                 option={opt}
                 onChange={setSelected}

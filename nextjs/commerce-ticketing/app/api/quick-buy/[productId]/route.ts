@@ -20,21 +20,26 @@ export async function GET(
     searchParams.get('productOptions') || 'null'
   );
   const wixClient = await getWixClient();
-  const { product } = await wixClient.products.getProduct(productId);
+  const product = await wixClient.productsV3.getProduct(productId, {
+    fields: ['VARIANT_OPTION_CHOICE_NAMES'],
+  });
   if (!product) {
     return new Response('Product not found', {
       status: 404,
     });
   }
+  const hasVariants = (product.options?.length ?? 0) > 0;
   const selectedOptions =
     productOptions ??
-    (product.manageVariants
-      ? { variantId: product.variants![0]._id }
-      : product?.productOptions?.length
+    (hasVariants
+      ? {
+          variantId: product.variantsInfo?.variants?.[0]?._id,
+        }
+      : product?.options?.length
       ? {
           options:
-            product?.productOptions?.reduce((acc, option) => {
-              acc[option.name!] = option.choices![0].description!;
+            product?.options?.reduce((acc, option) => {
+              acc[option.name!] = option.choicesSettings?.choices?.[0]?.name!;
               return acc;
             }, {} as Record<string, any>) ?? {},
         }

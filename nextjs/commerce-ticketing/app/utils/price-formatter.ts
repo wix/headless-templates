@@ -9,16 +9,25 @@ export const formatCurrency = (
 
 export function formatPrice(
   data?: {
-    amount: number;
-    baseAmount?: number;
+    amount: number | string;
+    baseAmount?: number | string;
     currencyCode?: string;
   } | null
 ): string {
   const { amount, baseAmount, currencyCode } = data ?? {};
-  if (typeof amount !== 'number' || !currencyCode) return '';
+  if (
+    (typeof amount !== 'number' && typeof amount !== 'string') ||
+    !currencyCode
+  )
+    return '';
 
   return baseAmount
-    ? formatVariantPrice({ amount, baseAmount, currencyCode, locale: 'en' })
+    ? formatVariantPrice({
+        amount,
+        baseAmount,
+        currencyCode,
+        locale: 'en',
+      })
     : formatCurrency(amount, currencyCode);
 }
 
@@ -28,15 +37,17 @@ function formatVariantPrice({
   currencyCode,
   locale,
 }: {
-  baseAmount: number;
-  amount: number;
+  baseAmount: number | string;
+  amount: number | string;
   currencyCode: string;
   locale: string;
 }) {
-  const hasDiscount = baseAmount > amount;
+  const hasDiscount = Number(baseAmount) > Number(amount);
   const formatDiscount = new Intl.NumberFormat(locale, { style: 'percent' });
   const discount = hasDiscount
-    ? formatDiscount.format((baseAmount - amount) / baseAmount)
+    ? formatDiscount.format(
+        (Number(baseAmount) - Number(amount)) / Number(baseAmount)
+      )
     : null;
 
   const price = formatCurrency(amount, currencyCode);

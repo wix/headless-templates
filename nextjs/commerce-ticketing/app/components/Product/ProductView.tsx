@@ -1,9 +1,9 @@
 import { ProductSidebar } from './ProductSidebar/ProductSidebar';
 import { ImageGalleryClient } from '@app/components/ImageGallery/ImageGallery.client';
 import testIds from '@app/utils/test-ids';
-import { products } from '@wix/stores';
+import { productsV3 } from '@wix/stores';
 
-export function ProductView({ product }: { product: products.Product }) {
+export function ProductView({ product }: { product: productsV3.V3Product }) {
   return (
     <div className="mx-auto px-14 mt-12">
       {product ? (
@@ -14,7 +14,9 @@ export function ProductView({ product }: { product: products.Product }) {
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="box-border flex flex-col basis-1/2">
               <div>
-                <ImageGalleryClient items={product.media!.items!} />
+                <ImageGalleryClient
+                  items={product.media?.itemsInfo?.items ?? []}
+                />
               </div>
             </div>
             <div className="flex flex-col w-full h-full basis-1/2 text-left">

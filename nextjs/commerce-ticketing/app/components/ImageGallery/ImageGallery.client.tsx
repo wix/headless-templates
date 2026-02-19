@@ -1,11 +1,15 @@
 'use client';
 import { Carousel, Flowbite, useTheme } from 'flowbite-react';
-import { products } from '@wix/stores';
+import { productsV3 } from '@wix/stores';
 import { PLACEHOLDER_IMAGE } from '@app/constants';
 import { WixMediaImage } from '@app/components/Image/WixMediaImage';
-export function ImageGalleryClient({ items }: { items: products.MediaItem[] }) {
+export function ImageGalleryClient({
+  items,
+}: {
+  items: productsV3.ProductMedia[];
+}) {
   const { theme } = useTheme();
-  const images = items.length ? items : [{ image: { url: PLACEHOLDER_IMAGE } }];
+  const images = items.length ? items : [{ image: PLACEHOLDER_IMAGE }];
   return (
     <div className="h-56 sm:h-96 max-h-96 max-w-xl mx-auto">
       <Flowbite
@@ -24,8 +28,8 @@ export function ImageGalleryClient({ items }: { items: products.MediaItem[] }) {
           {images.map((media, index) => (
             <WixMediaImage
               key={index}
-              media={media.image?.url || ''}
-              alt={media.image?.altText ?? ''}
+              media={media.image || ''}
+              alt={media.altText ?? ''}
               width={600}
               height={400}
             />

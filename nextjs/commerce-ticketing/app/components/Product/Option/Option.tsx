@@ -1,5 +1,5 @@
 import { Dropdown, Flowbite, useTheme } from 'flowbite-react';
-import { products } from '@wix/stores';
+import { productsV3 } from '@wix/stores';
 
 export function Option({
   onChange,
@@ -7,7 +7,7 @@ export function Option({
   selectedOption,
 }: {
   onChange?: (selected: Record<string, string>) => void;
-  option: products.ProductOption;
+  option: productsV3.ConnectedOption;
   selectedOption: string;
 }) {
   const onSelect = (optionSelected: string) => {
@@ -31,10 +31,10 @@ export function Option({
       }}
     >
       <Dropdown label={selectedOption || 'Select'} inline={true} size="sm">
-        {option.choices!.map(({ value }) => {
+        {option.choicesSettings?.choices!.map(({ name }) => {
           return (
-            <Dropdown.Item key={value} onClick={() => onSelect(value!)}>
-              {value}
+            <Dropdown.Item key={name} onClick={() => onSelect(name!)}>
+              {name}
             </Dropdown.Item>
           );
         })}

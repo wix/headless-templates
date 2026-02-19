@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { wixEventsV2 as wixEvents } from '@wix/events';
-import { products } from '@wix/stores';
+import { productsV3 } from '@wix/stores';
 import { Events } from '@app/components/Events/Events';
 import testIds from '@app/utils/test-ids';
 import { WixMediaImage } from '@app/components/Image/WixMediaImage';
@@ -10,7 +10,10 @@ export function HomeScreen({
   productsForCategories,
 }: {
   events: wixEvents.Event[];
-  productsForCategories: { category: string; product: products.Product }[];
+  productsForCategories: {
+    category: string;
+    product: productsV3.V3Product;
+  }[];
 }) {
   return (
     <div className="mx-auto relative">
@@ -129,9 +132,9 @@ export function HomeScreen({
               Merch
             </h1>
             <p className="text-lg my-10 text-black">
-              I am a paragraph. I’m a great space to write about what makes the
-              products special and explain how customers can benefit from these
-              items.
+              I am a paragraph. I&apos;m a great space to write about what makes
+              the products special and explain how customers can benefit from
+              these items.
             </p>
             <a
               href="/shop"
@@ -139,19 +142,18 @@ export function HomeScreen({
             >
               Get Merch
             </a>
-            {productsForCategories[1]?.product?.media?.mainMedia ? (
+            {productsForCategories[1]?.product?.media?.main ? (
               <div className="mt-10 sm:mt-[300px]">
                 <a href="/shop" className="h-auto max-w-full inline-block">
                   <WixMediaImage
                     media={
-                      productsForCategories[1]?.product!.media!.mainMedia!
-                        .image!.url!
+                      productsForCategories[1]?.product!.media!.main!.image!
                     }
                     width={800}
                     height={800}
                     alt={
-                      productsForCategories[1]?.product!.media!.mainMedia!
-                        .image!.altText!
+                      productsForCategories[1]?.product!.media!.main!.altText ??
+                      ''
                     }
                   />
                 </a>
@@ -162,19 +164,18 @@ export function HomeScreen({
             ) : null}
           </div>
           <div className="basis-1/2">
-            {productsForCategories[0]?.product?.media?.mainMedia ? (
+            {productsForCategories[0]?.product?.media?.main ? (
               <div className="mt-10 sm:mt-[220px]">
                 <a href="/shop" className="h-auto max-w-full inline-block">
                   <WixMediaImage
                     media={
-                      productsForCategories[0]?.product!.media!.mainMedia!
-                        .image!.url!
+                      productsForCategories[0]?.product!.media!.main!.image!
                     }
                     width={800}
                     height={800}
                     alt={
-                      productsForCategories[0]?.product!.media!.mainMedia!
-                        .image!.altText!
+                      productsForCategories[0]?.product!.media!.main!.altText ??
+                      ''
                     }
                   />
                 </a>
@@ -183,19 +184,18 @@ export function HomeScreen({
                 </span>
               </div>
             ) : null}
-            {productsForCategories[2]?.product?.media?.mainMedia ? (
+            {productsForCategories[2]?.product?.media?.main ? (
               <div className="mt-10 sm:mt-40">
                 <a href="/shop" className="h-auto max-w-full inline-block">
                   <WixMediaImage
                     media={
-                      productsForCategories[2]?.product?.media!.mainMedia!
-                        .image!.url!
+                      productsForCategories[2]?.product!.media!.main!.image!
                     }
                     width={800}
                     height={800}
                     alt={
-                      productsForCategories[2]?.product!.media!.mainMedia!
-                        .image!.altText!
+                      productsForCategories[2]?.product!.media!.main!.altText ??
+                      ''
                     }
                   />
                 </a>
