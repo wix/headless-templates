@@ -2,7 +2,7 @@
 import { Accordion, Flowbite } from 'flowbite-react';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { HiArrowDown } from 'react-icons/hi';
-import { products } from '@wix/stores';
+import { productsV3 } from '@wix/stores';
 import { ProductOptions } from '@app/components/Product/ProductOptions/ProductOptions';
 import { selectDefaultOptionFromProduct } from '@app/components/Product/ProductOptions/helpers';
 import { ProductTag } from '@app/components/Product/ProductTag/ProductTag';
@@ -15,13 +15,13 @@ import { BackInStockFormModal } from '@app/components/BackInStockFormModal/BackI
 import { STORES_APP_ID } from '@app/constants';
 
 interface ProductSidebarProps {
-  product: products.Product;
+  product: productsV3.V3Product;
   className?: string;
 }
 
 const createProductOptions = (
   selectedOptions?: any,
-  selectedVariant?: products.Variant
+  selectedVariant?: productsV3.Variant
 ) =>
   Object.keys(selectedOptions ?? {}).length
     ? {
@@ -36,22 +36,31 @@ export const ProductSidebar: FC<ProductSidebarProps> = ({ product }) => {
   const { openSidebar, openModalBackInStock } = useUI();
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState<number>(1);
-  const [selectedVariant, setSelectedVariant] = useState<products.Variant>({});
+  const [selectedVariant, setSelectedVariant] = useState<productsV3.Variant>(
+    {}
+  );
   const [selectedOptions, setSelectedOptions] = useState<any>({});
 
+  const hasVariants = (product.options?.length ?? 0) > 0;
+
   const price = formatPrice({
-    amount: selectedVariant?.variant?.priceData?.price || product.price!.price!,
-    currencyCode: product.price!.currency!,
+    amount:
+      selectedVariant?.price?.actualPrice?.amount ??
+      product.actualPriceRange?.minValue?.amount ??
+      '',
+    currencyCode: product.currency ?? undefined,
   });
 
   useEffect(() => {
     if (
-      product.manageVariants &&
-      Object.keys(selectedOptions).length === product.productOptions?.length
+      hasVariants &&
+      Object.keys(selectedOptions).length === product.options?.length
     ) {
-      const variant = product.variants?.find((variant) =>
-        Object.keys(variant.choices!).every(
-          (choice) => selectedOptions[choice] === variant.choices![choice]
+      const variant = product.variantsInfo?.variants?.find((variant) =>
+        variant.choices?.every(
+          (choice) =>
+            selectedOptions[choice.optionChoiceNames!.optionName!] ===
+            choice.optionChoiceNames!.choiceName!
         )
       );
       setSelectedVariant(variant!);
@@ -59,9 +68,9 @@ export const ProductSidebar: FC<ProductSidebarProps> = ({ product }) => {
     setQuantity(1);
   }, [
     selectedOptions,
-    product.manageVariants,
-    product.productOptions?.length,
-    product.variants,
+    hasVariants,
+    product.options?.length,
+    product.variantsInfo?.variants,
   ]);
 
   useEffect(() => {
@@ -69,15 +78,21 @@ export const ProductSidebar: FC<ProductSidebarProps> = ({ product }) => {
   }, [product]);
 
   const isAvailableForPurchase = useMemo(() => {
-    if (!product.manageVariants && product.stock?.inStock) {
+    if (
+      !hasVariants &&
+      product.inventory?.availabilityStatus !== 'OUT_OF_STOCK'
+    ) {
       return true;
     }
-    if (!product.manageVariants && !product.stock?.inStock) {
+    if (
+      !hasVariants &&
+      product.inventory?.availabilityStatus === 'OUT_OF_STOCK'
+    ) {
       return false;
     }
 
-    return selectedVariant?.stock?.inStock;
-  }, [selectedVariant, product]);
+    return selectedVariant?.inventoryStatus?.inStock;
+  }, [selectedVariant, product, hasVariants]);
 
   const addToCart = async () => {
     setLoading(true);
@@ -118,11 +133,11 @@ export const ProductSidebar: FC<ProductSidebarProps> = ({ product }) => {
       <ProductTag
         name={product.name!}
         price={price}
-        sku={product.sku ?? undefined}
+        sku={product.variantsInfo?.variants?.[0]?.sku ?? undefined}
       />
       <div className="mt-2">
         <ProductOptions
-          options={product.productOptions!}
+          options={product.options ?? []}
           selectedOptions={selectedOptions}
           setSelectedOptions={setSelectedOptions}
         />
@@ -132,11 +147,7 @@ export const ProductSidebar: FC<ProductSidebarProps> = ({ product }) => {
         <div className="mt-2">
           <Quantity
             value={quantity}
-            max={
-              (selectedVariant?.stock?.trackQuantity
-                ? selectedVariant?.stock?.quantity
-                : product.stock?.quantity!) ?? 9999
-            }
+            max={9999}
             handleChange={(e) => setQuantity(Number(e.target.value))}
             increase={() => setQuantity(1 + quantity)}
             decrease={() => setQuantity(quantity - 1)}
@@ -170,7 +181,7 @@ export const ProductSidebar: FC<ProductSidebarProps> = ({ product }) => {
         <div>
           <BackInStockFormModal
             product={product}
-            variantId={selectedVariant._id}
+            variantId={selectedVariant._id ?? undefined}
           />
           <button
             data-testid={testIds.PRODUCT_DETAILS.ADD_TO_CART_CTA}
@@ -184,10 +195,9 @@ export const ProductSidebar: FC<ProductSidebarProps> = ({ product }) => {
           </button>
         </div>
       ) : null}
-      <p
-        className="pb-4 break-words w-full max-w-xl mt-6"
-        dangerouslySetInnerHTML={{ __html: product.description ?? '' }}
-      />
+      <div className="pb-4 break-words w-full max-w-xl mt-6">
+        {product.plainDescription ?? ''}
+      </div>
       <div className="mt-6">
         <Flowbite
           theme={{
@@ -205,16 +215,13 @@ export const ProductSidebar: FC<ProductSidebarProps> = ({ product }) => {
           }}
         >
           <Accordion flush={true} arrowIcon={HiArrowDown}>
-            {product.additionalInfoSections!.map((info) => (
+            {(product.infoSections ?? []).map((info) => (
               <Accordion.Panel key={info.title}>
                 <Accordion.Title>
                   <span className="text-sm">{info.title}</span>
                 </Accordion.Title>
                 <Accordion.Content>
-                  <span
-                    className="text-sm"
-                    dangerouslySetInnerHTML={{ __html: info.description ?? '' }}
-                  />
+                  <span className="text-sm">{info.plainDescription ?? ''}</span>
                 </Accordion.Content>
               </Accordion.Panel>
             ))}

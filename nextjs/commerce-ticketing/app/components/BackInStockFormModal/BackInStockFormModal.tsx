@@ -4,14 +4,14 @@ import React from 'react';
 import { Button, Label, Modal, Spinner, TextInput } from 'flowbite-react';
 import { useUI } from '@app/components/Provider/context';
 import { useWixClient } from '@app/hooks/useWixClient';
-import { products } from '@wix/stores';
+import { productsV3 } from '@wix/stores';
 import { STORES_APP_ID } from '@app/constants';
 
 export const BackInStockFormModal = ({
   product,
   variantId = '00000000-0000-0000-0000-000000000000',
 }: {
-  product: products.Product;
+  product: productsV3.V3Product;
   variantId?: string;
 }) => {
   const { closeModalBackInStock, displayBackInStockModal } = useUI();
@@ -34,14 +34,14 @@ export const BackInStockFormModal = ({
           itemUrl: window.location.href,
           catalogReference: {
             appId: STORES_APP_ID,
-            catalogItemId: product._id,
+            catalogItemId: product._id!,
             options: { variantId },
           },
         },
         {
-          price: product.price?.price?.toFixed(),
+          price: product.actualPriceRange?.minValue?.amount ?? undefined,
           name: product.name!,
-          image: product.media?.mainMedia?.image?.url,
+          image: product.media?.main?.image ?? undefined,
         }
       );
       closeModalBackInStock();
@@ -94,7 +94,7 @@ export const BackInStockFormModal = ({
                 </button>
               </div>
               <h4>
-                Enter your email address and you’ll be notified when this
+                Enter your email address and you&apos;ll be notified when this
                 product is back in stock.
               </h4>
               <div>

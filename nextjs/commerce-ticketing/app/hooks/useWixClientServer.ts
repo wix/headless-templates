@@ -1,5 +1,5 @@
 import { createClient, OAuthStrategy } from '@wix/sdk';
-import { collections, products } from '@wix/stores';
+import { collections, productsV3 } from '@wix/stores';
 import { orders, currentCart, checkout as ecomCheckout } from '@wix/ecom';
 import { redirects } from '@wix/redirects';
 import {
@@ -20,7 +20,7 @@ export const getWixClient = async () => {
   } catch (e) {}
   const wixClient = createClient({
     modules: {
-      products,
+      productsV3,
       collections,
       wixEvents,
       ecomCheckout,
