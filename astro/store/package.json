@@ -55,7 +55,7 @@
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
     "@wix/astro": "^2.21.0",
-    "@wix/astro-pages": "^2.0.1",
+    "@wix/astro-pages": "^2.0.3",
     "@wix/postcss-pseudo-to-data": "^1.0.0",
     "@wix/auto-patterns": "^1.17.0",
     "@wix/babel-plugin-jsx-dynamic-data": "1.0.11",
