@@ -10,7 +10,6 @@ import partytown from '@astrojs/partytown';
 import icon from 'astro-icon';
 import compress from 'astro-compress';
 import wix from '@wix/astro';
-import wixPages from '@wix/astro-pages';
 import type { AstroIntegration } from 'astro';
 
 import astrowind from './vendor/integration';
@@ -30,7 +29,6 @@ export default defineConfig({
     tailwind({
       applyBaseStyles: false,
     }),
-    wixPages(),
     sitemap(),
     mdx(),
     icon({
