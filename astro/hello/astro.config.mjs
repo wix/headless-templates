@@ -3,6 +3,7 @@ import { defineConfig } from "astro/config";
 import tailwind from "@astrojs/tailwind";
 import cloudProviderFetchAdapter from "@wix/cloud-provider-fetch-adapter";
 import wix from "@wix/astro";
+import wixPages from "@wix/astro-pages";
 import monitoring from "@wix/monitoring-astro";
 import react from "@astrojs/react";
 import sourceAttrsPlugin from "@wix/babel-plugin-jsx-source-attrs";
@@ -35,6 +36,7 @@ export default defineConfig({
       htmlEmbeds: isBuild,
       auth: true,
     }),
+    wixPages(),
     ...(isBuild ? [monitoring()] : []),
     react({ babel: { plugins: [sourceAttrsPlugin, dynamicDataPlugin] } }),
   ],
