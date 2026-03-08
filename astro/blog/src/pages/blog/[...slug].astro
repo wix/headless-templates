@@ -4,6 +4,14 @@ import { renameKeysFromSDKRequestToRESTRequest } from "@wix/sdk-runtime/rename-a
 import { type CollectionEntry, getCollection } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
 
+export const wixMetadata = {
+	appDefId: "14bcded7-0066-7c35-14d7-466cb3f09103",
+	pageIdentifier: "wix.blog.sub_pages.post",
+	identifiers: {
+		slug: "BLOG.POST.SLUG",
+	},
+};
+
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
 	return posts.map((post) => ({

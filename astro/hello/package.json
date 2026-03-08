@@ -1,5 +1,5 @@
 {
-  "name": "wixstro",
+  "name": "wixstro-hello",
   "type": "module",
   "version": "1.0.0",
   "scripts": {
@@ -48,6 +48,7 @@
     "@tailwindcss/container-queries": "0.1.1",
     "@tailwindcss/typography": "0.5.16",
     "@wix/astro": "^2.21.0",
+    "@wix/astro-pages": "^2.0.3",
     "@wix/postcss-pseudo-to-data": "^1.0.0",
     "@wix/auto-patterns": "^1.17.0",
     "@wix/babel-plugin-jsx-dynamic-data": "1.0.11",
