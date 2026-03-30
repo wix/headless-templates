@@ -18,7 +18,7 @@
     "@wix/ecom": "^1.0.532",
     "@wix/members": "^1.0.71",
     "@wix/redirects": "^1.0.42",
-    "@wix/sdk": "^1.14.1",
+    "@wix/sdk": "^1.21.5",
     "@wix/stores": "^1.0.140",
     "babel-plugin-module-resolver": "^5.0.0",
     "date-fns": "^3.3.1",
