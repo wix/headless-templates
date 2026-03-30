@@ -13,7 +13,7 @@
     "@octokit/auth-oauth-app": "^8.1.1",
     "@wix/data": "^1.0.102",
     "@wix/members": "^1.0.82",
-    "@wix/sdk": "^1.9.7",
+    "@wix/sdk": "^1.21.5",
     "next": "14.2.3",
     "next-auth": "^5.0.0-beta.18",
     "react": "^18",
