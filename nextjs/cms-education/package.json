@@ -14,7 +14,7 @@
   "dependencies": {
     "@netlify/plugin-nextjs": "^5.0.0",
     "@wix/data": "^1.0.47",
-    "@wix/sdk": "^1.5.0",
+    "@wix/sdk": "^1.21.5",
     "flowbite": "^1.5.4",
     "flowbite-react": "^0.4.4",
     "next": "^13.5.11",
