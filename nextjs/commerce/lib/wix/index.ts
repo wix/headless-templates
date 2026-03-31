@@ -256,7 +256,7 @@ export async function getCart(): Promise<Cart | undefined> {
 
     return reshapeCart(cart);
   } catch (e) {
-    if ((e as any).details.applicationError.code === "OWNED_CART_NOT_FOUND") {
+    if ((e as any)?.details?.applicationError?.code === "OWNED_CART_NOT_FOUND") {
       return undefined;
     }
   }
@@ -359,7 +359,7 @@ export async function getMenu(handle: string): Promise<Menu[]> {
     .find()
     .catch((e) => {
       console.error(e);
-      if (e.details.applicationError.code === "WDE0025") {
+      if (e?.details?.applicationError?.code === "WDE0025") {
         console.error(
           "Menus collection was not found. Did you forget to create the Menus data collection?",
         );
@@ -386,7 +386,7 @@ export async function getPage(handle: string): Promise<Page | undefined> {
     .eq("slug", handle)
     .find()
     .catch((e) => {
-      if (e.details.applicationError.code === "WDE0025") {
+      if (e?.details?.applicationError?.code === "WDE0025") {
         console.error(
           "Pages collection was not found. Did you forget to create the Pages data collection?",
         );
@@ -423,7 +423,7 @@ export async function getPages(): Promise<Page[]> {
   const { items: pages } = await query("Pages")
     .find()
     .catch((e) => {
-      if (e.details.applicationError.code === "WDE0025") {
+      if (e?.details?.applicationError?.code === "WDE0025") {
         console.error(
           "Pages collection was not found. Did you forget to create the Pages data collection?",
         );
