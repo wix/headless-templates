@@ -12,7 +12,7 @@ Prerequisites:
 
 1. [Create a Wix Headless project](https://dev.wix.com/docs/go-headless/getting-started/setup/general-setup/create-a-project)
 2. [Add the Content Manager app to your project](https://dev.wix.com/docs/go-headless/getting-started/setup/general-setup/add-apps-to-a-project)
-3. Authorize the template with [quick start deployment](https://manage.wix.com/headless-funnel-nextjs/select-platform?templateName=cms) or by [creating an OAuth app](https://dev.wix.com/docs/go-headless/getting-started/setup/authorization/create-an-o-auth-app-for-visitors-and-members)
+3. Authorize the template with [quick start deployment](https://manage.wix.com/headless-funnel-nextjs/select-platform?templateName=cms) or by [creating an OAuth app](https://dev.wix.com/docs/go-headless/get-started/setup/authentication/create-an-oauth-app-for-visitors-and-members)
 
 > **Note:** You must add at least one **Authorization Redirect URI** to ensure authentication works properly. The URI must exactly match the address in your site or app where Wix should redirect members after they log in via a Wix-managed authentication page. For security reasons, Wix only redirects site members to URIs you've explicitly approved. For step-by-step instructions, see [Add Allowed Authorization Redirect URIs](https://dev.wix.com/docs/go-headless/get-started/setup/manage-urls/add-allowed-authorization-redirect-uris).
 
