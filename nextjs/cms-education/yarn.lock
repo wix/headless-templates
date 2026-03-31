@@ -1069,6 +1069,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@wix/sdk-runtime@npm:1.0.10":
+  version: 1.0.10
+  resolution: "@wix/sdk-runtime@npm:1.0.10"
+  dependencies:
+    "@wix/sdk-context": "npm:0.0.1"
+    "@wix/sdk-types": "npm:1.17.6"
+  checksum: 10c0/da939ce21eb8e83995833d85eeed804b869c61925cf0b17847c72846f8cacf3bfbcb15b11485bc59f3ca6e14690a23815f404b3f82a30c7c6eddedb04f7c1454
+  languageName: node
+  linkType: hard
+
 "@wix/sdk-runtime@npm:^0.7.0":
   version: 0.7.0
   resolution: "@wix/sdk-runtime@npm:0.7.0"
@@ -1090,7 +1100,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wix/sdk@npm:^1.15.24, @wix/sdk@npm:^1.17.1, @wix/sdk@npm:^1.5.0":
+"@wix/sdk-types@npm:1.17.6":
+  version: 1.17.6
+  resolution: "@wix/sdk-types@npm:1.17.6"
+  dependencies:
+    "@wix/error-handler-types": "npm:^1.19.0"
+    "@wix/monitoring-types": "npm:^0.12.0"
+    type-fest: "npm:^4.41.0"
+  checksum: 10c0/257cf79b1d18baf53924f0b7eb68040be3bf8b6f01afd2da3b87a8c9a8e4eb45d7ca79c0276d9249ede3e552b779f558c67a3b0aeecaccd557d6b426a9bfc961
+  languageName: node
+  linkType: hard
+
+"@wix/sdk@npm:^1.15.24, @wix/sdk@npm:^1.17.1":
   version: 1.17.4
   resolution: "@wix/sdk@npm:1.17.4"
   dependencies:
@@ -1107,6 +1128,26 @@ __metadata:
     graphql:
       optional: true
   checksum: 10c0/a7ee7454405cb3a4e72c766b6d9f10a63a3ce576dfcc6ccab0bfe7fe239231d4eedcd2d6b782d7e19940f16ff6d9bbd07035c74fefdd14a0809b773b3e1c146c
+  languageName: node
+  linkType: hard
+
+"@wix/sdk@npm:^1.21.5":
+  version: 1.21.5
+  resolution: "@wix/sdk@npm:1.21.5"
+  dependencies:
+    "@wix/identity": "npm:^1.0.104"
+    "@wix/image-kit": "npm:^1.114.0"
+    "@wix/redirects": "npm:^1.0.70"
+    "@wix/sdk-context": "npm:0.0.1"
+    "@wix/sdk-runtime": "npm:1.0.10"
+    "@wix/sdk-types": "npm:1.17.6"
+    graphql: "npm:^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0"
+    jose: "npm:^5.10.0"
+    type-fest: "npm:^4.41.0"
+  dependenciesMeta:
+    graphql:
+      optional: true
+  checksum: 10c0/98779b6c3ac0792f216ec97b699b0a50ac392849df5cea7b86b1d2407309894abd3c2d956711dd6bcab18b9e46290e44e6e19a4fbf8ef7369a16d938f49ec0b3
   languageName: node
   linkType: hard
 
@@ -5300,7 +5341,7 @@ __metadata:
     "@types/react": "npm:18.0.24"
     "@types/react-dom": "npm:18.0.8"
     "@wix/data": "npm:^1.0.47"
-    "@wix/sdk": "npm:^1.5.0"
+    "@wix/sdk": "npm:^1.21.5"
     autoprefixer: "npm:^10.4.13"
     eslint: "npm:^8.28.0"
     eslint-config-next: "npm:^13.4.9"
