@@ -18,6 +18,7 @@
     "@wix/essentials": "^0.1.23",
     "@wix/redirects": "1.0.60",
     "@wix/sdk": "^1.15.23",
+    "@wix/seo": "^1.0.44",
     "@wix/stores": "^1.0.697",
     "astro": "5.8.0",
     "tailwindcss": "^4.1.7",

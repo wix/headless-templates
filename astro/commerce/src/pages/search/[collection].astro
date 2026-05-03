@@ -13,20 +13,31 @@ import ProductGridItems from "../../components/layout/product-grid-items.astro";
 import { defaultSort, sorting } from "../../lib/constants";
 import { getCollectionProducts } from "../../lib/wix";
 import SearchLayout from "../../components/layout/search/layout.astro";
+import { SEO } from "@wix/seo/components";
+import { loadSEOTagsServiceConfig } from "@wix/seo/services";
+import { seoTags } from "@wix/seo";
 
 const searchParams = Object.fromEntries(Astro.url.searchParams.entries());
 const params = Astro.params;
 const { sort } = searchParams;
 const { sortKey, reverse } =
   sorting.find((item) => item.slug === sort) || defaultSort;
-const products = await getCollectionProducts({
-  collection: params.collection!,
-  sortKey,
-  reverse,
-});
+const [products, seoTagsServiceConfig] = await Promise.all([
+  getCollectionProducts({
+    collection: params.collection!,
+    sortKey,
+    reverse,
+  }),
+  loadSEOTagsServiceConfig({
+    pageUrl: Astro.url.href,
+    itemType: seoTags.ItemType.STORES_CATEGORY,
+    itemData: { slug: params.collection! },
+  }),
+]);
 ---
 
 <Layout>
+  <SEO.Tags seoTagsServiceConfig={seoTagsServiceConfig} slot="seo-tags" />
   <SearchLayout>
     <section>
       {
