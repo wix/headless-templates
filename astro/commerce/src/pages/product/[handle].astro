@@ -15,9 +15,19 @@ import ProductDescription from "../../components/product/product-description.ast
 import RelatedProducts from "../../components/product/related-products.astro";
 import { getProduct } from "../../lib/wix";
 import { type Image } from "../../lib/wix/types";
+import { SEO } from "@wix/seo/components";
+import { loadSEOTagsServiceConfig } from "@wix/seo/services";
+import { seoTags } from "@wix/seo";
 
 const params = Astro.params;
-const product = await getProduct(params.handle!);
+const [product, seoTagsServiceConfig] = await Promise.all([
+  getProduct(params.handle!),
+  loadSEOTagsServiceConfig({
+    pageUrl: Astro.url.href,
+    itemType: seoTags.ItemType.STORES_PRODUCT,
+    itemData: { slug: params.handle! },
+  }),
+]);
 
 if (!product) return new Response(null, { status: 404 });
 
@@ -40,6 +50,7 @@ const productJsonLd = {
 ---
 
 <Layout>
+  <SEO.Tags seoTagsServiceConfig={seoTagsServiceConfig} slot="seo-tags" />
   <script
     type="application/ld+json"
     set:html={JSON.stringify(productJsonLd)}
