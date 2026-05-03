@@ -2,9 +2,8 @@
 import { getCollectionProducts } from "../../lib/wix";
 import ThreeItemGridItem from "./three-item-grid-item.astro";
 
-// Collections that start with `hidden-*` are hidden from the search page.
 const homepageItems = await getCollectionProducts({
-  collection: "hidden-homepage-featured-items",
+  collection: "all-products",
 });
 
 if (!homepageItems[0] || !homepageItems[1] || !homepageItems[2]) return null;
