@@ -5,6 +5,7 @@ import { media } from "@wix/sdk";
 import { categories } from "@wix/categories";
 import { productsV3 } from "@wix/stores";
 import { type SortKey } from "../constants";
+import type { Image } from "./types";
 
 const SEARCH_SORT_KEY_MAP: Record<string, string> = {
   name: "name",
@@ -26,6 +27,29 @@ function buildSearchSort(sortKey?: string, reverse?: boolean) {
   return [{ fieldName, order: reverse ? "DESC" : "ASC" }] as any;
 }
 import type { Cart, Collection, Menu, Page, Product } from "./types";
+
+function resolveWixImage(
+  image: unknown,
+  altText?: string | null,
+): Image | undefined {
+  if (!image) {
+    return undefined;
+  }
+
+  try {
+    const resolved = media.getImageUrl(
+      image as Parameters<typeof media.getImageUrl>[0],
+    );
+    return {
+      url: resolved.url,
+      altText: altText ?? "alt text",
+      width: resolved.width,
+      height: resolved.height,
+    };
+  } catch {
+    return undefined;
+  }
+}
 
 const PRODUCT_FIELDS_LIST = [
   "CURRENCY",
@@ -76,7 +100,10 @@ const reshapeCart = (cart: currentCart.Cart): Cart => {
       },
     },
     lines: cart.lineItems!.map((item) => {
-      const featuredImage = media.getImageUrl(item.image!);
+      const featuredImage = resolveWixImage(
+        item.image,
+        item.productName?.original,
+      );
       return {
         id: item._id!,
         quantity: item.quantity!,
@@ -97,13 +124,7 @@ const reshapeCart = (cart: currentCart.Cart): Cart => {
           selectedOptions: [],
           product: {
             handle: item.url?.split("/").pop() ?? "",
-            featuredImage: {
-              altText:
-                "altText" in featuredImage ? featuredImage.altText : "alt text",
-              url: media.getImageUrl(item.image!).url,
-              width: media.getImageUrl(item.image!).width,
-              height: media.getImageUrl(item.image!).height,
-            },
+            featuredImage,
             title: item.productName?.original!,
           } as any as Product,
           url: `/product/${item.url?.split("/").pop() ?? ""}`,
