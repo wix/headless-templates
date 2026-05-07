@@ -24,7 +24,7 @@ export type CartProduct = {
   id: string;
   handle: string;
   title: string;
-  featuredImage: Image;
+  featuredImage?: Image;
 };
 
 export type CartItem = {
