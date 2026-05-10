@@ -1,21 +1,38 @@
 ---
-import { getCollectionProducts } from "../../lib/wix";
+import { getCollectionProducts, getProducts } from "../../lib/wix";
 import ThreeItemGridItem from "./three-item-grid-item.astro";
 
+// Try the curated collection first, then fall back to any products.
 // Collections that start with `hidden-*` are hidden from the search page.
-const homepageItems = await getCollectionProducts({
+let homepageItems = await getCollectionProducts({
   collection: "hidden-homepage-featured-items",
 });
 
-if (!homepageItems[0] || !homepageItems[1] || !homepageItems[2]) return null;
+if (homepageItems.length < 3) {
+  homepageItems = await getProducts({});
+}
+
+if (homepageItems.length < 3) return null;
 
 const [firstProduct, secondProduct, thirdProduct] = homepageItems;
 ---
 
-<section
-  class="mx-auto grid max-w-(--breakpoint-2xl) gap-4 px-4 pb-4 md:grid-cols-6 md:grid-rows-2 lg:max-h-[calc(100vh-200px)]"
->
-  <ThreeItemGridItem size="full" item={firstProduct} />
-  <ThreeItemGridItem size="half" item={secondProduct} />
-  <ThreeItemGridItem size="half" item={thirdProduct} />
+<section class="mx-auto w-full max-w-(--breakpoint-2xl) px-4 pt-8 pb-4 md:pt-12">
+  <div class="mb-6 flex items-end justify-between md:mb-8">
+    <div>
+      <p class="eyebrow text-neutral-500 dark:text-neutral-400">The edit</p>
+      <h2
+        class="font-display mt-1 text-4xl font-medium tracking-tight md:text-5xl"
+      >
+        Featured pieces
+      </h2>
+    </div>
+  </div>
+  <div
+    class="grid gap-3 md:grid-cols-6 md:grid-rows-2 md:gap-4 lg:max-h-[calc(100vh-160px)]"
+  >
+    <ThreeItemGridItem size="full" item={firstProduct} />
+    <ThreeItemGridItem size="half" item={secondProduct} />
+    <ThreeItemGridItem size="half" item={thirdProduct} />
+  </div>
 </section>

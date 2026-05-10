@@ -1,0 +1,73 @@
+---
+import { Image } from "astro:assets";
+import { getProducts } from "../lib/wix";
+
+const products = await getProducts({});
+const heroProduct = products[0];
+---
+
+<section
+  class="relative w-full overflow-hidden bg-neutral-900 text-white"
+>
+  <div class="relative h-[80svh] min-h-[560px] w-full">
+    {
+      heroProduct?.featuredImage?.url ? (
+        <Image
+          src={heroProduct.featuredImage.url}
+          alt=""
+          inferSize
+          width={1920}
+          height={1200}
+          class="absolute inset-0 h-full w-full scale-105 object-cover"
+          loading="eager"
+        />
+      ) : null
+    }
+    <div
+      class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/30"
+    >
+    </div>
+    <div
+      class="relative z-10 mx-auto flex h-full w-full max-w-(--breakpoint-2xl) flex-col justify-end px-4 pb-14 md:pb-20"
+    >
+      <p class="eyebrow mb-4 text-white/75">Spring · Summer 26</p>
+      <h1
+        class="font-display max-w-3xl text-5xl font-medium leading-[0.95] tracking-tight md:text-7xl lg:text-8xl"
+      >
+        Wear the everyday,<br /><em class="italic">beautifully.</em>
+      </h1>
+      <p
+        class="mt-5 max-w-md text-base text-white/80 md:text-lg"
+      >
+        Quietly considered pieces, made for now and the years after.
+      </p>
+      <div class="mt-8 flex items-center gap-3">
+        <a
+          href="/search"
+          class="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-medium text-black transition hover:bg-neutral-200"
+        >
+          Shop the edit
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-4 w-4 transition group-hover:translate-x-1"
+          >
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
+        </a>
+        <a
+          href="/search"
+          class="inline-flex items-center rounded-full border border-white/40 px-7 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+        >
+          Browse all
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

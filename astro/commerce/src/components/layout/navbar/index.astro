@@ -1,12 +1,14 @@
 ---
-import { getMenu } from "../../../lib/wix";
+import { getCollections } from "../../../lib/wix";
 import type { Menu } from "../../../lib/wix/types";
 import CartModal from "../../cart/cart-modal.astro";
 import LogoSquare from "../../logo-square.astro";
 import MobileMenu from "./mobile-menu.astro";
 import Search from "./search.astro";
 
-const menu = await getMenu("next-js-frontend-header-menu");
+// Drive navbar links from real store categories (each Collection has `path` and `title`).
+const collections = await getCollections();
+const menu: Menu[] = collections.map((c) => ({ title: c.title, path: c.path }));
 
 const { SITE_NAME } = import.meta.env;
 ---
