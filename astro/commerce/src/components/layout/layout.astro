@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from "astro:transitions";
+import Marquee from "../marquee.astro";
 import Navbar from "./navbar/index.astro";
 import "../../styles/global.css";
 ---
@@ -9,6 +10,12 @@ import "../../styles/global.css";
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&display=swap"
+    />
     <slot name="seo-tags" />
     <ClientRouter />
   </head>
@@ -16,6 +23,7 @@ import "../../styles/global.css";
     class="bg-neutral-50 text-black selection:bg-teal-300 dark:bg-neutral-900 dark:text-white dark:selection:bg-pink-500 dark:selection:text-white"
   >
     <Navbar />
+    <Marquee />
     <main>
       <slot />
     </main>

@@ -9,12 +9,12 @@ type Props = { list: ListItem[]; title?: string };
 <nav>
   {
     Astro.props.title ? (
-      <h3 class="hidden text-xs text-neutral-500 md:block dark:text-neutral-400">
+      <h3 class="eyebrow hidden pb-3 text-neutral-500 md:block dark:text-neutral-400">
         {Astro.props.title}
       </h3>
     ) : null
   }
-  <ul class="hidden md:block">
+  <ul class="hidden flex-col gap-1 md:flex">
     <FilterItemList list={Astro.props.list} />
   </ul>
   <ul class="md:hidden">
