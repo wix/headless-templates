@@ -8,10 +8,11 @@ type Props = {
 <svg
   xmlns="http://www.w3.org/2000/svg"
   aria-label={`${import.meta.env.SITE_NAME} logo`}
-  viewBox="0 0 32 28"
+  viewBox="0 0 32 32"
   class={clsx("h-4 w-4 fill-black dark:fill-white", Astro.props.class)}
   {...Astro.props}
 >
-  <path d="M21.5758 9.75769L16 0L0 28H11.6255L21.5758 9.75769Z"></path>
-  <path d="M26.2381 17.9167L20.7382 28H32L26.2381 17.9167Z"></path>
+  <path
+    d="M16 2L2 9v14l14 7 14-7V9L16 2zm0 3.3L26.5 10 16 14.7 5.5 10 16 5.3zM5 12l10 4.5V28L5 23V12zm12 16V16.5L27 12v11l-10 5z"
+  ></path>
 </svg>
