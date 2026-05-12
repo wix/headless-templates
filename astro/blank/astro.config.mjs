@@ -6,4 +6,5 @@ import wixPages from "@wix/astro-pages";
 // https://astro.build/config
 export default defineConfig({
   integrations: [wix(), wixPages()],
+  security: { checkOrigin: false },
 });

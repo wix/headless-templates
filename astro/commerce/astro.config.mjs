@@ -10,7 +10,6 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   output: "server",
   integrations: [wix(), wixPages(), react()],
-  // Disable — TLS terminates at Wix's edge so Origin/url.origin mismatch (https vs http).
   security: { checkOrigin: false },
   image: {
     domains: ["static.wixstatic.com"],
