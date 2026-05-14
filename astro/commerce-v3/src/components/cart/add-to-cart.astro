@@ -1,0 +1,55 @@
+---
+import { actions } from "astro:actions";
+import type { ProductVariant } from "../../lib/wix/types";
+import SubmitButton from "./submit-button.astro";
+
+type Props = {
+  productId: string;
+  variants: ProductVariant[];
+  availableForSale: boolean;
+};
+
+const addItemToCartResult = Astro.getActionResult(actions.addItemToCart);
+
+const state = Object.fromEntries(
+  new URLSearchParams(Astro.url.search).entries()
+);
+
+const defaultVariantId =
+  Astro.props.variants.length === 1 ? Astro.props.variants[0]?.id : undefined;
+const productVariant = Astro.props.variants.find((variant) =>
+  variant.selectedOptions.every(
+    (option) => option.value === state[option.name.toLowerCase()]
+  )
+);
+
+const variant =
+  productVariant && productVariant.id === "00000000-0000-0000-0000-000000000000"
+    ? {
+        options: productVariant.selectedOptions.reduce(
+          (acc, option) => ({ ...acc, [option.name!]: option.value! }),
+          {} as Record<string, string>
+        ),
+      }
+    : { variantId: productVariant?.id };
+---
+
+<input
+  type="hidden"
+  name="productId"
+  value={Astro.props.productId}
+  form="add-to-cart"
+/>
+<input
+  type="hidden"
+  name="variant"
+  value={JSON.stringify(variant)}
+  form="add-to-cart"
+/>
+<SubmitButton
+  availableForSale={Astro.props.availableForSale}
+  selectedVariantId={productVariant?.id ?? defaultVariantId}
+/>
+<p aria-live="polite" class="sr-only" role="status">
+  {addItemToCartResult?.data}
+</p>

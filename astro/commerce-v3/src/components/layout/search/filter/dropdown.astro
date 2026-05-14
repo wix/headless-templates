@@ -1,0 +1,47 @@
+---
+import type { ListItem } from ".";
+import FilterItem from "./item.astro";
+
+type Props = { list: ListItem[] };
+
+const searchParams = new URLSearchParams(Astro.url.search);
+
+const active = Astro.props.list.find(
+  (listItem: ListItem) =>
+    ("path" in listItem && Astro.url.pathname === listItem.path) ||
+    ("slug" in listItem && searchParams.get("sort") === listItem.slug)
+)?.title;
+
+const id = crypto.randomUUID();
+---
+
+<div class="relative">
+  <label for={id}>
+    <span class="sr-only">Filter dropdown</span>
+    <div
+      class="flex w-full items-center justify-between rounded border border-black/30 px-4 py-2 text-sm dark:border-white/30"
+    >
+      <div>{active}</div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="size-6 h-4"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="m19.5 8.25-7.5 7.5-7.5-7.5"></path>
+      </svg>
+    </div>
+  </label>
+
+  <input type="checkbox" class="hidden peer" id={id} />
+  <div
+    class="absolute z-40 w-full rounded-b-md bg-white p-4 shadow-md dark:bg-black hidden peer-checked:block"
+  >
+    {Astro.props.list.map((item: ListItem) => <FilterItem item={item} />)}
+  </div>
+</div>

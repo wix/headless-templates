@@ -1,0 +1,12 @@
+---
+import clsx from "clsx";
+type Props = { class: string };
+
+const dots = "mx-[1px] inline-block h-1 w-1 animate-blink rounded-md";
+---
+
+<span class="mx-2 inline-flex items-center">
+  <span class={clsx(dots, Astro.props.class)}></span>
+  <span class={clsx(dots, "animation-delay-[200ms]", Astro.props.class)}></span>
+  <span class={clsx(dots, "animation-delay-[400ms]", Astro.props.class)}></span>
+</span>
