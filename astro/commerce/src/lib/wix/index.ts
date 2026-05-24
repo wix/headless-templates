@@ -1,4 +1,3 @@
-import { items } from "@wix/data";
 import { currentCart, recommendations } from "@wix/ecom";
 import { redirects } from "@wix/redirects";
 import { media } from "@wix/sdk";
@@ -26,7 +25,7 @@ function buildSearchSort(sortKey?: string, reverse?: boolean) {
   if (!fieldName) return undefined;
   return [{ fieldName, order: reverse ? "DESC" : "ASC" }] as any;
 }
-import type { Cart, Collection, Menu, Page, Product } from "./types";
+import type { Cart, Collection, Product } from "./types";
 
 function resolveWixImage(
   image: unknown,
@@ -417,106 +416,6 @@ export async function getCollections(): Promise<Collection[]> {
   ];
 
   return wixCollections;
-}
-
-export async function getMenu(handle: string): Promise<Menu[]> {
-  const { items: menus } = await items
-    .queryDataItems({
-      dataCollectionId: "Menus",
-      includeReferencedItems: ["pages"],
-    })
-    .eq("slug", handle)
-    .find()
-    .catch((e) => {
-      if (e.details.applicationError.code === "WDE0025") {
-        console.error(
-          "Menus collection was not found. Did you forget to create the Menus data collection?"
-        );
-        return { items: [] };
-      } else {
-        throw e;
-      }
-    });
-
-  const menu = menus[0];
-
-  return (
-    menu?.data!.pages.map((page: { title: string; slug: string }) => ({
-      title: page.title,
-      path: "/" + page.slug,
-    })) || []
-  );
-}
-
-export async function getPage(handle: string): Promise<Page | undefined> {
-  const { items: pages } = await items
-    .queryDataItems({
-      dataCollectionId: "Pages",
-    })
-    .eq("slug", handle)
-    .find()
-    .catch((e) => {
-      if (e.details.applicationError.code === "WDE0025") {
-        console.error(
-          "Pages collection was not found. Did you forget to create the Pages data collection?"
-        );
-        return { items: [] };
-      } else {
-        throw e;
-      }
-    });
-
-  const page = pages[0];
-
-  if (!page) {
-    return undefined;
-  }
-
-  return {
-    id: page._id!,
-    title: page.data!.title,
-    handle: "/" + page.data!.slug,
-    body: page.data!.body,
-    bodySummary: "",
-    createdAt: page.data!._createdDate.$date,
-    seo: {
-      title: page.data!.seoTitle,
-      description: page.data!.seoDescription,
-    },
-    updatedAt: page.data!._updatedDate.$date,
-  };
-}
-
-export async function getPages(): Promise<Page[]> {
-  const { items: pages } = await items
-    .queryDataItems({
-      dataCollectionId: "Pages2",
-    })
-    .find()
-    .catch((e) => {
-      if (e.details.applicationError.code === "WDE0025") {
-        console.error(
-          "Pages collection was not found. Did you forget to create the Pages data collection?"
-        );
-        return { items: [] };
-      } else {
-        throw e;
-      }
-    });
-
-  return pages.map((item) => ({
-    id: item._id!,
-    title: item.data!.title,
-    handle: item.data!.slug,
-    body: item.data!.body,
-    bodySummary: "",
-    createdAt: item.data!._createdDate.$date,
-    seo: {
-      title: item.data!.seoTitle,
-      description: item.data!.seoDescription,
-    },
-    updatedAt: item.data!._updatedDate.$date,
-  }));
 }
 
 export async function getProduct(handle: string): Promise<Product | undefined> {
