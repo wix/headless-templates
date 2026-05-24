@@ -1,0 +1,42 @@
+---
+import Footer from "../components/layout/footer.astro";
+import Layout from "../components/layout/layout.astro";
+import Prose from "../components/prose.astro";
+
+const title = "About";
+const body = `<p class="font_8">This website is built with <a href="https://nextjs.org/commerce" title="Next.js Commerce">Next.js Commerce</a>, which is a ecommerce template for creating a headless Wix storefront.</p>
+<p class="font_8">Support for real-world commerce features including:</p>
+<ul class="font_8">
+  <li><p class="font_8">Out of stocks</p></li>
+  <li><p class="font_8">Order history</p></li>
+  <li><p class="font_8">Order status</p></li>
+  <li><p class="font_8">Cross variant / option availability (aka. Amazon style)</p></li>
+  <li><p class="font_8">Hidden Products</p></li>
+  <li><p class="font_8">Dynamically driven content and features via Wix (ie. collections, menus, pages, etc.)</p></li>
+  <li><p class="font_8">Seamless and secure checkout via <a href="https://www.wix.com/ecommerce/online-store"><u>Wix Stores Checkout</u></a></p></li>
+  <li><p class="font_8">And more!</p></li>
+</ul>
+<p class="font_8">This template also allows us to highlight newer Next.js features including:</p>
+<ul class="font_8">
+  <li><p class="font_8">Next.js App Router</p></li>
+  <li><p class="font_8">Optimized for SEO using Next.js's Metadata</p></li>
+  <li><p class="font_8">React Server Components (RSCs) and Suspense</p></li>
+  <li><p class="font_8">Server Actions&nbsp;for mutations</p></li>
+  <li><p class="font_8">Edge runtime</p></li>
+  <li><p class="font_8">New Next.js 13 fetching and caching paradigms</p></li>
+  <li><p class="font_8">Dynamic OG images</p></li>
+  <li><p class="font_8">Styling with Tailwind CSS</p></li>
+  <li><p class="font_8">Automatic light/dark mode based on system settings</p></li>
+  <li><p class="font_8">And more!</p></li>
+</ul>`;
+---
+
+<Layout>
+  <div class="w-full">
+    <div class="mx-8 max-w-2xl py-20 sm:mx-auto">
+      <h1 class="mb-8 text-5xl font-bold">{title}</h1>
+      <Prose class="mb-8" html={body} />
+    </div>
+  </div>
+  <Footer />
+</Layout>

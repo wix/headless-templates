@@ -1,5 +1,5 @@
 ---
-import { getMenu } from "../../lib/wix";
+import type { Menu } from "../../lib/wix/types";
 import LogoSquare from "../logo-square.astro";
 import FooterMenu from "./footer-menu.astro";
 
@@ -8,7 +8,14 @@ const currentYear = new Date().getFullYear();
 const copyrightName = COMPANY_NAME || SITE_NAME || "";
 const copyrightSuffix =
   copyrightName.length && !copyrightName.endsWith(".") ? "." : "";
-const menu = await getMenu("next-js-frontend-footer-menu");
+const menu: Menu[] = [
+  { title: "Home", path: "/" },
+  { title: "About", path: "/about" },
+  { title: "Terms & Conditions", path: "/terms-conditions" },
+  { title: "Shipping & Return Policy", path: "/shipping-return-policy" },
+  { title: "Privacy Policy", path: "/privacy-policy" },
+  { title: "Frequently Asked Questions", path: "/frequently-asked-questions" },
+];
 ---
 
 <footer class="text-sm text-neutral-500 dark:text-neutral-400">

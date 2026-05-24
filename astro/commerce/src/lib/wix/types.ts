@@ -70,17 +70,6 @@ export type Money = {
   currencyCode: string;
 };
 
-export type Page = {
-  id: string;
-  title: string;
-  handle: string;
-  body: string;
-  bodySummary: string;
-  seo?: SEO;
-  createdAt: string;
-  updatedAt: string;
-};
-
 export type Product = {
   id: string;
   handle: string;
