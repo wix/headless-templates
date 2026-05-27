@@ -36,7 +36,7 @@ export function NavBar() {
   const [linkRef, setLinkRef] = useState<LinkProps['href']>(pathname!);
   const toggleOpen = useCallback(
     () => setIsMenuShown(!isMenuShown),
-    [isMenuShown]
+    [isMenuShown],
   );
   return (
     <>
