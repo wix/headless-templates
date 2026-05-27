@@ -10,7 +10,7 @@ For a more comprehensive example of Wix Headless integration, we recommend check
 our [starter templates](https://www.wix.com/developers/headless/templates).
 
 You can view the latest version of this repo deployed
-at [https://wix-headless-example.vercel.app/](https://wix-headless-example.vercel.app/).
+at [https://wix-headless-example.netlify.app/](https://wix-headless-example.netlify.app/).
 
 ## Getting Started
 

@@ -66,7 +66,7 @@ Here are some useful links for getting started with Wix Headless and the availab
     <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/nextjs/minimal-examples">Minimal Examples</a></td>
       <td>Concise examples for Next.js projects integrated with Wix Headless.</td>
-      <td><a href="https://wix-headless-example.vercel.app">Minimal Examples Demo</a></td>
+      <td><a href="https://wix-headless-example.netlify.app">Minimal Examples Demo</a></td>
       <td>Wix Stores, Wix Bookings, Wix Events</td>
     </tr>
     <tr>
