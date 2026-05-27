@@ -75,4 +75,4 @@ Additionally, this template uses the following libraries and features:
 
 # Next.js Booking and Wix Integration Guide
 
-See the comprehensive [integration guide](./docs/integration-guide.md) for step-by-step instructions on how to configure Wix as your headless Booking solution using Next.js on Vercel.
+See the comprehensive [integration guide](./docs/integration-guide.md) for step-by-step instructions on how to configure Wix as your headless Booking solution using Next.js on Vercel or Netlify.
