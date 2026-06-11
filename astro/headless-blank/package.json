@@ -7,7 +7,11 @@
     "dev": "wix dev",
     "build": "wix build",
     "preview": "wix preview",
-    "release": "wix release"
+    "release": "wix release",
+    "wix": "wix",
+    "generate": "wix generate",
+    "env": "wix env",
+    "skills": "wix skills"
   },
   "dependencies": {
     "@wix/astro": "^2.13.0",
@@ -16,16 +20,16 @@
     "@wix/essentials": "^1.0.6",
     "@wix/sdk": "^1.21.5",
     "astro": "^5.8.0",
-    "typescript": "^5.8.3",
-    "@astrojs/react": "4.3.0",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0",
-    "@wix/cloud-provider-fetch-adapter": "^1.0.4"
+    "typescript": "^5.8.3"
   },
   "devDependencies": {
     "@astrojs/cloudflare": "12.5.5",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
-    "@wix/cli": "^1.1.206"
+    "@wix/cli": "^1.1.206",
+    "@astrojs/react": "4.3.0",
+    "@wix/cloud-provider-fetch-adapter": "^1.0.4",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
   }
 }
