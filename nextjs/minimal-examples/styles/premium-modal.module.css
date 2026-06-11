@@ -1,0 +1,44 @@
+.container {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.modal {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.title {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.content {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.upgrade-button {
+    background-color: #9A27D5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 20px 0 0 0;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    justify-self: flex-end;
+}

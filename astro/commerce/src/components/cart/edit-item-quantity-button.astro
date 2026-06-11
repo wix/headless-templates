@@ -1,0 +1,55 @@
+---
+import clsx from "clsx";
+import type { CartItem } from "../../lib/wix/types";
+import { actions } from "astro:actions";
+import MinusIcon from "../icons/minus.astro";
+import PlusIcon from "../icons/plus.astro";
+
+type Props = {
+  item: CartItem;
+  type: "plus" | "minus";
+};
+
+const updateItemQuantityResult = Astro.getActionResult(
+  actions.updateItemQuantity
+);
+---
+
+<form method="post" action={actions.updateItemQuantity}>
+  <input type="hidden" name="lineId" value={Astro.props.item.id} />
+  <input
+    type="hidden"
+    name="quantity"
+    value={Astro.props.type === "plus"
+      ? Astro.props.item.quantity + 1
+      : Astro.props.item.quantity - 1}
+  />
+  <input
+    type="hidden"
+    name="variantId"
+    value={Astro.props.item.merchandise.id}
+  />
+  <button
+    type="submit"
+    aria-label={Astro.props.type === "plus"
+      ? "Increase item quantity"
+      : "Reduce item quantity"}
+    class={clsx(
+      "ease flex h-full min-w-[36px] max-w-[36px] flex-none items-center justify-center rounded-full p-2 transition-all duration-200 hover:border-neutral-800 hover:opacity-80",
+      {
+        "ml-auto": Astro.props.type === "minus",
+      }
+    )}
+  >
+    {
+      Astro.props.type === "plus" ? (
+        <PlusIcon class="h-4 w-4 dark:text-neutral-500" />
+      ) : (
+        <MinusIcon class="h-4 w-4 dark:text-neutral-500" />
+      )
+    }
+  </button>
+  <p aria-live="polite" class="sr-only" role="status">
+    {updateItemQuantityResult?.data}
+  </p>
+</form>

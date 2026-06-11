@@ -1,0 +1,68 @@
+---
+import { getCollectionProducts, getProducts } from "../lib/wix";
+import GridTileImage from "./grid/tile.astro";
+
+// Try the curated collection first, then fall back to any products.
+// Collections that start with `hidden-*` are hidden from the search page.
+let products = await getCollectionProducts({
+  collection: "hidden-homepage-carousel",
+});
+
+if (!products?.length) {
+  products = await getProducts({});
+}
+
+if (!products?.length) return null;
+
+// Purposefully duplicating products to make the carousel loop and not run out of products on wide screens.
+const carouselProducts = [...products, ...products, ...products];
+---
+
+<section class="mx-auto w-full max-w-(--breakpoint-2xl) px-4 pb-12 pt-16">
+  <div class="mb-6 flex items-end justify-between border-b border-neutral-200 pb-4 dark:border-neutral-800">
+    <div>
+      <p class="eyebrow text-neutral-500 dark:text-neutral-400">In rotation</p>
+      <h2
+        class="font-display mt-1 text-3xl font-medium tracking-tight md:text-4xl"
+      >
+        Trending now
+      </h2>
+    </div>
+    <a
+      href="/search"
+      class="hidden text-sm font-medium underline underline-offset-4 hover:no-underline md:inline"
+    >
+      Shop all
+    </a>
+  </div>
+  <div
+    class="relative -mx-4 [mask-image:linear-gradient(to_right,transparent_0,black_3rem,black_calc(100%-3rem),transparent_100%)]"
+  >
+    <div class="overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <ul class="flex animate-carousel gap-3 md:gap-4">
+        {
+          carouselProducts.map((product) => (
+            <li class="relative aspect-[3/4] h-[42vh] max-h-[420px] w-[58%] max-w-[340px] flex-none md:w-1/4">
+              <a
+                href={`/product/${product.handle}`}
+                class="block h-full w-full"
+              >
+                <GridTileImage
+                  alt={product.title}
+                  label={{
+                    title: product.title,
+                    amount: product.priceRange.maxVariantPrice.amount,
+                    currencyCode: product.priceRange.maxVariantPrice.currencyCode,
+                  }}
+                  src={product.featuredImage?.url}
+                  inferSize
+                  sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,46 @@
+---
+import type { Menu } from "../../lib/wix/types";
+import LogoSquare from "../logo-square.astro";
+import FooterMenu from "./footer-menu.astro";
+
+const { COMPANY_NAME, SITE_NAME } = import.meta.env;
+const currentYear = new Date().getFullYear();
+const copyrightName = COMPANY_NAME || SITE_NAME || "";
+const copyrightSuffix =
+  copyrightName.length && !copyrightName.endsWith(".") ? "." : "";
+const menu: Menu[] = [
+  { title: "Home", path: "/" },
+  { title: "About", path: "/about" },
+  { title: "Terms & Conditions", path: "/terms-conditions" },
+  { title: "Shipping & Return Policy", path: "/shipping-return-policy" },
+  { title: "Privacy Policy", path: "/privacy-policy" },
+  { title: "Frequently Asked Questions", path: "/frequently-asked-questions" },
+];
+---
+
+<footer class="text-sm text-neutral-500 dark:text-neutral-400">
+  <div
+    class="mx-auto flex w-full max-w-7xl flex-col gap-6 border-t border-neutral-200 px-6 py-12 text-sm md:flex-row md:gap-12 md:px-4 min-[1320px]:px-0 dark:border-neutral-700"
+  >
+    <div>
+      <a
+        class="flex items-center gap-2 text-black md:pt-1 dark:text-white"
+        href="/"
+      >
+        <LogoSquare size="sm" />
+        <span class="uppercase">{SITE_NAME}</span>
+      </a>
+    </div>
+    <FooterMenu menu={menu} />
+  </div>
+  <div class="border-t border-neutral-200 py-6 text-sm dark:border-neutral-700">
+    <div
+      class="mx-auto w-full max-w-7xl px-4 text-center md:px-4 min-[1320px]:px-0"
+    >
+      <p>
+        &copy; {currentYear}
+        {copyrightName}{copyrightSuffix} All rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>

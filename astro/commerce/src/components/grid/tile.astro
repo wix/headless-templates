@@ -1,0 +1,49 @@
+---
+import { Image } from "astro:assets";
+import clsx from "clsx";
+import Label from "../label.astro";
+import type { ComponentProps } from "astro/types";
+
+type Props = {
+  isInteractive?: boolean;
+  active?: boolean;
+  label?: {
+    title: string;
+    amount: string;
+    currencyCode: string;
+    position?: "bottom" | "center";
+  };
+} & ComponentProps<typeof Image>;
+---
+
+<div
+  class={clsx(
+    "group relative flex h-full w-full items-center justify-center overflow-hidden rounded-md bg-neutral-100 dark:bg-neutral-900",
+    {
+      "ring-2 ring-neutral-900 ring-offset-2 ring-offset-neutral-50 dark:ring-neutral-50 dark:ring-offset-neutral-900":
+        Astro.props.active,
+    }
+  )}
+>
+  {
+    Astro.props.src ? (
+      <Image
+        class={clsx("relative h-full w-full object-cover", {
+          "transition-transform duration-700 ease-out group-hover:scale-[1.03]":
+            Astro.props.isInteractive ?? true,
+        })}
+        {...Astro.props}
+      />
+    ) : null
+  }
+  {
+    Astro.props.label ? (
+      <Label
+        title={Astro.props.label.title}
+        amount={Astro.props.label.amount}
+        currencyCode={Astro.props.label.currencyCode}
+        position={Astro.props.label.position}
+      />
+    ) : null
+  }
+</div>

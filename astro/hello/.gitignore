@@ -1,0 +1,43 @@
+# Logs
+logs
+*.log
+!codegen-machine.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Misc
+.DS_Store
+out
+
+# build output
+# generated types
+dist
+.astro/
+.wix
+
+# dependencies
+node_modules
+
+# environment variables
+.env
+.env.production
+.env.local
+
+# jetbrains setting folder
+.idea/
+.messages.json
+docs/*
+
+# Memory files
+*/.vibe/ignored/*
+
+# Yarn Berry
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

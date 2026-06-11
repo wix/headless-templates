@@ -1,0 +1,43 @@
+---
+import clsx from "clsx";
+import type { SortFilterItem } from "../../../../lib/constants";
+import { createUrl } from "../../../../lib/utils";
+
+type Props = { item: SortFilterItem };
+
+const searchParams = new URLSearchParams(Astro.url.search);
+const active = searchParams.get("sort") === Astro.props.item.slug;
+const q = searchParams.get("q");
+const href = createUrl(
+  Astro.url.pathname,
+  new URLSearchParams({
+    ...(q && { q }),
+    ...(Astro.props.item.slug &&
+      Astro.props.item.slug.length && { sort: Astro.props.item.slug }),
+  })
+);
+const DynamicTag = active ? "p" : "a";
+---
+
+<li>
+  <DynamicTag
+    data-astro-prefetch={!active ? false : undefined}
+    href={href}
+    class={clsx(
+      "group relative flex items-center gap-2 py-1.5 text-sm transition-colors",
+      active
+        ? "font-medium text-black dark:text-white"
+        : "text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white",
+    )}
+  >
+    <span
+      class={clsx(
+        "h-1 w-1 flex-none rounded-full transition-all",
+        active
+          ? "bg-black dark:bg-white"
+          : "bg-transparent group-hover:bg-neutral-300 dark:group-hover:bg-neutral-600",
+      )}
+      aria-hidden="true"></span>
+    <span>{Astro.props.item.title}</span>
+  </DynamicTag>
+</li>

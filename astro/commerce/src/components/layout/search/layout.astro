@@ -1,0 +1,25 @@
+---
+import { sorting } from "../../../lib/constants";
+import Footer from "../footer.astro";
+import Collections from "./collections.astro";
+import FilterList from "./filter/filter-list.astro";
+---
+
+<div
+  class="mx-auto flex max-w-(--breakpoint-2xl) flex-col gap-10 px-4 pb-16 pt-8 text-black md:flex-row md:gap-12 md:pt-12 dark:text-white"
+>
+  <aside
+    class="order-first w-full flex-none md:sticky md:top-6 md:max-w-[180px] md:self-start"
+  >
+    <Collections />
+  </aside>
+  <div class="order-last min-h-screen w-full md:order-none">
+    <slot />
+  </div>
+  <aside
+    class="order-none flex-none md:sticky md:top-6 md:order-last md:w-[160px] md:self-start"
+  >
+    <FilterList list={sorting} title="Sort by" />
+  </aside>
+</div>
+<Footer />

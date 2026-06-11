@@ -1,0 +1,170 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import Panel from "../components/ui/Panel.astro";
+import BackButton from "../components/ui/BackButton.astro";
+import Icon from "../components/ui/Icon.astro";
+import "../styles/global.css";
+import { BUSINESS_NAME } from "../utils/constants";
+---
+
+<Layout>
+  <div class="min-h-screen">
+    <Navbar />
+
+    <div class="max-w-3xl mx-auto pt-32 pb-16 px-4">
+      <div class="mb-6">
+        <BackButton href="/" text="Back to Home" />
+      </div>
+
+      <Panel padding="lg" class="text-center">
+        <div
+          class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6 animate-scale-in"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-8 w-8 text-primary"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+
+        <div class="animate-fade-up">
+          <h1 class="text-3xl font-bold mb-4">Appointment Confirmed!</h1>
+        </div>
+
+        <div class="animate-fade-up delay-100">
+          <p class="text-muted-foreground mb-8 max-w-xl mx-auto">
+            Your appointment has been successfully scheduled with {
+              BUSINESS_NAME
+            }. We've sent a confirmation email to <span id="confirmation-email"
+              >your email</span
+            >.
+          </p>
+        </div>
+
+        <div id="appointment-details" class="animate-fade-up delay-200">
+          <div class="bg-secondary/40 p-6 rounded-xl mb-8 inline-block mx-auto">
+            <div class="flex items-center justify-center gap-3 mb-4">
+              <Icon name="calendar" class="text-primary" />
+              <span class="font-medium text-lg"> Appointment Details </span>
+            </div>
+
+            <div class="text-left space-y-2">
+              <p>
+                <span class="text-muted-foreground">Name:</span>
+                <span id="confirmation-name">Your Name</span>
+              </p>
+              <p>
+                <span class="text-muted-foreground">Date:</span>
+                <span id="confirmation-date">Date</span>
+              </p>
+              <p>
+                <span class="text-muted-foreground">Time:</span>
+                <span id="confirmation-time">Time</span>
+              </p>
+              <p>
+                <span class="text-muted-foreground">Email:</span>
+                <span id="confirmation-email-details">Email</span>
+              </p>
+              <p>
+                <span class="text-muted-foreground">Phone:</span>
+                <span id="confirmation-phone">Phone</span>
+              </p>
+              <p id="confirmation-notes-container" class="hidden">
+                <span class="text-muted-foreground">Notes:</span>
+                <span id="confirmation-notes">Notes</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="animate-fade-up delay-300">
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="/"
+              class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Return to Home
+            </a>
+            <a
+              href="/schedule"
+              class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Book Another Appointment
+            </a>
+          </div>
+        </div>
+      </Panel>
+    </div>
+
+    <Footer />
+  </div>
+</Layout>
+
+<script>
+  import type { BookingData } from "../utils/booking-service";
+
+  // Retrieve booking data from sessionStorage
+  function getBookingData(): BookingData | null {
+    const data = sessionStorage.getItem("bookingData");
+
+    if (!data) {
+      // Redirect if no booking data is found
+      window.location.href = "/schedule";
+      return null;
+    }
+
+    return JSON.parse(data) as BookingData;
+  }
+
+  // Update confirmation page with booking data
+  function updateConfirmationDetails(): void {
+    const bookingData = getBookingData();
+    if (!bookingData) return;
+
+    // Update email in header
+    const emailElement = document.getElementById("confirmation-email");
+    if (emailElement) {
+      emailElement.textContent = bookingData.email;
+    }
+
+    // Update appointment details
+    updateElementText("confirmation-name", bookingData.name);
+    updateElementText("confirmation-date", bookingData.displayDate || "");
+    updateElementText("confirmation-time", bookingData.displayTime || "");
+    updateElementText("confirmation-email-details", bookingData.email);
+    updateElementText("confirmation-phone", bookingData.phone);
+
+    // Handle optional notes
+    if (bookingData.notes && bookingData.notes.trim()) {
+      updateElementText("confirmation-notes", bookingData.notes);
+
+      const notesContainer = document.getElementById(
+        "confirmation-notes-container"
+      );
+      if (notesContainer) {
+        notesContainer.classList.remove("hidden");
+      }
+    }
+  }
+
+  // Helper function to update text content of an element
+  function updateElementText(id: string, text: string): void {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = text;
+    }
+  }
+
+  // Initialize page
+  document.addEventListener("DOMContentLoaded", updateConfirmationDetails);
+</script>

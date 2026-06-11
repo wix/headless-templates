@@ -1,0 +1,44 @@
+---
+import clsx from "clsx";
+import Price from "./price.astro";
+
+type Props = {
+  title: string;
+  amount: string;
+  currencyCode: string;
+  position?: "bottom" | "center" | undefined;
+};
+
+const position = Astro.props.position || "bottom";
+---
+
+<div
+  class={clsx(
+    "absolute bottom-0 left-0 z-10 flex w-full items-end justify-between gap-3 bg-gradient-to-t from-black/55 via-black/25 to-transparent px-5 pb-5 pt-16 text-white",
+    {
+      "lg:px-10 lg:pb-12 lg:pt-32": position === "center",
+    }
+  )}
+>
+  <h3
+    class={clsx(
+      "line-clamp-2 grow leading-snug tracking-tight",
+      position === "center"
+        ? "text-2xl font-semibold lg:text-4xl"
+        : "text-base font-medium",
+    )}
+  >
+    {Astro.props.title}
+  </h3>
+  <Price
+    class={clsx(
+      "flex-none tabular-nums",
+      position === "center"
+        ? "text-lg font-medium lg:text-xl"
+        : "text-sm font-medium",
+    )}
+    amount={Astro.props.amount}
+    currencyCode={Astro.props.currencyCode}
+    currencyCodeClass="ml-1 text-xs font-normal opacity-70"
+  />
+</div>

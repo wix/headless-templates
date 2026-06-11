@@ -1,0 +1,327 @@
+<div class="flex flex-col gap-4">
+  <div
+    id="upload-area"
+    class="border-2 border-dashed rounded-lg p-8 text-center transition-all border-gray-300 hover:border-blue-400"
+  >
+    <input type="file" id="fileInput" class="hidden" accept="image/*,video/*" />
+    <label for="fileInput" class="cursor-pointer flex flex-col items-center">
+      <div id="upload-idle" class="block">
+        <div
+          class="w-20 h-20 mb-4 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 border border-blue-100"
+        >
+          <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+            <path
+              d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
+            ></path>
+          </svg>
+        </div>
+        <p class="text-gray-800 font-medium mb-2">
+          Drag and drop your files here
+        </p>
+        <p class="text-gray-500 text-sm mb-4">
+          Supports JPG, PNG, GIF, MP4, and more
+        </p>
+        <button
+          id="browse-button"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+        >
+          Browse Files
+        </button>
+      </div>
+    </label>
+
+    <!-- Selected file info (hidden by default) -->
+    <div
+      id="selected-file-info"
+      class="hidden mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200"
+    >
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+            ></path>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p
+            id="selected-file-name"
+            class="text-sm font-medium text-gray-900 truncate"
+          >
+          </p>
+          <p id="selected-file-size" class="text-xs text-gray-500"></p>
+        </div>
+        <button
+          id="remove-file"
+          class="p-1 text-gray-400 hover:text-gray-500 rounded-full hover:bg-gray-100"
+          title="Remove file"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-4">
+    <div class="w-full">
+      <label
+        for="media-description"
+        class="block text-sm font-medium text-gray-700 mb-1"
+      >
+        Media Description
+      </label>
+      <textarea
+        id="media-description"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        placeholder="Add a description for your media..."
+        rows="3"></textarea>
+    </div>
+
+    <button
+      id="submit-upload"
+      class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      disabled
+    >
+      Upload Media
+    </button>
+  </div>
+
+  <!-- Upload progress UI (hidden by default) -->
+  <div
+    id="upload-progress"
+    class="w-full flex flex-col items-center hidden mt-4"
+  >
+    <div
+      class="w-16 h-16 mb-4 rounded-full border-4 border-gray-200 border-t-blue-600 animate-spin"
+    >
+    </div>
+    <p class="text-gray-700 mb-3 font-medium">
+      Uploading... <span id="progress-percent">0</span>%
+    </p>
+    <div class="w-full max-w-xs bg-gray-200 rounded-full h-2.5 mb-2">
+      <div
+        id="progress-bar"
+        class="bg-blue-600 h-2.5 rounded-full transition-all"
+        style="width: 0%"
+      >
+      </div>
+    </div>
+    <p class="text-xs text-gray-500">Please wait</p>
+  </div>
+</div>
+
+<script>
+  import {
+    getElement,
+    toggleElement,
+    setElementWidth,
+    updateElementText,
+    preventEvent,
+  } from "../utils/domUtils";
+  import { dispatchUploadCompleteEvent } from "../utils/eventUtils";
+  import { actions } from "astro:actions";
+
+  const uploadArea = getElement<HTMLElement>("upload-area");
+  const fileInput = getElement<HTMLInputElement>("fileInput");
+  const uploadIdle = getElement<HTMLElement>("upload-idle");
+  const uploadProgress = getElement<HTMLElement>("upload-progress");
+  const progressBar = getElement<HTMLElement>("progress-bar");
+  const progressPercent = getElement<HTMLElement>("progress-percent");
+  const browseButton = getElement<HTMLElement>("browse-button");
+  const submitButton = getElement<HTMLButtonElement>("submit-upload");
+  const selectedFileInfo = getElement<HTMLElement>("selected-file-info");
+  const selectedFileName = getElement<HTMLElement>("selected-file-name");
+  const selectedFileSize = getElement<HTMLElement>("selected-file-size");
+  const removeFileButton = getElement<HTMLElement>("remove-file");
+  let selectedFile: File | null = null;
+
+  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+    uploadArea?.addEventListener(eventName, preventEvent, false);
+  });
+
+  ["dragenter", "dragover"].forEach((eventName) => {
+    uploadArea?.addEventListener(eventName, highlight, false);
+  });
+
+  ["dragleave", "drop"].forEach((eventName) => {
+    uploadArea?.addEventListener(eventName, unhighlight, false);
+  });
+
+  function highlight() {
+    uploadArea?.classList.add("border-blue-500", "bg-blue-50");
+    uploadArea?.classList.remove("border-gray-300");
+  }
+
+  function unhighlight() {
+    uploadArea?.classList.remove("border-blue-500", "bg-blue-50");
+    uploadArea?.classList.add("border-gray-300");
+  }
+
+  uploadArea?.addEventListener("drop", handleDrop, false);
+
+  function handleDrop(e: DragEvent) {
+    const dt = e.dataTransfer;
+    const files = dt?.files;
+
+    if (files && files.length > 0) {
+      handleFileSelect(files[0]);
+    }
+  }
+
+  fileInput?.addEventListener("change", function () {
+    if (this.files && this.files.length > 0) {
+      handleFileSelect(this.files[0]);
+    }
+  });
+
+  function formatFileSize(bytes: number): string {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  }
+
+  function handleFileSelect(file: File) {
+    selectedFile = file;
+    submitButton?.removeAttribute("disabled");
+
+    // Show file info and hide upload idle UI
+    if (selectedFileInfo && selectedFileName && selectedFileSize) {
+      selectedFileInfo.classList.remove("hidden");
+      selectedFileName.textContent = file.name;
+      selectedFileSize.textContent = formatFileSize(file.size);
+      uploadIdle?.classList.add("hidden");
+    }
+  }
+
+  removeFileButton?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    resetUploadUI();
+  });
+
+  function resetUploadUI() {
+    toggleElement(uploadIdle, true);
+    toggleElement(uploadProgress, false);
+    if (fileInput) fileInput.value = "";
+    selectedFile = null;
+    submitButton?.setAttribute("disabled", "");
+    const descriptionInput = document.getElementById(
+      "media-description"
+    ) as HTMLTextAreaElement;
+    if (descriptionInput) descriptionInput.value = "";
+
+    // Hide file info and show upload idle UI
+    if (selectedFileInfo) {
+      selectedFileInfo.classList.add("hidden");
+    }
+    uploadIdle?.classList.remove("hidden");
+  }
+
+  submitButton?.addEventListener("click", async () => {
+    if (!selectedFile) return;
+
+    showUploadProgress();
+    try {
+      const description =
+        (document.getElementById("media-description") as HTMLTextAreaElement)
+          ?.value || "";
+      const { data } = await actions.uploadMediaFile({
+        fileName: selectedFile.name,
+        mimeType: selectedFile.type || "application/octet-stream",
+      });
+      if (!data) throw new Error("No response from uploadMediaFile");
+      if (!data.uploadUrl) throw new Error("No upload URL received");
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open(
+          "PUT",
+          data.uploadUrl +
+            "?filename=" +
+            encodeURIComponent(selectedFile!.name),
+          true
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          selectedFile!.type || "application/octet-stream"
+        );
+
+        xhr.upload.onprogress = function (event) {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            updateProgress(percent);
+          }
+        };
+
+        xhr.onload = async function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            updateProgress(100);
+            const { file } = JSON.parse(xhr.response);
+
+            await actions.addMediaItem({
+              description,
+              image: file.url,
+            });
+
+            dispatchUploadCompleteEvent({ file: selectedFile! });
+            resetUploadUI();
+            resolve();
+          } else {
+            alert("Upload failed");
+            resetUploadUI();
+            reject();
+          }
+        };
+
+        xhr.onerror = function () {
+          alert("Error uploading file. Please try again.");
+          resetUploadUI();
+          reject();
+        };
+
+        xhr.send(selectedFile);
+      });
+    } catch (error) {
+      alert("Error uploading file. Please try again.");
+      resetUploadUI();
+    }
+  });
+
+  function showUploadProgress() {
+    toggleElement(uploadIdle, false);
+    toggleElement(uploadProgress, true);
+    updateProgress(0);
+  }
+
+  function updateProgress(percent: number) {
+    setElementWidth(progressBar, percent);
+    updateElementText(progressPercent, percent.toString());
+  }
+
+  browseButton?.addEventListener("click", function (e) {
+    e.preventDefault();
+    fileInput?.click();
+  });
+</script>

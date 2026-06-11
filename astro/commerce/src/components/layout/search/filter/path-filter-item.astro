@@ -1,0 +1,35 @@
+---
+import clsx from "clsx";
+import type { PathFilterItem } from ".";
+import { createUrl } from "../../../../lib/utils";
+
+type Props = { item: PathFilterItem };
+
+const active = Astro.url.pathname === Astro.props.item.path;
+const newParams = new URLSearchParams(Astro.url.search);
+const DynamicTag = active ? "p" : "a";
+
+newParams.delete("q");
+---
+
+<li>
+  <DynamicTag
+    href={createUrl(Astro.props.item.path, newParams)}
+    class={clsx(
+      "group relative flex items-center gap-2 py-1.5 text-sm capitalize transition-colors",
+      active
+        ? "font-medium text-black dark:text-white"
+        : "text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white",
+    )}
+  >
+    <span
+      class={clsx(
+        "h-1 w-1 flex-none rounded-full transition-all",
+        active
+          ? "bg-black dark:bg-white"
+          : "bg-transparent group-hover:bg-neutral-300 dark:group-hover:bg-neutral-600",
+      )}
+      aria-hidden="true"></span>
+    <span>{Astro.props.item.title}</span>
+  </DynamicTag>
+</li>

@@ -1,0 +1,32 @@
+---
+const items = [
+  "Free shipping on orders over $100",
+  "New drops weekly",
+  "Made with sustainable cotton",
+  "Free returns within 30 days",
+];
+---
+
+<div
+  class="overflow-hidden border-y border-neutral-200 bg-white py-2.5 dark:border-neutral-800 dark:bg-black"
+>
+  <div class="flex w-max animate-marquee">
+    {
+      [0, 1].map(() => (
+        <div
+          class="flex shrink-0 items-center gap-12 pr-12 text-[11px] font-medium uppercase tracking-[0.22em] text-neutral-700 dark:text-neutral-300"
+          aria-hidden={false}
+        >
+          {items.map((item) => (
+            <span class="flex items-center gap-12">
+              <span>{item}</span>
+              <span class="opacity-30" aria-hidden="true">
+                ●
+              </span>
+            </span>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+</div>

@@ -1,0 +1,300 @@
+---
+import { actions } from "astro:actions";
+import MediaCatalog from "./MediaCatalog.astro";
+import MediaUploader from "./MediaUploader.astro";
+
+const { data } = await Astro.callAction(actions.fetchMediaItems, {});
+
+const mediaItems = data?.mediaItems || [];
+const isLoading = data?.isLoading || false;
+---
+
+<div class="bg-gray-50 min-h-screen">
+  <!-- Action bar with filters and upload button -->
+  <div class="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+    <div class="container mx-auto px-4 py-3">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <div class="font-medium text-gray-700">All Media</div>
+          <div class="text-sm text-gray-500">
+            {mediaItems.length} item{mediaItems.length !== 1 ? "s" : ""}
+          </div>
+        </div>
+        <button
+          id="add-media-button"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width={2}
+              d="M12 4v16m8-8H4"></path>
+          </svg>
+          Add Media
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="container mx-auto px-4 py-6">
+    <div class="grid grid-cols-1">
+      <!-- Catalog - Takes full width -->
+      <div>
+        {
+          isLoading ? (
+            <div class="flex justify-center items-center h-40 bg-white rounded-lg shadow">
+              <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600" />
+            </div>
+          ) : (
+            <MediaCatalog items={mediaItems} selectedId="" />
+          )
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- MediaViewer modal, controlled by selected item -->
+  <div id="media-viewer-container"></div>
+
+  <!-- Upload Modal (hidden by default) -->
+  <div
+    id="upload-modal"
+    class="fixed inset-0 bg-gray-100 bg-opacity-15 flex items-center justify-center z-50 hidden"
+  >
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">Upload Media</h3>
+        <button
+          id="close-modal-button"
+          class="text-gray-500 hover:text-gray-700"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width={2}
+              d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <MediaUploader />
+    </div>
+  </div>
+</div>
+
+<script>
+  import { toggleElement } from "../utils/domUtils";
+  import { actions } from "astro:actions";
+
+  // Handle modal visibility
+  const addMediaButton = document.getElementById("add-media-button");
+  const closeModalButton = document.getElementById("close-modal-button");
+  const uploadModal = document.getElementById("upload-modal");
+
+  if (addMediaButton && closeModalButton && uploadModal) {
+    addMediaButton.addEventListener("click", () => {
+      toggleElement(uploadModal, true);
+    });
+
+    closeModalButton.addEventListener("click", () => {
+      toggleElement(uploadModal, false);
+    });
+
+    // Close modal when clicking outside of it
+    uploadModal.addEventListener("click", (e) => {
+      if (e.target === uploadModal) {
+        toggleElement(uploadModal, false);
+      }
+    });
+
+    // Close modal when pressing Escape key
+    document.addEventListener("keydown", (e) => {
+      if (
+        e.key === "Escape" &&
+        uploadModal &&
+        !uploadModal.classList.contains("hidden")
+      ) {
+        toggleElement(uploadModal, false);
+      }
+    });
+  }
+
+  // Add event listener for file upload completion
+  document.addEventListener("upload:complete", () => {
+    window.location.reload(); // Reload page to show the newly uploaded file
+    if (uploadModal) {
+      toggleElement(uploadModal, false);
+    }
+  });
+
+  function renderMediaViewerModal(item) {
+    return `
+      <div
+        id="media-viewer-modal"
+        data-file-id="${item.id}"
+        class="fixed inset-0 bg-gray-100 bg-opacity-15 flex items-center justify-center z-50"
+      >
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl">
+          <div class="flex flex-col h-full">
+            <div class="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+              <h3 class="font-medium text-gray-700 text-sm">File Details</h3>
+              <div class="flex items-center gap-2">
+                <button id="open-media-btn" class="text-gray-500 hover:text-blue-600" title="Open in new window">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline stroke-linecap="round" stroke-linejoin="round" stroke-width="2" points="15 3 21 3 21 9" />
+                    <line stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                </button>
+                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700" title="Close">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="grow overflow-hidden bg-gray-100 relative">
+              <div class="bg-black flex items-center justify-center overflow-hidden">
+                ${
+                  item.mediaType === "IMAGE"
+                    ? `<img src="${item.url}" alt="${item.name}" class="max-w-full max-h-96 object-contain" />`
+                    : `<video src="${item.url}" controls class="max-w-full max-h-full"></video>`
+                }
+              </div>
+            </div>
+            <div class="p-4 border-t border-gray-200">
+              <div class="mb-3 flex items-center" id="name-edit-row">
+                <h4 id="media-name" class="font-medium text-gray-800 truncate grow">${item.name}</h4>
+                <button id="edit-name-btn" class="ml-2 px-2 py-1 text-xs border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">Edit</button>
+                <input id="edit-name-input" class="hidden grow mr-2 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" value="${item.name}" />
+                <button id="save-name-btn" class="hidden px-2 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Save</button>
+                <button id="cancel-edit-btn" class="hidden px-2 py-1 text-xs border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">Cancel</button>
+              </div>
+              <div class="mt-4">
+                <div class="flex items-start mb-1">
+                  <span class="text-sm font-medium text-gray-700">Description:</span>
+                </div>
+                <p class="text-sm text-gray-600 whitespace-pre-wrap">${item.description || "No description"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Add event listener for when a catalog item is selected
+  document.addEventListener("item:selected", (event) => {
+    const customEvent = event as CustomEvent<{
+      item: import("../types").MediaItem;
+    }>;
+    const container = document.getElementById("media-viewer-container");
+    if (!container) return;
+    container.innerHTML = "";
+    const selectedItem = customEvent.detail?.item;
+    if (selectedItem) {
+      container.innerHTML = renderMediaViewerModal(selectedItem);
+      // Attach modal interactivity (edit, save, cancel, close, open in new window)
+      const modal = document.getElementById("media-viewer-modal");
+      const closeModalBtn = document.getElementById("close-modal-btn");
+      const openMediaBtn = document.getElementById("open-media-btn");
+      const nameEl = document.getElementById("media-name");
+      const editBtn = document.getElementById("edit-name-btn");
+      const inputEl = document.getElementById(
+        "edit-name-input"
+      ) as HTMLInputElement | null;
+      const saveBtn = document.getElementById("save-name-btn");
+      const cancelBtn = document.getElementById("cancel-edit-btn");
+      const fileId = modal?.getAttribute("data-file-id") || "";
+      let isEditing = false;
+      let isSaving = false;
+
+      if (openMediaBtn) {
+        openMediaBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          window.open(selectedItem.url, "_blank");
+        });
+      }
+
+      function openEdit() {
+        if (!nameEl || !editBtn || !inputEl || !saveBtn || !cancelBtn) return;
+        isEditing = true;
+        nameEl.classList.add("hidden");
+        editBtn.classList.add("hidden");
+        inputEl.classList.remove("hidden");
+        saveBtn.classList.remove("hidden");
+        cancelBtn.classList.remove("hidden");
+        inputEl.value = nameEl.textContent || "";
+        inputEl.focus();
+      }
+      function closeEdit() {
+        if (!nameEl || !editBtn || !inputEl || !saveBtn || !cancelBtn) return;
+        isEditing = false;
+        nameEl.classList.remove("hidden");
+        editBtn.classList.remove("hidden");
+        inputEl.classList.add("hidden");
+        saveBtn.classList.add("hidden");
+        cancelBtn.classList.add("hidden");
+        inputEl.value = nameEl.textContent || "";
+      }
+      async function handleSave() {
+        if (!inputEl || !saveBtn || !nameEl) return;
+        if (!inputEl.value.trim() || isSaving) return;
+        isSaving = true;
+        saveBtn.textContent = "Saving...";
+        try {
+          const { data: success } = await actions.updateFileDescriptor({
+            fileId,
+            displayName: inputEl.value,
+          });
+          if (success) {
+            nameEl.textContent = inputEl.value;
+            closeEdit();
+            // Optionally dispatch a custom event to update the catalog
+            document.dispatchEvent(
+              new CustomEvent("media:updated", {
+                detail: { item: { ...selectedItem, name: inputEl.value } },
+              })
+            );
+          } else {
+            alert("Failed to update file name. Please try again.");
+          }
+        } catch (error) {
+          alert("Failed to update file name. Please try again.");
+        } finally {
+          isSaving = false;
+          saveBtn.textContent = "Save";
+        }
+      }
+      if (editBtn) editBtn.addEventListener("click", openEdit);
+      if (cancelBtn) cancelBtn.addEventListener("click", closeEdit);
+      if (saveBtn) saveBtn.addEventListener("click", handleSave);
+      if (inputEl)
+        inputEl.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") handleSave();
+          if (e.key === "Escape") closeEdit();
+        });
+      if (closeModalBtn && modal)
+        closeModalBtn.addEventListener("click", () => {
+          modal.remove();
+        });
+      // Optional: close modal on background click
+      if (modal)
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) modal.remove();
+        });
+    }
+  });
+</script>
