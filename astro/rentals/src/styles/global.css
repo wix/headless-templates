@@ -1,0 +1,184 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+
+  /* Cool neutral palette — restrained, professional.
+     Token names kept (cream/ink/etc.) so utility classes stay stable. */
+  --color-cream: #f6f7f9; /* page background */
+  --color-cream-deep: #eceef2; /* placeholders, footer, subtle chips */
+  --color-surface: #ffffff;
+  --color-ink: #141820; /* near-black, slightly cool */
+  --color-ink-soft: #414855;
+  --color-muted: #767e8b;
+  --color-line: #e4e7ec;
+
+  /* Professional blue accent (aliased to brand-* so legacy classes stay on-palette) */
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-accent-soft: #eaf1fe;
+  --color-brand-50: #eff5ff;
+  --color-brand-100: #dbe6fe;
+  --color-brand-400: #5b8def;
+  --color-brand-500: #2563eb;
+  --color-brand-600: #1d4ed8;
+  --color-brand-700: #1e40af;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: var(--color-cream);
+}
+
+::selection {
+  background: var(--color-accent-soft);
+}
+
+/* Consistent, accessible focus ring for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------- Animation
+   Small, tasteful motion. Every animation is disabled under
+   prefers-reduced-motion (see the media query at the bottom). */
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-card-in {
+  animation: card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+.animate-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-scale-in {
+  animation: scale-in 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top;
+}
+.animate-sheet-up {
+  animation: sheet-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-pop-in {
+  animation: pop-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* Modal panel: slides up as a sheet on mobile, scales in when centered. */
+.animate-modal {
+  animation: sheet-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (min-width: 640px) {
+  .animate-modal {
+    animation: modal-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+/* Subtle hover lift for cards and primary CTAs. */
+.hover-lift {
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-card-in,
+  .animate-fade-in,
+  .animate-fade-up,
+  .animate-scale-in,
+  .animate-sheet-up,
+  .animate-pop-in,
+  .animate-modal {
+    animation: none;
+  }
+  .hover-lift:hover {
+    transform: none;
+  }
+}

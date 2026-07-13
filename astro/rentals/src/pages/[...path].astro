@@ -1,0 +1,11 @@
+---
+// Catch-all: serve the React SPA shell for every deep route (e.g.
+// /rental/:slug, /confirmation) so direct loads + refreshes work.
+// react-router renders the correct view on the client.
+import Layout from '../layouts/Layout.astro';
+import App from '../App';
+---
+
+<Layout>
+	<App client:only="react" />
+</Layout>
