@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "templates": [
+    {
+      "name": "commerce",
+      "title": "Commerce (Wix Stores)",
+      "subtitle": "Product catalog, checkout, and more",
+      "siteTemplateId": "e5da13f4-c01e-4b61-a9c7-55dacd961d54",
+      "gitPath": "astro/commerce",
+      "vibeCompatible": false
+    },
+    {
+      "name": "scheduler",
+      "title": "Scheduler (Wix Bookings)",
+      "subtitle": "Appointment booking and calendar",
+      "siteTemplateId": "72ade0e3-1871-4c04-ac54-419ca874d9d3",
+      "gitPath": "astro/scheduler",
+      "vibeCompatible": false
+    },
+    {
+      "name": "registration",
+      "title": "Registration (Wix Forms)",
+      "subtitle": "Inputs, dropdowns and field validations",
+      "siteTemplateId": "e5d63bf1-cd06-48eb-ad77-0da9235adcf1",
+      "gitPath": "astro/registration",
+      "vibeCompatible": false
+    },
+    {
+      "name": "blank",
+      "title": "Blank",
+      "subtitle": "Basic Astro project",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/blank",
+      "vibeCompatible": false
+    }
+  ]
+}
