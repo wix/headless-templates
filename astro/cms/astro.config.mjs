@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import tailwind from "@astrojs/tailwind";
-import cloudProviderFetchAdapter from "@wix/cloud-provider-fetch-adapter";
+import wixHostingAdapter from "@wix/astro-wix-hosting-adapter";
 import wix from "@wix/astro";
 import wixPages from "@wix/astro-pages";
 import monitoring from "@wix/monitoring-astro";
@@ -50,7 +50,7 @@ export default defineConfig({
       },
     } : undefined,
   },
-  ...(isBuild && { adapter: cloudProviderFetchAdapter({}) }),
+  adapter: wixHostingAdapter(),
   devToolbar: {
     enabled: false,
   },

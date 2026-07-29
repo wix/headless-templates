@@ -1,7 +1,7 @@
 # Wix Astro Headless Blank Template
 
 A minimal Wix Headless Astro starter that is **release-ready out of the box** —
-identical to `blank`, plus the server adapter (`@wix/cloud-provider-fetch-adapter`)
+identical to `blank`, plus the server adapter (`@wix/astro-wix-hosting-adapter`)
 and `output: "server"` that production builds require.
 
 Use this when you consume the template **programmatically** — copied or
