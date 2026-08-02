@@ -1,0 +1,18 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Button from "../components/Button.astro";
+---
+
+<Layout title="Page Not Found | Business Name">
+  <div class="max-w-2xl mx-auto text-center py-16">
+    <p class="text-[13px] font-semibold tracking-[0.1em] mb-4" style="color: rgba(26,29,46,0.45);">404</p>
+    <h1 class="text-3xl font-normal mb-6" style="color: #1a1d2e;">We couldn't find that page</h1>
+    <p class="mb-8 text-[15px]" style="color: rgba(26,29,46,0.6);">
+      The page you're looking for might have been removed, had its name changed,
+      or is temporarily unavailable.
+    </p>
+    <a href="/">
+      <Button variant="primary">Back to home</Button>
+    </a>
+  </div>
+</Layout>

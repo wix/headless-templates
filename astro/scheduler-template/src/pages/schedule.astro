@@ -1,0 +1,58 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import DatePicker from "../components/DatePicker.astro";
+import TimeSlots from "../components/TimeSlots.astro";
+import BookingForm from "../components/BookingForm.astro";
+import SessionType from "../components/SessionType.astro";
+import BackButton from "../components/ui/BackButton.astro";
+import "../styles/global.css";
+import { BUSINESS_NAME } from "../utils/constants";
+---
+
+<Layout>
+  <div class="min-h-screen bg-white">
+    <Navbar />
+
+    <div class="max-w-7xl mx-auto pt-40 pb-16 px-4">
+      <div class="mb-6">
+        <BackButton href="/" text="Back to Home" />
+      </div>
+
+      <div class="text-center mb-8 animate-fade-up">
+        <p class="eyebrow mb-3">Book an Appointment</p>
+        <h1 class="text-3xl md:text-5xl font-normal tracking-tight mb-2 text-foreground">
+          Schedule Your Appointment
+        </h1>
+      </div>
+
+      <div class="text-center animate-fade-up delay-100">
+        <p class="text-foreground/55 mb-8 max-w-2xl mx-auto">
+          Select a date and time that works for you, and fill in your details to
+          complete the booking with {BUSINESS_NAME}.
+        </p>
+      </div>
+
+      <div class="max-w-2xl mx-auto mb-8 animate-fade-up delay-100">
+        <SessionType />
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="animate-fade-up delay-200">
+          <DatePicker />
+        </div>
+
+        <div class="animate-fade-up delay-300">
+          <TimeSlots />
+        </div>
+
+        <div id="booking-form" class="animate-fade-up delay-400">
+          <BookingForm />
+        </div>
+      </div>
+    </div>
+
+    <Footer />
+  </div>
+</Layout>

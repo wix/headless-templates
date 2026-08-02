@@ -1,0 +1,31 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { queryAllPosts } from '../../lib/blog';
+
+const allPosts = await queryAllPosts();
+
+const DARK = '#1a1d2e';
+const GRAD = 'linear-gradient(135deg, #dde9de 0%, #eaedf4 55%, #e0dced 100%)';
+---
+
+<Layout title="Blog | All Posts" activePage="blog">
+  <!-- Header -->
+  <section style={`background:${GRAD};padding:80px max(24px,calc((100vw - 1280px)/2 + 24px)) 60px`}>
+    <p style="font-size:12px;font-weight:700;letter-spacing:0.12em;opacity:0.45;margin-bottom:16px">ALL POSTS</p>
+    <h1 style="font-size:clamp(40px,5vw,72px);font-weight:400;line-height:1.05;letter-spacing:-0.02em">The Blog</h1>
+  </section>
+
+  <!-- Posts grid -->
+  <section style="padding:60px max(24px,calc((100vw - 1280px)/2 + 24px))">
+    {allPosts.length === 0 ? (
+      <div style="text-align:center;padding:100px 0;opacity:0.4">
+        <p style="font-size:20px">No posts yet — check back soon.</p>
+      </div>
+    ) : (
+      <div class="posts-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:40px 32px">
+        {allPosts.map((post, i) => <PostCard post={post} index={i} />)}
+      </div>
+    )}
+  </section>
+</Layout>

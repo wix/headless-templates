@@ -1,0 +1,39 @@
+---
+import { BUSINESS_NAME } from '../utils/constants';
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="bg-primary text-white pt-16 px-4">
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 pb-14">
+    <div>
+      <p class="text-xs font-semibold tracking-[0.1em] uppercase text-white/50 mb-4">Navigate</p>
+      <p class="text-sm text-white/80 mb-2.5"><a href="/">Home</a></p>
+      <p class="text-sm text-white/80 mb-2.5"><a href="/schedule">Book Now</a></p>
+    </div>
+    <div>
+      <p class="text-xs font-semibold tracking-[0.1em] uppercase text-white/50 mb-4">Legal</p>
+      <p class="text-sm text-white/80 mb-2.5">Terms &amp; Conditions</p>
+      <p class="text-sm text-white/80 mb-2.5">Privacy Policy</p>
+      <p class="text-sm text-white/80 mb-2.5">Accessibility Statement</p>
+    </div>
+    <div></div>
+    <div>
+      <p class="text-xs font-semibold tracking-[0.1em] uppercase text-white/50 mb-4">Follow Us</p>
+      <div class="flex gap-4">
+        <div class="w-9 h-9 rounded-full border-[1.5px] border-white/30 flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        </div>
+        <div class="w-9 h-9 rounded-full border-[1.5px] border-white/30 flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><rect x="2" y="2" width="20" height="20" rx="5"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto border-t border-white/15 py-10 text-center">
+    <p class="text-3xl md:text-4xl font-extrabold tracking-tight">Logo.</p>
+    <p class="mt-8 pb-8 text-xs text-white/50">
+      © {currentYear} by {BUSINESS_NAME}. Powered and secured by Wix
+    </p>
+  </div>
+</footer>

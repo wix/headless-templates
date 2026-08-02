@@ -1,0 +1,55 @@
+---
+import { members } from '@wix/members';
+import AppIsland from '../components/AppIsland.jsx';
+
+let member = null;
+try {
+  const { member: m } = await members.getCurrentMember({ fieldsets: ['FULL'] });
+  member = m ?? null;
+} catch {}
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Our Story — Brand Name</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style is:global>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { min-height: 100%; overflow-x: hidden; }
+      body { font-family: 'Wix Madefor Text', system-ui, sans-serif; background: #1a1d2e; color: #1a1d2e; }
+      img { max-width: 100%; }
+
+      .grid-2, .grid-3, .grid-4, .shop-grid { display: grid; }
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+      .grid-3 { grid-template-columns: repeat(3, 1fr); }
+      .grid-4 { grid-template-columns: repeat(4, 1fr); }
+      .shop-grid { grid-template-columns: 1fr 1.4fr; }
+
+      @media (max-width: 900px) {
+        .grid-2, .shop-grid { grid-template-columns: 1fr !important; }
+        .grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+      }
+      .mobile-menu-btn { display: none; }
+      .mobile-menu-panel { display: none; }
+
+      @media (max-width: 640px) {
+        .grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+        .section-pad { padding-left: 20px !important; padding-right: 20px !important; }
+        .site-header-inner { padding: 0 20px !important; gap: 16px !important; }
+        .desktop-header-actions { display: none !important; }
+        .mobile-menu-btn { display: flex !important; align-items: center; }
+        .mobile-menu-panel { display: flex !important; background: #fff; }
+      }
+      @media (max-width: 480px) {
+        .grid-3, .grid-4 { grid-template-columns: 1fr !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <AppIsland products={[]} member={member} page="about" client:only="react" />
+  </body>
+</html>

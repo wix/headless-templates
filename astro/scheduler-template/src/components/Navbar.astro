@@ -1,0 +1,25 @@
+---
+import { BUSINESS_NAME } from '../utils/constants';
+---
+
+<header class="fixed top-0 left-0 w-full z-50">
+  <div class="bg-primary text-white text-center py-2.5 px-6 text-xs font-semibold tracking-[0.12em] uppercase">
+    Book Your Next Appointment Online
+  </div>
+  <div class="backdrop-blur-md bg-white/90 border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <a href="/" class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-full brand-gradient border border-gray-200"></div>
+            <span class="text-[15px] font-bold text-foreground">{BUSINESS_NAME}</span>
+          </a>
+        </div>
+        <nav class="flex items-center gap-7">
+          <a href="/" class="text-sm text-foreground/80 hover:text-foreground transition-colors">Home</a>
+          <a href="/schedule" class="text-sm text-foreground/80 hover:text-foreground transition-colors">Book Now</a>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,49 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "A form registration site for Business Name" } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="min-h-screen flex flex-col">
+      <header class="text-white py-5" style="background-color: var(--primary-color, #1a1d2e);">
+        <div class="container mx-auto px-4 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full border border-white/20" style="background: var(--grad);"></div>
+          <span class="text-[15px] font-bold tracking-tight">Business Name</span>
+        </div>
+      </header>
+
+      <main class="grow container mx-auto px-4 py-8">
+        <slot />
+      </main>
+
+      <footer class="text-white pt-14 pb-8 mt-auto" style="background-color: var(--primary-color, #1a1d2e);">
+        <div class="container mx-auto px-4 text-center">
+          <p class="text-[13px]" style="color: #8b8f9a;">
+            &copy; {new Date().getFullYear()} by Business Name. Powered and secured by Wix
+          </p>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  @import "../styles/global.css";
+</style>

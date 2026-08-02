@@ -1,0 +1,20 @@
+---
+interface Props {
+  href: string;
+  text?: string;
+  class?: string;
+}
+
+const { 
+  href, 
+  text = 'Back', 
+  class: className = '' 
+} = Astro.props;
+---
+
+<a href={href} class={`inline-flex items-center space-x-2 text-sm font-medium text-gray-600 hover:text-gray-900 ${className}`}>
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 12H5M12 19l-7-7 7-7"/>
+  </svg>
+  <span>{text}</span>
+</a>

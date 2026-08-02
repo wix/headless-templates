@@ -1,0 +1,64 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const DARK = '#1a1d2e';
+const GRAD = 'linear-gradient(135deg, #dde9de 0%, #eaedf4 55%, #e0dced 100%)';
+const grads = [
+  'linear-gradient(140deg,#e4ede6 0%,#d8e0ec 100%)',
+  'linear-gradient(140deg,#e8eddf 0%,#dde4ec 100%)',
+];
+---
+
+<Layout title="About" activePage="about">
+  <!-- Hero -->
+  <section style={`background:${GRAD};min-height:70vh;display:flex;align-items:flex-end;padding:80px max(24px,calc((100vw - 1280px)/2 + 24px)) 80px`}>
+    <div style="max-width:680px">
+      <p style="font-size:12px;font-weight:700;letter-spacing:0.12em;opacity:0.45;margin-bottom:20px">ABOUT</p>
+      <h1 style="font-size:clamp(40px,5.5vw,80px);font-weight:400;line-height:1.05;letter-spacing:-0.02em">
+        Our Story
+      </h1>
+    </div>
+  </section>
+
+  <!-- Story -->
+  <section class="story-grid" style="padding:80px max(24px,calc((100vw - 1280px)/2 + 24px));display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start">
+    <div>
+      <h2 style={`font-size:clamp(28px,3vw,42px);font-weight:500;line-height:1.2;color:${DARK};margin-bottom:32px`}>
+        This blog template's space to tell your story.
+      </h2>
+      <p style="font-size:16px;line-height:1.85;color:#374151;margin-bottom:24px">
+        This is the blog template's about section — share more about who you are, what you do, and why you do it. Use this page to connect with your readers and build trust.
+      </p>
+      <p style="font-size:16px;line-height:1.85;color:#374151">
+        Share your background, what inspired this publication, and what readers can expect. Authentic stories build authentic connections.
+      </p>
+    </div>
+    <div style={`aspect-ratio:4/3;border-radius:2px;background:${grads[0]}`}></div>
+  </section>
+
+  <!-- Values strip -->
+  <section style={`background:#f7f8fc;padding:80px max(24px,calc((100vw - 1280px)/2 + 24px))`}>
+    <h2 style={`font-size:clamp(22px,2.5vw,36px);font-weight:500;margin-bottom:48px;color:${DARK}`}>What We Stand For</h2>
+    <div class="values-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:40px">
+      {['Authenticity', 'Curiosity', 'Community'].map((v, i) => (
+        <div>
+          <div style={`width:52px;height:52px;border-radius:50%;background:${grads[i % grads.length]};margin-bottom:20px`}></div>
+          <p style={`font-size:18px;font-weight:600;color:${DARK};margin-bottom:10px`}>{v}</p>
+          <p style="font-size:14px;line-height:1.75;color:#6b7280">
+            This blog template's space to describe what this value means to your publication and how it guides your work.
+          </p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section style="padding:100px max(24px,calc((100vw - 1280px)/2 + 24px));text-align:center">
+    <h2 style={`font-size:clamp(28px,3.5vw,48px);font-weight:400;line-height:1.2;color:${DARK};margin-bottom:32px`}>
+      Ready to start reading?
+    </h2>
+    <a href="/blog" style={`display:inline-block;padding:15px 36px;background:${DARK};color:#fff;border-radius:24px;font-size:16px;font-weight:600`}>
+      Explore the Blog
+    </a>
+  </section>
+</Layout>

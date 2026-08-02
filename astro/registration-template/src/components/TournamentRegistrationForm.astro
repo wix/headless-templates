@@ -1,0 +1,213 @@
+---
+import { forms } from "@wix/forms";
+import { WIX_FORM_ID } from "../utils/constants";
+import Button from "./Button.astro";
+import FormField from "./FormField.astro";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+
+const wixForm = await forms.getForm(WIX_FORM_ID);
+
+const inputFieldsById = new Map(
+  (wixForm.formFields ?? [])
+    .filter((field: any): field is forms.InputField & { _id: string } =>
+      field.fieldType === "INPUT" && !field.hidden && !!field._id,
+    )
+    .map((field: any) => [field._id, field]),
+);
+
+type RenderableField = {
+  id: string;
+  type: "text" | "email" | "tel" | "date" | "textarea" | "select" | "radio" | "checkbox";
+  label: string;
+  required: boolean;
+  options?: Array<{ value: string; label: string }>;
+};
+
+function toOptions(rawOptions: any): Array<{ value: string; label: string }> | undefined {
+  return rawOptions?.map((option: any) => ({
+    value: option.value || option.label || "",
+    label: option.label || option.value || "",
+  }));
+}
+
+function resolveField(field: forms.InputField & { _id: string; identifier?: string }): RenderableField {
+  const stringOptions = (field.inputOptions as any)?.stringOptions ?? {};
+  const target = field.inputOptions?.target || field._id;
+  const required = field.inputOptions?.required ?? false;
+  const identifier = field.identifier ?? "";
+
+  const single = stringOptions.textInputOptions;
+  const dropdown = stringOptions.dropdownOptions;
+  const radioGroup = stringOptions.radioGroupOptions;
+  const checkboxGroup = stringOptions.checkboxGroupOptions;
+  const phone = stringOptions.phoneInputOptions;
+  const date = stringOptions.dateInputOptions;
+
+  const label =
+    single?.label || dropdown?.label || radioGroup?.label ||
+    checkboxGroup?.label || phone?.label || date?.label || target;
+
+  if (dropdown) {
+    return { id: target, type: "select", label, required, options: toOptions(dropdown.options) };
+  }
+  if (radioGroup) {
+    return { id: target, type: "radio", label, required, options: toOptions(radioGroup.options) };
+  }
+  if (checkboxGroup) {
+    return { id: target, type: "radio", label, required, options: toOptions(checkboxGroup.options) };
+  }
+  if (phone) {
+    return { id: target, type: "tel", label, required };
+  }
+  if (date) {
+    return { id: target, type: "date", label, required };
+  }
+  if (identifier === "TEXT_AREA") {
+    return { id: target, type: "textarea", label, required };
+  }
+  if (stringOptions.validation?.format === "EMAIL") {
+    return { id: target, type: "email", label, required };
+  }
+  return { id: target, type: "text", label, required };
+}
+
+type Section = { name: string; fields: RenderableField[] };
+
+const steps = wixForm.steps ?? [];
+const sections: Section[] = steps.length
+  ? steps.map((step: any, index: number) => {
+      const items = step.layout?.large?.items ?? [];
+      const orderedIds = [...items]
+        .sort((a, b) => (a.row - b.row) || (a.column - b.column))
+        .map((item) => item.fieldId);
+
+      const fields = orderedIds
+        .map((fieldId) => inputFieldsById.get(fieldId))
+        .filter((field): field is forms.InputField & { _id: string } => !!field)
+        .map(resolveField);
+
+      return { name: step.name || `Section ${index + 1}`, fields };
+    })
+  : [{ name: "Registrant information", fields: [...inputFieldsById.values()].map(resolveField) }];
+---
+
+<form
+  id="registration-form"
+  class={`form-container shadow-none ${className}`}
+  method="POST"
+>
+  {
+    sections.map((section, sectionIndex) => (
+      <div class="mb-8 border-t border-[#e5e7eb] rounded-sm pt-6 px-6 pb-6 bg-[#ffffff] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+        <p class="text-[12px] font-semibold tracking-[0.1em] mb-1" style="color: rgba(26,29,46,0.45);">
+          {String(sectionIndex + 1).padStart(2, "0")}
+        </p>
+        <h2 class="text-xl font-normal mb-4" style="color: #1a1d2e;">{section.name}</h2>
+
+        {section.fields.map((field) => (
+          <FormField
+            type={field.type}
+            id={field.id}
+            label={field.label}
+            required={field.required}
+            options={field.options}
+          />
+        ))}
+      </div>
+    ))
+  }
+
+  <!-- Error message container -->
+  <div
+    id="form-error"
+    class="hidden p-4 mb-4 text-[0.875rem] text-[#ffffff] rounded-md"
+    style="background-color: var(--error-color, #E21E1E);"
+  >
+  </div>
+
+  <div class="flex justify-between items-center mt-8">
+    <div>
+      <span class="text-[0.75rem]" style="color: rgba(26,29,46,0.5);">* Required question</span>
+    </div>
+    <div>
+      <Button type="submit" variant="primary"> Submit </Button>
+    </div>
+  </div>
+</form>
+
+<script>
+  import { submitFormRegistration } from "../utils/form-service";
+
+  const form = document.getElementById("registration-form") as HTMLFormElement;
+  const errorContainer = document.getElementById(
+    "form-error"
+  ) as HTMLDivElement;
+  const submitButton = document.querySelector(
+    "button[type='submit']"
+  ) as HTMLButtonElement;
+
+  function showError(message: string) {
+    if (errorContainer) {
+      errorContainer.textContent = message;
+      errorContainer.classList.remove("hidden");
+      errorContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+
+  function clearError() {
+    if (errorContainer) {
+      errorContainer.textContent = "";
+      errorContainer.classList.add("hidden");
+    }
+  }
+
+  if (form) {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearError();
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      // Set loading state
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Submitting...";
+      }
+
+      try {
+        // Get form data
+        const formData = new FormData(form);
+        const formDataObj = Object.fromEntries(formData.entries()) as Record<
+          string,
+          string
+        >;
+
+        // Submit the form
+        const result = await submitFormRegistration(formDataObj);
+
+        if (result.success) {
+          window.location.href = "/success";
+        } else {
+          showError(result.error || "Please check your form and try again.");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        showError("Something went wrong. Please try again later.");
+      } finally {
+        // Reset button state
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Submit";
+        }
+      }
+    });
+  }
+</script>

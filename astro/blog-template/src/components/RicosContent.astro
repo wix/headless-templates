@@ -1,0 +1,49 @@
+---
+interface RicosNode {
+  type: string;
+  id?: string;
+  nodes?: RicosNode[];
+  textData?: { text: string; decorations?: { type: string }[] };
+  headingData?: { level: number };
+  blockquoteData?: { indentation?: number };
+  codeBlockData?: { language?: string };
+}
+interface Props { richContent?: { nodes?: RicosNode[] } }
+const { richContent } = Astro.props;
+
+function renderNode(node: RicosNode): string {
+  const children = (node.nodes ?? []).map(renderNode).join('');
+  switch (node.type) {
+    case 'TEXT': {
+      const t = (node.textData?.text ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const dec = node.textData?.decorations ?? [];
+      let out = t;
+      if (dec.some(d => d.type === 'BOLD')) out = `<strong>${out}</strong>`;
+      if (dec.some(d => d.type === 'ITALIC')) out = `<em>${out}</em>`;
+      return out;
+    }
+    case 'PARAGRAPH':
+      return `<p style="margin-bottom:20px;line-height:1.85;font-size:16px;color:#374151">${children}</p>`;
+    case 'HEADING': {
+      const l = node.headingData?.level ?? 2;
+      return `<h${l} style="margin:32px 0 12px;font-weight:600;line-height:1.2;color:#1a1d2e">${children}</h${l}>`;
+    }
+    case 'BLOCKQUOTE':
+      return `<blockquote style="margin:24px 0;padding:16px 24px;border-left:3px solid #1a1d2e;opacity:0.75;font-style:italic;font-size:16px;line-height:1.7">${children}</blockquote>`;
+    case 'BULLETED_LIST':
+      return `<ul style="margin:8px 0 20px 24px;line-height:1.85">${children}</ul>`;
+    case 'ORDERED_LIST':
+      return `<ol style="margin:8px 0 20px 24px;line-height:1.85">${children}</ol>`;
+    case 'LIST_ITEM':
+      return `<li style="margin-bottom:6px;font-size:16px;color:#374151">${children}</li>`;
+    case 'CODE_BLOCK':
+      return `<pre style="background:#f3f4f6;border-radius:6px;padding:16px 20px;margin:16px 0;font-size:14px;overflow-x:auto"><code>${children}</code></pre>`;
+    default:
+      return children;
+  }
+}
+
+const html = (richContent?.nodes ?? []).map(renderNode).join('');
+---
+
+<div set:html={html} />

@@ -1,0 +1,20 @@
+---
+import Layout from "../layouts/Layout.astro";
+import SuccessMessage from "../components/SuccessMessage.astro";
+import Button from "../components/Button.astro";
+---
+
+<Layout title="You're Registered | Business Name">
+  <div class="max-w-2xl mx-auto py-8">
+    <SuccessMessage
+      title="You're all set"
+      message="Your registration with Business Name is complete. A confirmation email with the details is on its way to you."
+    >
+      <div class="mt-6">
+        <a href="/" class="inline-block">
+          <Button variant="primary">Back to home</Button>
+        </a>
+      </div>
+    </SuccessMessage>
+  </div>
+</Layout>

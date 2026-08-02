@@ -1,0 +1,11 @@
+{
+  "production": {
+    "id": "4c20874f-b6a8-45aa-b240-423e3936e919",
+    "site": {
+      "main": "https://l9e7hr-blog-templ-8845e624-kerenvi.wix-site-host.com"
+    },
+    "dashboard": {
+      "main": "https://manage.wix.com/dashboard/7bde072d-f967-4085-806c-6a7aeac794e0?apps-override=4c20874f-b6a8-45aa-b240-423e3936e919"
+    }
+  }
+}

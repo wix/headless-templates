@@ -1,0 +1,178 @@
+---
+interface Props {
+  title?: string;
+  activePage?: 'home' | 'blog' | 'about';
+}
+const { title = 'Blog', activePage } = Astro.props;
+
+const DARK = '#1a1d2e';
+const GRAD = 'linear-gradient(135deg, #dde9de 0%, #eaedf4 55%, #e0dced 100%)';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- Promo banner -->
+    <div style={`background:${DARK};color:#fff;text-align:center;padding:12px 24px;font-size:12px;font-weight:600;letter-spacing:0.12em`}>
+      THIS IS THE BLOG TEMPLATE — CUSTOMIZE THIS BANNER
+    </div>
+
+    <!-- Nav -->
+    <header class="site-header" style="background:#fff;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:100">
+      <div class="header-inner" style="max-width:1280px;margin:0 auto;padding:0 24px;height:72px;display:flex;align-items:center;gap:24px;position:relative">
+        <a href="/" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;flex-shrink:0">
+          <div style={`width:36px;height:36px;border-radius:50%;background:${GRAD};border:1px solid #e0e0e0`}></div>
+          <span style="font-weight:700;font-size:15px">Brand Name</span>
+        </a>
+
+        <input type="checkbox" id="nav-toggle" class="nav-toggle-input" />
+        <label for="nav-toggle" class="nav-toggle-label" aria-label="Toggle navigation">
+          <span class="hamburger-icon"><span></span><span></span><span></span></span>
+        </label>
+
+        <nav class="site-nav" style="display:flex;gap:28px;flex:1;justify-content:flex-end">
+          <a href="/" style={`font-size:14px;color:${DARK};opacity:${activePage==='home'?1:0.8};font-weight:${activePage==='home'?600:400}`}>Home</a>
+          <a href="/blog" style={`font-size:14px;color:${DARK};opacity:${activePage==='blog'?1:0.8};font-weight:${activePage==='blog'?600:400}`}>Blog</a>
+          <a href="/about" style={`font-size:14px;color:${DARK};opacity:${activePage==='about'?1:0.8};font-weight:${activePage==='about'?600:400}`}>About</a>
+        </nav>
+      </div>
+    </header>
+
+    <slot />
+
+    <!-- Footer -->
+    <footer style={`background:${DARK};color:#fff;padding:60px max(24px,calc((100vw - 1280px)/2 + 24px)) 0`}>
+      <div class="footer-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:40px;padding-bottom:60px">
+        <div>
+          <p style="font-size:12px;font-weight:600;letter-spacing:0.1em;color:#8b8f9a;margin-bottom:16px">NAVIGATE</p>
+          <a href="/" style="display:block;font-size:14px;margin-bottom:10px;color:#d1d5db">Home</a>
+          <a href="/blog" style="display:block;font-size:14px;margin-bottom:10px;color:#d1d5db">Blog</a>
+          <a href="/about" style="display:block;font-size:14px;margin-bottom:10px;color:#d1d5db">About</a>
+        </div>
+        <div>
+          <p style="font-size:12px;font-weight:600;letter-spacing:0.1em;color:#8b8f9a;margin-bottom:16px">LEGAL</p>
+          <p style="font-size:14px;margin-bottom:10px;color:#d1d5db">Terms & Conditions</p>
+          <p style="font-size:14px;margin-bottom:10px;color:#d1d5db">Privacy Policy</p>
+          <p style="font-size:14px;margin-bottom:10px;color:#d1d5db">Accessibility Statement</p>
+        </div>
+        <div></div>
+        <div>
+          <p style="font-size:12px;font-weight:600;letter-spacing:0.1em;color:#8b8f9a;margin-bottom:16px">FOLLOW US</p>
+          <div style="display:flex;gap:16px">
+            {[0,1,2].map(i => (
+              <div style="width:36px;height:36px;border-radius:50%;border:1.5px solid #4b5563;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  {i===0 && <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>}
+                  {i===1 && <><circle cx="12" cy="12" r="4"/><rect x="2" y="2" width="20" height="20" rx="5"/></>}
+                  {i===2 && <path d="M9 12a4 4 0 104 4V4a5 5 0 005 5"/>}
+                </svg>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div style="border-top:1px solid #2d3348;padding:48px 0 32px;text-align:center">
+        <p style="font-size:clamp(80px,14vw,180px);font-weight:800;line-height:0.9;letter-spacing:-0.03em;color:#fff">Logo.</p>
+        <p style="margin-top:40px;padding-bottom:32px;font-size:13px;color:#6b7080">© 2035 by Brand Name. Powered and secured by Wix</p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #fff; color-scheme: light; }
+  body {
+    font-family: 'Wix Madefor Text', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: #1a1d2e;
+    background: #fff;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+
+  /* Hamburger toggle (checkbox-driven, no JS) */
+  .nav-toggle-input { display: none; }
+  .nav-toggle-label {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .hamburger-icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 22px;
+  }
+  .hamburger-icon span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: #1a1d2e;
+    border-radius: 2px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .nav-toggle-input:checked ~ .nav-toggle-label .hamburger-icon span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .nav-toggle-input:checked ~ .nav-toggle-label .hamburger-icon span:nth-child(2) {
+    opacity: 0;
+  }
+  .nav-toggle-input:checked ~ .nav-toggle-label .hamburger-icon span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* Responsive grids used across pages */
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .footer-grid { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  @media (max-width: 900px) {
+    .grid-2, .story-grid, .promo-grid, .newsletter-grid, .hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+    .grid-3, .grid-4, .values-grid, .posts-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
+  }
+
+  @media (max-width: 640px) {
+    .grid-3, .grid-4, .values-grid, .posts-grid, .mini-grid { grid-template-columns: 1fr !important; }
+    .footer-grid { grid-template-columns: 1fr !important; }
+  }
+
+  @media (max-width: 768px) {
+    .nav-toggle-label { display: flex; }
+    .site-nav {
+      display: none !important;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column !important;
+      align-items: flex-start;
+      gap: 4px !important;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 16px 24px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+    }
+    .site-nav a { padding: 10px 0; width: 100%; }
+    .nav-toggle-input:checked ~ .site-nav { display: flex !important; }
+  }
+</style>

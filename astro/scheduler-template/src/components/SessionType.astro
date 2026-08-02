@@ -1,0 +1,90 @@
+---
+import Panel from './ui/Panel.astro';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<div class={className}>
+  <Panel>
+    <div class="flex flex-col space-y-4">
+      <h3 class="text-base font-medium">Session Type</h3>
+      
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
+        <button 
+          id="free-session-btn" 
+          class="flex-1 p-4 border rounded-lg bg-white hover:bg-primary/5 transition-colors cursor-pointer session-type-active"
+          data-session-type="free"
+        >
+          <h4 class="font-medium mb-1">Free Consultation</h4>
+          <p class="text-sm text-muted-foreground">30-minute introductory session</p>
+        </button>
+        
+        <button 
+          id="premium-session-btn" 
+          class="flex-1 p-4 border rounded-lg bg-white hover:bg-primary/5 transition-colors cursor-pointer"
+          data-session-type="premium"
+        >
+          <h4 class="font-medium mb-1">Premium Session</h4>
+          <p class="text-sm text-muted-foreground">60-minute full consultation</p>
+        </button>
+      </div>
+    </div>
+  </Panel>
+</div>
+
+<script>
+  import { dispatchSessionTypeChanged } from '../utils/event-utils';
+  
+  // Get elements
+  const freeSessionBtn = document.getElementById('free-session-btn');
+  const premiumSessionBtn = document.getElementById('premium-session-btn');
+  
+  // Current session type
+  let currentType: 'free' | 'premium' = 'free';
+  
+  // Handle session type change
+  function handleSessionTypeChange(type: 'free' | 'premium'): void {
+    // Early return if it's the same type
+    if (type === currentType) return;
+    
+    // Update UI
+    if (type === 'free') {
+      freeSessionBtn?.classList.add('session-type-active');
+      premiumSessionBtn?.classList.remove('session-type-active');
+    } else {
+      freeSessionBtn?.classList.remove('session-type-active');
+      premiumSessionBtn?.classList.add('session-type-active');
+    }
+    
+    // Update state
+    currentType = type;
+    
+    // Dispatch event
+    dispatchSessionTypeChanged(type);
+  }
+  
+  // Register click handlers
+  freeSessionBtn?.addEventListener('click', () => handleSessionTypeChange('free'));
+  premiumSessionBtn?.addEventListener('click', () => handleSessionTypeChange('premium'));
+  
+  // Initialize by dispatching the default type
+  document.addEventListener('DOMContentLoaded', () => {
+    // Dispatch initial session type
+    dispatchSessionTypeChanged('free');
+    
+    // Add styles for active session type
+    const style = document.createElement('style');
+    style.textContent = `
+      .session-type-active {
+        border-color: var(--color-primary) !important;
+        background-color: rgba(var(--color-primary-rgb), 0.05) !important;
+        box-shadow: 0 0 0 1px var(--color-primary);
+      }
+    `;
+    document.head.appendChild(style);
+  });
+</script>
