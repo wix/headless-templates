@@ -1,5 +1,7 @@
 import { submissions } from "@wix/forms";
-import { FormFieldsWixIds, WIX_FORM_ID } from "./constants";
+import { WIX_FORM_ID } from "./constants";
+
+export type FormValues = Record<string, string | string[] | number | boolean>;
 
 type SubmissionResult = {
   success: boolean;
@@ -7,45 +9,26 @@ type SubmissionResult = {
   error?: string;
 };
 
-export async function submitTournamentRegistration(
-  formData: Record<string, string>
+export async function submitFormRegistration(
+  formValues: FormValues
 ): Promise<SubmissionResult> {
   try {
-    const requiredFields = [
-      FormFieldsWixIds.teamName,
-      FormFieldsWixIds.email,
-    ] as const;
-    const missingFields = requiredFields.filter((field) => !formData[field]);
-
-    if (missingFields.length > 0) {
-      return {
-        success: false,
-        error: `Missing required fields: ${missingFields.join(", ")}`,
-      };
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData[FormFieldsWixIds.email])) {
-      return {
-        success: false,
-        error: "Invalid email format",
-      };
-    }
-
     const submission = {
       formId: WIX_FORM_ID,
-      submissions: formData,
+      submissions: formValues,
     };
 
-    const { status } = await submissions.createSubmission(submission);
+    const { _id, status } = await submissions.createSubmission(submission);
 
     return {
       success: status === "PENDING" || status === "CONFIRMED",
+      id: _id ?? undefined,
     };
   } catch (error) {
     console.error("Form submission error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: "We couldn't submit your registration. Please try again later.",
     };
   }
 }

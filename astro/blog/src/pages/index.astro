@@ -1,0 +1,122 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PostCard from '../components/PostCard.astro';
+import { queryAllPosts, getCoverUrl, formatDate } from '../lib/blog';
+
+const allPosts = await queryAllPosts();
+const featured = allPosts[0] ?? null;
+const gridPosts = allPosts.slice(1, 5);
+// Posts 0-4 are already shown in the hero section above — show the next ones here.
+const rowPosts = allPosts.slice(5, 8);
+
+// Gradient placeholder tiles that fill grid cells when there aren't enough posts.
+const fillers = (count: number, offset: number) =>
+  Array.from({ length: Math.max(0, count) }, (_, i) => `g${(i + offset) % 4}`);
+---
+
+<Layout
+  title="Blog | Home"
+  description="A blog template built with Astro and Wix Headless — stories, ideas, and updates."
+  activePage="home"
+>
+  <section class="hero grad gutter">
+    <div>
+      <p class="kicker">WELCOME TO THE BLOG TEMPLATE</p>
+      <h1>Start Blogging<br />With This Template</h1>
+      <a href="/blog" class="btn">Explore Posts</a>
+    </div>
+  </section>
+
+  <!-- Featured + grid -->
+  <section class="featured gutter">
+    {allPosts.length === 0 ? (
+      <p class="empty">No posts yet — check back soon.</p>
+    ) : (
+      <div class="hero-grid">
+        {featured && (
+          <a href={`/blog/${featured.slug}`} class="featured-card">
+            {getCoverUrl(featured)
+              ? <img src={getCoverUrl(featured)!} alt={featured.title} />
+              : <div class="fill g0"></div>
+            }
+            <div class="caption">
+              <p class="kicker">FEATURED · {formatDate(featured.firstPublishedDate)}</p>
+              <p class="title">{featured.title}</p>
+            </div>
+          </a>
+        )}
+        <div>
+          <div class="mini-grid">
+            {gridPosts.map((post, i) => <PostCard post={post} index={i + 1} />)}
+            {fillers(4 - gridPosts.length, gridPosts.length + 1).map(g => <div class:list={['ph', g]}></div>)}
+          </div>
+          <p class="all-posts"><a href="/blog" class="btn-outline">All Posts</a></p>
+        </div>
+      </div>
+    )}
+  </section>
+
+  <section class="quote">
+    <blockquote>"This is the blog template's space to introduce<br />your publication and what it has to offer"</blockquote>
+    <p>Full Name</p>
+  </section>
+
+  <!-- 3-col post row -->
+  <section class="row grid-3 gutter">
+    {rowPosts.map((post, i) => <PostCard post={post} index={i + 2} />)}
+    {fillers(3 - rowPosts.length, rowPosts.length + 2).map(g => <div class:list={['ph', g]}></div>)}
+  </section>
+
+  <section class="brand-banner grad gutter">
+    <div>
+      <h2>This blog template's space<br />to promote your publication.</h2>
+      <a href="/about" class="btn-outline">Our Story</a>
+    </div>
+  </section>
+
+  <section class="promo promo-grid gutter">
+    <div class="ph g1"></div>
+    <div>
+      <p>This blog template's space to promote your publication and its content.</p>
+      <a href="/blog" class="btn">Read More</a>
+    </div>
+  </section>
+
+  <!-- Image strip -->
+  <section class="grid-4">
+    {['g0', 'g1', 'g2', 'g3'].map(g => <div class:list={['square', g]}></div>)}
+  </section>
+</Layout>
+
+<style>
+  .hero { min-height: 85vh; display: flex; align-items: flex-end; padding-block: 80px; }
+  .hero > div { max-width: 640px; }
+  .hero .kicker { margin-bottom: 20px; }
+  .hero h1 { font-size: clamp(48px, 6vw, 88px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
+  .hero .btn { margin-top: 36px; }
+
+  .featured { padding-block: 60px; }
+  .featured-card { display: block; position: relative; }
+  .featured-card img, .featured-card .fill { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 2px; }
+  .caption { position: absolute; bottom: 16px; left: 16px; right: 16px; background: #fff; border-radius: 2px; padding: 12px 16px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); }
+  .caption .kicker { font-size: 11px; margin-bottom: 4px; }
+  .caption .title { font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .all-posts { text-align: right; margin-top: 20px; }
+
+  .quote { background: var(--dark); padding: 80px 24px; text-align: center; color: #6b7080; }
+  .quote blockquote { font-size: clamp(24px, 3.5vw, 48px); font-style: italic; line-height: 1.3; max-width: 900px; margin: 0 auto; }
+  .quote p { margin-top: 28px; font-size: 14px; font-weight: 500; }
+
+  .row { padding-block: 60px; }
+
+  .brand-banner { min-height: 520px; display: flex; align-items: center; justify-content: flex-end; padding-block: 80px; }
+  .brand-banner h2 { max-width: 380px; font-size: clamp(28px, 3.5vw, 44px); font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; }
+  .brand-banner .btn-outline { margin-top: 28px; }
+
+  .promo { background: #f7f8fc; padding-block: 80px; min-height: 420px; }
+  .promo .ph { height: 100%; min-height: 280px; }
+  .promo p { font-size: clamp(20px, 2.5vw, 32px); font-weight: 500; line-height: 1.4; }
+  .promo .btn { margin-top: 28px; }
+
+  .square { aspect-ratio: 1; }
+</style>

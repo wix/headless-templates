@@ -1,13 +1,21 @@
 # Wix Astro Commerce Template
 
-Our Astro templates are still in development and subject to change.
+A minimal Astro + React storefront wireframe backed by Wix Stores and Wix eCommerce. It exists to show the right way to wire an Astro site to Wix business solutions — the UI is a thin starting point for your own design.
 
-To use a template, follow the [Wix CLI for Headless Quick Start](https://dev.wix.com/docs/go-headless/get-started/quick-starts/wix-managed-headless/quick-start-with-the-wix-cli), and select the desired template during the setup process.
+## How it connects to Wix
 
-## Need help?
+- **Catalog** — pages query products server-side with `@wix/stores` (`productsV3.queryProducts`).
+- **Cart** — the React island uses `@wix/ecom` `currentCart` to add items, read the cart, and estimate totals.
+- **Checkout** — `createCheckoutFromCurrentCart` plus `@wix/redirects` `createRedirectSession` sends the visitor to Wix Checkout.
+- **Members** — `@wix/members` reads the current member; login/logout go through the built-in `/api/auth/*` routes.
+- **Media** — product images are scaled with `media.getScaledToFillImageUrl` from `@wix/sdk`.
 
-For documentation and support, check out:
+## Commands
 
-- [Wix Headless Documentation](https://dev.wix.com/docs/go-headless)
-- [Wix SDK Documentation](https://dev.wix.com/docs/sdk)
-- [Community on Discord](https://discord.gg/n6TBrSnYTp)
+```sh
+npm install
+npm run dev     # local dev via the Wix CLI
+npm run build   # production build
+```
+
+Get started with the [Wix CLI for Headless Quick Start](https://dev.wix.com/docs/go-headless/get-started/quick-starts/wix-managed-headless/quick-start-with-the-wix-cli). Docs: [Wix Headless](https://dev.wix.com/docs/go-headless) · [Wix SDK](https://dev.wix.com/docs/sdk).

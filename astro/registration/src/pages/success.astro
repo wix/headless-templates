@@ -1,20 +1,19 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import SuccessMessage from "../components/SuccessMessage.astro";
-import Button from "../components/Button.astro";
+import { BUSINESS_NAME } from "../utils/constants";
 ---
 
-<Layout title="Registration Successful | Soccer Tournament">
+<Layout title={`You're Registered | ${BUSINESS_NAME}`}>
   <div class="max-w-2xl mx-auto py-8">
-    <SuccessMessage
-      title="Registration Complete!"
-      message="Your team has been successfully registered for the soccer tournament. You will receive a confirmation email with further details shortly."
-    >
-      <div class="mt-6">
-        <a href="/" class="inline-block">
-          <Button variant="primary">Return to Home</Button>
-        </a>
-      </div>
-    </SuccessMessage>
+    <div class="bg-grad rounded-sm p-10 text-center">
+      <svg class="text-primary h-12 w-12 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h3 class="text-primary text-2xl font-normal mb-2">You're all set</h3>
+      <p class="text-muted text-[15px]">
+        Your registration with {BUSINESS_NAME} is complete. We've received your details.
+      </p>
+      <a href="/" class="btn mt-6">Back to home</a>
+    </div>
   </div>
 </Layout>

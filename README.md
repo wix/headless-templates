@@ -43,6 +43,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td colspan="4" align="center"><a href="./astro/">Getting Started with Wix Astro templates</a></td>
       </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/blog">Blog</a></td>
+      <td>Combines the official Astro Blog template with Wix Headless for seamless content management and high-performance static site using Astro.</td>
+      <td></td>
+      <td>Wix Blog</td>
+    </tr>
+    <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/astro/commerce">Commerce</a></td>
       <td>A template for creating e-commerce sites using Astro and Wix Headless.</td>
       <td></td>

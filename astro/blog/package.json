@@ -1,0 +1,27 @@
+{
+  "name": "wix-astro-blog",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "astro": "astro",
+    "dev": "wix dev",
+    "build": "wix build",
+    "wix": "wix",
+    "preview": "wix preview",
+    "release": "wix release"
+  },
+  "dependencies": {
+    "@wix/astro": "^2.39.0",
+    "@wix/astro-pages": "^2.0.4",
+    "@wix/astro-ricos": "^0.0.2",
+    "@wix/blog": "^1.0.424",
+    "@wix/essentials": "^1.0.6",
+    "@wix/sdk": "^1.21.5",
+    "astro": "^5.8.0",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@wix/astro-wix-hosting-adapter": "^2.0.0",
+    "@wix/cli": "^1.1.206"
+  }
+}
