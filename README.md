@@ -24,6 +24,10 @@ Here are some useful links for getting started with Wix Headless and the availab
 - [Wix Headless Templates Page](https://www.wix.com/studio/developers/headless/templates)
 - [Community on Discord](https://discord.gg/n6TBrSnYTp)
 
+## Inspiration templates
+
+Want to share a template that isn't part of the official CLI catalog? Contribute it to the [`inspiration/`](./inspiration/) folder — community templates that showcase what can be built with Wix Headless. See its [README](./inspiration/README.md) for contribution guidelines.
+
 ## Templates
 
 <table>
