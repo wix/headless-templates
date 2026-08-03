@@ -35,7 +35,8 @@ Each entry looks like:
   "subtitle": "Appointment booking and calendar",
   "siteTemplateId": "72ade0e3-1871-4c04-ac54-419ca874d9d3",
   "gitPath": "astro/scheduler",                          // code folder in this repo
-  "vibeCompatible": false
+  "vibeCompatible": false,
+  "apps": ["bookings"]                                   // Wix business apps the siteTemplateId provisions
 }
 ```
 
@@ -49,7 +50,8 @@ Consequences to keep in mind:
 - The code and the site template are a **pair**: any hardcoded resource GUID in a template (e.g. the registration form ID) must match what its `siteTemplateId` provisions.
 - Changing `gitPath` code is safe to ship independently; changing which resources the code expects requires a matching site-template update.
 - The headless registry mirrors this catalog — new/changed catalog templates need their bundle republished to the registry after merge.
-- A template without a catalog entry (like `blog`, or anything under `inspiration/`) is not CLI-selectable; it can still be used via `--template-path <local copy>` combined with an existing `--site-template` whose provisioned site has the needed apps.
+- A template without a catalog entry (like `blog`, or anything under `inspiration/`) is not CLI-selectable; it can still be used via `--template-path <local copy>` combined with an existing `--site-template` whose provisioned site has the needed apps — use the `apps` field to pick one.
+- `apps` is informational, hand-maintained metadata (readable slugs, not app GUIDs): update it whenever the site template's installed apps change.
 
 ## Inspiration templates
 
