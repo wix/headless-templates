@@ -1,90 +1,90 @@
 ---
-import Panel from './ui/Panel.astro';
+import type { ServiceSummary } from '../utils/booking-service';
 
 interface Props {
+  services: ServiceSummary[];
   class?: string;
 }
 
-const { class: className = '' } = Astro.props;
+const { services, class: className = '' } = Astro.props;
+
+function formatMeta(service: ServiceSummary): string {
+  const parts: string[] = [];
+  if (service.durationMinutes) parts.push(`${service.durationMinutes} min`);
+  if (service.price) parts.push(service.price);
+  return parts.join(' · ');
+}
 ---
 
 <div class={className}>
-  <Panel>
+  <div class="glass-panel p-6">
     <div class="flex flex-col space-y-4">
       <h3 class="text-base font-medium">Session Type</h3>
-      
-      <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
-        <button 
-          id="free-session-btn" 
-          class="flex-1 p-4 border rounded-lg bg-white hover:bg-primary/5 transition-colors cursor-pointer session-type-active"
-          data-session-type="free"
-        >
-          <h4 class="font-medium mb-1">Free Consultation</h4>
-          <p class="text-sm text-muted-foreground">30-minute introductory session</p>
-        </button>
-        
-        <button 
-          id="premium-session-btn" 
-          class="flex-1 p-4 border rounded-lg bg-white hover:bg-primary/5 transition-colors cursor-pointer"
-          data-session-type="premium"
-        >
-          <h4 class="font-medium mb-1">Premium Session</h4>
-          <p class="text-sm text-muted-foreground">60-minute full consultation</p>
-        </button>
-      </div>
+
+      {services.length === 0 ? (
+        <p class="text-sm text-muted-foreground text-center">
+          No services are available for booking yet
+        </p>
+      ) : (
+        <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
+          {services.map((service, index) => (
+            <button
+              class:list={[
+                'session-type-btn flex-1 p-4 border rounded-lg bg-white hover:bg-primary/5 transition-colors cursor-pointer text-left',
+                index === 0 && 'session-type-active',
+              ]}
+              data-service-id={service.id}
+              data-requires-payment={String(service.requiresPayment)}
+            >
+              <h4 class="font-medium mb-1">{service.name}</h4>
+              {service.description && (
+                <p class="text-sm text-muted-foreground">{service.description}</p>
+              )}
+              {formatMeta(service) && (
+                <p class="text-sm text-muted-foreground mt-1">{formatMeta(service)}</p>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
-  </Panel>
+  </div>
 </div>
 
 <script>
-  import { dispatchSessionTypeChanged } from '../utils/event-utils';
-  
-  // Get elements
-  const freeSessionBtn = document.getElementById('free-session-btn');
-  const premiumSessionBtn = document.getElementById('premium-session-btn');
-  
-  // Current session type
-  let currentType: 'free' | 'premium' = 'free';
-  
-  // Handle session type change
-  function handleSessionTypeChange(type: 'free' | 'premium'): void {
-    // Early return if it's the same type
-    if (type === currentType) return;
-    
-    // Update UI
-    if (type === 'free') {
-      freeSessionBtn?.classList.add('session-type-active');
-      premiumSessionBtn?.classList.remove('session-type-active');
-    } else {
-      freeSessionBtn?.classList.remove('session-type-active');
-      premiumSessionBtn?.classList.add('session-type-active');
-    }
-    
-    // Update state
-    currentType = type;
-    
-    // Dispatch event
-    dispatchSessionTypeChanged(type);
+  import { dispatchServiceSelected } from '../utils/event-utils';
+  import type { SelectedService } from '../utils/event-utils';
+
+  const buttons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('.session-type-btn')
+  );
+
+  function serviceFromButton(button: HTMLButtonElement): SelectedService {
+    return {
+      serviceId: button.dataset.serviceId || '',
+      requiresPayment: button.dataset.requiresPayment === 'true',
+    };
   }
-  
-  // Register click handlers
-  freeSessionBtn?.addEventListener('click', () => handleSessionTypeChange('free'));
-  premiumSessionBtn?.addEventListener('click', () => handleSessionTypeChange('premium'));
-  
-  // Initialize by dispatching the default type
+
+  let currentServiceId = buttons[0]?.dataset.serviceId ?? null;
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const { serviceId } = serviceFromButton(button);
+      if (serviceId === currentServiceId) return;
+
+      buttons.forEach((b) => b.classList.remove('session-type-active'));
+      button.classList.add('session-type-active');
+
+      currentServiceId = serviceId;
+      dispatchServiceSelected(serviceFromButton(button));
+    });
+  });
+
+  // Announce the default selection (the first service) once the page is ready
   document.addEventListener('DOMContentLoaded', () => {
-    // Dispatch initial session type
-    dispatchSessionTypeChanged('free');
-    
-    // Add styles for active session type
-    const style = document.createElement('style');
-    style.textContent = `
-      .session-type-active {
-        border-color: var(--color-primary) !important;
-        background-color: rgba(var(--color-primary-rgb), 0.05) !important;
-        box-shadow: 0 0 0 1px var(--color-primary);
-      }
-    `;
-    document.head.appendChild(style);
+    if (buttons[0]) {
+      dispatchServiceSelected(serviceFromButton(buttons[0]));
+    }
   });
 </script>

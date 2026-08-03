@@ -2,7 +2,6 @@ import { services, availabilityCalendar, bookings } from "@wix/bookings";
 import { checkout } from "@wix/ecom";
 import { redirects } from "@wix/redirects";
 import { BOOKINGS_APP_ID, TIME_FORMAT } from "./constants";
-import { formatDisplayDate } from "./date-utils";
 
 export interface BookingData {
   name: string;
@@ -29,6 +28,16 @@ interface WixService {
   [key: string]: any;
 }
 
+// Simplified view of a Wix Bookings service, safe to pass from the server to the client
+export interface ServiceSummary {
+  id: string;
+  name: string;
+  description: string;
+  durationMinutes: number | null;
+  price: string | null;
+  requiresPayment: boolean;
+}
+
 interface WixBookingResponse {
   [key: string]: any;
 }
@@ -41,6 +50,13 @@ interface WixRedirectResponse {
   [key: string]: any;
 }
 
+/**
+ * The visitor's IANA timezone (e.g. "America/New_York").
+ */
+export function getVisitorTimezone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
 export async function getServices(): Promise<WixService[]> {
   try {
     const { items } = await services.queryServices().find();
@@ -51,64 +67,77 @@ export async function getServices(): Promise<WixService[]> {
   }
 }
 
-export async function getServiceByType(
-  type: "free" | "premium"
-): Promise<WixService | undefined> {
-  try {
-    const services = await getServices();
+/**
+ * Map raw Wix service entities to the summary shape rendered by the UI.
+ */
+export function toServiceSummaries(items: WixService[]): ServiceSummary[] {
+  return items.map((service) => {
+    const rate = service.payment?.rateType;
+    const fixedPrice = service.payment?.fixed?.price;
+    const varied = service.payment?.varied;
 
-    return type === "free"
-      ? services.find((s) => s.payment.rateType === "NO_FEE")
-      : services.find((s) => s.payment.rateType === "FIXED");
-  } catch (error) {
-    console.error(`Error finding ${type} service:`, error);
-    throw error;
-  }
-}
-
-export async function getAvailableSlots(
-  date: Date,
-  serviceType: "free" | "premium"
-): Promise<TimeSlot[]> {
-  try {
-    const service = await getServiceByType(serviceType);
-
-    if (!service) {
-      throw new Error(`No ${serviceType} service found`);
+    let price: string | null = null;
+    if (rate === "NO_FEE") {
+      price = "Free";
+    } else if (fixedPrice?.value != null) {
+      price = `${fixedPrice.value} ${fixedPrice.currency ?? ""}`.trim();
+    } else if (varied?.defaultPrice?.value != null) {
+      price = `From ${varied.defaultPrice.value} ${varied.defaultPrice.currency ?? ""}`.trim();
     }
 
-    const tomorrow = new Date(date);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const duration =
+      service.schedule?.availabilityConstraints?.sessionDurations?.[0] ?? null;
 
-    const availability = await availabilityCalendar.queryAvailability(
-      {
-        filter: {
-          serviceId: [service._id],
-          startDate: date.toISOString(),
-          endDate: tomorrow.toISOString(),
-        },
+    return {
+      id: service._id,
+      name: service.name,
+      description: service.tagLine ?? service.description ?? "",
+      durationMinutes: duration,
+      price,
+      requiresPayment: rate != null && rate !== "NO_FEE",
+    };
+  });
+}
+
+/**
+ * Fetch bookable slots for a service on a given day, in the visitor's timezone.
+ * Errors propagate to the caller so the UI can surface an error state.
+ */
+export async function getAvailableSlots(
+  date: Date,
+  serviceId: string
+): Promise<TimeSlot[]> {
+  const timezone = getVisitorTimezone();
+
+  // `date` is midnight in the visitor's local timezone, so start/end of the
+  // day are computed with local date parts rather than naive UTC math.
+  const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+
+  const availability = await availabilityCalendar.queryAvailability(
+    {
+      filter: {
+        serviceId: [serviceId],
+        startDate: startOfDay.toISOString(),
+        endDate: endOfDay.toISOString(),
       },
-      { timezone: "UTC" }
-    );
+    },
+    { timezone }
+  );
 
-    return availability.availabilityEntries.map((item) => ({
-      time: item.slot?.startDate!,
-      display: Intl.DateTimeFormat("en-US", TIME_FORMAT).format(
-        new Date(item.slot?.startDate!)
-      ),
-      available: item.bookable!,
-      entity: item,
-    }));
-  } catch (error) {
-    console.error("Error fetching available slots:", error);
-    return [];
-  }
+  return availability.availabilityEntries.map((item) => ({
+    time: item.slot?.startDate!,
+    display: Intl.DateTimeFormat("en-US", TIME_FORMAT).format(
+      new Date(item.slot?.startDate!)
+    ),
+    available: item.bookable!,
+    entity: item,
+  }));
 }
 
 export async function createBooking(
   bookingData: BookingData,
-  selectedSlot: TimeSlot,
-  selectedDate: Date
+  selectedSlot: TimeSlot
 ): Promise<WixBookingResponse> {
   try {
     const [firstName, ...lastNameParts] = bookingData.name.split(" ");
@@ -155,18 +184,6 @@ export async function createBooking(
 
     await checkout.createOrder(createdCheckout._id!);
 
-    // Prepare data for confirmation page
-    const confirmationData = {
-      ...bookingData,
-      date: selectedDate.toISOString().split("T")[0], // yyyy-MM-dd format
-      time: selectedSlot.time,
-      displayDate: formatDisplayDate(selectedDate),
-      displayTime: selectedSlot.display,
-    };
-
-    // Save to session storage
-    sessionStorage.setItem("bookingData", JSON.stringify(confirmationData));
-
     return booking;
   } catch (error) {
     console.error("Error creating booking:", error);
@@ -183,7 +200,7 @@ export async function createRedirectSession(
       {
         bookingsCheckout: {
           slotAvailability: slot,
-          timezone: "UTC",
+          timezone: getVisitorTimezone(),
         },
         callbacks: {
           postFlowUrl: returnUrl,

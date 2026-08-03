@@ -1,14 +1,52 @@
 ---
-import Carousel from "../components/carousel.astro";
-import ThreeItemGrid from "../components/grid/three-items.astro";
-import Hero from "../components/hero.astro";
-import Footer from "../components/layout/footer.astro";
-import RootLayout from "../components/layout/layout.astro";
----
+import { productsV3 } from '@wix/stores';
+import { members } from '@wix/members';
+import Layout from '../layouts/Layout.astro';
+import AppIsland from '../components/AppIsland.jsx';
 
-<RootLayout>
-  <Hero />
-  <ThreeItemGrid />
-  <Carousel />
-  <Footer />
-</RootLayout>
+let products = [];
+let member = null;
+
+try {
+  const res = await productsV3
+    .queryProducts({
+      fields: ['CURRENCY', 'PLAIN_DESCRIPTION', 'VARIANT_OPTION_CHOICE_NAMES'],
+    })
+    .limit(50)
+    .find();
+  // Serialize only the fields the island actually renders.
+  products = (res.items ?? []).map((p) => ({
+    _id: p._id,
+    name: p.name,
+    plainDescription: p.plainDescription ?? '',
+    media: p.media?.main ? { main: { image: p.media.main.image ?? null } } : null,
+    formattedPrice: p.actualPriceRange?.minValue?.formattedAmount ?? '',
+    options: (p.options ?? []).map((o) => ({
+      name: o.name,
+      choices: (o.choicesSettings?.choices ?? []).map((c) => c.name),
+    })),
+    variants: (p.variantsInfo?.variants ?? []).map((v) => ({
+      _id: v._id,
+      formattedPrice: v.price?.actualPrice?.formattedAmount ?? '',
+      inStock: v.inventoryStatus?.inStock ?? true,
+      choices: (v.choices ?? []).map((c) => ({
+        optionName: c.optionChoiceNames?.optionName ?? '',
+        choiceName: c.optionChoiceNames?.choiceName ?? '',
+      })),
+    })),
+  }));
+} catch {}
+
+try {
+  const { member: m } = await members.getCurrentMember({ fieldsets: ['FULL'] });
+  if (m) {
+    member = {
+      loginEmail: m.loginEmail ?? null,
+      profile: { nickname: m.profile?.nickname ?? null },
+    };
+  }
+} catch {}
+---
+<Layout title="Brand Name">
+  <AppIsland products={products} member={member} page="home" client:load />
+</Layout>

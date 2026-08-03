@@ -1,6 +1,5 @@
 ---
-import { getDaysOfWeek, generateDateRange, formatDisplayDate, isToday } from '../utils/date-utils';
-import Panel from './ui/Panel.astro';
+import { getDaysOfWeek } from '../utils/date-utils';
 
 interface Props {
   class?: string;
@@ -11,7 +10,7 @@ const daysOfWeek = getDaysOfWeek();
 ---
 
 <div class={className}>
-  <Panel id="date-picker-container">
+  <div id="date-picker-container" class="glass-panel p-6">
     <div class="mb-4 text-center">
       <p class="text-sm font-medium text-muted-foreground">
         Select a date for your appointment
@@ -42,12 +41,11 @@ const daysOfWeek = getDaysOfWeek();
         Selected: <span id="selected-date" class="font-bold"></span>
       </p>
     </div>
-  </Panel>
+  </div>
 </div>
 
 <script>
   import { formatDisplayDate, startOfToday } from '../utils/date-utils';
-  import { createElement } from '../utils/dom-utils';
   import { dispatchDateSelected } from '../utils/event-utils';
   
   let currentMonth: number;
@@ -131,24 +129,24 @@ const daysOfWeek = getDaysOfWeek();
     
     // Add placeholder cells before the first day of the month
     for (let i = 0; i < firstDayIndex; i++) {
-      datepicker.appendChild(createElement('div', {
-        className: 'h-8 w-8'
-      }, ''));
+      const placeholder = document.createElement('div');
+      placeholder.className = 'h-8 w-8';
+      datepicker.appendChild(placeholder);
     }
-    
+
     // Add buttons for each day of the month
     for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
       const date = new Date(currentYear, currentMonth, day);
-      const isCurrentDate = date.getDate() === today.getDate() && 
-                            date.getMonth() === today.getMonth() && 
+      const isCurrentDate = date.getDate() === today.getDate() &&
+                            date.getMonth() === today.getMonth() &&
                             date.getFullYear() === today.getFullYear();
       const isPastDate = date < today;
-      
-      const dateEl = createElement('button', {
-        className: 'rounded-md h-8 w-8 flex items-center justify-center text-sm hover:bg-primary/10 transition-colors',
-        'data-date': date.toISOString(),
-        type: 'button'
-      }, day.toString());
+
+      const dateEl = document.createElement('button');
+      dateEl.className = 'rounded-md h-8 w-8 flex items-center justify-center text-sm hover:bg-primary/10 transition-colors';
+      dateEl.dataset.date = date.toISOString();
+      dateEl.type = 'button';
+      dateEl.textContent = day.toString();
       
       if (isCurrentDate) {
         dateEl.classList.add('font-bold');

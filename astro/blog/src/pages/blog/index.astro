@@ -1,0 +1,35 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { queryAllPosts } from '../../lib/blog';
+
+const allPosts = await queryAllPosts();
+---
+
+<Layout
+  title="Blog | All Posts"
+  description="Browse all posts on the blog — stories, ideas, and updates."
+  activePage="blog"
+>
+  <section class="page-head grad gutter">
+    <p class="kicker">ALL POSTS</p>
+    <h1>The Blog</h1>
+  </section>
+
+  <section class="posts gutter">
+    {allPosts.length === 0 ? (
+      <p class="empty">No posts yet — check back soon.</p>
+    ) : (
+      <div class="posts-grid">
+        {allPosts.map((post, i) => <PostCard post={post} index={i} />)}
+      </div>
+    )}
+  </section>
+</Layout>
+
+<style>
+  .page-head { padding-block: 80px 60px; }
+  .page-head .kicker { margin-bottom: 16px; }
+  h1 { font-size: clamp(40px, 5vw, 72px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
+  .posts { padding-block: 60px; }
+</style>

@@ -1,0 +1,169 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  activePage?: 'home' | 'blog' | 'about';
+}
+const { title = 'Blog', description, activePage } = Astro.props;
+
+const nav = [
+  { href: '/', label: 'Home', id: 'home' },
+  { href: '/blog', label: 'Blog', id: 'blog' },
+  { href: '/about', label: 'About', id: 'about' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <slot name="head" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="banner">THIS IS THE BLOG TEMPLATE — CUSTOMIZE THIS BANNER</div>
+
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="/" class="brand"><span class="brand-mark grad"></span>Brand Name</a>
+
+        <input type="checkbox" id="nav-toggle" class="nav-toggle-input" />
+        <label for="nav-toggle" class="nav-toggle-label" aria-label="Toggle navigation">
+          <span class="hamburger-icon"><span></span><span></span><span></span></span>
+        </label>
+
+        <nav class="site-nav">
+          {nav.map(({ href, label, id }) => (
+            <a href={href} class:list={{ active: activePage === id }}>{label}</a>
+          ))}
+        </nav>
+      </div>
+    </header>
+
+    <slot />
+
+    <footer class="gutter">
+      <div class="footer-grid">
+        <div>
+          <p class="footer-head">NAVIGATE</p>
+          {nav.map(({ href, label }) => <a href={href}>{label}</a>)}
+        </div>
+        <div>
+          <p class="footer-head">LEGAL</p>
+          <p>Terms & Conditions</p>
+          <p>Privacy Policy</p>
+          <p>Accessibility Statement</p>
+        </div>
+        <div></div>
+        <div>
+          <p class="footer-head">FOLLOW US</p>
+          <div class="socials">
+            {[0, 1, 2].map(i => (
+              <div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  {i===0 && <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>}
+                  {i===1 && <><circle cx="12" cy="12" r="4"/><rect x="2" y="2" width="20" height="20" rx="5"/></>}
+                  {i===2 && <path d="M9 12a4 4 0 104 4V4a5 5 0 005 5"/>}
+                </svg>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-logo">Logo.</p>
+        <p class="copyright">© 2035 by Brand Name. Powered and secured by Wix</p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --dark: #1a1d2e;
+    --muted: #6b7280;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #fff; color-scheme: light; }
+  body { font-family: 'Wix Madefor Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: var(--dark); }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+
+  /* Shared utilities */
+  .gutter { padding-inline: max(24px, calc((100vw - 1280px) / 2 + 24px)); }
+  .grad { background: linear-gradient(135deg, #dde9de 0%, #eaedf4 55%, #e0dced 100%); }
+  .g0 { background: linear-gradient(140deg, #e4ede6, #d8e0ec); }
+  .g1 { background: linear-gradient(140deg, #e8eddf, #dde4ec); }
+  .g2 { background: linear-gradient(140deg, #e2e8f0, #e8e4ec); }
+  .g3 { background: linear-gradient(140deg, #deeae0, #e4e0ec); }
+  .ph { aspect-ratio: 4 / 3; border-radius: 2px; }
+  .kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; opacity: 0.45; }
+  .btn, .btn-outline { display: inline-block; border-radius: 24px; padding: 13px 30px; font-size: 14px; font-weight: 600; }
+  .btn { background: var(--dark); color: #fff; }
+  .btn-outline { border: 1.5px solid var(--dark); }
+  .empty { text-align: center; padding: 80px 0; opacity: 0.4; font-size: 18px; }
+
+  /* Grids (responsive overrides below) */
+  .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px 32px; }
+  .story-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+  .promo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  .footer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; padding-bottom: 60px; }
+
+  /* Promo banner */
+  .banner { background: var(--dark); color: #fff; text-align: center; padding: 12px 24px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; }
+
+  /* Header + nav */
+  .site-header { background: #fff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 100; }
+  .header-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; height: 72px; display: flex; align-items: center; gap: 24px; position: relative; }
+  .brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; font-weight: 700; font-size: 15px; }
+  .brand-mark { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e0e0e0; }
+  .site-nav { display: flex; gap: 28px; flex: 1; justify-content: flex-end; }
+  .site-nav a { font-size: 14px; opacity: 0.8; }
+  .site-nav a.active { opacity: 1; font-weight: 600; }
+
+  /* Hamburger toggle (checkbox-driven, no JS) */
+  .nav-toggle-input { display: none; }
+  .nav-toggle-label { display: none; align-items: center; justify-content: center; width: 40px; height: 40px; cursor: pointer; margin-left: auto; flex-shrink: 0; }
+  .hamburger-icon { display: flex; flex-direction: column; justify-content: center; gap: 5px; width: 22px; }
+  .hamburger-icon span { height: 2px; background: var(--dark); border-radius: 2px; transition: transform 0.2s ease, opacity 0.2s ease; }
+  .nav-toggle-input:checked ~ .nav-toggle-label span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-toggle-input:checked ~ .nav-toggle-label span:nth-child(2) { opacity: 0; }
+  .nav-toggle-input:checked ~ .nav-toggle-label span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* Footer */
+  footer { background: var(--dark); color: #fff; padding-top: 60px; }
+  .footer-head { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: #8b8f9a; margin-bottom: 16px; }
+  .footer-grid a, .footer-grid p:not(.footer-head) { display: block; font-size: 14px; margin-bottom: 10px; color: #d1d5db; }
+  .socials { display: flex; gap: 16px; }
+  .socials > div { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #4b5563; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .footer-bottom { border-top: 1px solid #2d3348; padding: 48px 0 32px; text-align: center; }
+  .footer-logo { font-size: clamp(80px, 14vw, 180px); font-weight: 800; line-height: 0.9; letter-spacing: -0.03em; }
+  .copyright { margin: 40px 0 32px; font-size: 13px; color: #6b7080; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .hero-grid, .story-grid, .promo-grid { grid-template-columns: 1fr; gap: 32px; }
+    .grid-3, .grid-4, .values-grid, .posts-grid { grid-template-columns: repeat(2, 1fr); }
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  }
+  @media (max-width: 640px) {
+    .grid-3, .grid-4, .values-grid, .posts-grid, .mini-grid, .footer-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .nav-toggle-label { display: flex; }
+    .site-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; gap: 4px; background: #fff; border-bottom: 1px solid #e5e7eb; padding: 16px 24px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06); }
+    .site-nav a { padding: 10px 0; width: 100%; }
+    .nav-toggle-input:checked ~ .site-nav { display: flex; }
+  }
+</style>

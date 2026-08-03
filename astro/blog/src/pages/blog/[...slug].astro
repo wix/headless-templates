@@ -1,0 +1,71 @@
+---
+import RicosViewer from '@wix/astro-ricos';
+import { renameKeysFromSDKRequestToRESTRequest } from '@wix/sdk-runtime/rename-all-nested-keys';
+import Layout from '../../layouts/Layout.astro';
+import { getPostBySlug, getCoverUrl, formatDate, readingTime, type SeoTag } from '../../lib/blog';
+
+const { slug } = Astro.params;
+const post = slug ? await getPostBySlug(slug) : null;
+
+if (!post) {
+  return new Response('Not found', { status: 404 });
+}
+
+const cover = getCoverUrl(post, 1600, 700);
+
+// SEO — Wix is the source of truth: prefer the post's seoData tags,
+// fall back to the post's title / excerpt / cover image.
+const seoTags: SeoTag[] = (post.seoData?.tags ?? []).filter((tag) => !tag.disabled);
+const findMetaContent = (key: string): string | undefined =>
+  seoTags.find((tag) => tag.type === 'meta' && (tag.props?.name === key || tag.props?.property === key))?.props
+    ?.content;
+
+const seoTitle = seoTags.find((tag) => tag.type === 'title')?.children;
+const seoDescription = findMetaContent('description');
+const seoCanonical = seoTags.find((tag) => tag.type === 'link' && tag.props?.rel === 'canonical')?.props?.href;
+
+const title = seoTitle || post.title;
+const description = seoDescription || post.excerpt || post.title;
+const canonical = seoCanonical || new URL(Astro.url.pathname, Astro.url).href;
+const ogImage = findMetaContent('og:image') || getCoverUrl(post, 1200, 630) || undefined;
+---
+
+<Layout title={title} description={description} activePage="blog">
+  <Fragment slot="head">
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {post.firstPublishedDate && <meta property="article:published_time" content={post.firstPublishedDate} />}
+    {post.lastPublishedDate && <meta property="article:modified_time" content={post.lastPublishedDate} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+  </Fragment>
+
+  <div class="hero-image">
+    {cover ? <img src={cover} alt={post.title} /> : <div class="fill grad"></div>}
+  </div>
+
+  <article>
+    <p class="kicker">{formatDate(post.firstPublishedDate)} · {readingTime(post)}</p>
+    <h1>{post.title}</h1>
+    {post.excerpt && <p class="excerpt">{post.excerpt}</p>}
+    <RicosViewer content={renameKeysFromSDKRequestToRESTRequest(post.richContent)} />
+  </article>
+
+  <p class="back"><a href="/blog" class="btn-outline">← Back to Blog</a></p>
+</Layout>
+
+<style>
+  .hero-image { height: 480px; overflow: hidden; }
+  .hero-image img, .hero-image .fill { width: 100%; height: 100%; object-fit: cover; }
+  article { max-width: 760px; margin: 0 auto; padding: 60px 24px 100px; }
+  article .kicker { margin-bottom: 20px; }
+  h1 { font-size: clamp(32px, 4vw, 56px); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 32px; }
+  .excerpt { font-size: 18px; line-height: 1.7; color: var(--muted); margin-bottom: 40px; padding-bottom: 40px; border-bottom: 1px solid #e5e7eb; }
+  .back { text-align: center; padding-bottom: 80px; }
+</style>

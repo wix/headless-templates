@@ -1,8 +1,5 @@
 ---
-import { formatDisplayDate } from "../utils/date-utils";
-import Panel from "./ui/Panel.astro";
-import EmptyState from "./ui/EmptyState.astro";
-import LoadingSpinner from "./ui/LoadingSpinner.astro";
+import ErrorMessage from "./ui/ErrorMessage.astro";
 
 interface Props {
   class?: string;
@@ -12,227 +9,134 @@ const { class: className = "" } = Astro.props;
 ---
 
 <div id="time-slots-container" class={className}>
-  <Panel padding="md" isEmptyState={true}>
-    <EmptyState icon="clock" message="Please select a date first" />
-  </Panel>
+  <div id="slots-empty" class="glass-panel p-6 text-center">
+    <svg class="h-6 w-6 mx-auto mb-2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    <p class="text-sm text-muted-foreground">Please select a date first</p>
+  </div>
+
+  <div id="slots-panel" class="glass-panel p-6" hidden>
+    <h3 id="slots-heading" class="text-base font-medium mb-4"></h3>
+
+    <div id="slots-loading" hidden>
+      <div class="flex justify-center items-center py-12">
+        <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="ml-2 text-sm text-muted-foreground">Loading available slots...</span>
+      </div>
+    </div>
+
+    <div id="slots-error" hidden>
+      <ErrorMessage message="We couldn't load available times. Please try again." />
+    </div>
+
+    <p id="slots-none" class="text-sm text-muted-foreground text-center py-4" hidden>
+      No available slots for this date
+    </p>
+
+    <div id="slots-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2" hidden></div>
+  </div>
 </div>
 
 <script>
   import { formatDisplayDate } from "../utils/date-utils";
   import { getAvailableSlots, type TimeSlot } from "../utils/booking-service";
-  import { createElement, replaceContent } from "../utils/dom-utils";
   import {
     onDateSelected,
-    onSessionTypeChanged,
+    onServiceSelected,
     dispatchTimeSlotSelected,
   } from "../utils/event-utils";
 
-  // State
   let selectedDate: Date | null = null;
-  let selectedSlot: TimeSlot | null = null;
-  let sessionType: "free" | "premium" = "free";
+  let selectedServiceId: string | null = null;
   let timeSlots: TimeSlot[] = [];
   let isLoading = false;
+  let hasError = false;
 
-  // Get container element
-  const timeSlotsContainer = document.getElementById("time-slots-container");
+  const emptyState = document.getElementById("slots-empty")!;
+  const panel = document.getElementById("slots-panel")!;
+  const heading = document.getElementById("slots-heading")!;
+  const loading = document.getElementById("slots-loading")!;
+  const errorState = document.getElementById("slots-error")!;
+  const noSlots = document.getElementById("slots-none")!;
+  const grid = document.getElementById("slots-grid")!;
 
-  // Setup event listeners
   onDateSelected(async (date) => {
     selectedDate = date;
-    selectedSlot = null;
-
     await fetchTimeSlots();
   });
 
-  onSessionTypeChanged((type) => {
-    sessionType = type;
-    selectedSlot = null;
-    
-    // Always reset the UI when changing session type
+  onServiceSelected((service) => {
+    selectedServiceId = service.serviceId;
+
+    // Always reset the UI when changing services
     timeSlots = [];
+    hasError = false;
     updateTimeSlotsUI();
-    
+
     // Fetch new time slots if we have a date selected
     if (selectedDate) {
       fetchTimeSlots();
     }
   });
 
-  // Fetch available time slots from the service
   async function fetchTimeSlots(): Promise<void> {
-    if (!selectedDate) return;
+    if (!selectedDate || !selectedServiceId) return;
 
     isLoading = true;
+    hasError = false;
     updateTimeSlotsUI();
 
     try {
-      timeSlots = await getAvailableSlots(selectedDate, sessionType);
+      timeSlots = await getAvailableSlots(selectedDate, selectedServiceId);
     } catch (error) {
       console.error("Error fetching time slots:", error);
       timeSlots = [];
+      hasError = true;
     } finally {
       isLoading = false;
       updateTimeSlotsUI();
     }
   }
 
-  // Update the time slots UI
   function updateTimeSlotsUI(): void {
-    if (!timeSlotsContainer) return;
+    emptyState.hidden = Boolean(selectedDate);
+    panel.hidden = !selectedDate;
+    if (!selectedDate) return;
 
-    // Clear container
-    replaceContent(timeSlotsContainer, "");
+    heading.textContent = `Available Times for ${formatDisplayDate(selectedDate)}`;
+    loading.hidden = !isLoading;
+    errorState.hidden = isLoading || !hasError;
+    noSlots.hidden = isLoading || hasError || timeSlots.length > 0;
+    grid.hidden = isLoading || hasError || timeSlots.length === 0;
 
-    if (!selectedDate) {
-      // Create empty state panel
-      const panel = createElement("div", {
-        className: "glass-panel p-6 text-center",
-      });
-
-      // Create icon
-      const icon = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "svg"
-      );
-      icon.setAttribute("class", "h-6 w-6 mx-auto mb-2 text-muted-foreground");
-      icon.setAttribute("viewBox", "0 0 24 24");
-      icon.setAttribute("fill", "none");
-      icon.setAttribute("stroke", "currentColor");
-      icon.setAttribute("stroke-width", "2");
-      icon.setAttribute("stroke-linecap", "round");
-      icon.setAttribute("stroke-linejoin", "round");
-
-      icon.innerHTML = `
-        <circle cx="12" cy="12" r="10"></circle>
-        <polyline points="12 6 12 12 16 14"></polyline>
-      `;
-
-      // Create message
-      const message = createElement(
-        "p",
-        {
-          className: "text-sm text-muted-foreground",
-        },
-        "Please select a date first"
-      );
-
-      // Assemble panel
-      panel.appendChild(icon);
-      panel.appendChild(message);
-      timeSlotsContainer.appendChild(panel);
-      return;
-    }
-
-    // Create panel
-    const panel = createElement("div", { className: "glass-panel" });
-    const contentWrapper = createElement("div", { className: "p-6" });
-
-    // Create header
-    const header = createElement(
-      "h3",
-      {
-        className: "text-base font-medium mb-4",
-      },
-      `Available Times for ${formatDisplayDate(selectedDate)}`
-    );
-
-    contentWrapper.appendChild(header);
-
-    if (isLoading) {
-      // Add loading spinner
-      const loadingWrapper = createElement("div", {
-        className: "flex justify-center items-center py-12",
-      });
-
-      const spinner = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "svg"
-      );
-      spinner.setAttribute("class", "animate-spin h-8 w-8 text-primary");
-      spinner.setAttribute("fill", "none");
-      spinner.setAttribute("viewBox", "0 0 24 24");
-
-      spinner.innerHTML = `
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      `;
-
-      const loadingText = createElement(
-        "span",
-        {
-          className: "ml-2 text-sm text-muted-foreground",
-        },
-        "Loading available slots..."
-      );
-
-      loadingWrapper.appendChild(spinner);
-      loadingWrapper.appendChild(loadingText);
-      contentWrapper.appendChild(loadingWrapper);
-    } else if (timeSlots.length === 0) {
-      // Add empty state message
-      const emptyMessage = createElement(
-        "p",
-        {
-          className: "text-sm text-muted-foreground text-center py-4",
-        },
-        "No available slots for this date"
-      );
-
-      contentWrapper.appendChild(emptyMessage);
-    } else {
-      // Create time slots grid
-      const grid = createElement("div", {
-        className: "grid grid-cols-2 sm:grid-cols-3 gap-2",
-      });
-
-      // Add time slot buttons
-      timeSlots.forEach((slot, index) => {
-        const isSelected = selectedSlot && selectedSlot.time === slot.time;
-
-        // Determine button classes
-        const buttonClasses = [
-          "w-full",
-          "text-sm",
-          "rounded-lg",
-          "transition-colors",
-          "py-2",
-          "px-3",
-          "border",
-          "border-gray-200",
-          isSelected ? "bg-primary text-white" : "bg-white hover:bg-primary/10",
-          !slot.available ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+    grid.replaceChildren(
+      ...timeSlots.map((slot) => {
+        const button = document.createElement("button");
+        button.textContent = slot.display;
+        button.disabled = !slot.available;
+        button.className = [
+          "w-full text-sm rounded-lg transition-colors py-2 px-3 border border-gray-200",
+          "bg-white hover:bg-primary/10",
+          slot.available ? "cursor-pointer" : "opacity-50 cursor-not-allowed",
         ].join(" ");
 
-        // Create button
-        const button = createElement(
-          "button",
-          {
-            className: buttonClasses,
-            "data-slot-index": index.toString(),
-          },
-          slot.display
-        );
-
-        // Disable if not available
-        if (!slot.available) {
-          button.disabled = true;
-        }
-
-        // Add click handler
         button.addEventListener("click", () => {
-          selectedSlot = timeSlots[index];
-          updateTimeSlotsUI();
-          dispatchTimeSlotSelected(selectedSlot);
+          grid.querySelectorAll("button").forEach((b) => {
+            b.classList.remove("bg-primary", "text-white");
+            b.classList.add("bg-white", "hover:bg-primary/10");
+          });
+          button.classList.remove("bg-white", "hover:bg-primary/10");
+          button.classList.add("bg-primary", "text-white");
+          dispatchTimeSlotSelected(slot);
         });
 
-        grid.appendChild(button);
-      });
-
-      contentWrapper.appendChild(grid);
-    }
-
-    panel.appendChild(contentWrapper);
-    timeSlotsContainer.appendChild(panel);
+        return button;
+      })
+    );
   }
 </script>

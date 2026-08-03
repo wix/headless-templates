@@ -1,18 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Button from "../components/Button.astro";
+import { BUSINESS_NAME } from "../utils/constants";
 ---
 
-<Layout title="Page Not Found | Soccer Tournament">
+<Layout title={`Page Not Found | ${BUSINESS_NAME}`}>
   <div class="max-w-2xl mx-auto text-center py-16">
-    <h1 class="text-4xl font-bold mb-4">404</h1>
-    <h2 class="text-2xl font-semibold mb-6">Page Not Found</h2>
-    <p class="text-gray-600 mb-8">
-      The page you are looking for might have been removed, had its name changed,
+    <p class="eyebrow mb-4">404</p>
+    <h1 class="text-primary text-3xl font-normal mb-6">We couldn't find that page</h1>
+    <p class="text-muted mb-8 text-[15px]">
+      The page you're looking for might have been removed, had its name changed,
       or is temporarily unavailable.
     </p>
-    <a href="/">
-      <Button variant="primary">Return to Home</Button>
-    </a>
+    <a href="/" class="btn">Back to home</a>
   </div>
 </Layout>

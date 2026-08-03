@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const values = ['Authenticity', 'Curiosity', 'Community'];
+---
+
+<Layout
+  title="Blog | About"
+  description="Learn more about the publication — who we are, what we do, and why we do it."
+  activePage="about"
+>
+  <section class="hero grad gutter">
+    <div>
+      <p class="kicker">ABOUT</p>
+      <h1>Our Story</h1>
+    </div>
+  </section>
+
+  <section class="story story-grid gutter">
+    <div>
+      <h2>This blog template's space to tell your story.</h2>
+      <p>
+        This is the blog template's about section — share more about who you are, what you do, and why you do it. Use this page to connect with your readers and build trust.
+      </p>
+      <p>
+        Share your background, what inspired this publication, and what readers can expect. Authentic stories build authentic connections.
+      </p>
+    </div>
+    <div class="ph g0"></div>
+  </section>
+
+  <section class="values gutter">
+    <h2>What We Stand For</h2>
+    <div class="values-grid">
+      {values.map((v, i) => (
+        <div>
+          <div class:list={['dot', `g${i % 2}`]}></div>
+          <p class="value-name">{v}</p>
+          <p class="value-text">
+            This blog template's space to describe what this value means to your publication and how it guides your work.
+          </p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="cta gutter">
+    <h2>Ready to start reading?</h2>
+    <a href="/blog" class="btn">Explore the Blog</a>
+  </section>
+</Layout>
+
+<style>
+  .hero { min-height: 70vh; display: flex; align-items: flex-end; padding-block: 80px; }
+  .hero .kicker { margin-bottom: 20px; }
+  .hero h1 { font-size: clamp(40px, 5.5vw, 80px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
+
+  .story { padding-block: 80px; }
+  .story h2 { font-size: clamp(28px, 3vw, 42px); font-weight: 500; line-height: 1.2; margin-bottom: 32px; }
+  .story p { font-size: 16px; line-height: 1.85; color: #374151; margin-bottom: 24px; }
+
+  .values { background: #f7f8fc; padding-block: 80px; }
+  .values h2 { font-size: clamp(22px, 2.5vw, 36px); font-weight: 500; margin-bottom: 48px; }
+  .dot { width: 52px; height: 52px; border-radius: 50%; margin-bottom: 20px; }
+  .value-name { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+  .value-text { font-size: 14px; line-height: 1.75; color: var(--muted); }
+
+  .cta { padding-block: 100px; text-align: center; }
+  .cta h2 { font-size: clamp(28px, 3.5vw, 48px); font-weight: 400; line-height: 1.2; margin-bottom: 32px; }
+</style>

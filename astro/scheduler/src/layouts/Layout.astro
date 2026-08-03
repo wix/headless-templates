@@ -1,5 +1,15 @@
 ---
 import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Appointment Scheduler",
+  description = "Book your next appointment online — simple, fast, and convenient scheduling.",
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -9,7 +19,8 @@ import "../styles/global.css";
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>Appointment Scheduler</title>
+    <meta name="description" content={description} />
+    <title>{title}</title>
   </head>
   <body>
     <slot />

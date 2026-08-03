@@ -11,45 +11,24 @@ interface Props {
     | "textarea"
     | "select"
     | "radio"
-    | "checkbox";
-  placeholder?: string;
+    | "checkbox"
+    | "checkbox-group";
   required?: boolean;
   options?: Array<{ value: string; label: string }>;
-  value?: string;
-  checked?: boolean;
-  min?: string | number;
-  max?: string | number;
 }
 
-const {
-  id,
-  label,
-  type = "text",
-  placeholder = "",
-  required = false,
-  options = [],
-  value = "",
-  checked = false,
-  min,
-  max,
-} = Astro.props;
+const { id, label, type = "text", required = false, options = [] } = Astro.props;
 ---
 
-<div class="form-field hover:bg-[#f9fafb]/50 transition-colors duration-200">
-  <label for={id} class="form-label font-normal">
+<div class="form-field">
+  <label for={id} class="form-label">
     {label}
-    {required && <span style="color: var(--error-color, #E21E1E);">*</span>}
+    {required && <span style="color: var(--error-color);">*</span>}
   </label>
 
   {
     type === "textarea" ? (
-      <textarea
-        id={id}
-        name={id}
-        placeholder={placeholder}
-        class="form-textarea"
-        required={required}
-      />
+      <textarea id={id} name={id} class="form-textarea" required={required} />
     ) : type === "select" ? (
       <select id={id} name={id} class="form-select" required={required}>
         <option value="">Select an option</option>
@@ -69,38 +48,32 @@ const {
               class="form-radio mr-2"
               required={required}
             />
-            <label for={`${id}-${option.value}`} class="text-[0.875rem] text-[#374151]">
-              {option.label}
-            </label>
+            <label for={`${id}-${option.value}`} class="text-sm">{option.label}</label>
+          </div>
+        ))}
+      </div>
+    ) : type === "checkbox-group" ? (
+      <div class="space-y-3 mt-2">
+        {options.map((option) => (
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id={`${id}-${option.value}`}
+              name={id}
+              value={option.value}
+              class="form-checkbox mr-2"
+              data-multi="true"
+            />
+            <label for={`${id}-${option.value}`} class="text-sm">{option.label}</label>
           </div>
         ))}
       </div>
     ) : type === "checkbox" ? (
       <div class="flex items-center mt-2">
-        <input
-          type="checkbox"
-          id={id}
-          name={id}
-          class="form-checkbox mr-2"
-          required={required}
-          checked={checked}
-        />
-        <label for={id} class="text-[0.875rem] text-[#374151]">
-          {placeholder}
-        </label>
+        <input type="checkbox" id={id} name={id} class="form-checkbox" required={required} />
       </div>
     ) : (
-      <input
-        type={type}
-        id={id}
-        name={id}
-        placeholder={placeholder}
-        value={value}
-        class="form-input"
-        required={required}
-        min={min}
-        max={max}
-      />
+      <input type={type} id={id} name={id} class="form-input" required={required} />
     )
   }
 </div>
