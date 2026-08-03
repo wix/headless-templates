@@ -22,9 +22,40 @@ Never hardcode data the site owns. Every one of these was a real review finding:
 - Never commit `.wix/` (topology.json carries real site IDs) or `.env.local` — both belong in `.gitignore`.
 - Pin dependencies with caret ranges, never `"latest"`. Unknown dynamic-route lookups return **404**, not a redirect. Log caught errors before returning fallbacks, and show users generic messages, not raw SDK errors. No dead UI: no forms without handlers, no `<p>` pseudo-links, no href-less icons.
 
-## Catalog pairing
+## How the templates.json catalog works
 
-`templates.json` at the repo root is the CLI's catalog: each entry pairs a `gitPath` (code) with a `siteTemplateId` (the Wix site template that provisions the backing site — services, forms, catalog). Any hardcoded resource GUID in a template (e.g. a form ID) must match what its `siteTemplateId` provisions. New/changed catalog templates also need their bundle republished to the headless registry after merge.
+`templates.json` at the repo root is the catalog behind `wix headless init` (`npx @wix/create-new headless`). The CLI fetches it at runtime from this repo's **main branch** (`https://raw.githubusercontent.com/wix/headless-templates/main/templates.json`), so merging a change here updates every installed CLI immediately — no CLI release needed. Unknown fields are ignored by the CLI's parser, so the manifest can gain metadata without breaking older versions.
+
+Each entry looks like:
+
+```json
+{
+  "name": "scheduler",                                   // the --site-template CLI value
+  "title": "Scheduler (Wix Bookings)",                   // shown in the CLI picker
+  "subtitle": "Appointment booking and calendar",
+  "siteTemplateId": "72ade0e3-1871-4c04-ac54-419ca874d9d3",
+  "gitPath": "astro/scheduler",                          // code folder in this repo
+  "vibeCompatible": false,
+  "apps": ["bookings"]                                   // Wix business apps the siteTemplateId provisions
+}
+```
+
+When a user picks a template, the CLI does two things:
+
+1. **Provisions a Wix site** from `siteTemplateId` — the Wix site template that installs the business apps and seeds their content (Bookings services, the Forms form, the Stores catalog). This ID is created on the Wix side; it cannot be invented in this repo.
+2. **Copies the code** from `gitPath`, cloned from this repo's default branch, and wires up the project (`wix.config.json`, `.env.local` with the site's client ID).
+
+Consequences to keep in mind:
+
+- The code and the site template are a **pair**: any hardcoded resource GUID in a template (e.g. the registration form ID) must match what its `siteTemplateId` provisions.
+- Changing `gitPath` code is safe to ship independently; changing which resources the code expects requires a matching site-template update.
+- The headless registry mirrors this catalog — new/changed catalog templates need their bundle republished to the registry after merge.
+- A template without a catalog entry (like `blog`, or anything under `inspiration/`) is not CLI-selectable; it can still be used via `--template-path <local copy>` combined with an existing `--site-template` whose provisioned site has the needed apps — use the `apps` field to pick one.
+- `apps` is informational, hand-maintained metadata (readable slugs, not app GUIDs): update it whenever the site template's installed apps change.
+
+## Inspiration templates
+
+`inspiration/` holds community-contributed templates that are **not** in the CLI catalog: no `siteTemplateId` pairing, no registry publishing, maintained by their contributors. The source-of-truth and no-secrets rules above still apply; see `inspiration/README.md` for contribution guidelines.
 
 ## Testing a template end-to-end
 
