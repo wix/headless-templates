@@ -1,5 +1,7 @@
 # Wix Astro Scheduler Template
 
+**[Live demo](https://h6s-50cfc9db5d48fc-headlessstack.wix-site-host.com)**
+
 An appointment scheduling template built with Astro and [Wix Bookings](https://dev.wix.com/docs/sdk/backend-modules/bookings/introduction). It demonstrates the full booking flow against a Wix site:
 
 - Listing bookable services with `@wix/bookings` (`services.queryServices`)

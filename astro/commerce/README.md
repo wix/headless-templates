@@ -1,5 +1,7 @@
 # Wix Astro Commerce Template
 
+**[Live demo](https://jlgivq-headlessstack.wix-app-host.com)**
+
 A minimal Astro + React storefront wireframe backed by Wix Stores and Wix eCommerce. It exists to show the right way to wire an Astro site to Wix business solutions — the UI is a thin starting point for your own design.
 
 ## How it connects to Wix
