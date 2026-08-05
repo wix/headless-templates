@@ -9,7 +9,7 @@ Our Astro templates are still in development and subject to change.
 - **Listing & detail** — the home page and `/events/[slug]` query and read events server-side with `@wix/events` (`wixEventsV2.queryEvents`, `getEventBySlug`).
 - **Ticketed events** — `orders.queryAvailableTickets` reads the visitor-public ticket tiers; the React island reserves them with `ticketReservations.createTicketReservation` and hands off to Wix's hosted checkout via `@wix/redirects` `createRedirectSession`.
 - **RSVP events** — the built-in name + email form submits with `rsvpV2.createRsvp`.
-- **Members** — `@wix/members` reads the current member; login/logout go through the built-in `/api/auth/*` routes.
+- **Members** — `@wix/members` reads the current member where one is signed in (e.g. the header shows their name). This minimal template doesn't ship a login UI; wire the built-in `/api/auth/login` and `/api/auth/logout` routes wherever your design needs them.
 - **SEO** — `/events/[slug]` registers itself in the page manifest and renders `<SEO.Tags>` from `@wix/seo`, so each event's dashboard-managed title, description, and OG tags reach the live page.
 - **Media** — event images are scaled with `media.getScaledToFillImageUrl` from `@wix/sdk`.
 

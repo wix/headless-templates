@@ -199,7 +199,7 @@ export default function EventDetail({ event, member = null }) {
       </section>
 
       <footer className="footer" style={{ padding: '48px var(--pad) 32px', textAlign: 'center' }}>
-        <p className="footer-copy" style={{ marginTop: 0, paddingBottom: 0 }}>© 2035 by Business Name. Powered and secured by Wix</p>
+        <p className="footer-copy" style={{ marginTop: 0, paddingBottom: 0 }}>© 2035 by {BUSINESS_NAME}. Powered and secured by Wix</p>
       </footer>
     </div>
   );

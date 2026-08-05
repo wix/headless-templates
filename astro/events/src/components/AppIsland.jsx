@@ -286,7 +286,7 @@ export default function AppIsland({ events = [], member = null, page = 'home' })
         </div>
         <div className="footer-bottom">
           <p className="footer-logo">Logo.</p>
-          <p className="footer-copy">© 2035 by Business Name. Powered and secured by Wix</p>
+          <p className="footer-copy">© 2035 by {BUSINESS_NAME}. Powered and secured by Wix</p>
         </div>
       </footer>
     </div>
