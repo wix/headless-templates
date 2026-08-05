@@ -26,6 +26,14 @@
       "vibeCompatible": false
     },
     {
+      "name": "blog",
+      "title": "Blog (Wix Blog)",
+      "subtitle": "Posts, categories, and rich content",
+      "siteTemplateId": "7bde072d-f967-4085-806c-6a7aeac794e0",
+      "gitPath": "astro/blog",
+      "vibeCompatible": false
+    },
+    {
       "name": "blank",
       "title": "Blank",
       "subtitle": "Basic Astro project",
