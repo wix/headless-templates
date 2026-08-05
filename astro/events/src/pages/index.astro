@@ -1,0 +1,27 @@
+---
+import { wixEventsV2 } from '@wix/events';
+import { members } from '@wix/members';
+import Layout from '../layouts/Layout.astro';
+import AppIsland from '../components/AppIsland.jsx';
+import { BUSINESS_NAME } from '../utils/constants';
+
+let events = [];
+let member = null;
+
+try {
+  const res = await wixEventsV2.queryEvents({
+    filter: { status: { $in: ['UPCOMING', 'STARTED'] } },
+    sort: [{ fieldName: 'dateAndTimeSettings.startDate', order: 'ASC' }],
+    paging: { limit: 100 },
+  }, { fields: ['DETAILS', 'TEXTS', 'REGISTRATION', 'URLS'] });
+  events = res.events ?? [];
+} catch {}
+
+try {
+  const { member: m } = await members.getCurrentMember({ fieldsets: ['FULL'] });
+  member = m ?? null;
+} catch {}
+---
+<Layout title={`${BUSINESS_NAME} — Events`}>
+  <AppIsland events={events} member={member} page="home" client:load />
+</Layout>

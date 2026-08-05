@@ -1,0 +1,18 @@
+---
+import { wixEventsV2 } from '@wix/events';
+import Layout from '../layouts/Layout.astro';
+import EventConfirmation from '../components/EventConfirmation.jsx';
+import { BUSINESS_NAME } from '../utils/constants';
+
+const eventId = Astro.url.searchParams.get('eventId');
+let event = null;
+
+try {
+  if (eventId) {
+    event = await wixEventsV2.getEvent(eventId, { fields: ['TEXTS', 'URLS'] });
+  }
+} catch {}
+---
+<Layout title={`Confirmed — ${BUSINESS_NAME}`}>
+  <EventConfirmation event={event} client:load />
+</Layout>
