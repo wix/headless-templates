@@ -1,0 +1,63 @@
+---
+// Main pages (e.g. src/pages/index.astro) get their <title>, meta description,
+// canonical link, Open Graph, and structured data injected automatically by
+// Wix's Astro middleware from the dashboard's SEO & GEO settings — see
+// https://dev.wix.com/docs/go-headless/wix-managed-headless/seo/about-seo-support.md.
+// Don't pass any of the props below on a main page, or you'll ship a duplicate
+// <title>/<meta> tag alongside the one Wix injects. To change the home page's
+// title, use the Wix Dashboard → SEO & GEO → SEO Settings — not this file.
+//
+// Item/detail pages (e.g. src/pages/catalog/[id].astro) get no automatic
+// injection — Wix's item-page SEO registry (@wix/seo + WIX_APPS) only covers
+// Stores, Bookings, Events, and Blog, with no entry for CMS collections. For
+// those routes, pass title/description/canonicalUrl/image sourced from the
+// item's own CMS data (never hardcoded) — that's what the props below are for.
+interface Props {
+	title?: string;
+	description?: string;
+	canonicalUrl?: string;
+	image?: string;
+	noIndex?: boolean;
+}
+const { title, description, canonicalUrl, image, noIndex = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+
+		{title && <title>{title}</title>}
+		{description && <meta name="description" content={description} />}
+		{canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+		{noIndex && <meta name="robots" content="noindex" />}
+
+		{title && <meta property="og:title" content={title} />}
+		{description && <meta property="og:description" content={description} />}
+		{canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+		{image && <meta property="og:image" content={image} />}
+		{title && <meta name="twitter:card" content="summary_large_image" />}
+
+		<style>
+			@import url("https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:wght@400;500;600;700&display=swap");
+			* {
+				box-sizing: border-box;
+			}
+			html,
+			body {
+				margin: 0;
+				width: 100%;
+				min-height: 100%;
+				font-family: "Wix Madefor Text", system-ui, sans-serif;
+				background: #fff;
+				color: #1a1d2e;
+			}
+		</style>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>

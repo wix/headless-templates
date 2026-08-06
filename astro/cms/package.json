@@ -1,0 +1,37 @@
+{
+  "name": "wix-astro-cms",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "astro": "astro",
+    "dev": "wix dev",
+    "build": "wix build",
+    "wix": "wix",
+    "preview": "wix preview",
+    "release": "wix release",
+    "generate": "wix generate",
+    "env": "wix env",
+    "skills": "wix skills"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.3.0",
+    "@wix/astro": "^2.39.0",
+    "@wix/astro-pages": "^2.0.4",
+    "@wix/data": "^1.0.502",
+    "@wix/essentials": "^1.0.6",
+    "@wix/sdk": "^1.21.5",
+    "astro": "^5.8.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@wix/astro-wix-hosting-adapter": "^2.0.0",
+    "@wix/cli": "^1.1.92"
+  }
+}
