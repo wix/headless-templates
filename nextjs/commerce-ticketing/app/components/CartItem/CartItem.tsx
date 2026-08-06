@@ -65,7 +65,7 @@ export const CartItem = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item.quantityInfo?.confirmedQuantity]);
 
-  const slug = item.url?.split('/').pop() ?? '';
+  const slug = item.attributes?.url?.split('/').pop() ?? '';
 
   return (
     <li className="flex flex-col py-4" {...rest}>
@@ -82,7 +82,7 @@ export const CartItem = ({
               </div>
             </Link>
           ) : (
-            <WixMediaImage width={150} height={150} media={item.image} />
+            <WixMediaImage width={150} height={150} media={item.attributes?.image} />
           )}
         </div>
         <div className="flex-1">
@@ -90,7 +90,7 @@ export const CartItem = ({
             {slug ? (
               <Link href={`/product-page/${slug}`}>
                 <span className="cursor-pointer pb-1 text-gray-500">
-                  {item.name?.translated}
+                  {item.name?.translated ?? item.name?.original}
                 </span>
               </Link>
             ) : (

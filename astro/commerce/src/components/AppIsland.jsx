@@ -169,7 +169,8 @@ function CartPanel({ onClose }) {
   }
 
   const itemCount = lineItemCount(cart);
-  const subtotal = priceSummary?.subtotal?.formattedAmount ?? '';
+  // V2 summary money is ConvertedMoney (amount/convertedAmount, no formatted string) — format it client-side.
+  const subtotal = formatMoney(priceSummary?.subtotal, cartCurrency(cart));
 
   return (
     <div className="overlay right" onClick={onClose}>

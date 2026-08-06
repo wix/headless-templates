@@ -69,13 +69,23 @@ export default function Store() {
             await handleAsync(async () => {
                 const {cart} = await myWixClient.currentCartV2.getCurrentCart();
                 setCart(cart);
-                // V2's cart entity has no preformatted subtotal; estimate the cart to get
-                // a formatted price summary. Empty carts may throw, so ignore failures.
+                // V2 money is raw ConvertedMoney (no formatted string), so estimate the
+                // cart for the subtotal amount and format it client-side. Empty carts may throw.
                 const estimate = await myWixClient.currentCartV2
                     .estimateCurrentCart()
                     .catch(() => null);
+                const sub = estimate?.summary?.priceSummary?.subtotal;
+                const currency =
+                    cart?.customerInfo?.currencyCode ??
+                    cart?.businessInfo?.currencyCode ??
+                    "USD";
                 setSubtotal(
-                    estimate?.summary?.priceSummary?.subtotal?.formattedAmount ?? "",
+                    sub?.amount != null
+                        ? new Intl.NumberFormat(undefined, {
+                              style: "currency",
+                              currency,
+                          }).format(Number(sub.convertedAmount ?? sub.amount))
+                        : "",
                 );
             });
         } catch {
