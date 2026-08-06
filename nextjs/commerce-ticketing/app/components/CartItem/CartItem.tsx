@@ -28,7 +28,9 @@ export const CartItem = ({
   const updateCartMutation = useUpdateCart();
 
   // V2 pricing: `totalPrice` is already the line total (unit x quantity).
-  const lineTotal = Number(item.pricing?.totalPrice?.amount ?? 0);
+  const lineTotal = Number(
+    item.pricing?.totalPrice?.convertedAmount ?? item.pricing?.totalPrice?.amount ?? 0,
+  );
   const price = formatPrice({
     amount: lineTotal,
     baseAmount: lineTotal,
@@ -95,7 +97,7 @@ export const CartItem = ({
               </Link>
             ) : (
               <span className="pb-1 text-gray-500">
-                {item.name?.translated}
+                {item.name?.translated ?? item.name?.original}
               </span>
             )}
           </div>

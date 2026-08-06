@@ -20,7 +20,14 @@ export const CartView = ({ layout = 'mini' }: { layout?: 'full' | 'mini' }) => {
       amount:
         data.lineItems?.reduce((acc, item) => {
           // V2 `totalPrice` is already the line total (unit x quantity).
-          return acc + Number(item.pricing?.totalPrice?.amount ?? 0);
+          return (
+            acc +
+            Number(
+              item.pricing?.totalPrice?.convertedAmount ??
+                item.pricing?.totalPrice?.amount ??
+                0,
+            )
+          );
         }, 0) ?? 0,
       currencyCode,
     }

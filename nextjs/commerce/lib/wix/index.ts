@@ -24,7 +24,7 @@ const reshapeCart = (cart: currentCartV2.Cart): Cart => {
           cart.lineItems!.reduce((acc, item) => {
             return (
               acc +
-              Number.parseFloat(item.pricing?.unitPrice?.amount!) *
+              Number.parseFloat((item.pricing?.unitPrice?.convertedAmount ?? item.pricing?.unitPrice?.amount)!) *
                 item.quantityInfo?.confirmedQuantity!
             );
           }, 0),
@@ -36,7 +36,7 @@ const reshapeCart = (cart: currentCartV2.Cart): Cart => {
           cart.lineItems!.reduce((acc, item) => {
             return (
               acc +
-              Number.parseFloat(item.pricing?.unitPrice?.amount!) *
+              Number.parseFloat((item.pricing?.unitPrice?.convertedAmount ?? item.pricing?.unitPrice?.amount)!) *
                 item.quantityInfo?.confirmedQuantity!
             );
           }, 0),
@@ -56,7 +56,7 @@ const reshapeCart = (cart: currentCartV2.Cart): Cart => {
         cost: {
           totalAmount: {
             amount: String(
-              Number.parseFloat(item.pricing?.unitPrice?.amount!) *
+              Number.parseFloat((item.pricing?.unitPrice?.convertedAmount ?? item.pricing?.unitPrice?.amount)!) *
                 item.quantityInfo?.confirmedQuantity!,
             ),
             currencyCode: currency,

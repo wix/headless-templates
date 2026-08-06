@@ -124,8 +124,7 @@ export default function Store() {
 
             // Then, we call the addLineItemsToCurrentCart method from the currentCartV2 module of the Wix client.
             // This method adds items to the current user's shopping cart.
-            const {cart: returnedCard} =
-                await myWixClient.currentCartV2.addLineItemsToCurrentCart({
+            await myWixClient.currentCartV2.addLineItemsToCurrentCart({
                     // We pass an object that describes the product to be added.
                     catalogItems: [
                         {
@@ -140,8 +139,9 @@ export default function Store() {
                     ],
                 });
 
-            // Finally, we update the state of the cart in the React component.
-            setCart(returnedCard);
+            // Re-fetch so the line list AND the subtotal refresh — V2 stores no total on
+            // the cart, so the subtotal is derived from a fresh estimateCurrentCart.
+            await fetchCart();
         });
     }
 
@@ -191,18 +191,17 @@ export default function Store() {
     }
 
     async function addExistingProduct(lineItemId, quantity) {
-        const {cart} =
-            await myWixClient.currentCartV2.updateLineItemsInCurrentCart({
-                lineItems: [
-                    {
-                        lineItemId,
-                        quantity: {newQuantity: quantity},
-                    },
-                ],
-            });
+        await myWixClient.currentCartV2.updateLineItemsInCurrentCart({
+            lineItems: [
+                {
+                    lineItemId,
+                    quantity: {newQuantity: quantity},
+                },
+            ],
+        });
 
-        // Finally, we update the state of the cart in the React component.
-        setCart(cart);
+        // Re-fetch so the line list and subtotal both refresh.
+        await fetchCart();
     }
 
     // Fetch products and cart on component mount
