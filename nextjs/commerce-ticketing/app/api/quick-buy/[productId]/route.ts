@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRequestUrl } from '@app/utils/server-utils';
 import { getWixClient } from '@app/hooks/useWixClientServer';
-import { checkout as checkoutTypes } from '@wix/ecom';
 import { STORES_APP_ID } from '@app/constants';
 
 export async function GET(
@@ -52,14 +51,17 @@ export async function GET(
       options: selectedOptions,
     },
   };
-  const checkout = await wixClient.ecomCheckout.createCheckout({
-    lineItems: [item],
-    channelType: checkoutTypes.ChannelType.WEB,
-    overrideCheckoutUrl: `${baseUrl}api/redirect-to-checkout?checkoutId={checkoutId}`,
+  // Cart V2: create a fresh cart for this quick-buy. The cart id IS the checkout
+  // id, so we redirect straight from the created cart (no createCheckout call).
+  const cart = await wixClient.cartV2.createCart({
+    cart: {
+      customCheckoutUrl: `${baseUrl}api/redirect-to-checkout?checkoutId={checkoutId}`,
+    },
+    catalogItems: [item],
   });
 
   const { redirectSession } = await wixClient.redirects.createRedirectSession({
-    ecomCheckout: { checkoutId: checkout!._id! },
+    ecomCheckout: { checkoutId: cart!._id! },
     callbacks: {
       postFlowUrl: baseUrl,
       thankYouPageUrl: `${baseUrl}stores-success`,

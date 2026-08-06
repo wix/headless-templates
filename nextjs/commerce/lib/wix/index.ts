@@ -1,5 +1,5 @@
 import { items } from "@wix/data";
-import { currentCart, recommendations } from "@wix/ecom";
+import { currentCartV2, recommendations } from "@wix/ecom";
 import { redirects } from "@wix/redirects";
 import { createClient, media, OAuthStrategy } from "@wix/sdk";
 import { collections, products } from "@wix/stores";
@@ -12,7 +12,9 @@ const cartesian = <T>(data: T[][]) =>
     [],
   ] as T[][]);
 
-const reshapeCart = (cart: currentCart.Cart): Cart => {
+const reshapeCart = (cart: currentCartV2.Cart): Cart => {
+  const currency =
+    cart.customerInfo?.currencyCode ?? cart.businessInfo?.currencyCode!;
   return {
     id: cart._id!,
     checkoutUrl: "/cart-checkout",
@@ -21,64 +23,69 @@ const reshapeCart = (cart: currentCart.Cart): Cart => {
         amount: String(
           cart.lineItems!.reduce((acc, item) => {
             return (
-              acc + Number.parseFloat(item.price?.amount!) * item.quantity!
+              acc +
+              Number.parseFloat(item.pricing?.unitPrice?.amount!) *
+                item.quantityInfo?.confirmedQuantity!
             );
           }, 0),
         ),
-        currencyCode: cart.currency!,
+        currencyCode: currency,
       },
       totalAmount: {
         amount: String(
           cart.lineItems!.reduce((acc, item) => {
             return (
-              acc + Number.parseFloat(item.price?.amount!) * item.quantity!
+              acc +
+              Number.parseFloat(item.pricing?.unitPrice?.amount!) *
+                item.quantityInfo?.confirmedQuantity!
             );
           }, 0),
         ),
-        currencyCode: cart.currency!,
+        currencyCode: currency,
       },
       totalTaxAmount: {
         amount: "0",
-        currencyCode: cart.currency!,
+        currencyCode: currency,
       },
     },
     lines: cart.lineItems!.map((item) => {
-      const featuredImage = media.getImageUrl(item.image!);
+      const featuredImage = media.getImageUrl(item.attributes?.image!);
       return {
         id: item._id!,
-        quantity: item.quantity!,
+        quantity: item.quantityInfo?.confirmedQuantity!,
         cost: {
           totalAmount: {
             amount: String(
-              Number.parseFloat(item.price?.amount!) * item.quantity!,
+              Number.parseFloat(item.pricing?.unitPrice?.amount!) *
+                item.quantityInfo?.confirmedQuantity!,
             ),
-            currencyCode: cart.currency!,
+            currencyCode: currency,
           },
         },
         merchandise: {
           id: item._id!,
           title:
-            item.descriptionLines
+            item.attributes?.descriptionLines
               ?.map((x) => x.colorInfo?.original ?? x.plainText?.original)
               .join(" / ") ?? "",
           selectedOptions: [],
           product: {
-            handle: item.url?.split("/").pop() ?? "",
+            handle: item.attributes?.url?.split("/").pop() ?? "",
             featuredImage: {
               altText:
                 "altText" in featuredImage ? featuredImage.altText : "alt text",
-              url: media.getImageUrl(item.image!).url,
-              width: media.getImageUrl(item.image!).width,
-              height: media.getImageUrl(item.image!).height,
+              url: media.getImageUrl(item.attributes?.image!).url,
+              width: media.getImageUrl(item.attributes?.image!).width,
+              height: media.getImageUrl(item.attributes?.image!).height,
             },
-            title: item.productName?.original!,
+            title: item.name?.original!,
           } as any as Product,
-          url: `/product/${item.url?.split("/").pop() ?? ""}`,
+          url: `/product/${item.attributes?.url?.split("/").pop() ?? ""}`,
         },
       };
     }),
     totalQuantity: cart.lineItems!.reduce((acc, item) => {
-      return acc + item.quantity!;
+      return acc + item.quantityInfo?.confirmedQuantity!;
     }, 0),
   };
 };
@@ -194,9 +201,11 @@ const reshapeProduct = (item: products.Product) => {
 export async function addToCart(
   lines: { productId: string; variant?: ProductVariant; quantity: number }[],
 ): Promise<Cart> {
-  const { addToCurrentCart } = (await getWixClient()).use(currentCart);
-  const { cart } = await addToCurrentCart({
-    lineItems: lines.map(({ productId, variant, quantity }) => ({
+  const { addLineItemsToCurrentCart } = (await getWixClient()).use(
+    currentCartV2,
+  );
+  const { cart } = await addLineItemsToCurrentCart({
+    catalogItems: lines.map(({ productId, variant, quantity }) => ({
       catalogReference: {
         catalogItemId: productId,
         appId: "215238eb-22a5-4c36-9e7b-e7c08025e04e",
@@ -224,10 +233,12 @@ export async function addToCart(
 
 export async function removeFromCart(lineIds: string[]): Promise<Cart> {
   const { removeLineItemsFromCurrentCart } = (await getWixClient()).use(
-    currentCart,
+    currentCartV2,
   );
 
-  const { cart } = await removeLineItemsFromCurrentCart(lineIds);
+  const { cart } = await removeLineItemsFromCurrentCart({
+    lineItemIds: lineIds,
+  });
 
   return reshapeCart(cart!);
 }
@@ -235,26 +246,26 @@ export async function removeFromCart(lineIds: string[]): Promise<Cart> {
 export async function updateCart(
   lines: { id: string; quantity: number }[],
 ): Promise<Cart> {
-  const { updateCurrentCartLineItemQuantity } = (await getWixClient()).use(
-    currentCart,
+  const { updateLineItemsInCurrentCart } = (await getWixClient()).use(
+    currentCartV2,
   );
 
-  const { cart } = await updateCurrentCartLineItemQuantity(
-    lines.map(({ id, quantity }) => ({
-      id: id,
-      quantity,
+  const { cart } = await updateLineItemsInCurrentCart({
+    lineItems: lines.map(({ id, quantity }) => ({
+      lineItemId: id,
+      quantity: { newQuantity: quantity },
     })),
-  );
+  });
 
   return reshapeCart(cart!);
 }
 
 export async function getCart(): Promise<Cart | undefined> {
-  const { getCurrentCart } = (await getWixClient()).use(currentCart);
+  const { getCurrentCart } = (await getWixClient()).use(currentCartV2);
   try {
-    const cart = await getCurrentCart();
+    const { cart } = await getCurrentCart();
 
-    return reshapeCart(cart);
+    return reshapeCart(cart!);
   } catch (e) {
     if ((e as any)?.details?.applicationError?.code === "OWNED_CART_NOT_FOUND") {
       return undefined;
@@ -540,16 +551,15 @@ export const getWixClient = async () => {
 
 export async function createCheckoutUrl(postFlowUrl: string) {
   const {
-    currentCart: { createCheckoutFromCurrentCart },
+    currentCartV2: { getCurrentCart },
     redirects: { createRedirectSession },
-  } = (await getWixClient()).use({ currentCart, redirects });
+  } = (await getWixClient()).use({ currentCartV2, redirects });
 
-  const currentCheckout = await createCheckoutFromCurrentCart({
-    channelType: currentCart.ChannelType.OTHER_PLATFORM,
-  });
+  // Cart V2 has no separate checkout entity — the cart id is the checkout id.
+  const { cart } = await getCurrentCart();
 
   const { redirectSession } = await createRedirectSession({
-    ecomCheckout: { checkoutId: currentCheckout.checkoutId },
+    ecomCheckout: { checkoutId: cart!._id! },
     callbacks: {
       postFlowUrl,
     },

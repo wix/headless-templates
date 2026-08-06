@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 
 import {createClient, OAuthStrategy} from "@wix/sdk";
 import {products} from "@wix/stores";
-import {currentCart} from "@wix/ecom";
+import {currentCartV2} from "@wix/ecom";
 import {redirects} from "@wix/redirects";
 import testIds from "@/src/utils/test-ids";
 import {CLIENT_ID} from "@/constants/constants";
@@ -17,8 +17,8 @@ import {useModal} from "@/internal/providers/modal-provider";
 // We're creating a Wix client using the createClient function from the Wix SDK.
 const myWixClient = createClient({
     // We specify the modules we want to use with the client.
-    // In this case, we're using the products, currentCart, and redirects modules.
-    modules: {products, currentCart, redirects},
+    // In this case, we're using the products, currentCartV2, and redirects modules.
+    modules: {products, currentCartV2, redirects},
 
     // We're using the OAuthStrategy for authentication.
     // This strategy requires a client ID and a set of tokens.
@@ -38,6 +38,7 @@ export default function Store() {
     // State variables for product list and cart
     const [productList, setProductList] = useState([]);
     const [cart, setCart] = useState({});
+    const [subtotal, setSubtotal] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const handleAsync = useAsyncHandler();
     const {msid} = useClient();
@@ -63,11 +64,20 @@ export default function Store() {
     async function fetchCart() {
         // try-catch block to handle errors if the cart is not available
         try {
-            // We call the getCurrentCart method from the currentCart module of the Wix client.
-            // This method retrieves the current user's shopping cart.
-            await handleAsync(async () =>
-                setCart(await myWixClient.currentCart.getCurrentCart()),
-            );
+            // We call the getCurrentCart method from the currentCartV2 module of the Wix client.
+            // This method retrieves the current user's shopping cart. V2 returns { cart }.
+            await handleAsync(async () => {
+                const {cart} = await myWixClient.currentCartV2.getCurrentCart();
+                setCart(cart);
+                // V2's cart entity has no preformatted subtotal; estimate the cart to get
+                // a formatted price summary. Empty carts may throw, so ignore failures.
+                const estimate = await myWixClient.currentCartV2
+                    .estimateCurrentCart()
+                    .catch(() => null);
+                setSubtotal(
+                    estimate?.summary?.priceSummary?.subtotal?.formattedAmount ?? "",
+                );
+            });
         } catch {
             // If the cart is not available, do something (e.g., show an error message)
         }
@@ -97,17 +107,17 @@ export default function Store() {
                 if (existingProduct) {
                     return addExistingProduct(
                         existingProduct._id,
-                        existingProduct.quantity + 1,
+                        existingProduct.quantityInfo.confirmedQuantity + 1,
                     );
                 }
             }
 
-            // Then, we call the addToCurrentCart method from the currentCart module of the Wix client.
+            // Then, we call the addLineItemsToCurrentCart method from the currentCartV2 module of the Wix client.
             // This method adds items to the current user's shopping cart.
             const {cart: returnedCard} =
-                await myWixClient.currentCart.addToCurrentCart({
+                await myWixClient.currentCartV2.addLineItemsToCurrentCart({
                     // We pass an object that describes the product to be added.
-                    lineItems: [
+                    catalogItems: [
                         {
                             // Each product is identified by a catalogReference object.
                             catalogReference: {
@@ -128,12 +138,13 @@ export default function Store() {
     // This is a function that clears the cart.
     async function clearCart() {
         await handleAsync(async () => {
-            // We call the deleteCurrentCart method from the currentCart module of the Wix client.
+            // We call the deleteCurrentCart method from the currentCartV2 module of the Wix client.
             // This method deletes the current site visitor's shopping cart.
-            await myWixClient.currentCart.deleteCurrentCart();
+            await myWixClient.currentCartV2.deleteCurrentCart();
 
             // Then, we update the state of the cart in the React component to be an empty object.
             setCart({});
+            setSubtotal("");
         });
     }
 
@@ -141,19 +152,15 @@ export default function Store() {
     async function createRedirect() {
         try {
             await handleAsync(async () => {
-                // We call the createCheckoutFromCurrentCart method from the currentCart module of the Wix client.
-                // This method creates a checkout from the current user's shopping cart.
-                const {checkoutId} =
-                    await myWixClient.currentCart.createCheckoutFromCurrentCart({
-                        // We specify the channel type to be WEB.
-                        channelType: currentCart.ChannelType.WEB,
-                    });
+                // Cart V2 has no separate checkout entity — the cart id IS the checkout id.
+                // So we read the current cart and use its _id directly; no create-checkout call.
+                const {cart} = await myWixClient.currentCartV2.getCurrentCart();
 
                 // Then, we call the createRedirectSession method from the redirects module of the Wix client.
                 // This method creates a redirect session to the checkout page.
                 const redirect = await myWixClient.redirects.createRedirectSession({
                     // We pass an object that specifies the checkoutId for the ecomCheckout.
-                    ecomCheckout: {checkoutId},
+                    ecomCheckout: {checkoutId: cart._id},
                     // We also specify the postFlowUrl to be the current page URL. This is where the user will be redirected after the checkout flow.
                     callbacks: {postFlowUrl: window.location.href},
                 });
@@ -175,12 +182,14 @@ export default function Store() {
 
     async function addExistingProduct(lineItemId, quantity) {
         const {cart} =
-            await myWixClient.currentCart.updateCurrentCartLineItemQuantity([
-                {
-                    _id: lineItemId,
-                    quantity,
-                },
-            ]);
+            await myWixClient.currentCartV2.updateLineItemsInCurrentCart({
+                lineItems: [
+                    {
+                        lineItemId,
+                        quantity: {newQuantity: quantity},
+                    },
+                ],
+            });
 
         // Finally, we update the state of the cart in the React component.
         setCart(cart);
@@ -256,16 +265,16 @@ export default function Store() {
                                         <ul key={index}>
                                             <div style={{display: "flex", gap: "16px"}}>
                                                 <div style={{fontWeight: "bold"}}>
-                                                    {item.quantity}
+                                                    {item.quantityInfo.confirmedQuantity}
                                                 </div>
                                                 <div className={styles.fullWidth}>
-                                                    {item.productName.original}
+                                                    {item.name.original}
                                                 </div>
                                             </div>
                                         </ul>
                                     ))}
                                 </li>
-                                <h3>Total {cart.subtotal.formattedAmount}</h3>
+                                <h3>Total {subtotal}</h3>
                             </section>
                             <button
                                 className={styles.primary}

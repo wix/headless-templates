@@ -2,7 +2,7 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatPrice } from '@app/utils/price-formatter';
-import { cart } from '@wix/ecom';
+import { cartV2 } from '@wix/ecom';
 import { useUI } from '@app/components/Provider/context';
 import { Quantity } from '@app/components/Quantity/Quantity';
 import { useUpdateCart } from '@app/hooks/useUpdateCart';
@@ -15,19 +15,23 @@ export const CartItem = ({
   hideButtons,
   ...rest
 }: {
-  item: cart.LineItem;
+  item: cartV2.LineItem;
   currencyCode: string;
   hideButtons?: boolean;
 }) => {
   const { closeSidebarIfPresent } = useUI();
   const [removing, setRemoving] = useState(false);
-  const [quantity, setQuantity] = useState<number>(item.quantity ?? 1);
+  const [quantity, setQuantity] = useState<number>(
+    item.quantityInfo?.confirmedQuantity ?? 1
+  );
   const removeItem = useRemoveItemFromCart();
   const updateCartMutation = useUpdateCart();
 
+  // V2 pricing: `totalPrice` is already the line total (unit x quantity).
+  const lineTotal = Number(item.pricing?.totalPrice?.amount ?? 0);
   const price = formatPrice({
-    amount: Number.parseFloat(item.price?.amount!) * item.quantity!,
-    baseAmount: Number.parseFloat(item.price?.amount!) * item.quantity!,
+    amount: lineTotal,
+    baseAmount: lineTotal,
     currencyCode,
   });
 
@@ -54,11 +58,12 @@ export const CartItem = ({
   };
 
   useEffect(() => {
-    if (item.quantity !== Number(quantity)) {
-      setQuantity(item.quantity!);
+    const confirmedQuantity = item.quantityInfo?.confirmedQuantity;
+    if (confirmedQuantity !== Number(quantity)) {
+      setQuantity(confirmedQuantity!);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item.quantity]);
+  }, [item.quantityInfo?.confirmedQuantity]);
 
   const slug = item.url?.split('/').pop() ?? '';
 
@@ -69,7 +74,11 @@ export const CartItem = ({
           {slug ? (
             <Link href={`/product-page/${slug}`}>
               <div onClick={closeSidebarIfPresent}>
-                <WixMediaImage width={150} height={150} media={item.image} />
+                <WixMediaImage
+                  width={150}
+                  height={150}
+                  media={item.attributes?.image}
+                />
               </div>
             </Link>
           ) : (
@@ -81,12 +90,12 @@ export const CartItem = ({
             {slug ? (
               <Link href={`/product-page/${slug}`}>
                 <span className="cursor-pointer pb-1 text-gray-500">
-                  {item.productName?.translated}
+                  {item.name?.translated}
                 </span>
               </Link>
             ) : (
               <span className="pb-1 text-gray-500">
-                {item.productName?.translated}
+                {item.name?.translated}
               </span>
             )}
           </div>
