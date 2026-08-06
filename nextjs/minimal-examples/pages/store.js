@@ -110,7 +110,7 @@ export default function Store() {
             // Check if the product is already in the cart
             if (cart) {
                 const existingProduct = cart?.lineItems?.find(
-                    (item) => item.catalogReference.catalogItemId === product._id,
+                    (item) => item.source?.catalogReference?.catalogItemId === product._id,
                 );
 
                 // If the product is already in the cart, increase the quantity

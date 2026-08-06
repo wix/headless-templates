@@ -102,9 +102,9 @@ export const CartItem = ({
             )}
           </div>
           <span>{price}</span>
-          {item.descriptionLines?.length ? (
+          {item.attributes?.descriptionLines?.length ? (
             <div className="mt-1">
-              {item.descriptionLines?.map((line) => (
+              {item.attributes?.descriptionLines?.map((line) => (
                 <span
                   key={line.name?.translated}
                   className="text-12 leading-tight text-gray-500 block"

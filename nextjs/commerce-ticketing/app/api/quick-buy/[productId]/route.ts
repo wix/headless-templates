@@ -55,7 +55,7 @@ export async function GET(
   // id, so we redirect straight from the created cart (no createCheckout call).
   const cart = await wixClient.cartV2.createCart({
     cart: {
-      customCheckoutUrl: `${baseUrl}api/redirect-to-checkout?checkoutId={checkoutId}`,
+      customCheckoutUrl: `${baseUrl}api/redirect-to-checkout?checkoutId={checkout_id}`,
     },
     catalogItems: [item],
   });
