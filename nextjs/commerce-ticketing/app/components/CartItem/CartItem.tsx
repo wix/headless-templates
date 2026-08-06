@@ -15,7 +15,7 @@ export const CartItem = ({
   hideButtons,
   ...rest
 }: {
-  item: cartV2.LineItem;
+  item: cartV2.V2LineItem;
   currencyCode: string;
   hideButtons?: boolean;
 }) => {

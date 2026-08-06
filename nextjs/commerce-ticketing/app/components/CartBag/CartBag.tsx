@@ -8,7 +8,7 @@ export const CartBag = () => {
   const { data, isLoading } = useCart();
   const itemsCount = !isLoading
     ? data?.lineItems?.reduce(
-        (count: number, item: cartV2.LineItem) =>
+        (count: number, item: cartV2.V2LineItem) =>
           count + (item.quantityInfo?.confirmedQuantity ?? 0),
         0
       )

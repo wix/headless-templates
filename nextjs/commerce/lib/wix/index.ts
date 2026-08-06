@@ -236,9 +236,7 @@ export async function removeFromCart(lineIds: string[]): Promise<Cart> {
     currentCartV2,
   );
 
-  const { cart } = await removeLineItemsFromCurrentCart({
-    lineItemIds: lineIds,
-  });
+  const { cart } = await removeLineItemsFromCurrentCart(lineIds);
 
   return reshapeCart(cart!);
 }

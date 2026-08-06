@@ -85,9 +85,8 @@ function CartItem({ item, currency }) {
 
   const removeMutation = useMutation(
     async () => {
-      return wixCient.currentCartV2.removeLineItemsFromCurrentCart({
-        lineItemIds: [item._id],
-      });
+      // SDK signature is positional (lineItemIds: string[]), unlike add/update which take options objects.
+      return wixCient.currentCartV2.removeLineItemsFromCurrentCart([item._id]);
     },
     {
       onSuccess: (response) => {
