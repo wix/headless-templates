@@ -75,15 +75,25 @@ Remove:
 - Any hardcoded site-specific IDs in `src/` — move them to constants with a comment explaining where the value comes from, or read them from env
 
 Normalize:
-- `package.json`: `name` → `wix-astro-<template-name>`, `version` → `0.0.1`, scripts exactly `{ "astro": "astro", "dev": "astro dev", "build": "astro build" }` — no `wix` scripts, no adapter in config (the CLI/publish pipeline injects it)
+- `package.json`: `name` → `wix-astro-<template-name>`, `version` → `0.0.1`, scripts exactly `{ "astro": "astro", "dev": "astro dev", "build": "astro build" }` — no `wix` scripts
+- Adapter/hosting setup per the repo's `AGENTS.md` build standards (currently `@wix/astro` + `@wix/astro-wix-hosting-adapter` where an explicit adapter is needed)
 - `.gitignore`: copy from `astro/blank` (ignores `.wix/`, `dist/`, `.astro/`, `node_modules/`, env files)
 - `README.md`: what the template shows, which Wix apps it uses, quick-start commands
 
-Sanity check: `npm install && npm run build` must succeed from the cleaned directory (with a temporary `wix.config.json` + `.env.local` if the build needs one — delete them after).
+Sanity check: `npm install && npm run build` must succeed from a **standalone copy** of the cleaned directory with a dummy `WIX_CLIENT_ID` (building inside the monorepo can fail on workspace hoisting — see "Testing a template end-to-end" in `AGENTS.md`).
 
-Keep templates thin: wireframe-level code that demonstrates the integration, not a fully styled product site.
+## Step 5 — Review the code against AGENTS.md
 
-## Step 5 — Open the PR
+Before opening the PR, **read the repo root `AGENTS.md` in full** — it is the review standard for this repo and evolves; do not rely on a remembered copy. Then review every file of the new template against it and fix findings in place. Cover at minimum each of its sections:
+
+- **Thin wireframe** — lightweight code that demonstrates the integration; simplify implementations, but never drop pages, routes, or functionality for thinness.
+- **Wix is the source of truth** — no hardcoded data the site owns (services, form fields, products, prices, timezones, blog content…). Every rule in that section was a real past review finding; check the template against each one that applies to its business solution.
+- **Build & integration standards** — adapter choice, SDK usage via the `@wix/astro` context (no `createClient`/OAuth boilerplate/client IDs), React-island rules, nothing site-specific committed, pinned deps, 404-not-redirect, error handling, no dead UI.
+- **Catalog pairing** — any resource GUID hardcoded in the template (e.g. a form ID) must match what the Step 3 `wixTemplateId` actually provisions.
+
+Then prove it end-to-end with the recipe from `AGENTS.md`'s "Testing a template end-to-end" section: provision a real site from the minted template with `npx @wix/create-new headless init --site-template … --template-path …` and exercise the flows with `npm run dev`. Report what was checked and what was fixed — a clean review is a PR-body bullet, not a silent step.
+
+## Step 6 — Open the PR
 
 1. Add the catalog entry to `templates.json`:
 
