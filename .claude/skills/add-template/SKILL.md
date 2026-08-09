@@ -20,7 +20,7 @@ Work through the steps in order. Each step states what to run and what to captur
 Only if the user is starting fresh:
 
 ```bash
-npm create @wix/cli-app@latest    # choose a headless template as the starting point
+npm create @wix/new@latest -- headless    # scaffolds a headless project (prompts for template + site)
 cd <project> && npm install && npx wix dev
 ```
 
