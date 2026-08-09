@@ -41,14 +41,28 @@ Verify the released site URL loads before continuing.
 The `headless-business-setup` service exposes an employee-only endpoint that duplicates the site, marks the clone as a template, and transfers it to the headless-stack account (the source site is untouched):
 
 ```
-POST /v1/headless-sites/wix-templates/{metaSiteId}?name=<template-name>
+POST https://manage.wix.com/_api/headless-business-setup/v1/headless-sites/wix-templates/{metaSiteId}?name=<template-name>
 ```
 
-- `metaSiteId` = `siteId` from the project's `wix.config.json`.
-- Trigger it through **Fire Console** against artifact `com.wixpress.coreservices.headless-business-setup`: invoke the web function `POST /v1/headless-sites/wix-templates/{metaSiteId}?name=<template-name>`. (Direct `curl` via `https://manage.wix.com/_api/headless-business-setup/...` also works with a Wix-employee session.)
-- The caller must have read access to the source site — it authorizes against the invoking employee's identity.
+It authenticates with the **Wix CLI's own login token** — the employee is already logged in from Steps 1–2, so run this from the project directory:
 
-**Capture the returned `wixTemplateId`** — it becomes `siteTemplateId` in `templates.json` (Step 5). If the call fails with 400, the name violates the pattern; with 403, the caller isn't recognized as a Wix employee or lacks access to the site.
+```bash
+SITE_ID=$(node -p "require('./wix.config.json').siteId")
+TOKEN=$(node -p "require(require('os').homedir()+'/.wix/auth/account.json').accessToken")
+curl -sS -X POST \
+  "https://manage.wix.com/_api/headless-business-setup/v1/headless-sites/wix-templates/${SITE_ID}?name=<template-name>" \
+  -H "Authorization: ${TOKEN}"
+```
+
+Expected response: `{"wixTemplateId":"<guid>","name":"<template-name>"}`.
+
+**Capture the returned `wixTemplateId`** — it becomes `siteTemplateId` in `templates.json` (Step 5).
+
+Troubleshooting:
+- **401** — the CLI token expired (they live 4 hours). Run any CLI command that touches the account (e.g. `npx wix login`) and retry.
+- **403** — the logged-in user isn't recognized as a Wix employee, or lacks read access to the source site (the duplicate is authorized against the caller's identity).
+- **400** — the name violates the pattern (4–20 chars, lowercase letters/digits/hyphens/underscores, no trailing hyphen).
+- **502 `duplicateMetaSite failed`** — the `metaSiteId` doesn't exist or the caller can't read it; double-check `wix.config.json`'s `siteId`.
 
 ## Step 4 — Prep the code for template structure
 
