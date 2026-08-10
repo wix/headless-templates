@@ -26,6 +26,14 @@
       "vibeCompatible": false
     },
     {
+      "name": "cms-catalog",
+      "title": "CMS (Wix Data)",
+      "subtitle": "Structured content collections",
+      "siteTemplateId": "5697db84-b51a-4a08-9c4c-83e4160ab7d2",
+      "gitPath": "astro/cms-catalog",
+      "vibeCompatible": false
+    },
+    {
       "name": "blank",
       "title": "Blank",
       "subtitle": "Basic Astro project",

@@ -349,64 +349,12 @@ function Footer() {
 				padding: "60px max(40px, calc((100vw - 1280px) / 2 + 40px)) 0",
 			}}
 		>
-			<div
-				style={{
-					display: "grid",
-					gridTemplateColumns: "1fr 1fr 1fr 1fr",
-					gap: 40,
-					paddingBottom: 60,
-				}}
-			>
-				<div>
-					<p style={footerHeadingStyle}>NAVIGATE</p>
-					{["Shop All"].map((l) => (
-						<p key={l} style={{ fontSize: 14, marginBottom: 10, color: "#d1d5db" }}>
-							{l}
-						</p>
-					))}
-				</div>
-				<div>
-					<p style={footerHeadingStyle}>LEGAL</p>
-					{["Terms & Conditions", "Privacy Policy", "Accessibility Statement"].map((l) => (
-						<p key={l} style={{ fontSize: 14, marginBottom: 10, color: "#d1d5db" }}>
-							{l}
-						</p>
-					))}
-				</div>
-				<div />
-				<div>
-					<p style={footerHeadingStyle}>FOLLOW US</p>
-					<div style={{ display: "flex", gap: 16 }}>
-						{[
-							<path key="fb" d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />,
-							<>
-								<circle key="ig-c" cx="12" cy="12" r="4" />
-								<rect key="ig-r" x="2" y="2" width="20" height="20" rx="5" />
-								<circle key="ig-d" cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
-							</>,
-							<path key="tk" d="M9 12a4 4 0 104 4V4a5 5 0 005 5" />,
-						].map((icon, i) => (
-							<div
-								key={i}
-								style={{
-									width: 36,
-									height: 36,
-									borderRadius: "50%",
-									border: "1.5px solid #4b5563",
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									cursor: "pointer",
-								}}
-							>
-								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-									{icon}
-								</svg>
-							</div>
-						))}
-					</div>
-				</div>
-			</div>
+			<nav style={{ paddingBottom: 60 }}>
+				<p style={footerHeadingStyle}>NAVIGATE</p>
+				<a href="/#shop" style={footerLinkStyle}>
+					Shop All
+				</a>
+			</nav>
 			<div style={{ borderTop: "1px solid #2d3348", padding: "48px 0 32px", textAlign: "center" }}>
 				<p
 					style={{
@@ -434,6 +382,14 @@ const footerHeadingStyle = {
 	letterSpacing: "0.1em",
 	color: "#8b8f9a",
 	marginBottom: 16,
+};
+
+const footerLinkStyle = {
+	display: "block",
+	fontSize: 14,
+	marginBottom: 10,
+	color: "#d1d5db",
+	textDecoration: "none",
 };
 
 export default function CatalogIsland({ items }) {

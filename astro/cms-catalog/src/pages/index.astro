@@ -10,7 +10,18 @@ try {
 		.ascending("category")
 		.limit(50)
 		.find();
-	catalogItems = rows;
+	// Trim to the fields the UI renders — the rest (_owner, _createdDate,
+	// _updatedDate) would otherwise get serialized into the client bundle
+	// for no reason.
+	catalogItems = rows.map(({ _id, name, description, price, currency, category, image }) => ({
+		_id,
+		name,
+		description,
+		price,
+		currency,
+		category,
+		image,
+	}));
 } catch (err) {
 	// leave catalogItems empty — the island renders an empty state
 	console.error("Failed to load catalog-items", err);

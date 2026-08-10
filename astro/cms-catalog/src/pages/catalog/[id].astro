@@ -21,6 +21,10 @@ try {
 	console.error("Failed to load catalog item", id, err);
 }
 
+if (!item) {
+	Astro.response.status = 404;
+}
+
 const description = item ? richTextToPlainText(item.description).slice(0, 160) : undefined;
 const image = item ? imgSrc(item.image, 1200, 1200) : undefined;
 // Astro.url reflects the internal request scheme, which can be http behind
