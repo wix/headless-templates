@@ -29,7 +29,7 @@
       "name": "blog",
       "title": "Blog (Wix Blog)",
       "subtitle": "Posts, categories, and rich content",
-      "siteTemplateId": "a80bf703-92b3-4a8c-abe3-b67cdae8e401",
+      "siteTemplateId": "9fb8af28-e85e-4c86-a85a-4ce471766314",
       "gitPath": "astro/blog",
       "vibeCompatible": false
     },
