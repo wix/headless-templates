@@ -26,19 +26,39 @@ let seoTagsServiceConfig = null;
 let member = null;
 
 const [eventRes, seoConfig] = await Promise.all([
-  wixEventsV2.getEventBySlug(slug, { fields: ['DETAILS', 'TEXTS', 'REGISTRATION', 'URLS'] }).catch(() => null),
+  wixEventsV2.getEventBySlug(slug, { fields: ['DETAILS', 'TEXTS', 'REGISTRATION', 'URLS'] })
+    .catch((err) => { console.error('Failed to load event', err); return null; }),
   loadSEOTagsServiceConfig({
     pageUrl: Astro.url.href,
     itemType: seoTags.ItemType.EVENTS_PAGE,
     itemData: { slug },
   }).catch(() => null),
 ]);
-event = eventRes?.event ?? null;
+const rawEvent = eventRes?.event ?? null;
+// Serialize only the fields the island actually renders.
+event = rawEvent && {
+  _id: rawEvent._id,
+  slug: rawEvent.slug,
+  title: rawEvent.title,
+  shortDescription: rawEvent.shortDescription ?? '',
+  mainImage: rawEvent.mainImage ?? null,
+  dateAndTimeSettings: { formatted: { dateAndTime: rawEvent.dateAndTimeSettings?.formatted?.dateAndTime ?? '' } },
+  location: { name: rawEvent.location?.name ?? '' },
+  registration: {
+    initialType: rawEvent.registration?.initialType,
+    rsvp: { responseType: rawEvent.registration?.rsvp?.responseType },
+  },
+};
 seoTagsServiceConfig = seoConfig;
 
 try {
   const { member: m } = await members.getCurrentMember({ fieldsets: ['FULL'] });
-  member = m ?? null;
+  if (m) {
+    member = {
+      loginEmail: m.loginEmail ?? null,
+      profile: { nickname: m.profile?.nickname ?? null },
+    };
+  }
 } catch {}
 
 if (!event) {

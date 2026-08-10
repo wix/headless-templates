@@ -9,9 +9,13 @@ let event = null;
 
 try {
   if (eventId) {
-    event = await wixEventsV2.getEvent(eventId, { fields: ['TEXTS', 'URLS'] });
+    const raw = await wixEventsV2.getEvent(eventId, { fields: ['TEXTS', 'URLS'] });
+    // Serialize only the field the island actually renders.
+    event = raw && { title: raw.title };
   }
-} catch {}
+} catch (err) {
+  console.error('Failed to load event for confirmation', err);
+}
 ---
 <Layout title={`Confirmed — ${BUSINESS_NAME}`}>
   <EventConfirmation event={event} client:load />

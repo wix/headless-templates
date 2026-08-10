@@ -116,27 +116,11 @@ function HomePage({ events }) {
         <div>
           <p>Use this space to promote your event series, its speakers or its schedule.</p>
           <a href="#events" className="pill dark" style={{ marginTop: 28 }}>See What's On</a>
-          <button className="icon-btn" style={{ marginTop: 16, color: '#6b7280', fontSize: 13, fontWeight: 500 }}>Join the Feed</button>
         </div>
       </section>
 
       <section className="grid-4">
         {[0, 1, 2, 3].map(i => <div key={i} className={`sq ph${(i + 1) % 4}`} style={{ borderRadius: 0 }} />)}
-      </section>
-
-      <section className="grid-2" style={{ background: '#f7f8fc', padding: '80px 40px', gap: 80, alignItems: 'center' }}>
-        <p style={{ fontSize: 17, lineHeight: 1.7, color: '#374151' }}>
-          This is the space to promote the event mailing list. Encourage people to subscribe here so they never miss what's next.
-        </p>
-        <div>
-          <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 8 }}>Email *</label>
-          <input type="email" placeholder="Enter your email address" style={{ width: '100%', padding: '12px 16px', border: '1px solid #d1d5db', borderRadius: 4, fontSize: 14, outline: 'none', background: '#fff', font: 'inherit' }} />
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 13, cursor: 'pointer' }}>
-            <input type="checkbox" style={{ width: 14, height: 14 }} />
-            I agree to receive marketing emails *
-          </label>
-          <button className="btn" style={{ marginTop: 16, padding: '12px 32px', borderRadius: 4, width: 'fit-content' }}>Submit</button>
-        </div>
       </section>
     </>
   );
@@ -256,32 +240,11 @@ export default function AppIsland({ events = [], member = null, page = 'home' })
       {page === 'about' ? <AboutPage /> : <HomePage events={events} />}
 
       <footer className="footer pl pr">
-        <div className="grid-4 wrap" style={{ padding: 0 }}>
+        <div className="wrap" style={{ padding: 0 }}>
           <nav>
             <p>NAVIGATE</p>
             <a href="/#events">All Events</a>
             <a href="/about">Our Story</a>
-          </nav>
-          <nav>
-            <p>LEGAL</p>
-            <a href="#">Terms &amp; Conditions</a>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Accessibility Statement</a>
-          </nav>
-          <div />
-          <nav>
-            <p>FOLLOW US</p>
-            <div style={{ display: 'flex', gap: 16 }}>
-              {[
-                <path key="fb" d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />,
-                <><circle key="ig-c" cx="12" cy="12" r="4" /><rect key="ig-r" x="2" y="2" width="20" height="20" rx="5" /><circle key="ig-d" cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" /></>,
-                <path key="tk" d="M9 12a4 4 0 104 4V4a5 5 0 005 5" />,
-              ].map((icon, i) => (
-                <div key={i} className="circle" style={{ width: 36, height: 36, border: '1.5px solid #4b5563', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{icon}</svg>
-                </div>
-              ))}
-            </div>
           </nav>
         </div>
         <div className="footer-bottom">

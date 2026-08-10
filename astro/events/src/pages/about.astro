@@ -7,7 +7,12 @@ import { BUSINESS_NAME } from '../utils/constants';
 let member = null;
 try {
   const { member: m } = await members.getCurrentMember({ fieldsets: ['FULL'] });
-  member = m ?? null;
+  if (m) {
+    member = {
+      loginEmail: m.loginEmail ?? null,
+      profile: { nickname: m.profile?.nickname ?? null },
+    };
+  }
 } catch {}
 ---
 <Layout title={`Our Story — ${BUSINESS_NAME}`}>
