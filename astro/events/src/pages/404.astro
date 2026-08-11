@@ -1,0 +1,14 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { BUSINESS_NAME } from '../utils/constants';
+---
+<Layout title={`Page Not Found — ${BUSINESS_NAME}`}>
+  <div class="app tc" style="justify-content: center; padding: 80px 40px;">
+    <p class="eyebrow">404</p>
+    <h1 class="h-md" style="margin-bottom: 16px;">We couldn't find that page</h1>
+    <p class="body-copy" style="margin: 0 auto 24px; max-width: 440px;">
+      The page you're looking for might have been removed, had its name changed, or is temporarily unavailable.
+    </p>
+    <a href="/" class="pill dark" style="margin: 0 auto;">Back to home</a>
+  </div>
+</Layout>
