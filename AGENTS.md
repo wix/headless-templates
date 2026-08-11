@@ -14,6 +14,16 @@ Never hardcode data the site owns. Every one of these was a real review finding:
 - **Blog content**: render Ricos via `RicosViewer` from `@wix/astro-ricos` (with `renameKeysFromSDKRequestToRESTRequest`), not a hand-rolled node renderer. Source per-post SEO tags (title/description/canonical/OG) from `post.seoData.tags`, falling back to title/excerpt/cover.
 - Placeholder copy ("Business Name", template marketing text) is acceptable; placeholder *data* that shadows a Wix API is not.
 
+## SEO, accessibility, and mobile responsiveness
+
+These are shipped-site quality bars, not nice-to-haves — templates go live as real customer sites. Every one of these has a real gap in the repo today; don't repeat it in new or edited templates:
+
+- **SEO on Wix-hosted main pages**: `@wix/astro`'s middleware auto-injects `<title>`/meta description/canonical/OG/structured data from the Dashboard SEO settings — don't duplicate it (see `astro/cms-catalog/src/layouts/Layout.astro`). That auto-injection does not cover **item/detail pages** for dynamic content (a product, a service, a blog post) — those need per-item tags sourced from the item's own data.
+- **Per-item SEO**: follow the `astro/blog/src/pages/blog/[...slug].astro` pattern — read `post.seoData.tags`, filter out `disabled`, and render `<link rel="canonical">` plus OG/Twitter tags from those, falling back to the item's own title/excerpt/cover when a tag is missing. Apply the same pattern to product and service detail pages; don't hardcode `<Layout title="Brand Name">` with no description or OG data.
+- **Accessibility on interactive elements**: use real `<button>`/`<a>` for anything clickable — never a `<div onClick>`. Icon-only controls need `aria-label`. Modals/overlays need `role="dialog"`, close on Escape, and trap focus — a backdrop `onClick` alone isn't enough.
+- **Alt text**: pull from Wix media data (`alt={product.name}`, etc.) for real content images; use `alt=""` only for genuinely decorative images (backgrounds, spacers). An `alt=""` on a real product/content thumbnail is a bug, not a shortcut.
+- **Mobile responsiveness**: every template's global stylesheet needs `@media` breakpoints for its grids, nav, and any multi-column layout — don't ship a template with zero responsive rules. Include `width=device-width, initial-scale=1.0` in the viewport meta tag (not just `width=device-width`). Prefer fluid sizing (`min(380px, 100vw)`) over fixed pixel widths for panels/drawers that must fit small screens.
+
 ## Build & integration standards
 
 - Hosting: `@wix/astro` (current major) with `@wix/astro-wix-hosting-adapter` where an explicit adapter is needed. Never `@wix/cloud-provider-fetch-adapter` or `isBuild`-conditional adapters — that pattern was removed repo-wide.
