@@ -37,7 +37,7 @@
       "name": "events",
       "title": "Events (Wix Events)",
       "subtitle": "Event listings, RSVP, and ticketed registration",
-      "siteTemplateId": "e87f1a60-7b40-4d96-bf36-5a08022f74b8",
+      "siteTemplateId": "cac192bb-6c63-4758-bb7e-1c490bfbf86d",
       "gitPath": "astro/events",
       "vibeCompatible": false
     }
