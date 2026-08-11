@@ -26,6 +26,14 @@
       "vibeCompatible": false
     },
     {
+      "name": "cms-catalog",
+      "title": "CMS (Wix Data)",
+      "subtitle": "Structured content collections",
+      "siteTemplateId": "d8baa51d-c4f0-4604-92ea-a41aa09f8c7a",
+      "gitPath": "astro/cms-catalog",
+      "vibeCompatible": false
+    },
+    {
       "name": "blog",
       "title": "Blog (Wix Blog)",
       "subtitle": "Posts, categories, and rich content",

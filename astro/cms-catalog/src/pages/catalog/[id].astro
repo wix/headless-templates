@@ -1,0 +1,62 @@
+---
+// No Wix-managed SEO integration exists for CMS item pages (the item-page SEO
+// registry — @wix/seo + WIX_APPS — only covers Stores, Bookings, Events, and
+// Blog), so this route builds its own <title>/description/canonical from the
+// item's own CMS data instead. A Wix user can't edit these tags from the
+// dashboard the way they can for a Stores product or Blog post — that's a
+// real platform limitation for CMS collections, not something this code can
+// route around.
+import Layout from "../../layouts/Layout.astro";
+import ItemDetailIsland from "../../components/ItemDetailIsland.jsx";
+import { items } from "@wix/data";
+import { imgSrc } from "../../components/imgSrc.js";
+import { richTextToPlainText } from "../../lib/richText.js";
+
+const { id } = Astro.params;
+
+let item = null;
+try {
+	item = await items.get("catalog-items", id);
+} catch (err) {
+	console.error("Failed to load catalog item", id, err);
+}
+
+if (!item) {
+	Astro.response.status = 404;
+}
+
+const description = item ? richTextToPlainText(item.description).slice(0, 160) : undefined;
+const image = item ? imgSrc(item.image, 1200, 1200) : undefined;
+// Astro.url reflects the internal request scheme, which can be http behind
+// Wix's edge even though the public site is always served over https.
+const canonicalUrl = new URL(Astro.url.pathname, `https://${Astro.url.host}`).href;
+
+const jsonLd = item && {
+	"@context": "https://schema.org",
+	"@type": "Product",
+	name: item.name,
+	description,
+	image: image || undefined,
+	offers:
+		typeof item.price === "number" && item.currency
+			? {
+					"@type": "Offer",
+					price: item.price,
+					priceCurrency: item.currency,
+				}
+			: undefined,
+};
+---
+
+<Layout
+	title={item ? item.name : "Item not found"}
+	description={description}
+	canonicalUrl={canonicalUrl}
+	image={image}
+	noIndex={!item}
+>
+	{jsonLd && (
+		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+	)}
+	<ItemDetailIsland item={item} />
+</Layout>

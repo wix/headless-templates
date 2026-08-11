@@ -55,6 +55,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Stores</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/cms-catalog">CMS</a></td>
+      <td>A catalog template backed by a Wix CMS (Wix Data) collection using Astro and Wix Headless.</td>
+      <td></td>
+      <td>Wix CMS (Wix Data)</td>
+    </tr>
+    <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/astro/events">Events</a></td>
       <td>A template for event listings, RSVP, and ticketed registration using Astro and Wix Headless.</td>
       <td></td>
