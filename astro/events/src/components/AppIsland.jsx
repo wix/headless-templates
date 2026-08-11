@@ -201,7 +201,7 @@ export default function AppIsland({ events = [], member = null, page = 'home' })
             <div className="logo-dot" />
             <span>{BUSINESS_NAME}</span>
           </a>
-          <nav className="nav desktop-header-actions" style={{ justifyContent: 'flex-end' }}>
+          <nav className="nav desktop-header-actions" aria-label="Main" style={{ justifyContent: 'flex-end' }}>
             <a href="/#events">All Events</a>
             <a href="/about" className={page === 'about' ? 'on' : ''}>Our Story</a>
             {member && (
@@ -214,7 +214,12 @@ export default function AppIsland({ events = [], member = null, page = 'home' })
               </div>
             )}
           </nav>
-          <button className="mobile-menu-btn" aria-label={menuOpen ? 'Close menu' : 'Open menu'} onClick={() => setMenuOpen(o => !o)}>
+          <button
+            className="mobile-menu-btn"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(o => !o)}
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               {menuOpen ? (<><line x1="5" y1="5" x2="19" y2="19" /><line x1="19" y1="5" x2="5" y2="19" /></>) : (<><line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" /></>)}
             </svg>
@@ -241,7 +246,7 @@ export default function AppIsland({ events = [], member = null, page = 'home' })
 
       <footer className="footer pl pr">
         <div className="wrap" style={{ padding: 0 }}>
-          <nav>
+          <nav aria-label="Footer">
             <p>NAVIGATE</p>
             <a href="/#events">All Events</a>
             <a href="/about">Our Story</a>

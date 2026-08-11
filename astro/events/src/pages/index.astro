@@ -3,7 +3,6 @@ import { wixEventsV2 } from '@wix/events';
 import { members } from '@wix/members';
 import Layout from '../layouts/Layout.astro';
 import AppIsland from '../components/AppIsland.jsx';
-import { BUSINESS_NAME } from '../utils/constants';
 
 let events = [];
 let member = null;
@@ -37,6 +36,6 @@ try {
   }
 } catch {}
 ---
-<Layout title={`${BUSINESS_NAME} — Events`}>
+<Layout>
   <AppIsland events={events} member={member} page="home" client:load />
 </Layout>
