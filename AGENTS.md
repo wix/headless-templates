@@ -49,6 +49,7 @@ Based on [Wix's accessibility scoring KB](https://accessibility.wixanswers.com/k
 - Never use color, shape, or direction as the only signal (no "click the green button", no error shown only via red text). Text links need either ≥3:1 contrast from surrounding text plus a non-color cue (underline is simplest), or both.
 - Support zoom to 400% / a 320px viewport: no content or functionality may disappear, and there must be no horizontal scrollbar (vertical-only reflow) — check any fixed-width grid or sidebar against this.
 - Don't use fixed-height containers for text that clips content when a user increases browser text/line/paragraph spacing.
+- Body/paragraph text must never render smaller than 14px — check computed font size, not just the CSS value, since inherited styles or scaling can shrink it further.
 
 **Forms**
 - Every field needs a visible `<label>` programmatically connected to its input (not just `aria-label` — that breaks "click label to focus input"), unless it's a single, unambiguous field like a bare search box.
