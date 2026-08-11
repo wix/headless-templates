@@ -47,13 +47,13 @@ const { title } = Astro.props;
       .push { margin-top: auto; }
 
       /* Type */
-      .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; opacity: 0.5; margin-bottom: 16px; }
+      .eyebrow { font-size: 14px; font-weight: 600; letter-spacing: 0.1em; opacity: 0.5; margin-bottom: 16px; }
       .h-hero { font-size: clamp(48px, 6vw, 88px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
       .h-page { font-size: clamp(40px, 5.5vw, 72px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; max-width: 700px; }
       .h-md { font-size: clamp(24px, 3vw, 40px); font-weight: 400; line-height: 1.2; }
-      .body-copy { font-size: 15px; line-height: 1.8; opacity: 0.6; }
-      .muted { opacity: 0.5; font-size: 14px; }
-      .error { font-size: 12px; color: #c0392b; }
+      .body-copy { font-size: 15px; line-height: 1.8; color: #4b4f5e; }
+      .muted { font-size: 14px; color: #5b5f70; }
+      .error { font-size: 14px; color: #c0392b; }
 
       /* Buttons and pills */
       .btn { padding: 13px 0; background: var(--dark); color: #fff; border: none; border-radius: 24px; font-size: 14px; font-weight: 600; }
@@ -63,12 +63,12 @@ const { title } = Astro.props;
       .pill.dark { background: var(--dark); color: #fff; }
       .pill.light { background: #fff; color: var(--dark); font-weight: 600; }
       .pill.line { border: 1.5px solid var(--dark); color: var(--dark); }
-      .pill.sm { border: 1px solid #d1d5db; padding: 8px 20px; font-size: 13px; color: var(--dark); }
+      .pill.sm { border: 1px solid #d1d5db; padding: 8px 20px; font-size: 14px; color: var(--dark); }
       .close { background: none; border: none; font-size: 22px; opacity: 0.4; }
       .icon-btn { background: none; border: none; display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--dark); }
 
       /* Promo banner + header */
-      .banner { background: var(--dark); color: #fff; text-align: center; padding: 12px 24px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; }
+      .banner { background: var(--dark); color: #fff; text-align: center; padding: 12px 24px; font-size: 14px; font-weight: 600; letter-spacing: 0.12em; }
       .header { background: #fff; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 100; }
       .site-header-inner { max-width: 1280px; margin: 0 auto; padding: 0 40px; min-height: 72px; display: flex; align-items: center; gap: 40px; }
       .logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; font-weight: 700; font-size: 15px; }
@@ -81,7 +81,7 @@ const { title } = Astro.props;
       .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--grad); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
       .member-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .login-link { display: flex; align-items: center; gap: 6px; font-size: 14px; }
-      .logout-btn { background: none; border: 1px solid #d1d5db; border-radius: 16px; padding: 5px 12px; font-size: 13px; color: var(--dark); }
+      .logout-btn { background: none; border: 1px solid #d1d5db; border-radius: 16px; padding: 5px 12px; font-size: 14px; color: var(--dark); }
       .mobile-menu-btn { display: none; background: none; border: none; padding: 4px; margin-left: auto; color: var(--dark); }
       .mobile-menu-panel { display: none; border-top: 1px solid #e5e7eb; padding: 20px; flex-direction: column; gap: 18px; background: #fff; }
       .mobile-menu-panel a, .mobile-menu-panel .icon-btn { font-size: 15px; font-weight: 500; gap: 8px; }
@@ -90,7 +90,7 @@ const { title } = Astro.props;
       /* Sections */
       .hero { min-height: 85vh; display: flex; align-items: flex-end; padding: 80px 40px; position: relative; overflow: hidden; }
       .shop-sec { background: #fff; padding: 60px 40px; }
-      .quote-sec { background: var(--dark); padding: 80px 40px; text-align: center; color: #6b7080; }
+      .quote-sec { background: var(--dark); padding: 80px 40px; text-align: center; color: #8b8f9a; }
       .quote-sec blockquote { font-size: clamp(24px, 3.5vw, 48px); font-style: italic; line-height: 1.3; max-width: 900px; margin: 0 auto; }
       .story-sec { min-height: 520px; display: flex; align-items: center; justify-content: flex-end; padding: 80px 40px; }
       .story-sec > div { max-width: 380px; }
@@ -105,11 +105,12 @@ const { title } = Astro.props;
 
       /* Event cards */
       .card { all: unset; cursor: pointer; display: block; text-align: left; }
+      .card:focus-visible { outline: 2px solid #2b5cff; outline-offset: 4px; border-radius: 2px; }
       .card-img { width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 2px; }
       .card-img img { width: 100%; height: 100%; object-fit: cover; }
-      .card-name { margin-top: 10px; font-size: 13px; font-weight: 500; color: var(--dark); }
-      .card-price { margin-top: 3px; font-size: 13px; color: #6b7280; }
-      .card-action { margin-top: 2px; font-size: 12px; color: #9ca3af; }
+      .card-name { margin-top: 10px; font-size: 14px; font-weight: 500; color: var(--dark); }
+      .card-price { margin-top: 3px; font-size: 14px; color: #6b7280; }
+      .card-action { margin-top: 2px; font-size: 14px; color: #6b7280; }
       .card.featured { position: relative; }
       .card.featured .card-img { aspect-ratio: 4/5; }
       .card.featured > div:last-child { position: absolute; bottom: 16px; left: 16px; background: #fff; border-radius: 2px; padding: 10px 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
@@ -127,22 +128,23 @@ const { title } = Astro.props;
       /* Ticket tiers + RSVP form (event detail page) */
       .tier-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #e5e7eb; }
       .tier-name { font-size: 15px; font-weight: 600; }
-      .tier-desc { font-size: 13px; opacity: 0.55; margin-top: 4px; }
+      .tier-desc { font-size: 14px; color: #4b4f5e; margin-top: 4px; }
       .tier-price { font-size: 14px; font-weight: 500; margin-top: 6px; }
       .qty { display: flex; align-items: center; gap: 10px; }
       .qty-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #d1d5db; background: none; }
       .rsvp-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-      .rsvp-field label { font-size: 13px; font-weight: 600; }
-      .rsvp-field input { padding: 11px 14px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px; outline: none; font: inherit; }
+      .rsvp-field label { font-size: 14px; font-weight: 600; }
+      .rsvp-field input { padding: 11px 14px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px; font: inherit; }
+      .rsvp-field input:focus-visible { outline: 2px solid #2b5cff; outline-offset: 1px; }
 
       /* Footer */
       .footer { background: var(--dark); color: #fff; padding: 60px 40px 0; }
       .footer nav { padding-bottom: 60px; }
-      .footer nav p { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: #8b8f9a; margin-bottom: 16px; }
+      .footer nav p { font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: #8b8f9a; margin-bottom: 16px; }
       .footer nav a { display: block; font-size: 14px; margin-bottom: 10px; color: #d1d5db; }
       .footer-bottom { border-top: 1px solid #2d3348; padding: 48px 0 32px; text-align: center; }
       .footer-logo { font-size: clamp(28px, 4vw, 48px); font-weight: 800; line-height: 0.9; letter-spacing: -0.03em; }
-      .footer-copy { margin-top: 40px; padding-bottom: 32px; font-size: 13px; color: #6b7080; }
+      .footer-copy { margin-top: 40px; padding-bottom: 32px; font-size: 14px; color: #8b8f9a; }
 
       /* Widen a section side to the container-centering padding (after sections so it wins). */
       .pl { padding-left: var(--pad); }

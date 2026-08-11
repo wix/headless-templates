@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { orders, ticketReservations, rsvpV2 } from '@wix/events';
 import { redirects } from '@wix/redirects';
 import { media } from '@wix/sdk';
@@ -9,6 +9,16 @@ function imgSrc(mainImage, w = 1000, h = 1000) {
   if (!v) return '';
   if (typeof v === 'string' && v.startsWith('wix:image://')) return media.getScaledToFillImageUrl(v, w, h, {});
   return typeof v === 'string' ? v : (v.url ?? '');
+}
+
+// @wix/events' Money type only carries `value`/`currency` (no pre-formatted
+// string like commerce's `formattedAmount`), so format it locale-aware here
+// rather than concatenating currency + value.
+function formatPrice(price) {
+  if (!price?.value || !price?.currency) return '';
+  const value = Number(price.value);
+  if (Number.isNaN(value)) return '';
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency: price.currency }).format(value);
 }
 
 /* ─── Ticket Picker (TICKETING events) ──────────────────────────────────── */
@@ -69,36 +79,57 @@ function TicketPicker({ event }) {
           <div>
             <p className="tier-name">{tier.name}</p>
             {tier.description && <p className="tier-desc">{tier.description}</p>}
-            <p className="tier-price">{tier.free ? 'Free' : `${tier.price?.currency ?? ''} ${tier.price?.value ?? ''}`}</p>
+            <p className="tier-price">{tier.free ? 'Free' : formatPrice(tier.price)}</p>
           </div>
           <div className="qty">
-            <button className="qty-btn" onClick={() => setQty(tier._id, (quantities[tier._id] ?? 0) - 1)}>−</button>
+            <button
+              type="button"
+              className="qty-btn"
+              aria-label={`Decrease quantity for ${tier.name}`}
+              onClick={() => setQty(tier._id, (quantities[tier._id] ?? 0) - 1)}
+            >−</button>
             <span style={{ minWidth: 20, textAlign: 'center' }}>{quantities[tier._id] ?? 0}</span>
-            <button className="qty-btn" onClick={() => setQty(tier._id, (quantities[tier._id] ?? 0) + 1)}>+</button>
+            <button
+              type="button"
+              className="qty-btn"
+              aria-label={`Increase quantity for ${tier.name}`}
+              onClick={() => setQty(tier._id, (quantities[tier._id] ?? 0) + 1)}
+            >+</button>
           </div>
         </div>
       ))}
       <button onClick={handleReserve} disabled={reserving} className="btn full" style={{ marginTop: 16 }}>
         {reserving ? 'Reserving…' : 'Get Tickets'}
       </button>
-      {error && <p className="error" style={{ marginTop: 8 }}>{error}</p>}
+      {error && <p className="error" role="alert" style={{ marginTop: 8 }}>{error}</p>}
     </div>
   );
 }
 
 /* ─── RSVP Form (RSVP events) ────────────────────────────────────────────── */
-function RsvpForm({ event }) {
+function RsvpForm({ event, member }) {
   const allowDecline = event.registration?.rsvp?.responseType === 'YES_AND_NO';
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState(member?.profile?.nickname?.split(' ')[0] ?? '');
+  const [lastName, setLastName] = useState(member?.profile?.nickname?.split(' ').slice(1).join(' ') ?? '');
+  const [email, setEmail] = useState(member?.loginEmail ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [invalidFields, setInvalidFields] = useState({});
   const [done, setDone] = useState(null);
+  const firstNameRef = useRef(null);
+  const lastNameRef = useRef(null);
+  const emailRef = useRef(null);
 
   async function submit(status) {
     setError('');
-    if (!firstName || !lastName || !email) { setError('Please fill in your name and email.'); return; }
+    const missing = { firstName: !firstName, lastName: !lastName, email: !email };
+    if (missing.firstName || missing.lastName || missing.email) {
+      setInvalidFields(missing);
+      setError('Please fill in your name and email.');
+      (missing.firstName ? firstNameRef : missing.lastName ? lastNameRef : emailRef).current?.focus();
+      return;
+    }
+    setInvalidFields({});
     setSubmitting(true);
     try {
       await rsvpV2.createRsvp({ eventId: event._id, firstName, lastName, email, status });
@@ -123,16 +154,44 @@ function RsvpForm({ event }) {
   return (
     <div style={{ maxWidth: 360 }}>
       <div className="rsvp-field">
-        <label>First name *</label>
-        <input value={firstName} onChange={e => setFirstName(e.target.value)} />
+        <label htmlFor="rsvp-first-name">First name *</label>
+        <input
+          id="rsvp-first-name"
+          ref={firstNameRef}
+          required
+          aria-required="true"
+          aria-invalid={invalidFields.firstName || undefined}
+          aria-describedby={error ? 'rsvp-error' : undefined}
+          value={firstName}
+          onChange={e => setFirstName(e.target.value)}
+        />
       </div>
       <div className="rsvp-field">
-        <label>Last name *</label>
-        <input value={lastName} onChange={e => setLastName(e.target.value)} />
+        <label htmlFor="rsvp-last-name">Last name *</label>
+        <input
+          id="rsvp-last-name"
+          ref={lastNameRef}
+          required
+          aria-required="true"
+          aria-invalid={invalidFields.lastName || undefined}
+          aria-describedby={error ? 'rsvp-error' : undefined}
+          value={lastName}
+          onChange={e => setLastName(e.target.value)}
+        />
       </div>
       <div className="rsvp-field">
-        <label>Email *</label>
-        <input type="email" value={email} onChange={e => setEmail(e.target.value)} />
+        <label htmlFor="rsvp-email">Email *</label>
+        <input
+          id="rsvp-email"
+          ref={emailRef}
+          type="email"
+          required
+          aria-required="true"
+          aria-invalid={invalidFields.email || undefined}
+          aria-describedby={error ? 'rsvp-error' : undefined}
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+        />
       </div>
       <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
         <button onClick={() => submit('YES')} disabled={submitting} className="btn" style={{ flex: 1 }}>
@@ -144,7 +203,7 @@ function RsvpForm({ event }) {
           </button>
         )}
       </div>
-      {error && <p className="error" style={{ marginTop: 8 }}>{error}</p>}
+      {error && <p id="rsvp-error" className="error" role="alert" style={{ marginTop: 8 }}>{error}</p>}
     </div>
   );
 }
@@ -165,12 +224,17 @@ export default function EventDetail({ event, member = null }) {
             <div className="logo-dot" />
             <span>{BUSINESS_NAME}</span>
           </a>
-          <nav className="nav desktop-header-actions" style={{ justifyContent: 'flex-end' }}>
+          <nav className="nav desktop-header-actions" aria-label="Main" style={{ justifyContent: 'flex-end' }}>
             <a href="/#events">All Events</a>
             <a href="/about">Our Story</a>
             {member && <span className="muted">{member.profile?.nickname ?? member.loginEmail}</span>}
           </nav>
-          <button className="mobile-menu-btn" aria-label="menu" onClick={() => setMenuOpen(o => !o)}>
+          <button
+            className="mobile-menu-btn"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(o => !o)}
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" />
             </svg>
@@ -191,10 +255,10 @@ export default function EventDetail({ event, member = null }) {
         <div>
           <p className="eyebrow">{isTicketing ? 'GET TICKETS' : 'RSVP'}</p>
           <h1 className="h-md" style={{ marginBottom: 16 }}>{event.title}</h1>
-          <p className="body-copy" style={{ marginBottom: 6, opacity: 0.7 }}>{event.dateAndTimeSettings?.formatted?.dateAndTime}</p>
-          <p className="body-copy" style={{ marginBottom: 24, opacity: 0.7 }}>{event.location?.name}</p>
+          <p className="body-copy" style={{ marginBottom: 6 }}>{event.dateAndTimeSettings?.formatted?.dateAndTime}</p>
+          <p className="body-copy" style={{ marginBottom: 24 }}>{event.location?.name}</p>
           {event.shortDescription && <p className="body-copy" style={{ marginBottom: 32 }}>{event.shortDescription}</p>}
-          {isTicketing ? <TicketPicker event={event} /> : <RsvpForm event={event} />}
+          {isTicketing ? <TicketPicker event={event} /> : <RsvpForm event={event} member={member} />}
         </div>
       </section>
 

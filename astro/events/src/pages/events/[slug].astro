@@ -7,6 +7,7 @@ import { wixEventsV2 } from '@wix/events';
 import { members } from '@wix/members';
 import Layout from '../../layouts/Layout.astro';
 import EventDetail from '../../components/EventDetail.jsx';
+import { BUSINESS_NAME } from '../../utils/constants';
 
 // Registers this route in /_wix/pages.json so the sitemap and dashboard
 // SEO editor know it exists. `slug` here is this route's own parameter
@@ -65,7 +66,7 @@ if (!event) {
   Astro.response.status = 404;
 }
 ---
-<Layout>
+<Layout title={seoTagsServiceConfig ? undefined : `${event ? event.title : 'Event not found'} — ${BUSINESS_NAME}`}>
   {seoTagsServiceConfig && <SEO.Tags seoTagsServiceConfig={seoTagsServiceConfig} slot="seo-tags" />}
   {event
     ? <EventDetail event={event} member={member} client:load />

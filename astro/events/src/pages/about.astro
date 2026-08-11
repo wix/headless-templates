@@ -2,7 +2,6 @@
 import { members } from '@wix/members';
 import Layout from '../layouts/Layout.astro';
 import AppIsland from '../components/AppIsland.jsx';
-import { BUSINESS_NAME } from '../utils/constants';
 
 let member = null;
 try {
@@ -15,6 +14,6 @@ try {
   }
 } catch {}
 ---
-<Layout title={`Our Story — ${BUSINESS_NAME}`}>
+<Layout>
   <AppIsland events={[]} member={member} page="about" client:load />
 </Layout>
