@@ -1,0 +1,77 @@
+---
+import { WIX_APPS } from '@wix/essentials';
+import { SEO } from '@wix/seo/components';
+import { loadSEOTagsServiceConfig } from '@wix/seo/services';
+import { seoTags } from '@wix/seo';
+import { wixEventsV2 } from '@wix/events';
+import { members } from '@wix/members';
+import Layout from '../../layouts/Layout.astro';
+import EventDetail from '../../components/EventDetail.jsx';
+
+// Registers this route in /_wix/pages.json so the sitemap and dashboard
+// SEO editor know it exists. `slug` here is this route's own parameter
+// (events/[slug].astro) — see "Add SEO Support to Item Pages" in the docs.
+export const wixMetadata = {
+  appDefId: WIX_APPS.events.id,
+  pageIdentifier: WIX_APPS.events.eventPageMetadata.pageIdentifier,
+  identifiers: {
+    slug: WIX_APPS.events.eventPageMetadata.identifiers.slug,
+  },
+};
+
+const slug = Astro.params.slug;
+
+let event = null;
+let seoTagsServiceConfig = null;
+let member = null;
+
+const [eventRes, seoConfig] = await Promise.all([
+  wixEventsV2.getEventBySlug(slug, { fields: ['DETAILS', 'TEXTS', 'REGISTRATION', 'URLS'] })
+    .catch((err) => { console.error('Failed to load event', err); return null; }),
+  loadSEOTagsServiceConfig({
+    pageUrl: Astro.url.href,
+    itemType: seoTags.ItemType.EVENTS_PAGE,
+    itemData: { slug },
+  }).catch(() => null),
+]);
+const rawEvent = eventRes?.event ?? null;
+// Serialize only the fields the island actually renders.
+event = rawEvent && {
+  _id: rawEvent._id,
+  slug: rawEvent.slug,
+  title: rawEvent.title,
+  shortDescription: rawEvent.shortDescription ?? '',
+  mainImage: rawEvent.mainImage ?? null,
+  dateAndTimeSettings: { formatted: { dateAndTime: rawEvent.dateAndTimeSettings?.formatted?.dateAndTime ?? '' } },
+  location: { name: rawEvent.location?.name ?? '' },
+  registration: {
+    initialType: rawEvent.registration?.initialType,
+    rsvp: { responseType: rawEvent.registration?.rsvp?.responseType },
+  },
+};
+seoTagsServiceConfig = seoConfig;
+
+try {
+  const { member: m } = await members.getCurrentMember({ fieldsets: ['FULL'] });
+  if (m) {
+    member = {
+      loginEmail: m.loginEmail ?? null,
+      profile: { nickname: m.profile?.nickname ?? null },
+    };
+  }
+} catch {}
+
+if (!event) {
+  Astro.response.status = 404;
+}
+---
+<Layout>
+  {seoTagsServiceConfig && <SEO.Tags seoTagsServiceConfig={seoTagsServiceConfig} slot="seo-tags" />}
+  {event
+    ? <EventDetail event={event} member={member} client:load />
+    : <div class="app tc" style="justify-content: center; padding: 80px 40px; color: #fff;">
+        <p style="font-size: 24px;">We couldn't find that event.</p>
+        <a href="/" class="pill light" style="margin: 24px auto 0;">Back to all events</a>
+      </div>
+  }
+</Layout>

@@ -1,0 +1,42 @@
+---
+import { wixEventsV2 } from '@wix/events';
+import { members } from '@wix/members';
+import Layout from '../layouts/Layout.astro';
+import AppIsland from '../components/AppIsland.jsx';
+import { BUSINESS_NAME } from '../utils/constants';
+
+let events = [];
+let member = null;
+
+try {
+  const res = await wixEventsV2.queryEvents({
+    filter: { status: { $in: ['UPCOMING', 'STARTED'] } },
+    sort: [{ fieldName: 'dateAndTimeSettings.startDate', order: 'ASC' }],
+    paging: { limit: 100 },
+  }, { fields: ['DETAILS', 'TEXTS', 'REGISTRATION', 'URLS'] });
+  // Serialize only the fields the island actually renders.
+  events = (res.events ?? []).map((e) => ({
+    _id: e._id,
+    slug: e.slug,
+    title: e.title,
+    mainImage: e.mainImage ?? null,
+    dateAndTimeSettings: { formatted: { startDate: e.dateAndTimeSettings?.formatted?.startDate ?? '' } },
+    registration: { initialType: e.registration?.initialType },
+  }));
+} catch (err) {
+  console.error('Failed to load events', err);
+}
+
+try {
+  const { member: m } = await members.getCurrentMember({ fieldsets: ['FULL'] });
+  if (m) {
+    member = {
+      loginEmail: m.loginEmail ?? null,
+      profile: { nickname: m.profile?.nickname ?? null },
+    };
+  }
+} catch {}
+---
+<Layout title={`${BUSINESS_NAME} — Events`}>
+  <AppIsland events={events} member={member} page="home" client:load />
+</Layout>

@@ -34,11 +34,27 @@
       "vibeCompatible": false
     },
     {
+      "name": "blog",
+      "title": "Blog (Wix Blog)",
+      "subtitle": "Posts, categories, and rich content",
+      "siteTemplateId": "9fb8af28-e85e-4c86-a85a-4ce471766314",
+      "gitPath": "astro/blog",
+      "vibeCompatible": false
+    },
+    {
       "name": "blank",
       "title": "Blank",
       "subtitle": "Basic Astro project",
       "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
       "gitPath": "astro/blank",
+      "vibeCompatible": false
+    },
+    {
+      "name": "events",
+      "title": "Events (Wix Events)",
+      "subtitle": "Event listings, RSVP, and ticketed registration",
+      "siteTemplateId": "cac192bb-6c63-4758-bb7e-1c490bfbf86d",
+      "gitPath": "astro/events",
       "vibeCompatible": false
     }
   ]
