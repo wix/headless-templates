@@ -1,0 +1,8 @@
+---
+import type { ListItem } from ".";
+import FilterItem from "./item.astro";
+
+type Props = { list: ListItem[] };
+---
+
+{Astro.props.list.map((item: ListItem) => <FilterItem item={item} />)}
