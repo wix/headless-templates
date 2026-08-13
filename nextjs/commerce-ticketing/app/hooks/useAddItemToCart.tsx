@@ -35,8 +35,8 @@ async function addItemFromCart(
     catalogItems: [item],
   });
   if (!data?.cart?.customCheckoutUrl) {
-    // Cart V2 renamed overrideCheckoutUrl -> customCheckoutUrl, and updateCurrentCart
-    // takes the Cart object directly (no cartInfo wrapper).
+    // Set customCheckoutUrl; updateCurrentCart takes the Cart object directly
+    // (no cartInfo wrapper).
     void wixClient.currentCartV2.updateCurrentCart({
       customCheckoutUrl: `${window.location.origin}/api/redirect-to-checkout?checkoutId={checkout_id}`,
     });

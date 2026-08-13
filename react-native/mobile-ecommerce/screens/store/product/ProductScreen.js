@@ -48,7 +48,7 @@ export function ProductScreen({ route, navigation }) {
     async (quantity) => {
       // "Buy Now" is an isolated purchase: create a standalone cart with just this
       // item (so the shopper's current cart is untouched), then use that cart's _id
-      // as the checkout id for the redirect (Cart V2 has no separate checkout entity).
+      // as the checkout id for the redirect.
       const cart = await wixCient.cartV2.createCart({
         catalogItems: [
           {

@@ -157,9 +157,8 @@ export async function createBooking(
       },
     });
 
-    // Cart V2 unifies cart + checkout: create a cart, calculate it to get the
-    // price-verification token, then place the order (replaces Checkout V1's
-    // createCheckout + createOrder).
+    // Create a cart, calculate it to get the price-verification token, then
+    // place the order.
     const createdCart = await cartV2.createCart({
       cart: {
         source: { channelType: "WEB" },

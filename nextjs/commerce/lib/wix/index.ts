@@ -553,7 +553,7 @@ export async function createCheckoutUrl(postFlowUrl: string) {
     redirects: { createRedirectSession },
   } = (await getWixClient()).use({ currentCartV2, redirects });
 
-  // Cart V2 has no separate checkout entity — the cart id is the checkout id.
+  // The cart id is the checkout id.
   const { cart } = await getCurrentCart();
 
   const { redirectSession } = await createRedirectSession({

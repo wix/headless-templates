@@ -162,8 +162,8 @@ export default function Store() {
     async function createRedirect() {
         try {
             await handleAsync(async () => {
-                // Cart V2 has no separate checkout entity — the cart id IS the checkout id.
-                // So we read the current cart and use its _id directly; no create-checkout call.
+                // The cart id IS the checkout id.
+                // So we read the current cart and use its _id directly.
                 const {cart} = await myWixClient.currentCartV2.getCurrentCart();
 
                 // Then, we call the createRedirectSession method from the redirects module of the Wix client.

@@ -51,8 +51,8 @@ export async function GET(
       options: selectedOptions,
     },
   };
-  // Cart V2: create a fresh cart for this quick-buy. The cart id IS the checkout
-  // id, so we redirect straight from the created cart (no createCheckout call).
+  // Create a fresh cart for this quick-buy. The cart id IS the checkout
+  // id, so we redirect straight from the created cart.
   const cart = await wixClient.cartV2.createCart({
     cart: {
       customCheckoutUrl: `${baseUrl}api/redirect-to-checkout?checkoutId={checkout_id}`,

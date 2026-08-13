@@ -133,9 +133,8 @@ function CartView() {
       setCheckoutRedirect(true);
       setTriggerInvalidCoupon(false);
 
-      // Cart V1 applied the buyer note + coupon on the checkout entity via
-      // updateCheckout. Cart V2 applies them on the cart itself: the note via
-      // updateCurrentCart, the coupon via the dedicated addCouponToCurrentCart.
+      // Apply the buyer note via updateCurrentCart and the coupon via the
+      // dedicated addCouponToCurrentCart (both on the cart).
       if (userNote) {
         await wixCient.currentCartV2.updateCurrentCart({ note: userNote });
       }
@@ -151,8 +150,8 @@ function CartView() {
         }
       }
 
-      // Cart V2 has no separate checkout entity: the current cart's _id IS the
-      // checkout id. Create a redirect session straight from it.
+      // The current cart's _id IS the checkout id. Create a redirect session
+      // straight from it.
       const { cart } = await wixCient.currentCartV2.getCurrentCart();
 
       const { redirectSession } =

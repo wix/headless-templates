@@ -37,7 +37,7 @@ export const CartView = ({ layout = 'mini' }: { layout?: 'full' | 'mini' }) => {
     closeSidebar();
     setRedirecting(true);
     try {
-      // Cart V2 has no separate checkout entity: the cart id IS the checkout id.
+      // The cart id IS the checkout id.
       const { cart } = await wixClient.currentCartV2.getCurrentCart();
       const { redirectSession } =
         await wixClient.redirects.createRedirectSession({

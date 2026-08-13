@@ -6,9 +6,8 @@ import { media } from '@wix/sdk';
 // Public app id of the Wix Stores catalog, used in ecom catalog references.
 const WIX_STORES_APP_ID = '215238eb-22a5-4c36-9e7b-e7c08025e04e';
 
-// Cart V2 line-item prices are raw decimal strings (ConvertedMoney: { amount, convertedAmount }),
-// not preformatted display strings like Cart V1's MultiCurrencyPrice. Format them client-side
-// from the amount + the cart's currency code.
+// Cart V2 line-item prices are raw decimal strings (ConvertedMoney: { amount, convertedAmount }).
+// Format them client-side from the amount + the cart's currency code.
 function formatMoney(money, currencyCode) {
   const value = money?.convertedAmount ?? money?.amount;
   if (value == null) return '';
@@ -156,7 +155,7 @@ function CartPanel({ onClose }) {
   async function handleCheckout() {
     setCheckingOut(true);
     try {
-      // Cart V2 has no separate checkout entity — the cart id is the checkout id.
+      // The cart id is the checkout id.
       // We still use a redirect session so the visitor/member session carries across
       // to the Wix-hosted checkout on its own domain.
       const { cart } = await currentCartV2.getCurrentCart();
