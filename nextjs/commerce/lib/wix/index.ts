@@ -262,8 +262,8 @@ export async function getCart(): Promise<Cart | undefined> {
   const { getCurrentCart } = (await getWixClient()).use(currentCartV2);
   try {
     const { cart } = await getCurrentCart();
-
-    return reshapeCart(cart!);
+    if (!cart) return undefined;
+    return reshapeCart(cart);
   } catch (e) {
     if ((e as any)?.details?.applicationError?.code === "OWNED_CART_NOT_FOUND") {
       return undefined;

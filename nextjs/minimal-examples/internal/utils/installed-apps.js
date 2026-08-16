@@ -80,7 +80,7 @@ const checkStoresInstalled = async (myWixClient) => {
             ],
         });
 
-        const cartHasItems = (await myWixClient.currentCartV2.getCurrentCart()).cart.lineItems.length > 0;
+        const cartHasItems = ((await myWixClient.currentCartV2.getCurrentCart())?.cart?.lineItems?.length ?? 0) > 0;
         await myWixClient.currentCartV2.deleteCurrentCart();
         return cartHasItems;
     } catch (error) {

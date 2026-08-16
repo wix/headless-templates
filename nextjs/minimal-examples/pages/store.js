@@ -139,8 +139,9 @@ export default function Store() {
                     ],
                 });
 
-            // Re-fetch so the line list AND the subtotal refresh — V2 stores no total on
-            // the cart, so the subtotal is derived from a fresh estimateCurrentCart.
+            // Re-fetch so the line list AND the subtotal refresh — the cart keeps no
+            // calculated totals, so the displayed subtotal comes from a fresh
+            // estimateCurrentCart → summary.priceSummary.
             await fetchCart();
         });
     }
