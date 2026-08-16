@@ -67,7 +67,7 @@ services and their availability from your site.
 
 The [`pages/store.js`](./pages/store.js) file demonstrates how to fetch a list of products from your site using
 the [Wix Stores API](https://dev.wix.com/docs/sdk/backend-modules/stores). It also demonstrates how to use
-the [Wix eCommerce API](https://dev.wix.com/docs/sdk/backend-modules/ecom/introduction) to manage carts and checkouts.
+the [Wix eCommerce API](https://dev.wix.com/docs/sdk/backend-modules/ecom/introduction) to manage carts and orders.
 
 > **[Wix Stores API](https://dev.wix.com/docs/sdk/backend-modules/stores)**: This API allows you to manage your store
 > inventory, orders, and collections.
