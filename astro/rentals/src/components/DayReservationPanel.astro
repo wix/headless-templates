@@ -1,0 +1,409 @@
+---
+import { icons } from "../utils/icons";
+import { formatDurationRange } from "../utils/format";
+
+interface Props {
+  serviceId: string;
+  minDays: number;
+  maxDays: number;
+  priceLabel?: string;
+  priceUnit?: string;
+  initialDate?: string;
+  payInPerson?: boolean;
+  /** The rental's resource type — booked with ANY_RESOURCE (Wix assigns one). */
+  resourceTypeId?: string;
+}
+
+const { serviceId, minDays, maxDays, priceLabel, priceUnit, initialDate, payInPerson, resourceTypeId } =
+  Astro.props;
+const MINUTES_PER_DAY = 24 * 60;
+const allowedLabel = formatDurationRange(minDays * MINUTES_PER_DAY, maxDays * MINUTES_PER_DAY) ?? "";
+---
+
+<div
+  id="day-panel"
+  class="glass-panel p-5"
+  data-service-id={serviceId}
+  data-min-days={String(minDays)}
+  data-max-days={String(maxDays)}
+  data-initial-date={initialDate ?? ""}
+  data-pay-in-person={payInPerson ? "true" : "false"}
+  data-resource-type-id={resourceTypeId ?? ""}
+>
+  <p class="text-sm font-semibold tracking-wide">Reservation details</p>
+
+  <div class="relative mt-3" id="day-field-wrap">
+    <button
+      id="day-field"
+      type="button"
+      class="flex w-full items-center gap-2.5 rounded-lg border border-gray-200 bg-secondary/40 px-3.5 py-3 text-left text-sm hover:border-primary/40 transition-colors"
+      aria-expanded="false"
+    >
+      <span class="shrink-0 text-base text-muted-foreground" set:html={icons.calendar} />
+      <span id="day-summary" class="text-muted-foreground">Select check-in &amp; check-out</span>
+    </button>
+
+    <div id="day-popover" class="hidden absolute right-0 z-30 mt-2 w-[320px] max-w-[calc(100vw-2rem)] glass-panel p-4 shadow-xl">
+      <div class="mb-2 flex items-center justify-between">
+        <button id="day-prev" type="button" class="rounded-md p-1.5 enabled:hover:bg-secondary disabled:opacity-30" aria-label="Previous month">
+          <span class="text-base" set:html={icons.chevronLeft} />
+        </button>
+        <span id="day-label" class="text-sm font-medium"></span>
+        <button id="day-next" type="button" class="rounded-md p-1.5 hover:bg-secondary" aria-label="Next month">
+          <span class="text-base" set:html={icons.chevronRight} />
+        </button>
+      </div>
+
+      <div id="day-grid" class="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground"></div>
+
+      <p id="day-hint" class="mt-3 text-center text-xs text-muted-foreground"></p>
+
+      <div class="mt-3 flex items-center justify-between border-t border-gray-200 pt-3">
+        <button id="day-clear" type="button" class="text-sm text-muted-foreground hover:text-foreground">Clear</button>
+        <button id="day-done" type="button" disabled class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white enabled:hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-secondary disabled:text-muted-foreground">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4 flex items-baseline justify-between">
+    <div>
+      {priceLabel && <span class="text-xl font-semibold">{priceLabel}</span>}
+      {priceUnit && <span class="text-sm text-muted-foreground"> /{priceUnit}</span>}
+    </div>
+    {allowedLabel && <span class="text-xs text-muted-foreground">{allowedLabel} booking</span>}
+  </div>
+
+  <div id="day-breakdown" class="hidden mt-4 rounded-lg border border-gray-200 bg-secondary/30 p-4 text-sm">
+    <div class="flex items-center justify-between text-muted-foreground">
+      <span id="day-breakdown-sub-label"></span>
+      <span id="day-breakdown-sub"></span>
+    </div>
+    <div class="mt-2 flex items-center justify-between border-t border-gray-200 pt-2 text-base font-semibold">
+      <span>Total</span>
+      <span id="day-breakdown-total"></span>
+    </div>
+    <p id="day-breakdown-pay" class="mt-1 text-xs text-muted-foreground"></p>
+  </div>
+
+  <p id="day-reserve-error" class="hidden mt-3 text-sm text-red-600"></p>
+
+  <button
+    id="day-reserve-btn"
+    type="button"
+    disabled
+    class="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white enabled:hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-secondary disabled:text-muted-foreground"
+  >
+    Reserve
+  </button>
+  <p class="mt-2 text-center text-xs text-muted-foreground">
+    You won't be charged until you review and confirm at checkout.
+  </p>
+</div>
+
+<script>
+  import { getAvailability, reserve } from "../utils/rentals-service";
+  import { formatDurationRange, niceDate } from "../utils/format";
+  import { MONTHS, WEEKDAYS, monthCells, ymd, parseYmd, startOfToday, daysBetween } from "../utils/date-utils";
+
+  const root = document.getElementById("day-panel");
+  if (root) {
+    const serviceId = root.dataset.serviceId!;
+    const minDays = Number(root.dataset.minDays) || 1;
+    const maxDays = Number(root.dataset.maxDays) || minDays;
+    const initialDate = root.dataset.initialDate || null;
+    const resourceTypeId = root.dataset.resourceTypeId || undefined;
+    const MINUTES_PER_DAY = 24 * 60;
+
+    const field = document.getElementById("day-field")!;
+    const fieldWrap = document.getElementById("day-field-wrap")!;
+    const popover = document.getElementById("day-popover")!;
+    const summary = document.getElementById("day-summary")!;
+    const label = document.getElementById("day-label")!;
+    const gridEl = document.getElementById("day-grid")!;
+    const hint = document.getElementById("day-hint")!;
+    const prevBtn = document.getElementById("day-prev") as HTMLButtonElement;
+    const nextBtn = document.getElementById("day-next") as HTMLButtonElement;
+    const clearBtn = document.getElementById("day-clear")!;
+    const doneBtn = document.getElementById("day-done") as HTMLButtonElement;
+    const reserveBtn = document.getElementById("day-reserve-btn") as HTMLButtonElement;
+    const reserveError = document.getElementById("day-reserve-error")!;
+    const breakdown = document.getElementById("day-breakdown")!;
+    const breakdownSubLabel = document.getElementById("day-breakdown-sub-label")!;
+    const breakdownSub = document.getElementById("day-breakdown-sub")!;
+    const breakdownTotal = document.getElementById("day-breakdown-total")!;
+    const breakdownPay = document.getElementById("day-breakdown-pay")!;
+    const payInPerson = root.dataset.payInPerson === "true";
+    let panelTimeZone: string | undefined;
+    let priceReqId = 0;
+
+    type DayInfo = { bookable: boolean; raw: unknown; endIso: string };
+
+    const today = startOfToday();
+    const base = initialDate ? parseYmd(initialDate) : today;
+
+    let viewYear = base.getFullYear();
+    let viewMonth = base.getMonth();
+    let checkIn: string | null = null;
+    let checkOut: string | null = null;
+    let loading = false;
+    let errorMsg: string | null = null;
+    let reserving = false;
+    const dayInfo = new Map<string, DayInfo>();
+    const fetched = new Set<string>();
+
+    const allowedLabel = formatDurationRange(minDays * MINUTES_PER_DAY, maxDays * MINUTES_PER_DAY) ?? "";
+
+    function canPrevMonth() {
+      return (
+        viewYear > today.getFullYear() ||
+        (viewYear === today.getFullYear() && viewMonth > today.getMonth())
+      );
+    }
+
+    function setOpen(open: boolean) {
+      popover.classList.toggle("hidden", !open);
+      field.setAttribute("aria-expanded", String(open));
+    }
+
+    function spanBookable(a: string, b: string) {
+      const start = parseYmd(a);
+      const days = daysBetween(a, b);
+      for (let i = 0; i <= days; i++) {
+        const d = new Date(start);
+        d.setDate(d.getDate() + i);
+        if (!dayInfo.get(ymd(d))?.bookable) return false;
+      }
+      return true;
+    }
+
+    function disabledAsEnd(key: string) {
+      return (
+        !!checkIn &&
+        !checkOut &&
+        key > checkIn &&
+        (daysBetween(checkIn, key) + 1 > maxDays || !spanBookable(checkIn, key))
+      );
+    }
+
+    function pickDay(key: string) {
+      if (!dayInfo.get(key)?.bookable) return;
+      if (!checkIn || (checkIn && checkOut)) {
+        checkIn = key;
+        checkOut = null;
+      } else if (key > checkIn && daysBetween(checkIn, key) + 1 <= maxDays && spanBookable(checkIn, key)) {
+        checkOut = key;
+      } else {
+        checkIn = key;
+        checkOut = null;
+      }
+      renderCalendar();
+      updateSummaryAndButtons();
+    }
+
+    async function fetchMonth() {
+      const key = `${viewYear}-${viewMonth}`;
+      if (fetched.has(key)) {
+        renderCalendar();
+        return;
+      }
+      fetched.add(key);
+      loading = true;
+      errorMsg = null;
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const from = `${viewYear}-${pad(viewMonth + 1)}-01T00:00:00`;
+      const lastDay = new Date(viewYear, viewMonth + 1, 0).getDate();
+      const end = new Date(viewYear, viewMonth, lastDay + maxDays + 1);
+      const to = `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T23:59:59`;
+      renderCalendar();
+      try {
+        // Daily rentals: one Time Slots V2 slot per available day (timeSlotsPerDay: 1).
+        const res = await getAvailability(serviceId, from, to, undefined, 1);
+        panelTimeZone = res.timeZone ?? panelTimeZone;
+        for (const s of res.slots) {
+          dayInfo.set(s.dayKey, { bookable: s.bookable, raw: s.raw, endIso: s.localEndDate });
+        }
+      } catch (error) {
+        console.error("Error loading availability:", error);
+        fetched.delete(key); // allow a retry
+        errorMsg = "Could not load availability.";
+      } finally {
+        loading = false;
+        renderCalendar();
+      }
+    }
+
+    function renderCalendar() {
+      label.textContent = `${MONTHS[viewMonth]} ${viewYear}`;
+      prevBtn.disabled = !canPrevMonth();
+      const head = WEEKDAYS.map((w) => `<div class="py-1">${w}</div>`).join("");
+      const cells = monthCells(viewYear, viewMonth)
+        .map((date) => {
+          if (!date) return "<div></div>";
+          const key = ymd(date);
+          const info = dayInfo.get(key);
+          const isPast = date < today;
+          const unavailable = isPast || !info?.bookable || disabledAsEnd(key);
+          const isEdge = key === checkIn || key === checkOut;
+          const within = !!(checkIn && checkOut && key > checkIn && key < checkOut);
+          const cls = [
+            "aspect-square rounded-md text-sm transition-colors",
+            isEdge ? "range-edge" : within ? "range-within text-foreground" : unavailable ? "cursor-not-allowed text-gray-300" : "hover:bg-secondary",
+          ].join(" ");
+          return `<button type="button" data-key="${key}" ${unavailable ? "disabled" : ""} class="${cls}">${date.getDate()}</button>`;
+        })
+        .join("");
+      gridEl.innerHTML = head + cells;
+      gridEl.querySelectorAll<HTMLButtonElement>("button[data-key]").forEach((b) => {
+        if (b.disabled) return;
+        b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        pickDay(b.dataset.key!);
+      });
+      });
+
+      hint.textContent = loading
+        ? "Loading availability…"
+        : errorMsg
+          ? errorMsg
+          : checkIn && !checkOut
+            ? "Now pick your check-out day."
+            : `Stays of ${allowedLabel}. Dimmed days are unavailable.`;
+    }
+
+    function updateSummaryAndButtons() {
+      const start = checkIn;
+      const end = checkOut ?? checkIn;
+      const span = start && end ? daysBetween(start, end) + 1 : 0;
+      const validSpan = span >= minDays && span <= maxDays;
+      const ready = !!(start && end && validSpan);
+      doneBtn.disabled = !ready;
+      reserveBtn.disabled = !ready || reserving;
+
+      if (start) {
+        summary.textContent =
+          checkOut && checkOut !== checkIn
+            ? `${niceDate(start)} – ${niceDate(checkOut)} · ${span} days`
+            : `${niceDate(start)} · ${span} day${span > 1 ? "s" : ""}`;
+        summary.classList.remove("text-muted-foreground");
+      } else {
+        summary.textContent = "Select check-in & check-out";
+        summary.classList.add("text-muted-foreground");
+      }
+      renderBreakdown();
+    }
+
+    function formatCurrency(amount: number, currency?: string) {
+      try {
+        return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(amount);
+      } catch {
+        return `${amount}`;
+      }
+    }
+
+    // Price breakdown via the Bookings Pricing API (previewPrice), through the
+    // /api/preview-price backend route. Shows the duration-based total once a
+    // valid check-in/check-out range is selected.
+    async function renderBreakdown() {
+      const start = checkIn;
+      const end = checkOut ?? checkIn;
+      const span = start && end ? daysBetween(start, end) + 1 : 0;
+      if (!start || !end || span < minDays || span > maxDays) {
+        breakdown.classList.add("hidden");
+        return;
+      }
+      const startInfo = dayInfo.get(start);
+      const endInfo = dayInfo.get(end);
+      const startLocal = (((startInfo?.raw as any)?.slot?.startDate as string) ?? `${start}T00:00:00`).slice(0, 19);
+      const endLocal = (endInfo?.endIso || `${end}T23:59:59`).slice(0, 19);
+      const tz = panelTimeZone ?? ((startInfo?.raw as any)?.slot?.timezone as string | undefined);
+      const reqId = ++priceReqId;
+      breakdownSubLabel.textContent = `${span} ${span > 1 ? "days" : "day"}`;
+      breakdownSub.textContent = "…";
+      breakdownTotal.textContent = "…";
+      breakdownPay.textContent = "";
+      breakdown.classList.remove("hidden");
+      try {
+        const params = new URLSearchParams({ serviceId, start: startLocal, end: endLocal });
+        if (tz) params.set("tz", tz);
+        const res = await fetch(`/api/preview-price?${params.toString()}`);
+        const data = await res.json();
+        if (reqId !== priceReqId) return; // a newer selection superseded this
+        if (typeof data.calculatedPrice === "number") {
+          const money = formatCurrency(data.calculatedPrice, data.currency);
+          breakdownSub.textContent = money;
+          breakdownTotal.textContent = money;
+          breakdownPay.textContent = payInPerson ? `Pay in person · ${money}` : `Pay online at checkout · ${money}`;
+        } else {
+          breakdown.classList.add("hidden");
+        }
+      } catch {
+        if (reqId === priceReqId) breakdown.classList.add("hidden");
+      }
+    }
+
+    function goMonth(delta: number) {
+      const d = new Date(viewYear, viewMonth + delta, 1);
+      viewYear = d.getFullYear();
+      viewMonth = d.getMonth();
+      fetchMonth();
+    }
+
+    field.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setOpen(popover.classList.contains("hidden"));
+    });
+    prevBtn.addEventListener("click", () => canPrevMonth() && goMonth(-1));
+    nextBtn.addEventListener("click", () => goMonth(1));
+    doneBtn.addEventListener("click", () => setOpen(false));
+    clearBtn.addEventListener("click", () => {
+      checkIn = null;
+      checkOut = null;
+      renderCalendar();
+      updateSummaryAndButtons();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!fieldWrap.contains(e.target as Node)) setOpen(false);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") setOpen(false);
+    });
+
+    reserveBtn.addEventListener("click", async () => {
+      const start = checkIn;
+      const end = checkOut ?? checkIn;
+      if (!start || !end) return;
+      const startInfo = dayInfo.get(start);
+      const endInfo = dayInfo.get(end);
+      if (!startInfo || !endInfo) return;
+      const localStartDate = (((startInfo.raw as any)?.localStartDate as string) ?? `${start}T00:00:00`).slice(0, 19);
+      const localEndDate = (endInfo.endIso || `${end}T23:59:59`).slice(0, 19);
+      reserving = true;
+      reserveError.classList.add("hidden");
+      reserveBtn.disabled = true;
+      reserveBtn.textContent = "Starting checkout…";
+      try {
+        await reserve({
+          serviceId,
+          localStartDate,
+          localEndDate,
+          timeZone: panelTimeZone,
+          resourceTypeId,
+          location: (startInfo.raw as any)?.location,
+        });
+      } catch (error) {
+        console.error("Error starting checkout:", error);
+        reserveError.textContent = "Could not start checkout. Please try again.";
+        reserveError.classList.remove("hidden");
+        reserving = false;
+        reserveBtn.disabled = false;
+        reserveBtn.textContent = "Reserve";
+      }
+    });
+
+    fetchMonth();
+    updateSummaryAndButtons();
+  }
+</script>

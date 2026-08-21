@@ -1,0 +1,85 @@
+---
+import type { RentalSummary } from "../utils/types";
+import { formatDurationRange, formatMoney } from "../utils/format";
+import { icons } from "../utils/icons";
+
+interface Props {
+  rental: RentalSummary;
+  /** When set, deep-links the detail page to this date (YYYY-MM-DD). */
+  queryDate?: string;
+  class?: string;
+}
+
+const { rental, queryDate, class: className = "" } = Astro.props;
+
+const price = formatMoney(rental.price);
+const href = queryDate
+  ? `/rental/${encodeURIComponent(rental.slug)}?date=${queryDate}`
+  : `/rental/${encodeURIComponent(rental.slug)}`;
+const badge =
+  rental.rentalUnit === "DAY" ? "Daily" : rental.rentalUnit === "HOUR" ? "Hourly" : null;
+const durationLabel =
+  formatDurationRange(rental.minMinutes, rental.maxMinutes) ?? rental.durationLabel;
+const location = rental.locations?.[0]?.name;
+---
+
+<article
+  class:list={["group flex flex-col", className]}
+  data-rental-card
+  data-id={rental.id}
+  data-category={rental.category?.name ?? ""}
+  data-unit={rental.rentalUnit ?? ""}
+  data-online={String(rental.paymentOnline === true)}
+  data-inperson={String(rental.paymentInPerson === true)}
+  data-features={(rental.features ?? []).map((f) => f.id).join(",")}
+  data-locations={(rental.locations ?? []).map((l) => l.id).join(",")}
+>
+  <a
+    href={href}
+    class="hover-lift relative block aspect-[4/3] overflow-hidden rounded-lg border border-gray-200 bg-secondary"
+  >
+    {rental.image ? (
+      <img
+        src={rental.image.url}
+        alt={rental.image.altText ?? rental.name}
+        loading="lazy"
+        class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+      />
+    ) : (
+      <div class="flex h-full w-full items-center justify-center text-3xl text-muted-foreground" set:html={icons.building} />
+    )}
+    {badge && (
+      <span class="absolute right-3 top-3 pill bg-white/95 px-3 py-1 text-xs font-medium text-foreground shadow-sm ring-1 ring-gray-200">
+        {badge}
+      </span>
+    )}
+  </a>
+
+  <div class="mt-3">
+    <a href={href}>
+      <h3 class="text-lg font-semibold tracking-tight text-foreground group-hover:opacity-70 transition-opacity">
+        {rental.name}
+      </h3>
+    </a>
+    {price && (
+      <p class="mt-1 text-foreground">
+        <span class="font-semibold">{price}</span>
+        {rental.priceUnit && <span class="text-muted-foreground"> / {rental.priceUnit}</span>}
+      </p>
+    )}
+    {durationLabel && <p class="mt-0.5 text-sm text-muted-foreground">{durationLabel}</p>}
+    {location && (
+      <p class="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
+        <span class="text-base" set:html={icons.mapPin} />
+        {location}
+      </p>
+    )}
+    <a
+      href={href}
+      class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-foreground hover:opacity-70 transition-opacity"
+    >
+      View &amp; reserve
+      <span class="text-base" set:html={icons.arrowRight} />
+    </a>
+  </div>
+</article>

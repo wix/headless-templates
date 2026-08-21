@@ -1,0 +1,18 @@
+---
+import { BUSINESS_NAME } from '../utils/constants';
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="bg-primary text-white pt-16 px-4">
+  <div class="max-w-7xl mx-auto pb-14">
+    <p class="text-xs font-semibold tracking-[0.1em] uppercase text-white/50 mb-4">Navigate</p>
+    <p class="text-sm text-white/80 mb-2.5"><a href="/">Browse rentals</a></p>
+    <p class="text-sm text-white/80 mb-2.5"><a href="/account">My reservations</a></p>
+  </div>
+  <div class="max-w-7xl mx-auto border-t border-white/15 py-10 text-center">
+    <p class="pb-8 text-xs text-white/50">
+      © {currentYear} by {BUSINESS_NAME}. Powered and secured by Wix
+    </p>
+  </div>
+</footer>
