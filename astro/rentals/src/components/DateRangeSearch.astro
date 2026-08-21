@@ -1,0 +1,199 @@
+---
+import { icons } from "../utils/icons";
+---
+
+<div id="range-search" class="relative w-full sm:max-w-sm">
+  <div class="flex overflow-hidden glass-panel focus-within:ring-2 focus-within:ring-primary">
+    <button
+      id="range-toggle"
+      type="button"
+      class="flex flex-1 items-center gap-2.5 px-4 py-3 text-left text-sm"
+      aria-expanded="false"
+    >
+      <span class="shrink-0 text-base text-muted-foreground" set:html={icons.calendar} />
+      <span id="range-label" class="text-muted-foreground">Select dates</span>
+      <span id="range-caret" class="ml-auto text-base text-muted-foreground transition-transform" set:html={icons.chevronDown} />
+    </button>
+    <button
+      id="range-search-btn"
+      type="button"
+      class="flex items-center justify-center bg-primary px-4 text-white hover:bg-primary/90 transition-colors"
+      aria-label="Search dates"
+    >
+      <span class="text-base" set:html={icons.search} />
+    </button>
+  </div>
+
+  <div
+    id="range-popover"
+    class="hidden absolute left-0 z-40 mt-2 w-[min(680px,calc(100vw-2rem))] glass-panel p-5 shadow-xl"
+  >
+    <div class="flex items-center justify-between">
+      <button id="range-prev" type="button" class="rounded-md p-1.5 hover:bg-secondary disabled:opacity-30" aria-label="Previous month">
+        <span class="text-base" set:html={icons.chevronLeft} />
+      </button>
+      <div id="range-month-labels" class="flex flex-1 justify-around px-4 text-sm font-medium"></div>
+      <button id="range-next" type="button" class="rounded-md p-1.5 hover:bg-secondary" aria-label="Next month">
+        <span class="text-base" set:html={icons.chevronRight} />
+      </button>
+    </div>
+    <div id="range-months" class="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2"></div>
+    <div class="mt-4 flex items-center justify-between border-t border-gray-200 pt-3">
+      <button id="range-clear" type="button" class="text-sm text-muted-foreground hover:text-foreground">Clear</button>
+      <button
+        id="range-apply"
+        type="button"
+        disabled
+        class="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white enabled:hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-secondary disabled:text-muted-foreground"
+      >
+        Apply
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { MONTHS, WEEKDAYS, monthCells, ymd, startOfToday } from "../utils/date-utils";
+  import { niceDate } from "../utils/format";
+
+  const root = document.getElementById("range-search")!;
+  const toggle = document.getElementById("range-toggle")!;
+  const searchBtn = document.getElementById("range-search-btn")!;
+  const popover = document.getElementById("range-popover")!;
+  const caret = document.getElementById("range-caret")!;
+  const label = document.getElementById("range-label")!;
+  const monthLabels = document.getElementById("range-month-labels")!;
+  const monthsEl = document.getElementById("range-months")!;
+  const prevBtn = document.getElementById("range-prev") as HTMLButtonElement;
+  const nextBtn = document.getElementById("range-next") as HTMLButtonElement;
+  const clearBtn = document.getElementById("range-clear")!;
+  const applyBtn = document.getElementById("range-apply") as HTMLButtonElement;
+
+  const today = startOfToday();
+  let viewYear = today.getFullYear();
+  let viewMonth = today.getMonth();
+  let start: string | null = null;
+  let end: string | null = null;
+  let applied: { start: string; end: string } | null = null;
+
+  function setOpen(open: boolean) {
+    popover.classList.toggle("hidden", !open);
+    toggle.setAttribute("aria-expanded", String(open));
+    caret.classList.toggle("rotate-180", open);
+    if (open) render();
+  }
+
+  function canPrev() {
+    return (
+      viewYear > today.getFullYear() ||
+      (viewYear === today.getFullYear() && viewMonth > today.getMonth())
+    );
+  }
+
+  function shift(delta: number) {
+    if (delta < 0 && !canPrev()) return;
+    const d = new Date(viewYear, viewMonth + delta, 1);
+    viewYear = d.getFullYear();
+    viewMonth = d.getMonth();
+    render();
+  }
+
+  function pick(key: string) {
+    if (!start || (start && end)) {
+      start = key;
+      end = null;
+    } else if (key >= start) {
+      end = key;
+    } else {
+      start = key;
+      end = null;
+    }
+    applyBtn.disabled = !start;
+    render();
+  }
+
+  function renderMonth(year: number, month: number): string {
+    const cells = monthCells(year, month);
+    const head = WEEKDAYS.map((w) => `<div class="py-1">${w}</div>`).join("");
+    const days = cells
+      .map((date) => {
+        if (!date) return `<div></div>`;
+        const key = ymd(date);
+        const past = date < today;
+        const isEdge = key === start || key === end;
+        const within = !!(start && end && key > start && key < end);
+        const cls = [
+          "aspect-square rounded-md text-sm transition-colors",
+          isEdge ? "range-edge" : within ? "range-within text-foreground" : past ? "cursor-not-allowed text-gray-300" : "text-foreground hover:bg-secondary",
+        ].join(" ");
+        return `<button type="button" data-key="${key}" ${past ? "disabled" : ""} class="${cls}">${date.getDate()}</button>`;
+      })
+      .join("");
+    return `<div class="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground">${head}${days}</div>`;
+  }
+
+  function render() {
+    const next = new Date(viewYear, viewMonth + 1, 1);
+    monthLabels.innerHTML =
+      `<span>${MONTHS[viewMonth]} ${viewYear}</span>` +
+      `<span class="hidden sm:inline">${MONTHS[next.getMonth()]} ${next.getFullYear()}</span>`;
+    monthsEl.innerHTML =
+      renderMonth(viewYear, viewMonth) +
+      `<div class="hidden sm:block">${renderMonth(next.getFullYear(), next.getMonth())}</div>`;
+    prevBtn.disabled = !canPrev();
+    monthsEl.querySelectorAll<HTMLButtonElement>("button[data-key]").forEach((b) => {
+      if (b.disabled) return;
+      b.addEventListener("click", (e) => {
+        // The calendar re-renders on pick, detaching this button; without
+        // stopping propagation the document "click-outside" handler would then
+        // treat it as an outside click and close the popover mid-range-select.
+        e.stopPropagation();
+        pick(b.dataset.key!);
+      });
+    });
+  }
+
+  function updateLabel() {
+    if (applied) {
+      label.textContent =
+        applied.start === applied.end ? niceDate(applied.start) : `${niceDate(applied.start)} – ${niceDate(applied.end)}`;
+      label.classList.remove("text-muted-foreground");
+    } else {
+      label.textContent = "Select dates";
+      label.classList.add("text-muted-foreground");
+    }
+  }
+
+  function apply() {
+    if (start) {
+      applied = { start, end: end ?? start };
+      document.dispatchEvent(new CustomEvent("rentals:range", { detail: applied }));
+    }
+    updateLabel();
+    setOpen(false);
+  }
+
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setOpen(popover.classList.contains("hidden"));
+  });
+  searchBtn.addEventListener("click", () => (popover.classList.contains("hidden") ? setOpen(true) : apply()));
+  prevBtn.addEventListener("click", () => shift(-1));
+  nextBtn.addEventListener("click", () => shift(1));
+  applyBtn.addEventListener("click", apply);
+  clearBtn.addEventListener("click", () => {
+    start = null;
+    end = null;
+    applied = null;
+    applyBtn.disabled = true;
+    updateLabel();
+    document.dispatchEvent(new CustomEvent("rentals:range", { detail: null }));
+    render();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!root.contains(e.target as Node)) setOpen(false);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setOpen(false);
+  });
