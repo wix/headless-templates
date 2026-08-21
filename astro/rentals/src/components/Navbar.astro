@@ -1,0 +1,96 @@
+---
+import { BUSINESS_NAME } from "../utils/constants";
+import { getCurrentMember } from "../utils/rentals-service";
+import { icons } from "../utils/icons";
+
+// Auth state is resolved server-side: the `@wix/astro` integration authenticates
+// each request, so a logged-in member's identity is available here directly.
+let member = null;
+try {
+  member = await getCurrentMember();
+} catch (error) {
+  console.error("Error resolving member in Navbar:", error);
+}
+
+const initial = (member?.name ?? "M").trim().charAt(0).toUpperCase();
+---
+
+<header class="fixed top-0 left-0 w-full z-50">
+  <div class="bg-primary text-white text-center py-2.5 px-6 text-xs font-semibold tracking-[0.12em] uppercase">
+    Reserve Rental Spaces Online — By the Hour or the Day
+  </div>
+  <div class="backdrop-blur-md bg-white/90 border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <a href="/" class="flex items-center gap-2.5">
+          <span class="w-9 h-9 rounded-full brand-gradient border border-gray-200 flex items-center justify-center text-primary text-lg" set:html={icons.key}></span>
+          <span class="text-[15px] font-bold text-foreground">{BUSINESS_NAME}</span>
+        </a>
+
+        <nav class="flex items-center gap-7">
+          {member ? (
+            <div id="account-menu" class="relative">
+              <button
+                id="account-menu-btn"
+                type="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+                class="flex items-center gap-2 rounded-full border border-gray-200 bg-white py-1 pl-1 pr-2.5 text-sm font-medium text-foreground hover:border-primary/40 transition-colors"
+              >
+                {member.photo ? (
+                  <img src={member.photo} alt="" referrerpolicy="no-referrer" class="h-7 w-7 rounded-full object-cover" />
+                ) : (
+                  <span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white text-xs font-semibold">{initial}</span>
+                )}
+                <span class="hidden sm:inline max-w-[10rem] truncate">{member.name}</span>
+                <span class="text-muted-foreground text-base" set:html={icons.chevronDown}></span>
+              </button>
+              <div
+                id="account-menu-panel"
+                class="hidden absolute right-0 z-40 mt-2 w-44 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-xl"
+              >
+                <a href="/account" class="block px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors">My reservations</a>
+                <form method="post" action="/api/auth/logout?returnToUrl=/">
+                  <button type="submit" class="block w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-secondary transition-colors">
+                    Log out
+                  </button>
+                </form>
+              </div>
+            </div>
+          ) : (
+            <a
+              href="/api/auth/login?returnToUrl=/account"
+              class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-foreground hover:border-primary/40 transition-colors"
+            >
+              Log in
+            </a>
+          )}
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Toggle the account dropdown, closing it on outside click / Escape.
+  const menu = document.getElementById("account-menu");
+  const btn = document.getElementById("account-menu-btn");
+  const panel = document.getElementById("account-menu-panel");
+
+  if (menu && btn && panel) {
+    const setOpen = (open: boolean) => {
+      panel.classList.toggle("hidden", !open);
+      btn.setAttribute("aria-expanded", String(open));
+    };
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setOpen(panel.classList.contains("hidden"));
+    });
+    document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target as Node)) setOpen(false);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") setOpen(false);
+    });
+  }
+</script>

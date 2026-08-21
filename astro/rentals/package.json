@@ -1,0 +1,24 @@
+{
+  "name": "wix-astro-rentals",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "astro": "astro",
+    "dev": "astro dev",
+    "build": "astro build"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.7",
+    "@wix/astro": "^2.39.0",
+    "@wix/astro-pages": "^2.0.4",
+    "@wix/astro-wix-hosting-adapter": "^2.0.0",
+    "@wix/bookings": "^1.0.1626",
+    "@wix/ecom": "^1.0.2252",
+    "@wix/members": "^1.0.485",
+    "@wix/redirects": "^1.0.118",
+    "@wix/sdk": "^1.21.5",
+    "astro": "^5.8.0",
+    "tailwindcss": "^4.1.7",
+    "typescript": "^5.8.3"
+  }
+}

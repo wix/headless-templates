@@ -1,0 +1,36 @@
+---
+import type { RentalLocation } from "../utils/types";
+import { icons } from "../utils/icons";
+
+interface Props {
+  locations: RentalLocation[];
+}
+
+const { locations } = Astro.props;
+---
+
+{locations.length > 0 && (
+  <label class="relative flex-1 sm:max-w-xs">
+    <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-base text-muted-foreground" set:html={icons.mapPin} />
+    <select
+      id="location-select"
+      class="w-full appearance-none glass-panel py-3 pl-10 pr-9 text-sm text-foreground cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-primary"
+      aria-label="Filter by location"
+    >
+      <option value="">All locations</option>
+      {locations.map((l) => (
+        <option value={l.id}>{l.name}</option>
+      ))}
+    </select>
+    <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-base text-muted-foreground" set:html={icons.chevronDown} />
+  </label>
+)}
+
+<script>
+  const select = document.getElementById("location-select") as HTMLSelectElement | null;
+  select?.addEventListener("change", () => {
+    document.dispatchEvent(
+      new CustomEvent("rentals:location", { detail: select.value || null })
+    );
+  });
+</script>

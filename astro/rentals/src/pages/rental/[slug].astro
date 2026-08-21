@@ -1,0 +1,232 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Navbar from "../../components/Navbar.astro";
+import Footer from "../../components/Footer.astro";
+import ReservationPanel from "../../components/ReservationPanel.astro";
+import DayReservationPanel from "../../components/DayReservationPanel.astro";
+import { BUSINESS_NAME } from "../../utils/constants";
+import { getAvailability, getRentalBySlug } from "../../utils/rentals-service";
+import { buildBookingPolicy, formatMoney } from "../../utils/format";
+import { icons } from "../../utils/icons";
+import type { PolicyItem, RentalDetails } from "../../utils/types";
+
+const { slug = "" } = Astro.params;
+
+let rental: RentalDetails | undefined;
+let loadError = false;
+try {
+  rental = await getRentalBySlug(slug);
+} catch (error) {
+  console.error("Error loading rental:", error);
+  loadError = true;
+}
+
+// Unknown slug → 404 (never a redirect), per the template build standards.
+if (!rental && !loadError) {
+  Astro.response.status = 404;
+}
+
+// Surface the location up front with a short availability lookup (best-effort).
+let locationText: string | undefined;
+const MINUTES_PER_DAY = 24 * 60;
+if (rental) {
+  try {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const now = new Date();
+    const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00:00`;
+    const to = new Date(now);
+    to.setDate(to.getDate() + 7);
+    const res = await getAvailability(rental.id, fmt(now), fmt(to));
+    const loc = res.slots[0]?.location;
+    locationText = loc?.address ?? loc?.name;
+  } catch (error) {
+    console.error("Error resolving rental location:", error);
+  }
+}
+
+const initialDate = Astro.url.searchParams.get("date") ?? undefined;
+
+const POLICY_ICON: Record<PolicyItem["kind"], string> = {
+  cancellation: icons.shield,
+  payment: icons.card,
+  capacity: icons.users,
+};
+
+const price = rental ? formatMoney(rental.price) : undefined;
+const range = rental?.durationRange;
+const policy = rental ? buildBookingPolicy(rental) : [];
+const meta: string[] = [];
+if (rental?.category?.name) meta.push(rental.category.name);
+if (range) meta.push(range.unit === "HOUR" ? "Booked by the hour" : "Booked by the day");
+---
+
+<Layout
+  title={rental ? `${rental.name} — ${BUSINESS_NAME}` : `Rental not found — ${BUSINESS_NAME}`}
+  description={rental?.tagLine ?? rental?.description ?? "Reserve this rental space online."}
+>
+  <Navbar />
+
+  <main class="min-h-screen bg-white pt-32 pb-24 px-4">
+    <div class="max-w-5xl mx-auto">
+      <a href="/" class="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+        <span class="text-base" set:html={icons.chevronLeft} />
+        Back to rentals
+      </a>
+
+      {!rental ? (
+        <section class="glass-panel border-dashed p-12 text-center mt-8 animate-fade-up">
+          <h1 class="text-2xl font-semibold mb-2">
+            {loadError ? "Something went wrong" : "Rental not found"}
+          </h1>
+          <p class="text-muted-foreground max-w-md mx-auto">
+            {loadError
+              ? "We couldn't load this rental. Please try again shortly."
+              : "This space may have been removed. Browse the full list to find another."}
+          </p>
+          <a href="/" class="mt-6 inline-block py-3 px-6 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            All rentals
+          </a>
+        </section>
+      ) : (
+        <>
+          <!-- Gallery -->
+          <div id="gallery" class="mt-4 overflow-hidden rounded-lg border border-gray-200 bg-secondary animate-fade-up">
+            {rental.images[0] ? (
+              <img
+                id="gallery-hero"
+                src={rental.images[0].url}
+                alt={rental.images[0].altText ?? rental.name}
+                class="h-[240px] w-full object-cover sm:h-[380px]"
+              />
+            ) : (
+              <div class="flex h-[240px] w-full items-center justify-center text-6xl text-muted-foreground sm:h-[380px]" set:html={icons.building} />
+            )}
+          </div>
+          {rental.images.length > 1 && (
+            <div class="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {rental.images.map((img, i) => (
+                <button
+                  type="button"
+                  data-thumb={img.url}
+                  aria-label={`View image ${i + 1}`}
+                  class:list={[
+                    "gallery-thumb h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 transition-colors",
+                    i === 0 ? "border-primary" : "border-transparent hover:border-gray-200",
+                  ]}
+                >
+                  <img src={img.url} alt="" class="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          <!-- Body -->
+          <div class="mt-8 grid gap-10 lg:grid-cols-[1fr_360px]">
+            <div>
+              <div class="flex items-start justify-between gap-4">
+                <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">{rental.name}</h1>
+                {price && (
+                  <div class="whitespace-nowrap text-right">
+                    <span class="text-2xl font-semibold">{price}</span>
+                    {rental.priceUnit && <span class="text-sm text-muted-foreground"> / {rental.priceUnit}</span>}
+                  </div>
+                )}
+              </div>
+
+              {meta.length > 0 && (
+                <p class="mt-3 text-sm text-muted-foreground">
+                  {meta.map((m, i) => (
+                    <span>
+                      {i > 0 && <span class="px-2 text-gray-300">•</span>}
+                      {m}
+                    </span>
+                  ))}
+                </p>
+              )}
+
+              {locationText && (
+                <p class="mt-3 flex items-center gap-1.5 text-sm text-foreground/70">
+                  <span class="shrink-0 text-base text-muted-foreground" set:html={icons.mapPin} />
+                  {locationText}
+                </p>
+              )}
+
+              {rental.description && (
+                <p class="mt-6 whitespace-pre-line leading-relaxed text-foreground/70">{rental.description}</p>
+              )}
+
+              {rental.features && rental.features.length > 0 && (
+                <div class="mt-10">
+                  <h2 class="text-xl font-semibold tracking-tight">What's included</h2>
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    {rental.features.map((f) => (
+                      <span class="pill border border-gray-200 bg-white px-4 py-2 text-sm">{f.name}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {policy.length > 0 && (
+                <div class="mt-10">
+                  <h2 class="text-xl font-semibold tracking-tight">Booking policy</h2>
+                  <ul class="mt-4 space-y-3.5 glass-panel p-5">
+                    {policy.map((item) => (
+                      <li class="flex items-start gap-3 text-sm text-foreground/70">
+                        <span class="mt-0.5 shrink-0 text-lg text-primary" set:html={POLICY_ICON[item.kind]} />
+                        <span class="leading-relaxed">{item.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <!-- Reservation card: day rentals use a check-in/out range, hourly rentals a day + time span. -->
+            <div class="lg:sticky lg:top-28 lg:self-start">
+              {range?.unit === "DAY" ? (
+                <DayReservationPanel
+                  serviceId={rental.id}
+                  minDays={Math.max(1, Math.round((range.minMinutes ?? MINUTES_PER_DAY) / MINUTES_PER_DAY))}
+                  maxDays={Math.max(1, Math.round((range.maxMinutes ?? range.minMinutes ?? MINUTES_PER_DAY) / MINUTES_PER_DAY))}
+                  priceLabel={price}
+                  priceUnit={rental.priceUnit}
+                  initialDate={initialDate}
+                  payInPerson={rental.paymentInPerson === true && rental.paymentOnline !== true}
+                  resourceTypeId={rental.resourceTypeId}
+                />
+              ) : (
+                <ReservationPanel
+                  serviceId={rental.id}
+                  minMinutes={range?.minMinutes ?? 60}
+                  maxMinutes={range?.maxMinutes ?? range?.minMinutes ?? 60}
+                  priceLabel={price}
+                  priceUnit={rental.priceUnit}
+                  initialDate={initialDate}
+                  payInPerson={rental.paymentInPerson === true && rental.paymentOnline !== true}
+                  resourceTypeId={rental.resourceTypeId}
+                />
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  // Gallery thumbnail switching.
+  const hero = document.getElementById("gallery-hero") as HTMLImageElement | null;
+  const thumbs = Array.from(document.querySelectorAll<HTMLButtonElement>(".gallery-thumb"));
+  thumbs.forEach((thumb) => {
+    thumb.addEventListener("click", () => {
+      if (hero && thumb.dataset.thumb) hero.src = thumb.dataset.thumb;
+      thumbs.forEach((t) => {
+        t.classList.toggle("border-primary", t === thumb);
+        t.classList.toggle("border-transparent", t !== thumb);
+      });
+    });
+  });
+</script>

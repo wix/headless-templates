@@ -1,0 +1,305 @@
+---
+import { icons } from "../utils/icons";
+import type { RentalAttributeDef } from "../utils/types";
+
+interface Props {
+  /** Typed resource attributes (Bookings Attributes API) rendered as filters. */
+  attributes: RentalAttributeDef[];
+}
+
+const { attributes } = Astro.props;
+---
+
+<div id="filters-wrap" class="relative w-full sm:ml-auto sm:w-auto">
+  <button
+    id="filters-open"
+    type="button"
+    class="inline-flex w-full items-center justify-center gap-2 glass-panel px-5 py-3 text-sm font-medium text-foreground hover:ring-1 hover:ring-primary/30 sm:w-auto"
+  >
+    <span class="text-base" set:html={icons.filter} />
+    Filters
+    <span id="filters-badge" class="hidden ml-1 h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs text-white"></span>
+  </button>
+
+  <div
+    id="filters-overlay"
+    class="hidden absolute right-0 z-50 mt-2 flex max-h-[min(70vh,32rem)] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-lg bg-white shadow-xl ring-1 ring-black/5 animate-modal"
+  >
+    <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+      <h2 class="text-lg font-semibold tracking-tight">Filters</h2>
+      <button id="filters-close" type="button" aria-label="Close" class="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground">
+        <span class="text-xl" set:html={icons.close} />
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto px-6">
+      {attributes.length > 0 && (
+        <section class="border-b border-gray-200 py-5">
+          <p class="mb-3 text-sm font-semibold">Amenities &amp; features</p>
+          <div class="space-y-5">
+            {attributes.map((attr) => {
+              const raw = String(attr.valueType).toUpperCase();
+              // The Bookings Attributes API reports booleans as "BOOL"; normalize
+              // so the client script's "BOOLEAN"/"NUMBER" checks line up.
+              const type = raw === "BOOL" ? "BOOLEAN" : raw;
+              return (
+                <div data-attr-id={attr.id} data-attr-type={type}>
+                  {type === "BOOLEAN" ? (
+                    <button type="button" class="attr-bool filter-check flex w-full items-center gap-3 text-left" data-value="true">
+                      <span class="check-box flex h-5 w-5 items-center justify-center rounded border border-muted-foreground/50 text-white text-sm"></span>
+                      <span>{attr.name}</span>
+                    </button>
+                  ) : type === "STRING" && attr.allowedValues && attr.allowedValues.length > 0 ? (
+                    <div>
+                      <p class="mb-2 text-sm font-medium">{attr.name}</p>
+                      <div class="flex flex-wrap gap-2">
+                        {attr.allowedValues.map((v) => (
+                          <button
+                            type="button"
+                            data-value={v}
+                            class="attr-chip pill border border-gray-200 px-4 py-2 text-sm transition-colors hover:border-primary/40"
+                          >
+                            {v}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <label class="block">
+                      <span class="mb-1 block text-sm font-medium">{attr.name}</span>
+                      <input
+                        type={type === "NUMBER" ? "number" : "text"}
+                        class="attr-input w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-hidden"
+                        placeholder={type === "NUMBER" ? "Any" : `Any ${attr.name.toLowerCase()}`}
+                        min={attr.min}
+                        max={attr.max}
+                      />
+                    </label>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      <section class="border-b border-gray-200 py-5">
+        <p class="mb-1 text-sm font-semibold">Booking type</p>
+        <div data-filter-group="type">
+          <button type="button" data-value="HOUR" class="filter-check flex w-full items-center gap-3 border-b border-gray-100 py-3.5 text-left last:border-0">
+            <span class="check-box flex h-5 w-5 items-center justify-center rounded border border-muted-foreground/50 text-white text-sm"></span>
+            <span>Hourly</span>
+          </button>
+          <button type="button" data-value="DAY" class="filter-check flex w-full items-center gap-3 py-3.5 text-left">
+            <span class="check-box flex h-5 w-5 items-center justify-center rounded border border-muted-foreground/50 text-white text-sm"></span>
+            <span>Daily</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="border-b border-gray-200 py-5">
+        <p class="mb-1 text-sm font-semibold">Payment options</p>
+        <div data-filter-group="payment">
+          <button type="button" data-value="inPerson" class="filter-check flex w-full items-center gap-3 border-b border-gray-100 py-3.5 text-left last:border-0">
+            <span class="check-box flex h-5 w-5 items-center justify-center rounded border border-muted-foreground/50 text-white text-sm"></span>
+            <span>In person</span>
+          </button>
+          <button type="button" data-value="online" class="filter-check flex w-full items-center gap-3 py-3.5 text-left">
+            <span class="check-box flex h-5 w-5 items-center justify-center rounded border border-muted-foreground/50 text-white text-sm"></span>
+            <span>Online</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="py-5">
+        <p class="mb-3 text-sm font-semibold">Results preferences</p>
+        <button id="filter-show-unavailable" type="button" class="flex items-center gap-3" aria-pressed="false">
+          <span class="toggle-track relative h-6 w-11 rounded-full bg-gray-200 transition-colors">
+            <span class="toggle-knob absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"></span>
+          </span>
+          <span>Show spaces unavailable on the selected dates</span>
+        </button>
+      </section>
+    </div>
+
+    <div class="flex items-center justify-between border-t border-gray-200 px-6 py-4">
+      <button id="filters-clear" type="button" class="text-sm text-muted-foreground hover:text-foreground">Clear all</button>
+      <button id="filters-apply" type="button" class="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">Apply</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { icons } from "../utils/icons";
+
+  const wrap = document.getElementById("filters-wrap")!;
+  const openBtn = document.getElementById("filters-open")!;
+  const badge = document.getElementById("filters-badge")!;
+  const overlay = document.getElementById("filters-overlay")!;
+  const closeBtn = document.getElementById("filters-close")!;
+  const clearBtn = document.getElementById("filters-clear")!;
+  const applyBtn = document.getElementById("filters-apply")!;
+  const unavailableBtn = document.getElementById("filter-show-unavailable")!;
+
+  type Attr = {
+    attributeId: string;
+    enumValue?: string;
+    boolValue?: boolean;
+    numberValues?: { values: number[] };
+  };
+  type Filters = {
+    showUnavailable: boolean;
+    rentalTypes: string[];
+    payment: string[];
+    attributes: Attr[];
+  };
+
+  const state: Filters = { showUnavailable: false, rentalTypes: [], payment: [], attributes: [] };
+
+  const checkGroups = overlay.querySelectorAll<HTMLElement>('[data-filter-group="type"], [data-filter-group="payment"]');
+  const attrBoxes = overlay.querySelectorAll<HTMLElement>("[data-attr-id]");
+
+  function paintChecks() {
+    checkGroups.forEach((group) => {
+      const key = group.dataset.filterGroup === "type" ? "rentalTypes" : "payment";
+      const list = state[key as "rentalTypes" | "payment"];
+      group.querySelectorAll<HTMLButtonElement>(".filter-check").forEach((b) => {
+        const on = list.includes(b.dataset.value!);
+        const box = b.querySelector(".check-box")!;
+        box.classList.toggle("chip-active", on);
+        box.innerHTML = on ? `<span class="text-[13px]">${icons.check}</span>` : "";
+      });
+    });
+  }
+
+  // Collect selected attribute values across the typed controls.
+  function collectAttributes(): Attr[] {
+    const out: Attr[] = [];
+    attrBoxes.forEach((box) => {
+      const attributeId = box.dataset.attrId!;
+      const type = box.dataset.attrType;
+      if (type === "BOOLEAN") {
+        const btn = box.querySelector<HTMLButtonElement>(".attr-bool");
+        if (btn?.getAttribute("aria-pressed") === "true") out.push({ attributeId, boolValue: true });
+      } else if (type === "NUMBER") {
+        const input = box.querySelector<HTMLInputElement>(".attr-input");
+        const n = input && input.value.trim() ? Number(input.value) : NaN;
+        if (!Number.isNaN(n)) out.push({ attributeId, numberValues: { values: [n] } });
+      } else {
+        box.querySelectorAll<HTMLButtonElement>(".attr-chip.chip-active").forEach((chip) => {
+          out.push({ attributeId, enumValue: chip.dataset.value! });
+        });
+        const input = box.querySelector<HTMLInputElement>(".attr-input");
+        if (input && input.value.trim()) out.push({ attributeId, enumValue: input.value.trim() });
+      }
+    });
+    return out;
+  }
+
+  function paintToggle() {
+    const track = unavailableBtn.querySelector(".toggle-track")!;
+    const knob = unavailableBtn.querySelector(".toggle-knob")!;
+    track.classList.toggle("bg-primary", state.showUnavailable);
+    track.classList.toggle("bg-gray-200", !state.showUnavailable);
+    knob.classList.toggle("translate-x-5", state.showUnavailable);
+    unavailableBtn.setAttribute("aria-pressed", String(state.showUnavailable));
+  }
+
+  function activeCount() {
+    return state.rentalTypes.length + state.payment.length + collectAttributes().length;
+  }
+
+  function paintBadge() {
+    const n = activeCount();
+    badge.textContent = String(n);
+    badge.classList.toggle("hidden", n === 0);
+    badge.classList.toggle("inline-flex", n > 0);
+  }
+
+  function setOpen(open: boolean) {
+    overlay.classList.toggle("hidden", !open);
+  }
+
+  // Boolean attribute toggles.
+  overlay.querySelectorAll<HTMLButtonElement>(".attr-bool").forEach((b) => {
+    b.addEventListener("click", () => {
+      const on = b.getAttribute("aria-pressed") !== "true";
+      b.setAttribute("aria-pressed", String(on));
+      const box = b.querySelector(".check-box")!;
+      box.classList.toggle("chip-active", on);
+      box.innerHTML = on ? `<span class="text-[13px]">${icons.check}</span>` : "";
+    });
+  });
+
+  // String allowed-value chips (multi-select).
+  overlay.querySelectorAll<HTMLButtonElement>(".attr-chip").forEach((chip) => {
+    chip.addEventListener("click", () => chip.classList.toggle("chip-active"));
+  });
+
+  checkGroups.forEach((group) => {
+    const key = group.dataset.filterGroup === "type" ? "rentalTypes" : "payment";
+    group.querySelectorAll<HTMLButtonElement>(".filter-check").forEach((b) => {
+      b.addEventListener("click", () => {
+        const list = state[key as "rentalTypes" | "payment"];
+        const value = b.dataset.value!;
+        const i = list.indexOf(value);
+        if (i >= 0) list.splice(i, 1);
+        else list.push(value);
+        paintChecks();
+      });
+    });
+  });
+
+  unavailableBtn.addEventListener("click", () => {
+    state.showUnavailable = !state.showUnavailable;
+    paintToggle();
+  });
+
+  openBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setOpen(overlay.classList.contains("hidden"));
+  });
+  closeBtn.addEventListener("click", () => setOpen(false));
+  document.addEventListener("click", (e) => {
+    if (!wrap.contains(e.target as Node)) setOpen(false);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setOpen(false);
+  });
+
+  clearBtn.addEventListener("click", () => {
+    state.showUnavailable = false;
+    state.rentalTypes = [];
+    state.payment = [];
+    overlay.querySelectorAll<HTMLButtonElement>(".attr-bool").forEach((b) => {
+      b.setAttribute("aria-pressed", "false");
+      const box = b.querySelector(".check-box")!;
+      box.classList.remove("chip-active");
+      box.innerHTML = "";
+    });
+    overlay.querySelectorAll<HTMLButtonElement>(".attr-chip").forEach((c) => c.classList.remove("chip-active"));
+    overlay.querySelectorAll<HTMLInputElement>(".attr-input").forEach((i) => (i.value = ""));
+    paintChecks();
+    paintToggle();
+  });
+
+  applyBtn.addEventListener("click", () => {
+    state.attributes = collectAttributes();
+    paintBadge();
+    setOpen(false);
+    document.dispatchEvent(
+      new CustomEvent("rentals:filters", {
+        detail: {
+          showUnavailable: state.showUnavailable,
+          rentalTypes: [...state.rentalTypes],
+          payment: [...state.payment],
+          attributes: state.attributes.map((a) => ({ ...a })),
+        },
+      })
+    );
+  });
+
+  // Initial paint.
+  paintChecks();
+  paintToggle();
+</script>
