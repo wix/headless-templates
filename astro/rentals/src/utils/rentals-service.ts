@@ -645,9 +645,9 @@ export interface ReserveRequest {
  *  to resolve a concrete resource + scheduleId for the exact [start, end] span
  *  (this SDK's createBooking needs a specific resource, not ANY_RESOURCE), then
  *  books that slot. Runs client-side so the session cookie is sent. */
-// Time Slots V2 reports the location type as BUSINESS/CUSTOM/CUSTOMER, but the
-// booking slot's `location.locationType` uses a DIFFERENT enum
-// (OWNER_BUSINESS/OWNER_CUSTOM/CUSTOM). Map between them.
+// Per the Rentals docs, `location.locationType` differs between APIs: Time Slots
+// V2 returns BUSINESS/CUSTOM/CUSTOMER, while the booking slot uses
+// OWNER_BUSINESS/OWNER_CUSTOM/CUSTOM. Map between them before booking.
 function bookingLocationType(t?: string) {
   return t === 'CUSTOM' ? 'OWNER_CUSTOM' : t === 'CUSTOMER' ? 'CUSTOM' : 'OWNER_BUSINESS';
 }
