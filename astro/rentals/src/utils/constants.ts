@@ -9,11 +9,14 @@ export const TIME_FORMAT = {
   hour12: true,
 } as Intl.DateTimeFormatOptions;
 
-// Generic Wix Bookings catalog app id. The Rentals sample flow now uses the
-// Rentals app id (RENTALS_APP_ID) as the checkout `catalogReference.appId`; this
-// constant remains as the fallback for a mixed-app site where RENTALS_APP_ID is
-// blanked, and to scope member booking reads.
+// Generic Wix Bookings catalog app id. Used to scope member booking reads (an
+// `extendedBookings.query` without an `appId` filter returns nothing).
 export const BOOKINGS_APP_ID = '13d21c63-b5ec-5912-8397-c3a5ddb27a97';
+
+// Wix Rentals app id, used as the checkout `catalogReference.appId` for a booking
+// line item — per the Rentals sample flow. Always set; unlike RENTALS_APP_ID below
+// this is not a user-tunable filter, so checkout can't be accidentally broken.
+export const RENTALS_CATALOG_APP_ID = 'ff5d6eb1-65e4-4f9a-8b14-64d34c12cc2e';
 
 // Optional: scope the rental list to a single Bookings app by its `appId`. Leave
 // empty to treat every visible Bookings service as a rental (the default, so the

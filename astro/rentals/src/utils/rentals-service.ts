@@ -12,7 +12,7 @@ import { members } from '@wix/members';
 import { checkout, orders } from '@wix/ecom';
 import { redirects } from '@wix/redirects';
 import { auth, httpClient } from '@wix/essentials';
-import { BOOKINGS_APP_ID, RENTALS_APP_ID } from './constants';
+import { BOOKINGS_APP_ID, RENTALS_APP_ID, RENTALS_CATALOG_APP_ID } from './constants';
 import type {
   AvailabilitySlot,
   DurationRange,
@@ -710,11 +710,10 @@ export async function reserve(req: ReserveRequest): Promise<void> {
   if (!bookingId) throw new Error('Could not start checkout — booking was not created.');
 
   // Per the Rentals sample flow, the booking line item's `catalogReference.appId`
-  // is the Wix Rentals app id (not the generic Bookings catalog id). Fall back to
-  // the Bookings id only if RENTALS_APP_ID has been blanked for a mixed-app site.
+  // is the Wix Rentals app id (not the generic Bookings catalog id).
   const created2: any = await checkout.createCheckout({
     channelType: checkout.ChannelType.WEB,
-    lineItems: [{ quantity: 1, catalogReference: { appId: RENTALS_APP_ID || BOOKINGS_APP_ID, catalogItemId: bookingId } }],
+    lineItems: [{ quantity: 1, catalogReference: { appId: RENTALS_CATALOG_APP_ID, catalogItemId: bookingId } }],
     // Seed the buyer email so the hosted checkout resolves to the member's contact.
     ...(contact?.email ? { checkoutInfo: { buyerInfo: { email: contact.email } } } : {}),
   });
