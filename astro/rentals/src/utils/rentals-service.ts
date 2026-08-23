@@ -652,8 +652,8 @@ function bookingLocationType(t?: string) {
   return t === 'CUSTOM' ? 'OWNER_CUSTOM' : t === 'CUSTOMER' ? 'CUSTOM' : 'OWNER_BUSINESS';
 }
 
-/** Resolve the selected span into a bookable slot. This SDK's createBooking /
- *  rescheduleBooking need a concrete `resource` + `scheduleId` (not ANY_RESOURCE),
+/** Resolve the selected span into a bookable slot. Per the Wix Rentals booking
+ *  flow, createBooking / rescheduleBooking take a concrete `resource` + `scheduleId`,
  *  so we call Time Slots V2 `getAvailabilityTimeSlot` for the exact [start, end]
  *  and read back the resource, scheduleId, and location. */
 async function resolveBookingSlot(req: ReserveRequest): Promise<any> {
