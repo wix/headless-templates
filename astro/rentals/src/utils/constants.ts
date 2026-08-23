@@ -9,9 +9,10 @@ export const TIME_FORMAT = {
   hour12: true,
 } as Intl.DateTimeFormatOptions;
 
-// Wix Bookings' eCommerce catalog app id — used as the `catalogReference.appId`
-// for a booking line item in the eCom checkout, regardless of which app owns the
-// underlying service.
+// Generic Wix Bookings catalog app id. The Rentals sample flow now uses the
+// Rentals app id (RENTALS_APP_ID) as the checkout `catalogReference.appId`; this
+// constant remains as the fallback for a mixed-app site where RENTALS_APP_ID is
+// blanked, and to scope member booking reads.
 export const BOOKINGS_APP_ID = '13d21c63-b5ec-5912-8397-c3a5ddb27a97';
 
 // Optional: scope the rental list to a single Bookings app by its `appId`. Leave
