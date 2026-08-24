@@ -24,17 +24,33 @@ Never hardcode data the site owns. Every one of these was a real review finding:
 
 ## Catalog pairing
 
-`templates.json` at the repo root is the CLI's catalog: each entry pairs a `gitPath` (code) with a `siteTemplateId` (the Wix site template that provisions the backing site — services, forms, catalog). Any hardcoded resource GUID in a template (e.g. a form ID) must match what its `siteTemplateId` provisions. New/changed catalog templates also need their bundle republished to the headless registry after merge.
+Each `templates.json` entry pairs a `gitPath` (code) with a `siteTemplateId` (the Wix site template that provisions the backing site — services, forms, catalog). Any hardcoded resource GUID in a template (e.g. a form ID) must match what its `siteTemplateId` provisions. New/changed catalog templates also need their bundle republished to the headless registry after merge.
+
+**There are three template lists, and they are not automatically in sync:**
+
+1. **`templates.json`** (this repo) — the intended source of truth for name/title/`siteTemplateId`/`gitPath` pairing. Merging here does not, by itself, change what any system serves today.
+2. **The `@wix/create-new` CLI's hardcoded list** — the released CLI ships its own template enum; `--site-template` accepts only those names (as of 0.0.105: `commerce`, `scheduler`, `registration`, `blank`) and rejects new names and raw GUIDs. A runtime fetch of `templates.json` is planned in wix-private/wix-cli but until it ships, adding a template here does NOT make it CLI-selectable — that requires a CLI release.
+3. **The live headless registry** (`GET manage.wix.com/_api/headless-business-setup/v1/headless-sites/templates`) — what `CreateSiteFromTemplate` and the template gallery actually serve. Populated only by the employee-only publish flow (see the `add-template` skill); its entries use a different schema than `templates.json` (`displayTitle`/`description`/`categories`/`author`/`kind: FUNCTIONAL|INSPIRATIONAL`/`deployedUrl`, mapped from `title`/`subtitle` here).
+
+When checking "is template X available", say which list you checked — they diverge routinely.
 
 ## Testing a template end-to-end
 
 ```bash
 npx @wix/create-new headless init \
-  --site-template <catalog-name> \
+  --site-template <cli-enum-name> \
   --template-path <path-to-template-copy-without-node_modules> \
   --business-name "Test" --folder-name test-app --skip-git --no-publish
 ```
 
-This provisions a real site from the catalog's `siteTemplateId` and copies your local code — exactly what users get post-merge. Then `npm run dev` and exercise the flows; `npm run build && npm run release` publishes to Wix hosting.
+This provisions a real site from that entry's `siteTemplateId` and copies your local code. **`--site-template` only accepts names from the released CLI's hardcoded enum** (see Catalog pairing above) — so:
 
-Gotchas: `--template-path` must point at a copy **without `node_modules`** (the generator runs files through EJS and chokes on `<%` inside dependencies). Plain `astro build` inside the monorepo can fail on workspace hoisting and missing `wix.config.json` — verify builds from a standalone copy with a dummy `WIX_CLIENT_ID` instead.
+- **Existing catalog template**: use its own name. This is exactly what users get post-merge.
+- **New template**: full CLI e2e is impossible pre-publish. Test the code by pairing `--template-path <your new template>` with an existing enum name whose provisioned site has the Wix apps your template needs (e.g. a forms template against `registration`). This validates the code against a real site, but NOT that your newly minted `siteTemplateId` provisions the right resources — that can only be verified after the registry publish. If no enum entry has the right apps, fall back to the standalone build check below plus `--site-template blank` and installing the apps manually in the dashboard.
+
+Then `npm run dev` and exercise the flows; `npm run build && npm run release` publishes to Wix hosting.
+
+Gotchas:
+- Make the clean copy with `git archive HEAD astro/<name> | tar -x -C <dir>` (committed files only). `--template-path` must point at a copy **without `node_modules`** — the generator runs files through EJS and chokes on `<%` inside dependencies.
+- Plain `astro build` inside the monorepo can fail on workspace hoisting and missing `wix.config.json` — verify builds from a standalone copy with a dummy `WIX_CLIENT_ID` instead.
+- On a Wix machine, tooling may rewrite the root `.npmrc` and `package-lock.json` to point at the internal registry (`npm.dev.wixpress.com`). Never commit those rewrites to this public repo — check `git diff package-lock.json` for internal URLs before committing.
