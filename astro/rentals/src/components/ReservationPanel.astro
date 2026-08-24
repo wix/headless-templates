@@ -327,8 +327,9 @@ const durationLabel = formatDurationRange(minMinutes, maxMinutes) ?? "";
       }
       const opt = endOpts.find((o) => o.value === endSel.value);
       const hours = opt?.hours;
+      const unitCount = hours ? `${hours} ${hours === 1 ? "hour" : "hours"}` : "Selected time";
       const reqId = ++priceReqId;
-      breakdownSubLabel.textContent = hours ? `${hours} ${hours === 1 ? "hour" : "hours"}` : "Selected time";
+      breakdownSubLabel.textContent = unitCount;
       breakdownSub.textContent = "…";
       breakdownTotal.textContent = "…";
       breakdownPay.textContent = "";
@@ -341,6 +342,11 @@ const durationLabel = formatDurationRange(minMinutes, maxMinutes) ?? "";
         if (reqId !== priceReqId) return;
         if (typeof data.calculatedPrice === "number") {
           const money = formatCurrency(data.calculatedPrice, data.currency);
+          // Show the math (e.g. "6 hours × €75.00") so the per-unit rate isn't
+          // just repeated from the header — the line total then reads as derived.
+          if (hours) {
+            breakdownSubLabel.textContent = `${unitCount} × ${formatCurrency(data.calculatedPrice / hours, data.currency)}`;
+          }
           breakdownSub.textContent = money;
           breakdownTotal.textContent = money;
           breakdownPay.textContent = payInPerson ? `Pay in person · ${money}` : `Pay online at checkout · ${money}`;

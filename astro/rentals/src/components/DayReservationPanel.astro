@@ -319,7 +319,8 @@ const allowedLabel = formatDurationRange(minDays * MINUTES_PER_DAY, maxDays * MI
       const endLocal = (endInfo?.endIso || `${end}T23:59:59`).slice(0, 19);
       const tz = panelTimeZone ?? ((startInfo?.raw as any)?.slot?.timezone as string | undefined);
       const reqId = ++priceReqId;
-      breakdownSubLabel.textContent = `${span} ${span > 1 ? "days" : "day"}`;
+      const unitCount = `${span} ${span > 1 ? "days" : "day"}`;
+      breakdownSubLabel.textContent = unitCount;
       breakdownSub.textContent = "…";
       breakdownTotal.textContent = "…";
       breakdownPay.textContent = "";
@@ -332,6 +333,11 @@ const allowedLabel = formatDurationRange(minDays * MINUTES_PER_DAY, maxDays * MI
         if (reqId !== priceReqId) return; // a newer selection superseded this
         if (typeof data.calculatedPrice === "number") {
           const money = formatCurrency(data.calculatedPrice, data.currency);
+          // Show the math (e.g. "3 days × €600.00") so the per-unit rate isn't
+          // just repeated from the header — the line total then reads as derived.
+          if (span > 0) {
+            breakdownSubLabel.textContent = `${unitCount} × ${formatCurrency(data.calculatedPrice / span, data.currency)}`;
+          }
           breakdownSub.textContent = money;
           breakdownTotal.textContent = money;
           breakdownPay.textContent = payInPerson ? `Pay in person · ${money}` : `Pay online at checkout · ${money}`;
