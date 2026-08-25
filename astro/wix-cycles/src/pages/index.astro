@@ -1,0 +1,15 @@
+---
+import Layout from "../layouts/Layout.astro";
+import HomeApp from "../components/app/HomeApp";
+import { loadKits, loadReviews } from "../lib/wix";
+
+export const prerender = false;
+
+// Loaded on the server so the catalogue and the quotes are in the initial
+// HTML — a client-side fetch would leave both invisible to crawlers.
+const [kits, reviews] = await Promise.all([loadKits(), loadReviews()]);
+---
+
+<Layout>
+  <HomeApp kits={kits} reviews={reviews} client:load />
+</Layout>

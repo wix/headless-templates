@@ -1,0 +1,47 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "WX140 | Wix Cycles",
+  description = "The all-mountain bike that gives up nothing. 140mm of FlowLink travel, ProCarbon frame, and geometry built for every direction the trail goes. WX140 — the mountain bike.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="antialiased">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!--
+      next/font/google self-hosted Oswald + Inter and exposed them as
+      --font-display / --font-body, which global.css consumes. Astro has no
+      equivalent build step, so the same two families load from Google Fonts
+      and the CSS variables are declared below to keep global.css unchanged.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <style is:global>
+      :root {
+        --font-display: "Oswald", sans-serif;
+        --font-body: "Inter", system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col bg-white text-ink">
+    <slot />
+  </body>
+</html>
