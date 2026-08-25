@@ -1,4 +1,5 @@
 ---
+import { absoluteUrl } from "../../lib/site";
 // src/pages/services/[slug].astro — SSR session detail + client-side booking flow.
 // Two dirs deep inside src/ → import with ../../ (not three ../).
 import Layout from "../../layouts/Layout.astro";
@@ -79,7 +80,7 @@ const hasTitleTag = seoTags.some((t: any) => t.type === "title" && !t.disabled);
 // Service + BreadcrumbList structured data — machine-readable price, duration,
 // and a declared booking entry point for answer engines and agents. Rendered
 // regardless of hasSeoTags (Wix seoData carries meta tags, not JSON-LD).
-const pageUrl = new URL(`/services/${slug}`, Astro.site).href;
+const pageUrl = absoluteUrl(`/services/${slug}`, Astro.site, Astro.url);
 const fixedPrice = service.payment?.rateType === "FIXED" ? service.payment?.fixed?.price : undefined;
 const serviceStructuredData = JSON.stringify({
   "@context": "https://schema.org",
@@ -93,7 +94,7 @@ const serviceStructuredData = JSON.stringify({
       image: ogImage,
       provider: {
         "@type": "Organization",
-        "@id": new URL("/#organization", Astro.site).href,
+        "@id": absoluteUrl("/#organization", Astro.site, Astro.url),
         name: "APEX",
       },
       ...(fixedPrice?.value && {
@@ -119,8 +120,8 @@ const serviceStructuredData = JSON.stringify({
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: new URL("/", Astro.site).href },
-        { "@type": "ListItem", position: 2, name: "Sessions", item: new URL("/services", Astro.site).href },
+        { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/", Astro.site, Astro.url) },
+        { "@type": "ListItem", position: 2, name: "Sessions", item: absoluteUrl("/services", Astro.site, Astro.url) },
         { "@type": "ListItem", position: 3, name: serviceName, item: pageUrl },
       ],
     },

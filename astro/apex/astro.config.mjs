@@ -23,10 +23,9 @@ const secretEnv = loadEnv(
 
 // https://astro.build/config
 export default defineConfig({
-  // CHANGE ME — your published site's canonical origin. Used for canonical
-  // tags, JSON-LD `@id`s, sitemap.xml and llms.txt absolute URLs.
-  site: "https://example.wix-site-host.com",
-
+  // No `site`: the canonical origin is whatever the provisioned site is served
+  // from, resolved per request in src/lib/site.ts. A build-time constant here
+  // would bake one origin into every copy of the template.
   output: "server",
   adapter: wixHostingAdapter(),
   integrations: [wix(), wixPages(), react()],

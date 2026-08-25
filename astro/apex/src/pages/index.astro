@@ -1,4 +1,5 @@
 ---
+import { absoluteUrl } from "../lib/site";
 // Home — five full-viewport scenes (Pagani pacing · Rimac scale · Aston
 // refinement · Exo Ape motion). The hero carries the TH-12 lap film (streamed
 // from Wix Media, never committed to the repo) with a parallax exit; the
@@ -28,18 +29,18 @@ const structuredData = {
   "@graph": [
     {
       "@type": "Organization",
-      "@id": new URL("/#organization", Astro.site).href,
+      "@id": absoluteUrl("/#organization", Astro.site, Astro.url),
       name: "APEX",
-      url: Astro.site?.href,
+      url: absoluteUrl("/", Astro.site, Astro.url),
       description:
         "Supercar driving experiences — book a session behind the wheel of a specific supercar on a specific circuit at a specific time.",
-      logo: new URL("/favicon.svg", Astro.site).href,
+      logo: absoluteUrl("/favicon.svg", Astro.site, Astro.url),
     },
     {
       "@type": "WebSite",
       name: "APEX",
-      url: Astro.site?.href,
-      publisher: { "@id": new URL("/#organization", Astro.site).href },
+      url: absoluteUrl("/", Astro.site, Astro.url),
+      publisher: { "@id": absoluteUrl("/#organization", Astro.site, Astro.url) },
     },
   ],
 };

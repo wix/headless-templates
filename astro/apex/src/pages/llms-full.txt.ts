@@ -6,6 +6,7 @@
 // Everything is queried live (5-min TTL via ssr-cache), so it never goes
 // stale the way a manually edited llms.txt would.
 import type { APIRoute } from "astro";
+import { absoluteUrl } from "../lib/site";
 import { services } from "@wix/bookings";
 import { items } from "@wix/data";
 import { auth } from "@wix/essentials";
@@ -14,8 +15,8 @@ import { cached } from "../utils/ssr-cache";
 
 const BOOKING_APP_ID = "13d21c63-b5ec-5912-8397-c3a5ddb27a97";
 
-export const GET: APIRoute = async ({ site }) => {
-  const abs = (p: string) => new URL(p, site).href;
+export const GET: APIRoute = async ({ site, url }) => {
+  const abs = (p: string) => absoluteUrl(p, site, url);
 
   // Each section degrades independently — a failed read drops to a link to
   // the live page instead of failing the whole file. cached() keeps serving

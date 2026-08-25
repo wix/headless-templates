@@ -6,13 +6,14 @@
 // it there is platform-dependent; it serves in dev and on the app host either
 // way, so the MCP section is replicated below to lose nothing if this wins.
 import type { APIRoute } from "astro";
+import { absoluteUrl } from "../lib/site";
 import { services } from "@wix/bookings";
 import { auth } from "@wix/essentials";
 
 const BOOKING_APP_ID = "13d21c63-b5ec-5912-8397-c3a5ddb27a97";
 
-export const GET: APIRoute = async ({ site }) => {
-  const abs = (p: string) => new URL(p, site).href;
+export const GET: APIRoute = async ({ site, url }) => {
+  const abs = (p: string) => absoluteUrl(p, site, url);
 
   let sessionLines: string[] = [];
   try {

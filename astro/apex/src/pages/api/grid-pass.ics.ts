@@ -4,6 +4,7 @@
 // local time — it reads 09:00 wherever the driver's calendar lives, exactly
 // like the printed pass.
 import type { APIRoute } from "astro";
+import { absoluteUrl, siteBase } from "../../lib/site";
 
 const escapeText = (s: string) =>
   s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
@@ -33,12 +34,13 @@ export const GET: APIRoute = ({ url, site }) => {
       })();
 
   const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
-  const host = site?.host ?? "apex.example";
+  const host = siteBase(site, url).host;
   const uid = `apex-${icsLocal(start)}-${service.replace(/[^a-z0-9]/gi, "").slice(0, 24).toLowerCase()}@${host}`;
-  const passUrl = new URL(
+  const passUrl = absoluteUrl(
     `/booking-confirmation?service=${encodeURIComponent(service)}&startDate=${encodeURIComponent(start)}`,
     site,
-  ).href;
+    url,
+  );
   const description = [
     "Your APEX session. Arrive fifteen minutes early — the briefing walks the line before you take it.",
     instructor ? `Race engineer: ${instructor}` : "",

@@ -1,4 +1,5 @@
 ---
+import { siteBase } from "../lib/site";
 // Self-hosted variable fonts (woff2 served from _astro with immutable
 // caching). The Google Fonts stylesheet was render-blocking for ~0.9s on
 // mobile — two third-party connections on the critical path.
@@ -39,7 +40,7 @@ const pageDescription =
 const ogImage =
   image ??
   "https://static.wixstatic.com/media/67964a_688bd941058043ffad139b51410e5983~mv2.png/v1/fill/w_1200,h_630,q_85/apex-og.jpg";
-const canonical = new URL(Astro.url.pathname, Astro.site);
+const canonical = new URL(Astro.url.pathname, siteBase(Astro.site, Astro.url));
 ---
 <!doctype html>
 <html lang="en">

@@ -3,8 +3,9 @@
 // documented for humans wiring up their AI. Everything on this page is live
 // and verified — the Concierge books through the same endpoint it describes.
 import Layout from "../layouts/Layout.astro";
+import { absoluteUrl } from "../lib/site";
 
-const MCP_URL = new URL("/_api/mcp", Astro.site).href;
+const MCP_URL = absoluteUrl("/_api/mcp", Astro.site, Astro.url);
 const CLAUDE_CODE_CMD = `claude mcp add --transport http apex ${MCP_URL}`;
 const MCP_JSON = `{
   "mcpServers": {

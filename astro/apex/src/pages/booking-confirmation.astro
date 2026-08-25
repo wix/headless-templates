@@ -1,4 +1,5 @@
 ---
+import { absoluteUrl } from "../lib/site";
 // src/pages/booking-confirmation.astro — post-booking confirmation: the GRID
 // PASS. Renders from the redirect query params the booking step passes
 // through (service, startDate, and — when carried — endDate + instructor).
@@ -36,7 +37,7 @@ const passNo = `GP-${(h % 46656).toString(36).toUpperCase().padStart(3, "0")}`;
 const bay = String((h % 12) + 1).padStart(2, "0");
 const gate = ((h >> 4) % 4) + 1;
 
-const passUrl = new URL(Astro.url.pathname + Astro.url.search, Astro.site).href;
+const passUrl = absoluteUrl(Astro.url.pathname + Astro.url.search, Astro.site, Astro.url);
 const qrSvg = startDateParam
   ? await QRCode.toString(passUrl, {
       type: "svg",
