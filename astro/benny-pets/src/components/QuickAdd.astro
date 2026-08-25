@@ -1,0 +1,25 @@
+---
+import type { Product } from "../lib/catalog";
+
+interface Props {
+  product: Product;
+  class?: string;
+}
+
+const { product, class: className } = Astro.props;
+// A product with more than one variant needs the shopper to choose first, so
+// it links to the detail page instead of adding something on their behalf.
+const needsChoice = product.variantCount > 1;
+---
+
+{
+  needsChoice ? (
+    <a href={`/store/${product.slug}`} class={className}>
+      Choose Options
+    </a>
+  ) : (
+    <button class={className} data-quick-add data-product-id={product._id} data-name={product.name}>
+      Add to Cart
+    </button>
+  )
+}

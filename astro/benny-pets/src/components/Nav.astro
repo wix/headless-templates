@@ -1,0 +1,24 @@
+---
+import WaveLink from "./WaveLink.astro";
+
+interface Props {
+  cartCount?: number;
+  /** The homepage calls it "Shop", the store and cart pages call it "Store". */
+  shopLabel?: string;
+  /** On the homepage, "Home" scrolls to the top instead of reloading. */
+  homeScrollsToTop?: boolean;
+}
+
+const { cartCount = 0, shopLabel = "Store", homeScrollsToTop = false } = Astro.props;
+---
+
+<ul class="hero-nav">
+  <li>
+    <WaveLink href="/" text="Home" id={homeScrollsToTop ? "nav-home" : undefined} />
+  </li>
+  <li><WaveLink href="/store" text={shopLabel} /></li>
+  <li><WaveLink href="/#about" text="About" /></li>
+  <li>
+    <WaveLink href="/cart" text={cartCount > 0 ? `Cart (${cartCount})` : "Cart"} cartLabel />
+  </li>
+</ul>

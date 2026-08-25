@@ -1,0 +1,31 @@
+---
+import type { Product } from "../lib/catalog";
+
+interface Props {
+  product: Product;
+  delay?: number;
+}
+
+const { product, delay = 0 } = Astro.props;
+---
+
+<a
+  href={`/store/${product.slug}`}
+  class="product-card animate-in"
+  data-categories={product.categoryIds.join(" ")}
+  style={`transition-delay: ${delay}s; text-decoration: none;`}
+>
+  {
+    product.imageUrl ? (
+      <img class="product-thumb" src={product.imageUrl} alt={product.name} />
+    ) : (
+      <div class="product-thumb product-thumb-placeholder" aria-label={product.name} />
+    )
+  }
+  <div class="product-info">
+    <p class="product-name">{product.name}</p>
+    {product.sub && <p class="product-sub">{product.sub}</p>}
+    <p class="product-price">{product.price}</p>
+    <span class="add-to-cart">View Product</span>
+  </div>
+</a>
