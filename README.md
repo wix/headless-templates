@@ -73,6 +73,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Rentals</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/before-ai-v2">Code Before AI (Wix Events)</a></td>
+      <td>A Windows XP desktop as an events site — lists Wix Events and takes RSVPs through an elevated backend endpoint.</td>
+      <td><a href="https://before-ai-v-2-tuvitk-0d06.wix-site-host.com">Live demo</a></td>
+      <td>Wix Events</td>
+    </tr>
+    <tr>
       <td colspan="4" align="center"><strong>Next.js</strong></td>
     </tr>
     <tr>
