@@ -1,0 +1,1921 @@
+---
+import { productsV3 } from "@wix/stores";
+
+// The three basket sizes this design offers. Each maps to one Wix Stores
+// product, matched by name — a product called "Medium basket" (or anything
+// containing "medium") backs the medium box.
+const SIZE_KEYS = ["small", "medium", "large"];
+
+// Design-side copy that Wix has no field for: the blurb and the item count
+// printed on each card. Everything a store owns — name, price, subscription
+// cadences — comes from the product below.
+const SIZE_COPY = {
+  small: { blurb: "Perfect for 1\u20132 people", count: 5 },
+  medium: { blurb: "Great for 2\u20133 people", count: 8 },
+  large: { blurb: "Feeds a family of 4", count: 12 },
+};
+
+const baskets = { order: SIZE_KEYS, items: {} };
+
+try {
+  const res = await productsV3
+    .queryProducts({ fields: ["CURRENCY", "PLAIN_DESCRIPTION"] })
+    .limit(50)
+    .find();
+
+  for (const key of SIZE_KEYS) {
+    const product = (res.items ?? []).find((item) =>
+      (item.name ?? "").toLowerCase().includes(key),
+    );
+    if (!product?._id) continue;
+
+    baskets.items[key] = {
+      productId: product._id,
+      name: product.name ?? "",
+      blurb: SIZE_COPY[key].blurb,
+      count: SIZE_COPY[key].count,
+      // The SDK's own formatted amount — the store's currency, not a "£" we
+      // glued on here.
+      price: product.actualPriceRange?.minValue?.formattedAmount ?? "",
+      // Each subscription is a real delivery cadence configured on the product;
+      // its `_id` is the subscriptionOptionId the cart needs.
+      subscriptions: (product.subscriptionDetails?.subscriptions ?? [])
+        .filter((sub) => sub.visible !== false && sub._id)
+        .map((sub) => ({
+          id: sub._id,
+          title: sub.title ?? "",
+          description: sub.description ?? "",
+        })),
+    };
+  }
+} catch (error) {
+  // Logged server-side; the page renders with no purchasable baskets rather
+  // than inventing any.
+  console.error("Failed to load baskets from Wix Stores", error);
+}
+---
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script is:inline src="/support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&amp;family=Instrument+Serif:ital@1&amp;display=swap" rel="stylesheet">
+<style is:inline>
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  section[id]{scroll-margin-top:64px;}
+  html,body{margin:0;padding:0;background:#FDF5F2;font-family:'Almarai',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell',sans-serif;}
+  a{color:#2D2E2C;}
+  #tomato3d canvas{cursor:pointer;}
+  #tomato3d canvas:active{cursor:pointer;}
+  @keyframes pkCaret{0%,49%{opacity:1;}50%,100%{opacity:0;}}
+  /* hamburger button + mobile-only wordmark only exist on small screens */
+  #pkMenuBtn{ display:none; }
+
+  /* ---- Mobile + tablet-portrait (≤834px, covers iPad portrait) ---- */
+  @media (max-width: 834px){
+    /* HERO: headline on top → BIG 3D model → copy → button, ALWAYS within one
+       viewport so the CTA is guaranteed visible. The hero fills exactly 100svh;
+       the model takes the leftover space between headline and copy via flex:1
+       (with a cap), so title + copy + button can never be pushed off-screen. */
+    #top{ height:100svh !important; min-height:100svh !important; }
+    #heroInner{ height:100% !important; min-height:0 !important; justify-content:flex-start !important; padding-top:clamp(80px,15vw,116px) !important; padding-bottom:clamp(20px,5vw,40px) !important; overflow:hidden !important; }
+    #heroTitle{ order:1 !important; flex:0 0 auto !important; font-size:min(23vw,220px) !important; }
+    #heroTitle > span{ font-size:min(23vw,220px) !important; }
+    /* BIG model: takes the remaining vertical space (flex:1) and sits high, right
+       under the headline. Overscaled past 100% width so the veg reads large (the
+       3D camera frames with margin, so the container must be oversized). */
+    #tomato3d{ order:2 !important; flex:1 1 auto !important; min-height:0 !important; position:relative !important; left:auto !important; right:auto !important; top:auto !important; bottom:auto !important; width:200% !important; max-width:none !important; height:auto !important; max-height:72vh !important; margin:clamp(-20px,-5vw,-48px) -50% clamp(-10px,-3vw,-24px) !important; pointer-events:none; }
+    #heroCopy{ order:3 !important; flex:0 0 auto !important; padding-left:0 !important; }
+
+    /* veg picker: nudge it down so it clears the headline asterisk */
+    #vegPicker{ right:0 !important; top:clamp(190px,24vh,300px) !important; }
+
+    /* BOX SECTION: single column, veg grid first, then size picker + CTA.
+       Whitespace ABOVE the grid mirrors the breathing room BELOW the Add-to-cart. */
+    #box{ display:flex !important; flex-direction:column !important; min-height:0 !important; padding-top:clamp(56px,15vw,88px) !important; }
+    #boxGrid{ order:1 !important; }
+    #boxPickCol{ order:2 !important; padding:clamp(36px,9vw,56px) clamp(24px,5vw,44px) clamp(56px,15vw,88px) !important; border-right:none !important; gap:clamp(8px,2vw,16px); }
+    #box h2{ font-size:clamp(40px,6vw,52px) !important; white-space:nowrap !important; }
+    /* shorter produce cells so the 4×3 grid stays compact */
+    #boxGrid > div{ min-height:0 !important; height:clamp(88px,16vw,132px) !important; }
+
+    /* HEADER: just hamburger (left) + Cart (right); drop wordmark + inline nav */
+    #pkNav{ display:none !important; }
+    #pkWordmark{ display:none !important; }
+    #pkMenuBtn{ display:inline-flex !important; order:-1; margin-right:auto; }
+
+    /* OUR STORY: bigger card headline + shorter overall scroll */
+    #aboutStoryWrap{ min-height:auto !important; margin-top:0 !important; }
+    #aboutStorySticky{ min-height:70vh !important; padding:clamp(40px,10vw,80px) clamp(20px,5vw,40px) !important; }
+    /* Our story paragraph + yellow-card text share ONE larger size on mobile */
+    #aboutStory{ font-size:clamp(36px,7.6vw,62px) !important; line-height:1.14 !important; }
+    /* keep the "Our story" label clear of the now-larger paragraph */
+    #aboutLabel{ top:clamp(56px,10vh,110px) !important; }
+    #about{ min-height:auto !important; padding-top:clamp(48px,10vw,80px) !important; padding-bottom:clamp(80px,18vw,160px) !important; }
+    /* taller card with generous, symmetric padding — reads as an intentional
+       tall panel (blank space is fine) and balances the Our story section above */
+    #aboutCard{ min-height:clamp(420px,64vh,560px) !important; padding:clamp(64px,15vw,96px) clamp(28px,7vw,56px) !important; }
+    #aboutHeadWrap{ font-size:clamp(36px,7.6vw,62px) !important; line-height:1.14 !important; }
+  }
+
+  /* Tablet portrait (600–834px, e.g. iPad): the ≤834px rule above shares its
+     model sizing with phones, which leaves the model looking small on the much
+     wider iPad viewport. Scale it up here so it fills the hero — phones (≤599px)
+     keep the smaller sizing and don't overflow. */
+  @media (min-width: 600px) and (max-width: 834px){
+    #tomato3d{ width:140% !important; max-height:72vh !important; margin:clamp(-24px,-5vw,-48px) -20% clamp(-12px,-3vw,-28px) !important; }
+  }
+
+  /* Tablet landscape / small laptop (835–1024px): the box section is still a
+     single column here, but the picker column keeps its wide desktop inline
+     side-padding (129px), leaving big empty gaps left/right of the cards.
+     Trim that padding so the cards use the available width. */
+  @media (min-width: 835px) and (max-width: 1024px){
+    #boxPickCol{ padding-left:clamp(40px,6vw,72px) !important; padding-right:clamp(40px,6vw,72px) !important; }
+  }
+
+  /* On the narrowest phones the huge model would crowd the headline — ease it */
+  @media (max-width: 480px){
+    #tomato3d{ max-height:66vh !important; width:186% !important; margin:clamp(-14px,-4vw,-36px) -43% clamp(-8px,-2vw,-20px) !important; }
+    #heroTitle, #heroTitle > span{ font-size:min(23vw,150px) !important; }
+    #boxGrid > div{ height:clamp(80px,22vw,104px) !important; }
+  }
+</style>
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/fflate.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/curves/NURBSCurve.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/curves/NURBSUtils.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/DecalGeometry.js"></script>
+<script is:inline src="/image-slot.js"></script>
+<!-- Wix eCommerce cart bridge. The basket data below is resolved server-side
+     from Wix Stores (see the frontmatter): product ids, the store's own
+     formatted prices, and the real subscription cadences. No client id and no
+     hardcoded product ids appear here — under @wix/astro the SDK authenticates
+     itself, so src/scripts/wix-cart.ts just imports it. -->
+<script is:inline define:vars={{ baskets }}>
+  window.PICKED_BASKETS = baskets;
+</script>
+<script>
+  import "../scripts/wix-cart";
+</script>
+</helmet>
+<div style="background:#FDF5F2; color:#2D2E2C; width:100%; overflow-x:hidden; position:relative;">
+
+  <div id="vegPicker" style="{{ pickerStyle }}">
+    <div style="{{ pickerLabelStyle }}">Pick a veg</div>
+    <sc-for list="{{ vegItems }}" as="v" hint-placeholder-count="3">
+      <button onClick="{{ v.onClick }}" onMouseEnter="{{ v.onEnter }}" onMouseLeave="{{ v.onLeave }}" title="{{ v.name }}" aria-label="{{ v.name }}" style="{{ v.style }}">
+        <span style="{{ v.emojiStyle }}">{"{{ v.emoji }}"}</span>
+      </button>
+    </sc-for>
+  </div>
+
+  <header style="{{ headerStyle }}">
+    <a id="pkWordmark" href="#top" style="font-size:clamp(18px,1.6vw,22px); font-weight:700; letter-spacing:-0.01em; color:#2D2E2C; text-decoration:none; white-space:nowrap;">PICKED<span style="font-size:0.6em; vertical-align:super;">*</span></a>
+    <nav id="pkNav" style="display:flex; gap:clamp(16px,3vw,44px); flex:1 1 auto; justify-content:center;">
+      <a href="#aboutStoryWrap" style="{{ navLinkStyle }}" style-hover="{{ navHover }}">Our story</a><a href="#how" style="{{ navLinkStyle }}" style-hover="{{ navHover }}">How it works</a><a href="#box" style="{{ navLinkStyle }}" style-hover="{{ navHover }}">pick your box</a>
+
+
+    </nav>
+    <button id="pkMenuBtn" onClick="{{ onMenuToggle }}" aria-label="Menu" style="{{ menuBtnStyle }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg>
+    </button>
+    <button onClick="{{ onCartOpen }}" style="{{ headerCartStyle }}">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+      <span>Cart</span>
+      <span style="{{ cartBadgeStyle }}">{"{{ cartCount }}"}</span>
+    </button>
+  </header>
+
+  <div style="{{ mobileMenuStyle }}">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:clamp(16px,4vw,22px) clamp(20px,5vw,28px);">
+      <span style="font-size:22px; font-weight:700; letter-spacing:-0.01em;">PICKED<span style="font-size:0.6em; vertical-align:super;">*</span></span>
+      <button onClick="{{ onMenuClose }}" aria-label="Close menu" style="background:none; border:none; cursor:pointer; color:#2D2E2C; display:flex; padding:4px;">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+      </button>
+    </div>
+    <nav style="flex:1 1 auto; display:flex; flex-direction:column; justify-content:center; gap:4px; padding:0 clamp(20px,5vw,28px) 12vh;">
+      <a href="#aboutStoryWrap" onClick="{{ onMenuClose }}" style="{{ mobileMenuLinkStyle }}">Our story</a>
+      <a href="#how" onClick="{{ onMenuClose }}" style="{{ mobileMenuLinkStyle }}">How it works</a>
+      <a href="#box" onClick="{{ onMenuClose }}" style="{{ mobileMenuLinkStyle }}">Pick your box</a>
+    </nav>
+  </div>
+
+
+  <div style="{{ cartDrawerStyle }}">
+    <div style="display:flex; align-items:center; gap:12px; padding:clamp(22px,2.4vw,30px); border-bottom:1px solid rgba(45,46,44,0.1);">
+      <button onClick="{{ onCheckoutBack }}" style="{{ backBtnStyle }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+      </button>
+      <span style="font-size:clamp(18px,1.6vw,22px); font-weight:700; letter-spacing:-0.02em; flex:1 1 auto;">{"{{ drawerTitle }}"}</span>
+      <span style="{{ stepBadgeStyle }}">{"{{ stepBadge }}"}</span>
+      <button onClick="{{ onCartClose }}" style="background:none; border:none; cursor:pointer; color:#2D2E2C; display:flex; padding:4px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+      </button>
+    </div>
+    <div style="flex:1 1 auto; overflow-y:auto; padding:clamp(20px,2.2vw,28px);">
+      <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding:clamp(40px,6vw,72px) 0; gap:20px;">
+          <div style="font-size:44px; line-height:1;">🧺</div>
+          <div style="color:rgba(45,46,44,0.55); font-size:clamp(14px,1.2vw,16px); line-height:1.5;">Your cart is empty.<br>Pick a box to get started.</div>
+          <button onClick="{{ onEmptyCta }}" style="{{ emptyCtaStyle }}">Pick your box</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showCart }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <sc-for list="{{ cartLines }}" as="c" hint-placeholder-count="1">
+            <div style="display:flex; gap:14px; align-items:center; padding:16px; border:2px solid rgba(45,46,44,0.1); border-radius:16px;">
+              <span style="width:44px; height:44px; border-radius:12px; background:rgba(45,46,44,0.06); display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">🧺</span>
+              <span style="display:flex; flex-direction:column; gap:2px; flex:1 1 auto;">
+                <span style="font-weight:700; font-size:clamp(15px,1.2vw,17px);">{"{{ c.name }}"}</span>
+                <span style="font-size:clamp(12px,1vw,14px); color:rgba(45,46,44,0.55);">{"{{ c.meta }}"}</span>
+              </span>
+              <span style="font-weight:700; font-size:clamp(15px,1.2vw,17px);">{"{{ c.price }}"}</span>
+              <button onClick="{{ c.onRemove }}" style="background:none; border:none; cursor:pointer; color:rgba(45,46,44,0.4); display:flex; padding:4px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path></svg>
+              </button>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showDelivery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <label style="{{ fieldLabelStyle }}">Full name<input value="{{ formName }}" onInput="{{ onFormName }}" placeholder="Alex Morgan" style="{{ inputStyle }}"></label>
+          <label style="{{ fieldLabelStyle }}">Email<input value="{{ formEmail }}" onInput="{{ onFormEmail }}" placeholder="alex@email.com" style="{{ inputStyle }}"></label>
+          <label style="{{ fieldLabelStyle }}">Address<input value="{{ formAddr }}" onInput="{{ onFormAddr }}" placeholder="12 Orchard Lane" style="{{ inputStyle }}"></label>
+          <div style="display:flex; gap:12px;">
+            <label style="{{ fieldLabelStyle }}">City<input value="{{ formCity }}" onInput="{{ onFormCity }}" placeholder="Bristol" style="{{ inputStyle }}"></label>
+            <label style="{{ fieldLabelStyle }}">Postcode<input value="{{ formPost }}" onInput="{{ onFormPost }}" placeholder="BS1 4ST" style="{{ inputStyle }}"></label>
+          </div>
+          <sc-if value="{{ showFrequency }}" hint-placeholder-val="{{ true }}">
+          <div style="{{ fieldLabelStyle }}">Delivery frequency
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+              <sc-for list="{{ deliveryDays }}" as="d" hint-placeholder-count="2">
+                <button onClick="{{ d.onClick }}" style="{{ d.style }}">
+                  <span style="{{ d.radioStyle }}"></span>
+                  <span style="display:flex; flex-direction:column; gap:2px; text-align:left; flex:1 1 auto;">
+                    <span style="font-weight:700; font-size:clamp(14px,1.1vw,16px);">{"{{ d.label }}"}</span>
+                    <span style="{{ d.subStyle }}">{"{{ d.sub }}"}</span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showPayment }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div style="background:transparent; border:1.5px solid rgba(45,46,44,0.18); border-radius:16px; padding:18px; display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:clamp(13px,1vw,15px);"><span style="color:rgba(45,46,44,0.6);">Delivering to</span><span style="font-weight:600; text-align:right;">{"{{ summaryAddr }}"}</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:clamp(13px,1vw,15px);"><span style="color:rgba(45,46,44,0.6);">Frequency</span><span style="font-weight:600;">{"{{ summaryDay }}"}</span></div>
+          </div>
+          <label style="{{ fieldLabelStyle }}">Card number<input value="{{ formCard }}" onInput="{{ onFormCard }}" placeholder="4242 4242 4242 4242" inputmode="numeric" style="{{ inputStyle }}"></label>
+          <div style="display:flex; gap:12px;">
+            <label style="{{ fieldLabelStyle }}">Expiry<input value="{{ formExp }}" onInput="{{ onFormExp }}" placeholder="MM/YY" style="{{ inputStyle }}"></label>
+            <label style="{{ fieldLabelStyle }}">CVC<input value="{{ formCvc }}" onInput="{{ onFormCvc }}" placeholder="123" inputmode="numeric" style="{{ inputStyle }}"></label>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px; padding-top:16px; border-top:1px solid rgba(45,46,44,0.1);">
+            <div style="display:flex; justify-content:space-between; font-size:clamp(13px,1vw,15px); color:rgba(45,46,44,0.6);"><span>Subtotal</span><span>{"{{ cartTotal }}"}</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:clamp(13px,1vw,15px); color:rgba(45,46,44,0.6);"><span>Delivery</span><span>Free</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:clamp(16px,1.4vw,19px); font-weight:700;"><span>Total</span><span>{"{{ cartTotal }}"}</span></div>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ cartPlaced }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding:clamp(30px,5vw,60px) 0;">
+          <div style="width:58px; height:58px; border-radius:50%; background:#1E5B2A; color:#FDF5F2; display:flex; align-items:center; justify-content:center;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+          </div>
+          <div style="font-size:clamp(20px,2vw,26px); font-weight:500; letter-spacing:-0.02em; margin-top:16px;">Order confirmed</div>
+          <p style="margin:10px 0 0; color:rgba(45,46,44,0.7); font-size:clamp(14px,1.1vw,16px); line-height:1.5;">{"{{ placedText }}"}</p>
+        </div>
+      </sc-if>
+    </div>
+    <sc-if value="{{ showFooter }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,2.2vw,28px); border-top:1px solid rgba(45,46,44,0.1);">
+        <button onClick="{{ onCheckoutNext }}" style="{{ checkoutBtnStyle }}">{"{{ checkoutBtnLabel }}"}</button>
+        
+      </div>
+    </sc-if>
+  </div>
+
+  <section id="top" style="height:100vh; padding:clamp(16px,2vw,24px); position:relative;">
+    <div id="heroInner" style="position:relative; width:100%; height:100%; background:#FDF5F2; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding:clamp(120px,17vh,200px) clamp(16px,3vw,44px) clamp(24px,4vh,48px);">
+
+      <h1 id="heroTitle" style="position:relative; z-index:1; margin:0; text-align:left; font-weight:500; line-height:0.8; letter-spacing:-0.07em; color:#2D2E2C; font-size:min(22vw,24vh);">
+        <span style="font-size: min(24vw, 292px)">PICKE<span style="position:relative;">D<span style="position:absolute; top:0.65em; right:-0.3em; font-size:0.31em; font-weight:400;">*</span></span></span>
+      </h1>
+      <div id="heroCopy" style="position: relative; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; gap: clamp(16px,2vw,24px); flex-wrap: wrap; margin-top: clamp(14px,2vh,26px); padding-left: 23px">
+        <p style="{{ heroDescStyle }}">Farm-fresh veg &amp; fruit, picked at their peak and delivered to your door every week.</p>
+        <a href="#box" onMouseEnter="{{ onBtnEnter }}" onMouseLeave="{{ onBtnLeave }}" style="{{ btnStyle }}">
+          <span style="text-transform: capitalize">Pick your box</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+        </a>
+      </div>
+      <div id="tomato3d" style="position: absolute; z-index: 4; width: 760px; max-width: 940px; height: 1080px; pointer-events: none; right: -60px; top: -40px"></div>
+    </div>
+  </section>
+
+  <section id="aboutStoryWrap" style="{{ aboutStoryWrapStyle }}">
+    <div id="aboutStorySticky" style="{{ aboutStoryStickyStyle }}">
+      <div id="aboutLabel" style="{{ aboutLabelStyle }}">Our story</div>
+      <div id="aboutStory" style="{{ aboutStoryStyle }}">
+        <span style="display:inline-flex; flex-wrap:wrap; justify-content:center;">
+          <sc-for list="{{ aboutStoryWords }}" as="wd" hint-placeholder-count="30"><span style="{{ wd.wrapStyle }}"><sc-for list="{{ wd.chars }}" as="ch" hint-placeholder-count="4"><span style="{{ ch.style }}">{"{{ ch.c }}"}</span></sc-for></span></sc-for>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" style="{{ aboutSectionStyle }}">
+    <div id="aboutCard" data-anim="about" style="{{ aboutCardStyle }}">
+      <div id="aboutHeadWrap" style="{{ aboutHeadWrapStyle }}">
+        <span style="display:inline-flex; flex-wrap:wrap; justify-content:center;">
+          <sc-for list="{{ aboutHeadWords }}" as="wd" hint-placeholder-count="14"><span style="{{ wd.style }}">{"{{ wd.w }}"}</span></sc-for>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  
+
+  <section id="how" style="background: url(&quot;/screenshot-2026-07-11-at-13-10-39-mrg7f6yz.png&quot;) center / cover no-repeat; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: clamp(40px,6vh,80px) clamp(16px,4vw,32px)">
+    <div style="position: absolute; inset: 0; background-image: url(data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='4'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23n)'/%3E%3C/svg%3E); opacity: 0.12; mix-blend-mode: overlay; pointer-events: none"></div>
+    <div data-anim="feat" style="position:relative; z-index:1; max-width:1280px; margin:0 auto;">
+      <div id="receiptCard" onMouseEnter="{{ onReceiptEnter }}" onMouseLeave="{{ onReceiptLeave }}" style="{{ receiptStyle }}">
+        <div style="text-align:center;">
+          <div style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; color: #2D2E2C; line-height: 1; font-size: 50px">How it works</div>
+        </div>
+        <div style="border-top:2px dashed rgba(45,46,44,0.28); margin:clamp(20px,2.4vw,28px) 0 0;"></div>
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+          <div style="{{ s.rowStyle }}">
+            <span style="{{ s.numStyle }}">{"{{ s.num }}"}</span>
+            <span style="font-weight: 400; font-size: 22px">{"{{ s.title }}"}</span>
+          </div>
+        </sc-for>
+        <div style="margin-top:auto; border-top:2px dashed rgba(45,46,44,0.28); padding-top:clamp(18px,2vw,24px); display:flex; justify-content:space-between; align-items:baseline; font-size:clamp(14px,1.2vw,17px); font-weight:700; letter-spacing:0.02em;">
+          <span>TOTAL</span>
+          <span style="color:#2D2E2C;">100% fresh &amp; local</span>
+        </div>
+      </div>
+    </div>
+  </section></div><section id="box" style="{{ boxSectionStyle }}">
+      <div id="boxPickCol" style="display: flex; flex-direction: column; justify-content: center; padding: clamp(56px,8vw,120px) clamp(24px,4vw,56px); border-right: 1px solid rgba(45,46,44,0.14); padding-top: 0px; padding-bottom: 0px; padding-left: 129px; padding-right: 129px">
+        
+        
+        
+        <h2 style="{{ boxHeadStyle }}">Pick your box</h2><div style="display:flex; flex-direction:column; gap:clamp(10px,1.2vw,14px); margin-top:clamp(28px,3.2vw,40px);">
+          <sc-for list="{{ baskets }}" as="b" hint-placeholder-count="3">
+            <button onClick="{{ b.onClick }}" onMouseEnter="{{ b.onEnter }}" onMouseLeave="{{ b.onLeave }}" style="{{ b.style }}">
+              <span style="display:flex; flex-direction:column; gap:3px; text-align:left; min-width:0; flex:1 1 auto;">
+                <span style="font-size:clamp(16px,1.5vw,20px); font-weight:700;">{"{{ b.name }}"}</span>
+                <span style="{{ b.metaStyle }}">{"{{ b.meta }}"}</span>
+              </span>
+              <span style="font-size:clamp(20px,2vw,26px); font-weight:700; letter-spacing:-0.02em; margin-left:auto; flex-shrink:0; white-space:nowrap;">{"{{ b.price }}"}</span>
+              <span style="{{ b.radioStyle }}"><span style="{{ b.radioDotStyle }}"></span></span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="{{ purchaseModeLabelStyle }}">How often?</div>
+        <div style="{{ purchaseModeWrapStyle }}">
+          <button onClick="{{ onModeOnce }}" style="{{ modeOnceStyle }}">
+            <span style="font-weight:700;">One-time</span>
+            <span style="{{ modeSubTextStyle }}">A single box</span>
+          </button>
+          <button onClick="{{ onModeSubscribe }}" style="{{ modeSubStyle }}">
+            <span style="font-weight:700;">Subscribe &amp; save</span>
+            <span style="{{ modeSubTextStyle }}">Recurring · cancel anytime</span>
+          </button>
+        </div>
+        <div style="margin-top:clamp(28px,3.5vw,40px); display:flex; flex-direction:column; gap:12px; align-items:flex-start;">
+          <button onClick="{{ onAddToCart }}" onMouseEnter="{{ onPickEnter }}" onMouseLeave="{{ onPickLeave }}" style="{{ pickBtnStyle }}">
+            <span>{"{{ addBtnLabel }}"}</span>
+            <span style="display:flex;">{"{{ pickBtnIcon }}"}</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="boxGrid" style="display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:1fr; gap:1px; align-self:stretch; background:rgba(45,46,44,0.14);">
+        <sc-for list="{{ produce }}" as="p" hint-placeholder-count="12">
+          <div style="{{ p.slotWrapStyle }}" onMouseEnter="{{ p.onEnter }}" onMouseLeave="{{ p.onLeave }}">
+            <image-slot id="{{ p.slotId }}" src="{{ p.slotSrc }}" shape="rect" fit="contain" placeholder="{{ p.name }}" style="{{ p.slotLayerStyle }}"></image-slot>
+            <span style="{{ p.nameTagStyle }}">{"{{ p.name }}"}</span>
+          </div>
+        </sc-for>
+      </div>
+  </section>
+
+  <footer style="background:#1A1A18; color:#FDF5F2; padding:clamp(56px,7vw,96px) clamp(20px,5vw,64px) clamp(28px,3vw,40px);">
+    <div style="max-width:1240px; margin:0 auto; display:flex; flex-wrap:wrap; gap:clamp(32px,5vw,80px); justify-content:space-between;">
+      <div style="max-width:340px;">
+        <div style="font-size:clamp(28px,3vw,40px); font-weight:700; letter-spacing:-0.02em;">PICKED<span style="font-size:0.6em; vertical-align:super;">*</span></div>
+        <p style="margin:clamp(14px,1.6vw,20px) 0 0; color:rgba(253,245,242,0.6); font-size:clamp(14px,1.1vw,16px); line-height:1.6;">Farm-fresh veg &amp; fruit, picked at their peak and delivered to your door.</p>
+      </div>
+      <div style="display:flex; gap:clamp(40px,5vw,88px); flex-wrap:wrap;">
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <span style="font-size:clamp(10px,0.9vw,12px); letter-spacing:0.12em; text-transform:uppercase; color:rgba(253,245,242,0.4);">Shop</span>
+          <a href="#box" style="{{ footLinkStyle }}">Pick your box</a>
+          <a href="#how" style="{{ footLinkStyle }}">How it works</a>
+          <a href="#aboutStoryWrap" style="{{ footLinkStyle }}">Our story</a>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <span style="font-size:clamp(10px,0.9vw,12px); letter-spacing:0.12em; text-transform:uppercase; color:rgba(253,245,242,0.4);">Get in touch</span>
+          <a href="mailto:hello@picked.co" style="{{ footLinkStyle }}">hello@picked.co</a>
+          <a href="#box" style="{{ footLinkStyle }}">Start an order</a>
+          
+        </div>
+      </div>
+    </div>
+    <div style="max-width:1240px; margin:clamp(40px,4vw,64px) auto 0; padding-top:clamp(20px,2vw,28px); border-top:1px solid rgba(253,245,242,0.12); display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; color:rgba(253,245,242,0.4); font-size:clamp(12px,1vw,14px);">
+      <span>© 2026 PICKED. All rights reserved.</span>
+      <span>Made fresh, weekly.</span>
+    </div>
+  </footer>
+
+
+
+
+</x-dc>
+<script is:inline type="text/x-dc" data-dc-script data-props="{
+  &quot;aboutTextColor&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#2D2E2C&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;About&quot;, &quot;options&quot;: [&quot;#2D2E2C&quot;, &quot;#E1E0CC&quot;, &quot;#1E5B2A&quot;, &quot;#E0472B&quot;] },
+  &quot;aboutBg&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#FDF5F2&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;About&quot;, &quot;options&quot;: [&quot;#FDF5F2&quot;, &quot;#FEDC0B&quot;, &quot;#E0472B&quot;, &quot;#1E5B2A&quot;] },
+  &quot;aboutCardBg&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#FEDC0B&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;About&quot;, &quot;options&quot;: [&quot;#FEDC0B&quot;, &quot;#FDF5F2&quot;, &quot;#FFFFFF&quot;, &quot;#FDF5F2&quot;] },
+  &quot;featBg&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#E0472B&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Features&quot;, &quot;options&quot;: [&quot;#E0472B&quot;, &quot;#FEDC0B&quot;, &quot;#1E5B2A&quot;, &quot;#FDF5F2&quot;] }
+}">
+class Component extends DCLogic {
+  state = { heroShow: false, aboutShow: false, featShow: false, btnHover: false, scroll: 0, currentVeg: 0, ready: false, basket: 'medium', hoverBasket: null, featStep: 0, featScroll: 0, featHover: false, aboutScroll: 0, boxPicked: false, pickHover: false, checkoutStep: 0, cart: [], cartOpen: false, checkoutDone: false, lastOrderCount: 0, lastOrderTotal: 0, headerHidden: false, menuOpen: false, purchaseMode: 'once' };
+
+  componentDidMount() {
+    this.ease = 'cubic-bezier(0.16,1,0.3,1)';
+    this.aboutBody = "Each week we partner with small local farms and pick your produce just a day or two before it reaches you. That means it is fresher, in season, and travels far fewer miles to get to your kitchen.";
+
+    this.produceList = [
+      { name: 'Tomatoes', icon: '🍅' }, { name: 'Carrots', icon: '🥕' }, { name: 'Sweet peppers', icon: '🫑' },
+      { name: 'Spinach', icon: '🥬' }, { name: 'Potatoes', icon: '🥔' }, { name: 'Red onions', icon: '🧅' },
+      { name: 'Courgette', icon: '🥒' }, { name: 'Cox apples', icon: '🍎' }, { name: 'Lemons', icon: '🍋' },
+      { name: 'Broccoli', icon: '🥦' }, { name: 'Chestnut mushrooms', icon: '🍄' }, { name: 'Conference pears', icon: '🍐' }
+    ];
+    // Basket names, prices and cadences come from Wix Stores, resolved
+    // server-side into window.PICKED_BASKETS. Only sizes the store actually
+    // has a product for are offered.
+    const pk = (typeof window !== 'undefined' && window.PICKED_BASKETS) || { order: [], items: {} };
+    this.basketConfig = pk.items || {};
+    this.basketOrder = (pk.order || []).filter(k => this.basketConfig[k]);
+    requestAnimationFrame(() => this.setState({ heroShow: true }));
+
+    document.querySelectorAll('video').forEach(v => { try { v.muted = true; v.play && v.play().catch(() => {}); } catch (e) {} });
+
+    this.io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const k = e.target.getAttribute('data-anim');
+          if (k === 'about') this.setState({ aboutShow: true });
+          if (k === 'feat') this.setState({ featShow: true });
+        }
+      });
+    }, { threshold: 0.2 });
+    document.querySelectorAll('[data-anim]').forEach(el => this.io.observe(el));
+
+    this.vegList = [
+      { name: 'Tomato', build: (THREE) => this.buildTomato(THREE) },
+      { name: 'Potato', build: (THREE) => this.buildPepper(THREE) },
+      { name: 'Pepper', build: (THREE) => this.buildBellPepper(THREE) },
+      { name: 'Carrot', build: (THREE) => this.buildCarrot(THREE) }
+    ];
+    // index of a veg by name — used so the GLB loaders re-select the active veg
+    // without hardcoding array positions (the picker order can change freely).
+    this.vegIndex = (name) => this.vegList.findIndex(v => v.name === name);
+    this.vegIcons = this.makeVegIcons();
+    this.setState({ ready: true });
+
+    this.init3D();
+
+    this.revealEl = document.querySelector('[data-reveal]');
+    this.ticking = false;
+    this.onScroll = () => {
+      if (this.ticking) return;
+      this.ticking = true;
+      requestAnimationFrame(() => { this.updateScroll(); this.ticking = false; });
+    };
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    this.updateScroll();
+    this.setupVegTrail();
+  }
+
+  setupVegTrail() {
+    // Desktop only: floating veg emojis trail the cursor through the story
+    // section. Touch devices have no cursor, so there is no veg effect there.
+    this._isTouch = !!(window.matchMedia
+      && window.matchMedia('(hover: none), (pointer: coarse)').matches);
+
+    const veg = ['🥕', '🍅', '🥦', '🌽', '🫑', '🧅', '🥬'];
+    let vi = 0, lastT = 0, lastX = 0, lastY = 0;
+    this._vegTrail = [];
+    this._ptr = { x: -1, y: -1 };
+
+    const spawn = (pageX, pageY) => {
+      const rot = (Math.random() * 40) - 20;
+      const size = 30 + Math.random() * 16;
+      const s = document.createElement('span');
+      s.textContent = veg[vi % veg.length]; vi++;
+      // page-anchored so it scrolls with the section, then lingers and fades
+      s.style.cssText = 'position:absolute;left:' + pageX + 'px;top:' + pageY + 'px;'
+        + 'font-size:' + size + 'px;pointer-events:none;z-index:6;'
+        + 'transform:translate(-50%,-50%) scale(0.4) rotate(' + rot + 'deg);opacity:0;'
+        + 'transition:transform .5s cubic-bezier(0.22,1,0.36,1),opacity .4s ease;will-change:transform,opacity;';
+      document.body.appendChild(s);
+      requestAnimationFrame(() => {
+        s.style.opacity = '1';
+        s.style.transform = 'translate(-50%,-50%) scale(1) rotate(' + rot + 'deg)';
+      });
+      this._vegTrail.push(s);
+      setTimeout(() => {
+        s.style.transition = 'transform .8s ease, opacity .8s ease';
+        s.style.opacity = '0';
+        s.style.transform = 'translate(-50%,-50%) scale(0.6) rotate(' + rot + 'deg)';
+      }, 1300);
+      setTimeout(() => { s.remove(); this._vegTrail = this._vegTrail.filter(x => x !== s); }, 2200);
+      if (this._vegTrail.length > 60) {
+        const old = this._vegTrail.shift();
+        old.style.opacity = '0';
+        setTimeout(() => old.remove(), 400);
+      }
+    };
+
+    const inAbout = (x, y) => {
+      const el = document.elementFromPoint(x, y);
+      return el && el.closest && el.closest('#about, #aboutStoryWrap');
+    };
+
+    // No cursor on touch devices, so the trail is desktop-only.
+    if (this._isTouch) return;
+
+    this.onVegMove = (e) => {
+      this._ptr = { x: e.clientX, y: e.clientY };
+      const host = e.target && e.target.closest && e.target.closest('#about, #aboutStoryWrap');
+      if (!host) return;
+      const now = Date.now();
+      const moved = Math.hypot(e.clientX - lastX, e.clientY - lastY);
+      if (now - lastT < 55 || moved < 40) return;
+      lastT = now; lastX = e.clientX; lastY = e.clientY;
+      spawn(e.pageX, e.pageY);
+    };
+    window.addEventListener('mousemove', this.onVegMove, { passive: true });
+
+    // also drop veg while scrolling through the section, even if the cursor is still
+    let lastScrollT = 0;
+    this.onVegScroll = () => {
+      const p = this._ptr;
+      if (p.x < 0) return;
+      const now = Date.now();
+      if (now - lastScrollT < 120) return;
+      if (!inAbout(p.x, p.y)) return;
+      lastScrollT = now;
+      const jx = (Math.random() * 40) - 20, jy = (Math.random() * 40) - 20;
+      spawn(p.x + window.scrollX + jx, p.y + window.scrollY + jy);
+    };
+    window.addEventListener('scroll', this.onVegScroll, { passive: true });
+  }
+
+  componentWillUnmount() {
+    this.io && this.io.disconnect();
+    window.removeEventListener('scroll', this.onScroll);
+    window.removeEventListener('mousemove', this.onVegMove);
+    window.removeEventListener('scroll', this.onVegScroll);
+    (this._vegTrail || []).forEach(s => s.remove());
+    this._t3 && clearTimeout(this._t3);
+    this._glbT && clearTimeout(this._glbT);
+    this._potT && clearTimeout(this._potT);
+    this._carT && clearTimeout(this._carT);
+    this._carGlbT && clearTimeout(this._carGlbT);
+    this._raf3 && cancelAnimationFrame(this._raf3);
+    this._ro3 && this._ro3.disconnect();
+    this._t3cleanup && this._t3cleanup();
+    if (this._renderer3) { this._renderer3.dispose(); this._renderer3.domElement.remove(); }
+  }
+
+  // ---------- small vegetable ICONS (canvas, transparent bg) ----------
+  makeVegIcons() {
+    const S = 128, dpr = 2;
+    const make = (draw) => {
+      const c = document.createElement('canvas'); c.width = c.height = S * dpr;
+      const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      draw(ctx, S);
+      return c.toDataURL('image/png');
+    };
+    const star = (ctx, cx, cy, spikes, outer, inner, rot) => {
+      ctx.beginPath();
+      for (let i = 0; i < spikes * 2; i++) {
+        const r = i % 2 === 0 ? outer : inner;
+        const a = rot + (i * Math.PI) / spikes;
+        const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+    };
+    const tomato = make((ctx, S) => {
+      const cx = S / 2, cy = S * 0.58, r = S * 0.33;
+      ctx.fillStyle = '#D8321C';
+      ctx.beginPath(); ctx.ellipse(cx, cy, r, r * 0.92, 0, 0, Math.PI * 2); ctx.fill();
+      // sheen
+      ctx.fillStyle = 'rgba(255,255,255,0.28)';
+      ctx.beginPath(); ctx.ellipse(cx - r * 0.32, cy - r * 0.3, r * 0.26, r * 0.16, -0.6, 0, Math.PI * 2); ctx.fill();
+      // calyx
+      ctx.fillStyle = '#3F7D2E';
+      star(ctx, cx, cy - r * 0.86, 5, S * 0.13, S * 0.05, -Math.PI / 2); ctx.fill();
+      ctx.fillStyle = '#5a6b30';
+      ctx.fillRect(cx - S * 0.02, cy - r * 1.02, S * 0.04, S * 0.09);
+    });
+    const pepper = make((ctx, S) => {
+      const cx = S / 2, top = S * 0.34, r = S * 0.24;
+      ctx.fillStyle = '#D8321C';
+      // body
+      ctx.beginPath();
+      ctx.moveTo(cx - r, top + r * 0.4);
+      ctx.quadraticCurveTo(cx - r * 1.15, top + r * 2.0, cx - r * 0.62, top + r * 2.5);
+      ctx.arc(cx - r * 0.42, top + r * 2.5, r * 0.42, Math.PI, 0, false);
+      ctx.arc(cx + r * 0.42, top + r * 2.5, r * 0.42, Math.PI, 0, false);
+      ctx.quadraticCurveTo(cx + r * 1.15, top + r * 2.0, cx + r, top + r * 0.4);
+      ctx.quadraticCurveTo(cx, top - r * 0.15, cx - r, top + r * 0.4);
+      ctx.closePath(); ctx.fill();
+      // sheen
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.beginPath(); ctx.ellipse(cx - r * 0.4, top + r * 0.9, r * 0.16, r * 0.7, -0.15, 0, Math.PI * 2); ctx.fill();
+      // stem
+      ctx.strokeStyle = '#3F7D2E'; ctx.lineWidth = S * 0.055;
+      ctx.beginPath(); ctx.moveTo(cx, top + r * 0.2); ctx.quadraticCurveTo(cx + r * 0.15, top - r * 0.55, cx - r * 0.25, top - r * 0.85); ctx.stroke();
+    });
+    const carrot = make((ctx, S) => {
+      const cx = S / 2, topY = S * 0.42, botY = S * 0.9, r = S * 0.19;
+      ctx.fillStyle = '#E8701A';
+      ctx.beginPath();
+      ctx.moveTo(cx - r, topY);
+      ctx.lineTo(cx + r, topY);
+      ctx.quadraticCurveTo(cx + r * 0.4, botY - S * 0.06, cx, botY);
+      ctx.quadraticCurveTo(cx - r * 0.4, botY - S * 0.06, cx - r, topY);
+      ctx.closePath(); ctx.fill();
+      // grooves
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2;
+      [0.62, 0.5, 0.38].forEach((t) => {
+        const y = topY + (botY - topY) * (1 - t);
+        const w = r * t;
+        ctx.beginPath(); ctx.moveTo(cx - w, y); ctx.lineTo(cx + w, y); ctx.stroke();
+      });
+      // greens
+      ctx.strokeStyle = '#3F7D2E'; ctx.lineWidth = S * 0.045;
+      [[-0.5, 0.32], [0, 0.42], [0.5, 0.32]].forEach(([dx, h]) => {
+        ctx.beginPath(); ctx.moveTo(cx, topY); ctx.quadraticCurveTo(cx + dx * r * 1.6, topY - S * h * 0.6, cx + dx * r * 2.4, topY - S * h); ctx.stroke();
+      });
+    });
+    return [tomato, pepper, carrot];
+  }
+
+  makeEnvTex(THREE) {
+    const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+    const ctx = c.getContext('2d');
+    const g = ctx.createLinearGradient(0, 0, 0, 512);
+    g.addColorStop(0, '#fbf6ee'); g.addColorStop(0.45, '#b9b4ad'); g.addColorStop(1, '#2c2b29');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 1024, 512);
+    const soft = (x, y, r, a) => { const rg = ctx.createRadialGradient(x, y, 2, x, y, r); rg.addColorStop(0, 'rgba(255,255,255,' + a + ')'); rg.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = rg; ctx.fillRect(0, 0, 1024, 512); };
+    soft(300, 150, 230, 1);
+    soft(760, 120, 150, 0.7);
+    const tex = new THREE.Texture(c); tex.needsUpdate = true; tex.mapping = THREE.EquirectangularReflectionMapping;
+    return tex;
+  }
+
+  makeStickerTex(THREE) {
+    // Real produce-sticker artwork (uploaded PNGs) instead of canvas-drawn badges.
+    // Each PNG carries its own shape via transparency; the decal material is
+    // already transparent, so the cut-out reads on the veg surface.
+    // sizeMul varies the sticker sizes; aspect is measured from the real image
+    // pixels on load so wide labels (barcode, price tag) aren't squished square.
+    // aspectMul stretches a sticker's width beyond its true aspect (>1 = more
+    // oval / wider) — used to make Picked Fresh read as a rounder oval.
+    const stickers = [
+      { src: '/uploads/sticker2.png', sizeMul: 0.62, aspectMul: 1.35 }, // Picked Fresh (blue oval) — smaller & more oval
+      { src: '/uploads/sticker4.png', sizeMul: 1.0 },  // Organic (green circle)
+      { src: '/uploads/sticker3.png', sizeMul: 1.0 },  // Vegan (red heart)
+      { src: '/uploads/sticker5.png', sizeMul: 0.78 }, // 2.84 price tag — smaller
+      { src: '/uploads/sticker1.png', sizeMul: 1.0 }   // PLU #0621 (barcode)
+    ];
+    const loader = new THREE.TextureLoader();
+    return stickers.map(s => {
+      const aspectMul = s.aspectMul || 1;
+      const entry = { tex: null, aspect: aspectMul, sizeMul: s.sizeMul };
+      entry.tex = loader.load(encodeURI(s.src), (t) => {
+        // once the image is decoded, record its true width:height aspect (× override)
+        if (t.image && t.image.width && t.image.height) entry.aspect = (t.image.width / t.image.height) * aspectMul;
+      });
+      const tex = entry.tex;
+      if ('colorSpace' in tex) tex.colorSpace = THREE.SRGBColorSpace; else tex.encoding = THREE.sRGBEncoding;
+      tex.anisotropy = 8;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.needsUpdate = true;
+      return entry;
+    });
+  }
+
+  // Build a surface-hugging decal using THREE.DecalGeometry — the purpose-built
+  // tool for this. It clips a box projector against the REAL mesh triangles, so
+  // the sticker lies flat and clean on lumpy/thin geometry (potato, carrot,
+  // pepper) instead of a curled disc.
+  //
+  // DecalGeometry takes WORLD-space (position, orientation, size) and emits
+  // WORLD-space vertices. To let the sticker ride the spinning veg, we bake
+  // vegGroup's inverse-world matrix into every vertex so the geometry can be
+  // parented to vegGroup (which rotates) without double-applying its transform.
+  //   hitWorld : world-space click point
+  //   normW    : world-space surface normal at the click (projection direction)
+  //   sizeFrac : decal size as a fraction of the body radius (the SHORTER edge)
+  //   rot      : in-plane rotation (radians) so repeated stickers vary
+  //   aspect   : sticker width:height (>1 = wide) so art keeps its proportion
+  makeStickerGeo(THREE, hitWorld, normW, sizeFrac, rot, body, vegGroup, aspect) {
+    if (!THREE.DecalGeometry) return null; // loader not ready — skip this click
+    const mesh = (body && body.isMesh) ? body : this._largestMesh(THREE, body || vegGroup);
+    if (!mesh || !mesh.geometry) return null;
+    // some GLBs (the bell pepper) ship WITHOUT vertex normals — DecalGeometry
+    // needs them, so compute them once and cache on the geometry.
+    if (!mesh.geometry.attributes.normal) mesh.geometry.computeVertexNormals();
+    mesh.updateWorldMatrix(true, false);
+    vegGroup.updateWorldMatrix(true, false);
+
+    // body size/radius in WORLD units, from its bounding box
+    const box = new THREE.Box3().setFromObject(mesh);
+    const sizeW = box.getSize(new THREE.Vector3());
+    const bodyR = 0.5 * sizeW.length() || 1;
+
+    // Orientation (WORLD): a basis whose +Z aims along the surface normal (the
+    // projector's forward axis), then read back as a Euler and spun by `rot`.
+    const dir = (normW && normW.lengthSq() > 1e-6) ? normW.clone().normalize() : new THREE.Vector3(0, 0, 1);
+    const up = Math.abs(dir.y) > 0.95 ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(0, 1, 0);
+    const m = new THREE.Matrix4().lookAt(new THREE.Vector3(0, 0, 0), dir, up); // +Z = dir
+    const orient = new THREE.Euler().setFromRotationMatrix(m);
+    orient.z += rot;
+
+    // Projector box (WORLD): rectangular, matching the sticker's aspect so wide
+    // art (barcode, price tag) isn't squished into a square. `sizeFrac` sets the
+    // HEIGHT; width = height * aspect. size.x is NEGATED to un-mirror the decal —
+    // with +Z pointing at the viewer, DecalGeometry's UV maps texture-left to
+    // world-right, so a negative width flips U back to read correctly.
+    // Depth is SHALLOW so the box only grabs the near surface (a deep box on a
+    // thin carrot would catch the far wall and wrap the sticker around it).
+    const ar = aspect || 1;
+    const h = bodyR * sizeFrac * 2;
+    const w = h * ar;
+    const depth = h * 0.45;
+    const size = new THREE.Vector3(-w, h, depth);
+
+    // crop dense meshes to a tight neighborhood of the click so DecalGeometry
+    // only processes the triangles the decal actually touches (keeps the decal
+    // connected — no decimation — but bounded in size and fast). Radius covers
+    // the projector's half-diagonal (use the larger edge).
+    const cropR = 0.5 * Math.sqrt(w * w + h * h + depth * depth) * 1.12;
+    const target = this._cropMeshForDecal(THREE, mesh, hitWorld, cropR);
+
+    const geo = new THREE.DecalGeometry(target, hitWorld.clone(), orient, size);
+    if (target.userData._cropped) target.geometry.dispose(); // proxy no longer needed
+    if (!geo.attributes.position || geo.attributes.position.count === 0) { geo.dispose && geo.dispose(); return null; }
+
+    // Bake vegGroup's inverse-world transform into the (world-space) vertices so
+    // the decal can be a child of the spinning vegGroup.
+    const toLocal = new THREE.Matrix4().copy(vegGroup.matrixWorld).invert();
+    geo.applyMatrix4(toLocal);
+    geo.userData = { parentGroup: vegGroup };
+    return geo;
+  }
+
+  _largestMesh(THREE, root) {
+    let best = null, maxR = -1;
+    root.traverse(o => {
+      if (o.isMesh && o.geometry && !o.userData.isSticker) {
+        o.geometry.computeBoundingSphere();
+        const r = (o.geometry.boundingSphere && o.geometry.boundingSphere.radius) || 0;
+        if (r > maxR) { maxR = r; best = o; }
+      }
+    });
+    return best;
+  }
+
+  // DecalGeometry scans EVERY triangle of its target — ~0.5s on the 840k-tri
+  // pepper. A decal only touches a tiny patch, so crop the mesh to the triangles
+  // near the click (one O(n) pass) and project onto that. This keeps the FULL,
+  // CONNECTED patch (no decimation — dropping triangles by stride shreds the
+  // decal into disconnected specks), just far fewer of them. Returns a proxy
+  // mesh sharing the mesh's world matrix, so DecalGeometry's math is unchanged.
+  _cropMeshForDecal(THREE, mesh, clickWorld, worldRadius) {
+    const geo = mesh.geometry;
+    const pos = geo.attributes.position, nrm = geo.attributes.normal;
+    const triCount = geo.index ? geo.index.count / 3 : pos.count / 3;
+    if (triCount <= 6000) return mesh; // already light — project directly
+    const idx = geo.index ? geo.index.array : null;
+    const inv = new THREE.Matrix4().copy(mesh.matrixWorld).invert();
+    const cl = clickWorld.clone().applyMatrix4(inv);
+    const sc = new THREE.Vector3(); mesh.matrixWorld.decompose(new THREE.Vector3(), new THREE.Quaternion(), sc);
+    const rl = worldRadius / (((sc.x + sc.y + sc.z) / 3) || 1);
+    const r2 = rl * rl;
+    const P = [], N = [];
+    const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+    const na = new THREE.Vector3(), nb = new THREE.Vector3(), nc = new THREE.Vector3();
+    for (let i = 0; i < triCount; i++) {
+      const i0 = idx ? idx[i * 3] : i * 3, i1 = idx ? idx[i * 3 + 1] : i * 3 + 1, i2 = idx ? idx[i * 3 + 2] : i * 3 + 2;
+      a.fromBufferAttribute(pos, i0); b.fromBufferAttribute(pos, i1); c.fromBufferAttribute(pos, i2);
+      if (a.distanceToSquared(cl) > r2 && b.distanceToSquared(cl) > r2 && c.distanceToSquared(cl) > r2) continue;
+      na.fromBufferAttribute(nrm, i0); nb.fromBufferAttribute(nrm, i1); nc.fromBufferAttribute(nrm, i2);
+      P.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+      N.push(na.x, na.y, na.z, nb.x, nb.y, nb.z, nc.x, nc.y, nc.z);
+    }
+    if (!P.length) return mesh; // nothing near — let DecalGeometry no-op
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3));
+    const proxy = new THREE.Mesh(g, mesh.material);
+    proxy.matrixAutoUpdate = false;
+    proxy.matrixWorld.copy(mesh.matrixWorld);
+    proxy.userData._cropped = true;
+    return proxy;
+  }
+
+  loadTomatoGLB() {
+    const THREE = this.THREE;
+    if (!THREE || !THREE.GLTFLoader) { this._glbT = setTimeout(() => this.loadTomatoGLB(), 120); return; }
+    if (this._glbLoading) return;
+    this._glbLoading = true;
+    const loader = new THREE.GLTFLoader();
+    loader.load('/models/tomato.glb', (gltf) => {
+      const s = gltf.scene;
+      s.traverse(o => {
+        if (o.isMesh && o.material) {
+          const ms = Array.isArray(o.material) ? o.material : [o.material];
+          ms.forEach(m => { if (m.map && 'colorSpace' in m.map) m.map.colorSpace = THREE.SRGBColorSpace; else if (m.map) m.map.encoding = THREE.sRGBEncoding; m.envMapIntensity = 0.6; });
+        }
+      });
+      this.tomatoGLB = s;
+      // if the tomato is the active veg, swap the procedural one for the real model
+      const ti = this.vegIndex('Tomato');
+      if (this.state.currentVeg === ti && this.rootGroup) this.selectVeg(ti);
+    }, undefined, (err) => { console.warn('Tomato GLB failed to load', err); this._glbLoading = false; });
+  }
+
+  loadPotatoGLB() {
+    const THREE = this.THREE;
+    if (!THREE || !THREE.GLTFLoader) { this._potT = setTimeout(() => this.loadPotatoGLB(), 120); return; }
+    if (this._potLoading) return;
+    this._potLoading = true;
+    const loader = new THREE.GLTFLoader();
+    loader.load('/models/potato.glb', (gltf) => {
+      const s = gltf.scene;
+      s.traverse(o => {
+        if (o.isMesh && o.material) {
+          const ms = Array.isArray(o.material) ? o.material : [o.material];
+          ms.forEach(m => {
+            if (m.map && 'colorSpace' in m.map) m.map.colorSpace = THREE.SRGBColorSpace; else if (m.map) m.map.encoding = THREE.sRGBEncoding;
+            m.envMapIntensity = 1.3;
+            if (m.roughness != null) m.roughness = Math.min(0.48, m.roughness);
+            // brighten, warm and SATURATE so it isn't dark / dirty-grey / dead-looking
+            if (m.color) { m.color.multiplyScalar(1.5); m.color.r = Math.min(1, m.color.r * 1.3); m.color.g = Math.min(1, m.color.g * 1.0); m.color.b *= 0.48; }
+            if (m.emissive) { m.emissive = new THREE.Color(0xd47a12); m.emissiveMap = m.map || null; m.emissiveIntensity = 0.3; }
+            m.needsUpdate = true;
+          });
+        }
+      });
+      this.potatoGLB = s;
+      const pi = this.vegIndex('Potato');
+      if (this.state.currentVeg === pi && this.rootGroup) this.selectVeg(pi);
+    }, undefined, (err) => { console.warn('Potato GLB failed to load', err); this._potLoading = false; });
+  }
+
+  loadBellPepperGLB() {
+    const THREE = this.THREE;
+    if (!THREE || !THREE.GLTFLoader) { this._bpT = setTimeout(() => this.loadBellPepperGLB(), 120); return; }
+    if (this._bpLoading) return;
+    this._bpLoading = true;
+    const loader = new THREE.GLTFLoader();
+    loader.load('/models/bellpepper.glb', (gltf) => {
+      const s = gltf.scene;
+      s.traverse(o => {
+        if (o.isMesh && o.material) {
+          const ms = Array.isArray(o.material) ? o.material : [o.material];
+          ms.forEach(m => {
+            if (m.map && 'colorSpace' in m.map) m.map.colorSpace = THREE.SRGBColorSpace; else if (m.map) m.map.encoding = THREE.sRGBEncoding;
+            // glossy, wet-looking pepper skin
+            m.envMapIntensity = 1.6;
+            if (m.roughness != null) m.roughness = Math.min(0.18, m.roughness);
+            if (m.metalness != null) m.metalness = 0;
+            if ('clearcoat' in m) { m.clearcoat = 1.0; m.clearcoatRoughness = 0.08; }
+            // deepen toward a rich bell-pepper green
+            if (m.color) { m.color.multiplyScalar(0.4); m.color.g = Math.min(1, m.color.g * 1.05); }
+            m.needsUpdate = true;
+          });
+        }
+      });
+      this.bellPepperGLB = s;
+      const bi = this.vegIndex('Pepper');
+      if (this.state.currentVeg === bi && this.rootGroup) this.selectVeg(bi);
+    }, undefined, (err) => { console.warn('Bell pepper GLB failed to load', err); this._bpLoading = false; });
+  }
+
+  // Boost the saturation/vibrance of a material's base-color texture by
+  // redrawing it through a canvas filter, so orange/green really pop.
+  saturateTexture(THREE, m) {
+    try {
+      const img = m.map.image;
+      const w = img.width || img.videoWidth, h = img.height || img.videoHeight;
+      if (!w || !h) return;
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      const ctx = cv.getContext('2d');
+      ctx.filter = 'saturate(1.8) contrast(1.08)';
+      ctx.drawImage(img, 0, 0, w, h);
+      const tex = new THREE.CanvasTexture(cv);
+      tex.flipY = m.map.flipY; tex.wrapS = m.map.wrapS; tex.wrapT = m.map.wrapT;
+      tex.repeat.copy(m.map.repeat); tex.offset.copy(m.map.offset);
+      if ('colorSpace' in tex) tex.colorSpace = THREE.SRGBColorSpace; else tex.encoding = THREE.sRGBEncoding;
+      tex.needsUpdate = true;
+      m.map = tex;
+    } catch (e) { console.warn('saturateTexture failed', e); }
+  }
+
+  loadCarrotGLB() {
+    const THREE = this.THREE;
+    if (!THREE || !THREE.GLTFLoader) { this._carT = setTimeout(() => this.loadCarrotGLB(), 120); return; }
+    if (this._carLoading) return;
+    this._carLoading = true;
+    const loader = new THREE.GLTFLoader();
+    loader.load('/models/carrot_new.glb', (gltf) => {
+      const s = gltf.scene;
+      s.traverse(o => {
+        if (!o.isMesh) return;
+        // This carrot GLB ships as bare geometry: no material, no texture, but
+        // the color is baked into per-vertex COLOR_0 attributes. Build a matte
+        // dielectric material that renders those vertex colors, and compute
+        // vertex normals (the mesh has none) so scene lighting shades it.
+        const hasVC = !!(o.geometry && o.geometry.attributes && o.geometry.attributes.color);
+        if (o.geometry && !o.geometry.attributes.normal) o.geometry.computeVertexNormals();
+        if (hasVC) {
+          // The baked COLOR_0 attribute is a normalized Uint8 stored in sRGB, but
+          // three.js r128 feeds vertex colors to the shader as LINEAR with no
+          // conversion. Interpreting sRGB orange as linear desaturates it and
+          // shifts it toward yellow-green (why the carrot "looked green"). Bake a
+          // one-time sRGB->linear conversion into a fresh Float32 color attribute
+          // so the shader receives true orange.
+          const src = o.geometry.attributes.color;
+          const n = src.count, out = new Float32Array(n * 3);
+          // In r128, getX() on a normalized Uint8 attribute returns the RAW byte
+          // (0..255), NOT the 0..1 value — so scale by 1/255 first. If the source
+          // is already float 0..1 (not a normalized int), leave it as-is.
+          const scale = (src.normalized || (src.array && src.array.BYTES_PER_ELEMENT === 1)) ? 1 / 255 : 1;
+          const s2l = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+          // GAIN brightens the whole carrot. The base-color multiplier alone
+          // can't do this (it's capped by the strong red channel), so lift the
+          // linear vertex colors directly. Clamp to 1 so highlights don't blow.
+          const GAIN = 1.6;
+          for (let i = 0; i < n; i++) {
+            out[i * 3 + 0] = Math.min(1, s2l(Math.min(1, src.getX(i) * scale)) * GAIN);
+            out[i * 3 + 1] = Math.min(1, s2l(Math.min(1, src.getY(i) * scale)) * GAIN);
+            out[i * 3 + 2] = Math.min(1, s2l(Math.min(1, src.getZ(i) * scale)) * GAIN);
+          }
+          o.geometry.setAttribute('color', new THREE.BufferAttribute(out, 3));
+        }
+        o.material = new THREE.MeshStandardMaterial({
+          vertexColors: hasVC,
+          // Warm base multiplier: keeps the carrot a bright, redder orange. A
+          // lighter warm tint (vs. a deeper one) lifts overall brightness without
+          // washing the orange out. Slightly lower roughness lets it catch a bit
+          // more light so it doesn't read too dark.
+          color: hasVC ? 0xffce90 : 0xe8721e,
+          metalness: 0.0,
+          roughness: 0.6,
+          envMapIntensity: 0.35,
+        });
+        o.material.needsUpdate = true;
+      });
+      this.carrotGLB = s;
+      const ci = this.vegIndex('Carrot');
+      if (this.state.currentVeg === ci && this.rootGroup) this.selectVeg(ci);
+    }, undefined, (err) => { console.warn('Carrot GLB failed to load', err); this._carLoading = false; });
+  }
+
+  // ---------- vegetable model builders (each centered at local origin) ----------
+  buildTomato(THREE) {
+    // use the real CGTrader tomato model once it has loaded
+    if (this.tomatoGLB) {
+      const group = new THREE.Group();
+      const model = this.tomatoGLB.clone(true);
+      group.add(model);
+      let body = null, maxR = -1;
+      model.traverse(o => {
+        if (o.isMesh) {
+          o.geometry.computeBoundingSphere();
+          const r = (o.geometry.boundingSphere && o.geometry.boundingSphere.radius) || 0;
+          if (r > maxR) { maxR = r; body = o; }
+        }
+      });
+      return { group, body: body || model, scaleMul: 0.593 };
+    }
+    return null; // no placeholder — wait for the real GLB
+  }
+
+  buildPepper(THREE) {
+    // use the real potato GLB once it has loaded (replaces the bell pepper slot)
+    if (this.potatoGLB) {
+      const group = new THREE.Group();
+      const model = this.potatoGLB.clone(true);
+      // stand the long axis straight up so it spins cleanly around its own axis (not diagonally)
+      model.rotation.set(0, 0, Math.PI / 2);
+      group.add(model);
+      let body = null, maxR = -1;
+      model.traverse(o => {
+        if (o.isMesh) {
+          o.geometry.computeBoundingSphere();
+          const r = (o.geometry.boundingSphere && o.geometry.boundingSphere.radius) || 0;
+          if (r > maxR) { maxR = r; body = o; }
+        }
+      });
+      return { group, body: body || model, scaleMul: 0.545, yNudge: -0.18, xNudge: -0.06 };
+    }
+    return null; // no placeholder — wait for the real GLB
+  }
+
+  buildBellPepper(THREE) {
+    // use the uploaded bell pepper GLB once it has loaded
+    if (this.bellPepperGLB) {
+      const group = new THREE.Group();
+      const model = this.bellPepperGLB.clone(true);
+      group.add(model);
+      let body = null, maxR = -1;
+      model.traverse(o => {
+        if (o.isMesh) {
+          o.geometry.computeBoundingSphere();
+          const r = (o.geometry.boundingSphere && o.geometry.boundingSphere.radius) || 0;
+          if (r > maxR) { maxR = r; body = o; }
+        }
+      });
+      group.rotation.z = -0.05;
+      return { group, body: body || model, scaleMul: 0.6 };
+    }
+    return null; // no placeholder — wait for the real GLB
+  }
+
+  buildCarrot(THREE) {
+    // use the real uploaded carrot GLB (textured) once it has loaded
+    if (this.carrotGLB) {
+      const group = new THREE.Group();
+      const model = this.carrotGLB.clone(true);
+      group.add(model);
+      let body = null, maxR = -1;
+      model.traverse(o => {
+        if (o.isMesh) {
+          o.geometry.computeBoundingSphere();
+          const r = (o.geometry.boundingSphere && o.geometry.boundingSphere.radius) || 0;
+          if (r > maxR) { maxR = r; body = o; }
+        }
+      });
+      // carrot_new.glb's long axis is essentially dead-on +Y (measured PCA lean
+      // ~0.9deg). The render loop zeroes the root tilt while the carrot is active
+      // (so it spins around a true vertical axis and doesn't cone/"fall toward"
+      // the camera), so the carrot group itself needs NO tilt — identity keeps it
+      // perfectly upright.
+      group.rotation.set(0, 0, 0);
+      // Carrot uses the SAME base placement as the other vegetables — no x/y
+      // offset (see also the render loop, which no longer adds a carrot-only
+      // rightward nudge, so the carrot sits where every other veg sits).
+      return { group, body: body || model, scaleMul: 0.68, yNudge: 0.0, xNudge: 0.0 };
+    }
+    return null; // no placeholder — wait for the real GLB
+  }
+
+  disposeGroup(g) {
+    g.traverse(o => {
+      if (o.geometry) o.geometry.dispose();
+      if (o.material) { const ms = Array.isArray(o.material) ? o.material : [o.material]; ms.forEach(m => { if (m.map) m.map.dispose(); m.dispose && m.dispose(); }); }
+    });
+  }
+
+  selectVeg(i) {
+    const THREE = this.THREE;
+    if (!THREE || !this.rootGroup) { if (this.state.currentVeg !== i) this.setState({ currentVeg: i }); return; }
+    if (this.vegGroup) { this.rootGroup.remove(this.vegGroup); this.disposeGroup(this.vegGroup); this.vegGroup = null; this.body = null; }
+    const built = this.vegList[i].build(THREE);
+    if (!built) { if (this.state.currentVeg !== i) this.setState({ currentVeg: i }); return; } // model not loaded yet; its loader will re-call selectVeg
+    this.vegGroup = built.group;
+    this.body = built.body;
+    this.rootGroup.add(built.group);
+    // normalize on the FRUIT BODY (ignore stems/greens) so the main object always sits in the exact same spot
+    const box = new THREE.Box3().setFromObject(built.body || built.group);
+    const size = new THREE.Vector3(); box.getSize(size);
+    const center = new THREE.Vector3(); box.getCenter(center);
+    const radius = 0.5 * Math.sqrt(size.x * size.x + size.y * size.y + size.z * size.z) || 1;
+    const s = (1.35 / radius) * (built.scaleMul || 1);
+    built.group.scale.setScalar(s);
+    built.group.position.set(-center.x * s, -center.y * s, -center.z * s);
+    // apply position nudges to the pivot itself so the model spins in place instead of orbiting
+    this._rootBaseX = built.xNudge || 0;
+    this.rootGroup.position.x = this._rootBaseX;
+    this._rootBaseY = built.yNudge || 0;
+    this.stickerN = 0;
+    if (this.state.currentVeg !== i) this.setState({ currentVeg: i }); else this.forceUpdate();
+  }
+
+  init3D() {
+    const THREE = window.THREE;
+    const container = document.getElementById('tomato3d');
+    if (!container) return;
+    if (!THREE) { this._t3 = setTimeout(() => this.init3D(), 80); return; }
+    this.THREE = THREE;
+
+    const scene = new THREE.Scene();
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.9;
+    renderer.domElement.style.pointerEvents = 'auto';
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+    renderer.domElement.style.display = 'block';
+    container.appendChild(renderer.domElement);
+    this._renderer3 = renderer;
+
+    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+    camera.position.set(0, 0.05, 3.7);
+
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const envRT = pmrem.fromEquirectangular(this.makeEnvTex(THREE));
+    scene.environment = envRT.texture;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+    const hemi = new THREE.HemisphereLight(0xfff4e6, 0x2a1a10, 0.3); scene.add(hemi);
+    const key = new THREE.DirectionalLight(0xffffff, 1.0); key.position.set(2.5, 3, 2.5); scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffe9d0, 0.28); fill.position.set(-3, 0.5, 1.5); scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xffffff, 0.5); rim.position.set(-1, 1.5, -3); scene.add(rim);
+
+    const root = new THREE.Group(); scene.add(root); root.rotation.x = 0.34;
+    this.rootGroup = root;
+    this.raycaster = new THREE.Raycaster();
+    this.stickerTex = this.makeStickerTex(THREE);
+    this.stickerN = 0;
+
+    this.selectVeg(this.state.currentVeg);
+    this.loadTomatoGLB();
+    this.loadPotatoGLB();
+    this.loadCarrotGLB();
+    this.loadBellPepperGLB();
+
+    const raycaster = this.raycaster;
+    const ndc = new THREE.Vector2();
+    const el = renderer.domElement;
+    const placeSticker = (clientX, clientY) => {
+      const body = this.body, vegGroup = this.vegGroup;
+      if (!body || !vegGroup) return;
+      const rect = el.getBoundingClientRect();
+      ndc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      ndc.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(ndc, camera);
+      let hits = raycaster.intersectObject(body, true);
+      if (!hits.length) hits = raycaster.intersectObject(vegGroup, true).filter(h => h.object && h.object.isMesh && !h.object.userData.isSticker);
+      if (!hits.length) return;
+      const hit = hits[0];
+      const entry = this.stickerTex[this.stickerN % this.stickerTex.length];
+      const tex = entry.tex;
+      // decal size as a fraction of the body radius — kept small so a sticker
+      // reads as a real produce label, not a wrap. Carrot is thin, so smaller.
+      // entry.sizeMul varies each sticker's size; entry.aspect keeps wide art
+      // (barcode, price tag) at its true proportion instead of a squished square.
+      const carrot = this.state.currentVeg === this.vegIndex('Carrot');
+      const sizeFrac = (carrot ? 0.085 : (0.115 + Math.random() * 0.025)) * (entry.sizeMul || 1);
+      const aspect = entry.aspect || 1;
+      const rot = (Math.random() - 0.5) * 0.6;
+      // world-space surface normal at the click point — the decal is projected
+      // ALONG this normal so it lies flush on the real geometry.
+      const normW = new THREE.Vector3(0, 0, 1);
+      if (hit.face && hit.object) {
+        normW.copy(hit.face.normal).transformDirection(hit.object.matrixWorld).normalize();
+      }
+      const geo = this.makeStickerGeo(THREE, hit.point.clone(), normW, sizeFrac, rot, body, vegGroup, aspect);
+      if (!geo || !geo.userData || !geo.userData.parentGroup) return; // decal missed / loader not ready
+      this.stickerN++;
+      const mat = new THREE.MeshStandardMaterial({ map: tex, transparent: true, opacity: 0, roughness: 0.5, metalness: 0, side: THREE.FrontSide, depthTest: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+      const sticker = new THREE.Mesh(geo, mat);
+      sticker.userData.isSticker = true;
+      sticker.renderOrder = 2;
+      // geometry is baked into vegGroup-local space, so it rides the spin
+      const parent = geo.userData.parentGroup;
+      parent.add(sticker);
+      // Decals on the dense pepper carry a lot of verts each — cap how many live
+      // at once so repeated clicks don't pile up geometry and drag the framerate.
+      this._stickers = (this._stickers || []).filter(s => s.parent);
+      this._stickers.push(sticker);
+      const MAX_STICKERS = 14;
+      while (this._stickers.length > MAX_STICKERS) {
+        const old = this._stickers.shift();
+        if (old.parent) old.parent.remove(old);
+        if (old.geometry) old.geometry.dispose();
+        if (old.material) old.material.dispose();
+      }
+      const t0 = performance.now();
+      const fade = () => { const k = Math.min(1, (performance.now() - t0) / 220); mat.opacity = k; if (k < 1) requestAnimationFrame(fade); };
+      fade();
+    };
+
+    let dragging = false, px = 0, py = 0, vx = 0, vy = 0, ry = 0, rx = 0, dragDist = 0, downX = 0, downY = 0;
+    const down = (e) => { const t = e.touches ? e.touches[0] : e; downX = t.clientX; downY = t.clientY; };
+    const up = (e) => {
+      const t = (e.changedTouches ? e.changedTouches[0] : e) || {};
+      const cx = t.clientX != null ? t.clientX : downX;
+      const cy = t.clientY != null ? t.clientY : downY;
+      if (Math.abs(cx - downX) + Math.abs(cy - downY) < 8) placeSticker(cx, cy);
+    };
+    el.addEventListener('mousedown', down); el.addEventListener('mouseup', up);
+    el.addEventListener('touchstart', down, { passive: true }); el.addEventListener('touchend', up);
+    this._t3cleanup = () => {};
+
+    const resize = () => {
+      const w = container.clientWidth, h = container.clientHeight;
+      if (!w || !h) return;
+      const vw = (typeof window !== 'undefined') ? window.innerWidth : 9999;
+      // The tomato's on-screen size is set by camera DISTANCE, not container CSS
+      // width (a wider container just adds empty canvas around the same-size
+      // model). So pull the camera CLOSER on smaller viewports to make the veg
+      // fill the hero, and keep the original distance on desktop (>834px).
+      //   desktop (>834): 3.7 (original)   tablet (600–834): 2.6   phone (<600): 2.9
+      const camZ = vw > 834 ? 3.7 : (vw >= 600 ? 2.6 : 2.9);
+      if (w === this._sz3w && h === this._sz3h && camZ === this._camZ) return;
+      this._sz3w = w; this._sz3h = h; this._camZ = camZ;
+      camera.position.z = camZ; camera.updateProjectionMatrix();
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h; camera.updateProjectionMatrix();
+      this._sized3 = true;
+    };
+    this._resize3 = resize;
+    this._ro3 = new ResizeObserver(resize); this._ro3.observe(container);
+
+    const clock = new THREE.Clock();
+    const loop = () => {
+      this._raf3 = requestAnimationFrame(loop);
+      if (this._resize3) this._resize3();
+      if (!this._sized3) return;
+      const t = clock.getElapsedTime();
+      if (!dragging) { vx *= 0.94; vy *= 0.94; ry += vx; rx += vy; ry += 0.0032; }
+      rx = Math.max(-0.7, Math.min(0.7, rx));
+      root.rotation.y = ry;
+      // The scene root is normally tilted back 0.34rad. Spinning a tilted Y axis
+      // cones the object, making a tall model (the carrot) look like it's
+      // "falling toward you" as it turns. For the carrot we zero the root tilt so
+      // ry spins around a truly VERTICAL axis (no coning); other veg keep the tilt.
+      const carrotActive = this.state.currentVeg === this.vegIndex('Carrot');
+      root.rotation.x = (carrotActive ? 0 : 0.34) + rx;
+      // Give the carrot a slight, CONSTANT lean to the right. We put it on the
+      // (non-spinning) scene rather than on root, so the spin axis stays vertical
+      // and the lean doesn't cone/wobble as the carrot turns. Negative Z leans the
+      // crown toward screen-right. ~0.14rad (~8deg) = "a bit, not a lot".
+      scene.rotation.z = carrotActive ? -0.14 : 0;
+      // The carrot sits at the SAME horizontal position as every other veg — no
+      // carrot-specific X nudge (previously +0.42 on desktop to keep the spinning
+      // tip clear of the headline; removed so the carrot lines up with the others).
+      root.position.x = (this._rootBaseX || 0);
+      root.position.y = (this._rootBaseY || 0) + Math.sin(t * 0.9) * 0.045;
+      renderer.render(scene, camera);
+    };
+    this._sized3 = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => { if (this._resize3) this._resize3(); loop(); }));
+  }
+
+  vegIcon(name) {
+    const R = React.createElement;
+    const svg = (children) => R('svg', { width: '38%', height: '38%', viewBox: '0 0 32 32', fill: 'currentColor' }, children);
+    const P = (d) => R('path', { d: d, key: Math.random() });
+    switch (name) {
+      case 'Tomatoes': return svg([R('path', { key: 'a', d: 'M16 7c5 0 9 3.6 9 9s-4 10-9 10-9-4.5-9-10 4-9 9-9z' }), R('path', { key: 'b', d: 'M16 8c0-2-1-3.5-3-4 1.5 1 1 2.5 0 3 1-.5 2.5 0 3 1z', fill: 'currentColor' })]);
+      case 'Carrots': return svg([R('path', { key: 'a', d: 'M22 8 12 26c-1 2-4 1-4-1L14 8c1-2 7-2 8 0z' }), R('path', { key: 'b', d: 'M20 7 24 3M22 8l4-2M18 6l1-4', stroke: 'currentColor', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' })]);
+      case 'Sweet peppers': return svg([R('path', { key: 'a', d: 'M10 12c0-3 3-4 6-4s6 1 6 4c0 6-1 14-6 14s-6-8-6-14z' }), R('path', { key: 'b', d: 'M16 8V4', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' })]);
+      case 'Spinach': return svg(R('path', { d: 'M26 6C14 6 6 12 6 24c0 2 2 2 2 0 0-8 6-14 18-14 2 0 2-4 0-4z' }));
+      case 'Potatoes': return svg(R('ellipse', { cx: 16, cy: 16, rx: 11, ry: 8, transform: 'rotate(-20 16 16)' }));
+      case 'Red onions': return svg([R('path', { key: 'a', d: 'M16 9c5 0 8 4 8 9s-3 8-8 8-8-3-8-8 3-9 8-9z' }), R('path', { key: 'b', d: 'M16 9c-1-2 0-4 0-5M16 9c1-2 3-3 3-3M16 9c-1-2-3-2-3-2', stroke: 'currentColor', strokeWidth: 1.6, fill: 'none', strokeLinecap: 'round' })]);
+      case 'Courgette': return svg(R('path', { d: 'M8 24 22 10c2-2 5 1 3 3L11 27c-2 2-5-1-3-3z' }));
+      case 'Cox apples': return svg([R('path', { key: 'a', d: 'M16 10c5 0 8 3.5 8 8s-3 8-8 8-8-4-8-8 3-8 8-8z' }), R('path', { key: 'b', d: 'M16 10V6M16 8c2-2 4-2 5-3', stroke: 'currentColor', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' })]);
+      case 'Lemons': return svg(R('ellipse', { cx: 16, cy: 16, rx: 11, ry: 8, transform: 'rotate(-30 16 16)' }));
+      case 'Broccoli': return svg([R('path', { key: 'a', d: 'M16 14v12', stroke: 'currentColor', strokeWidth: 3, strokeLinecap: 'round' }), R('circle', { key: 'b', cx: 11, cy: 11, r: 5 }), R('circle', { key: 'c', cx: 21, cy: 11, r: 5 }), R('circle', { key: 'd', cx: 16, cy: 8, r: 5 })]);
+      case 'Chestnut mushrooms': return svg([R('path', { key: 'a', d: 'M6 15a10 8 0 0 1 20 0z' }), R('path', { key: 'b', d: 'M13 15h6v9a3 3 0 0 1-6 0z' })]);
+      case 'Conference pears': return svg(R('path', { d: 'M16 6c1 0 1 3 2 5 2 3 4 4 4 9 0 4-3 7-6 7s-6-3-6-7c0-5 2-6 4-9 1-2 1-5 2-5z' }));
+      default: return svg(R('circle', { cx: 16, cy: 16, r: 9 }));
+    }
+  }
+
+  deliveryLabel() {
+    const d = new Date(); d.setDate(d.getDate() + 3);
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+
+  deliveryOptions() {
+    const opts = [3, 5, 7];
+    return opts.map((add, i) => {
+      const d = new Date(); d.setDate(d.getDate() + add);
+      return { key: 'day' + i, label: d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) };
+    });
+  }
+
+  selectedDayLabel() {
+    const opts = this.deliveryOptions();
+    const sel = opts.find(o => o.key === (this.state.deliveryDay || 'day0')) || opts[0];
+    return sel.label;
+  }
+
+  // Recurring cadences for a subscription. (One-time is chosen via the
+  // purchase-mode toggle on the box, so it is NOT a frequency option here.)
+  frequencyOptions() {
+    // One row per subscription configured on the selected basket's product.
+    // The key IS the Wix subscriptionOptionId, so the cadence the visitor picks
+    // is the one the cart actually bills on.
+    const basket = (this.basketConfig || {})[this.state.basket];
+    return ((basket && basket.subscriptions) || []).map(sub => ({
+      key: sub.id,
+      label: sub.title,
+      sub: sub.description
+    }));
+  }
+
+  selectedFrequencyLabel() {
+    // A one-time purchase has no recurring cadence.
+    if (this.state.purchaseMode !== 'subscribe') return 'One-time';
+    const opts = this.frequencyOptions();
+    if (!opts.length) return 'Subscription';
+    const sel = opts.find(o => o.key === this.state.frequency) || opts[0];
+    return sel.label;
+  }
+
+  /**
+   * Pull the authoritative cart total from Wix and store it for rendering.
+   * Called after every add; failures leave the previous label in place.
+   */
+  refreshWixTotals() {
+    if (!(window.wixCart && window.wixCart.isConfigured())) return;
+    return window.wixCart.getTotals().then(totals => {
+      if (totals && totals.formattedTotal) {
+        this.setState({ wixTotal: totals.formattedTotal });
+      }
+    }).catch(err => console.warn('wixCart.getTotals failed:', err));
+  }
+
+  /** The Wix subscriptionOptionId the visitor currently has selected. */
+  selectedSubscriptionId() {
+    const opts = this.frequencyOptions();
+    if (!opts.length) return null;
+    const sel = opts.find(o => o.key === this.state.frequency) || opts[0];
+    return sel.key;
+  }
+
+  updateScroll() {
+    const y = window.scrollY || 0;
+    const last = this._lastY || 0;
+    if (y < 80) { if (this.state.headerHidden) this.setState({ headerHidden: false }); }
+    else if (Math.abs(y - last) > 6) {
+      const hide = y > last;
+      if (hide !== this.state.headerHidden) this.setState({ headerHidden: hide });
+    }
+    this._lastY = y;
+    if (this.revealEl) {
+      const r = this.revealEl.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const p = (vh * 0.8 - r.top) / (r.height + vh * 0.6);
+      const clamped = Math.max(0, Math.min(1, p));
+      if (Math.abs(clamped - this.state.scroll) > 0.004) this.setState({ scroll: clamped });
+    }
+    const ac = document.getElementById('aboutCard');
+    if (ac) {
+      const vh = window.innerHeight;
+      const r = ac.getBoundingClientRect();
+      // 0 when card top is at bottom of viewport, 1 when card is centered
+      const p = (vh - r.top) / (vh * 0.6 + r.height * 0.3);
+      const clamped = Math.max(0, Math.min(1, p));
+      if (Math.abs(clamped - this.state.aboutScroll) > 0.004) this.setState({ aboutScroll: clamped });
+    }
+    const asel = document.getElementById('aboutStory');
+    if (asel) {
+      const vh = window.innerHeight;
+      const r = asel.getBoundingClientRect();
+      const c = r.top + r.height / 2; // story center within viewport
+      // fully written by the time the story reaches the viewport center
+      const p = (vh * 0.95 - c) / (vh * 0.45);
+      const clamped = Math.max(0, Math.min(1, p));
+      if (Math.abs(clamped - (this.state.aboutStoryP || 0)) > 0.004) this.setState({ aboutStoryP: clamped });
+    }
+    const rc = document.getElementById('receiptCard');
+    if (rc) {
+      const vh = window.innerHeight;
+      const r = rc.getBoundingClientRect();
+      const center = r.top + r.height / 2;
+      // -1 when card center at bottom of viewport, +1 at top
+      const fp = Math.max(-1, Math.min(1, (vh / 2 - center) / (vh / 2)));
+      // 0..1 entrance progress as the receipt rises into view
+      const fin = Math.max(0, Math.min(1, (vh * 0.92 - r.top) / (vh * 0.55)));
+      const patch = {};
+      if (Math.abs(fp - this.state.featScroll) > 0.004) patch.featScroll = fp;
+      if (Math.abs(fin - (this.state.featIn || 0)) > 0.004) patch.featIn = fin;
+      if (Object.keys(patch).length) this.setState(patch);
+    }
+    const bx = document.getElementById('box');
+    if (bx) {
+      const vh = window.innerHeight;
+      const r = bx.getBoundingClientRect();
+      const p = Math.max(0, Math.min(1, (vh * 0.58 - r.top) / (vh * 0.5)));
+      if (Math.abs(p - (this.state.boxIn || 0)) > 0.004) this.setState({ boxIn: p });
+    }
+  }
+
+  mkWords(text, show, base, extra) {
+    const e = this.ease;
+    return text.split(' ').map((w, i) => ({
+      w: w + ' ',
+      style: Object.assign({
+        display: 'inline-block', whiteSpace: 'pre',
+        transition: 'transform .6s ' + e + ', opacity .6s ' + e,
+        transitionDelay: (base + i * 0.08) + 's',
+        transform: show ? 'translateY(0)' : 'translateY(20px)',
+        opacity: show ? 1 : 0
+      }, extra || {})
+    }));
+  }
+
+  farmerCursor() {
+    return "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ctext x='2' y='46' font-size='46'%3E\uD83E\uDDD1\u200D\uD83C\uDF3E%3C/text%3E%3C/svg%3E\") 12 44, auto";
+  }
+
+  buildStoryWords(progress, color) {
+    const it = { fontStyle: 'italic', fontFamily: "'Instrument Serif', serif" };
+    const segments = [
+      { text: 'We were tired of supermarket veg that travels for weeks and tastes of nothing.' },
+      { text: 'So we partner with nearby farms and pick to order, so it reaches you' },
+      { text: 'fresh in days,', extra: it },
+      { text: 'not weeks.' }
+    ];
+    const words = [];
+    segments.forEach(seg => { seg.text.split(' ').forEach(w => words.push({ text: w, extra: seg.extra || {} })); });
+    // total characters, counting one trailing space per word
+    let total = 0; words.forEach(w => { total += w.text.length + 1; });
+    const revealed = Math.round(Math.max(0, Math.min(1, progress || 0)) * total);
+    let gi = 0;
+    const mkChar = (ch) => {
+      const idx = gi++;
+      const on = idx < revealed;
+      return { c: ch, style: { display: 'inline-block', whiteSpace: 'pre', opacity: on ? 1 : 0, transform: on ? 'translateY(0)' : 'translateY(8px)', transition: 'opacity .25s ease, transform .25s ease' } };
+    };
+    return words.map(word => {
+      const chars = word.text.split('').map(mkChar);
+      chars.push(mkChar(' '));
+      return { wrapStyle: Object.assign({ display: 'inline-block', whiteSpace: 'pre' }, word.extra), chars: chars };
+    });
+  }
+
+  buildHeadWords(progress) {
+    const it = { fontStyle: 'italic', fontFamily: "'Instrument Serif', serif", fontWeight: 400 };
+    const segments = [
+      { text: 'We pick it, box it,' },
+      { text: 'straight from the farm,', extra: it },
+      { text: 'and bring it to your door within days of harvest.' }
+    ];
+    const words = [];
+    segments.forEach(seg => { seg.text.split(' ').forEach(w => words.push({ w: w, extra: seg.extra || {} })); });
+    const total = words.length;
+    const ramp = 3;
+    const revealed = Math.max(0, Math.min(1, (progress || 0) / 0.7)) * (total + ramp);
+    return words.map((item, i) => {
+      const o = Math.max(0, Math.min(1, (revealed - i) / ramp));
+      return {
+        w: item.w + ' ',
+        style: Object.assign({
+          display: 'inline-block', whiteSpace: 'pre',
+          opacity: 0.12 + 0.88 * o,
+          transform: 'translateY(' + ((1 - o) * 14) + 'px)',
+          transition: 'opacity .1s linear, transform .1s linear'
+        }, item.extra)
+      };
+    });
+  }
+
+  mkMulti(segments, show) {
+    const e = this.ease; let idx = 0; const out = [];
+    segments.forEach(seg => {
+      seg.text.split(' ').forEach(w => {
+        out.push({
+          w: w + ' ',
+          style: Object.assign({
+            display: 'inline-block', whiteSpace: 'pre',
+            transition: 'transform .6s ' + e + ', opacity .6s ' + e,
+            transitionDelay: (idx * 0.08) + 's',
+            transform: show ? 'translateY(0)' : 'translateY(20px)',
+            opacity: show ? 1 : 0
+          }, seg.extra || {})
+        });
+        idx++;
+      });
+    });
+    return out;
+  }
+
+  charOpacity(i, total) {
+    const cp = i / total; const start = cp - 0.1, end = cp + 0.05;
+    let o = (this.state.scroll - start) / (end - start);
+    return 0.5 + 0.5 * Math.max(0, Math.min(1, o));
+  }
+
+  buildRevealWords() {
+    const t = this.aboutBody || ''; const total = t.length || 1;
+    const words = t.split(' '); let idx = 0; const out = [];
+    words.forEach((word, wi) => {
+      const chs = word.split('').map(ch => { const o = this.charOpacity(idx, total); idx++; return { ch: ch, style: { opacity: o, transition: 'opacity .15s linear' } }; });
+      const so = this.charOpacity(idx, total); idx++;
+      out.push({ chs: chs, spaceStyle: { opacity: so } });
+    });
+    return out;
+  }
+
+  cardStyle(i) {
+    const e = 'cubic-bezier(0.22,1,0.36,1)'; const s = this.state.featShow;
+    return {
+      transition: 'transform .7s ' + e + ', opacity .7s ' + e,
+      transitionDelay: (i * 0.15) + 's',
+      transform: s ? 'scale(1)' : 'scale(0.95)',
+      opacity: s ? 1 : 0
+    };
+  }
+
+  renderVals() {
+    const e = this.ease || 'cubic-bezier(0.16,1,0.3,1)';
+    const show = this.state.heroShow;
+    const hover = this.state.btnHover;
+    const cur = this.state.currentVeg;
+
+    const aboutTextColor = this.props.aboutTextColor ?? '#2D2E2C';
+    const aboutBg = this.props.aboutBg ?? '#FDF5F2';
+    const aboutCardBg = this.props.aboutCardBg ?? '#FEDC0B';
+    const featBg = this.props.featBg ?? '#E0472B';
+    const labelReveal = Math.max(0, Math.min(1, (this.state.aboutStoryP || 0) / 0.18));
+
+    const cardsData = [
+      { num: '01', title: 'Pick your box.', desc: 'Choose a size, then keep or swap any veg you like.', icon: 'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260405_171918_4a5edc79-d78f-4637-ac8b-53c43c220606.png&w=1280&q=85', items: ['Pick your produce mix', 'Choose your box size', 'Add eggs, bread & extras'] },
+      { num: '02', title: 'Choose your frequency.', desc: 'Weekly, fortnightly or a one-off — you pick how often it comes.', icon: 'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260405_171918_4a5edc79-d78f-4637-ac8b-53c43c220606.png&w=1280&q=85', items: ['Every week', 'Every 2 weeks', 'One-time box'] },
+      { num: '03', title: 'We harvest & pack.', desc: 'Picked to order from local farms, packed zero-waste.', icon: 'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260405_171741_ed9845ab-f5b2-4018-8ce7-07cc01823522.png&w=1280&q=85', items: ['Harvested to order', 'Local & seasonal only', 'Zero-waste packaging'] },
+      { num: '04', title: 'Delivered to your door.', desc: 'Arrives within days. Skip or pause whenever you need.', icon: 'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260405_171809_f56666dc-c099-4778-ad82-9ad4f209567b.png&w=1280&q=85', items: ['Dropped within days', 'Skip or pause anytime', 'Cancel in two taps'] }
+    ];
+
+    const vegList = this.vegList || [];
+    const icons = this.vegIcons || [];
+    const vegSlotMap = { Tomato: 'box-veg-tomatoes', Pepper: 'box-veg-sweet-peppers', Carrot: 'box-veg-carrots' };
+    const vegEmojiMap = { Tomato: '🍅', Potato: '🥔', Pepper: '🫑', Carrot: '🥕', Spinach: '🥬' };    const vegItems = vegList.map((v, i) => {
+      const active = i === cur;
+      const hov = this.state.hoverVeg === i;
+      return {
+        name: v.name,
+        icon: icons[i] || '',
+        emoji: vegEmojiMap[v.name] || '🥕',
+        emojiStyle: {
+          fontSize: 'clamp(24px,2.4vw,30px)', lineHeight: 1,
+          filter: 'brightness(0)', pointerEvents: 'none'
+        },
+        slotId: vegSlotMap[v.name] || ('box-veg-' + v.name.toLowerCase()),
+        onClick: () => this.selectVeg(i),
+        onEnter: () => this.setState({ hoverVeg: i }),
+        onLeave: () => this.setState({ hoverVeg: null }),
+        slotStyle: {
+          position: 'absolute', top: '50%', left: '50%', width: '58%', height: '58%',
+          transform: 'translate(-50%,-50%)', pointerEvents: 'none',
+          filter: 'brightness(0)'
+        },
+        style: {
+          position: 'relative', overflow: 'hidden',
+          width: hov ? 'clamp(78px,6.9vw,99px)' : 'clamp(72px,6.4vw,92px)', height: 'clamp(54px,4.6vw,66px)',
+          borderRadius: '16px 0 0 16px',
+          border: active ? '1.5px solid rgba(45,46,44,0.4)' : '1px solid rgba(45,46,44,0.14)',
+          borderRight: 'none',
+          background: active || hov ? '#FDF5F2' : 'rgba(253,245,242,0.6)',
+          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+          transition: 'background .25s ease, box-shadow .25s ease, border-color .25s ease, width .25s ease',
+          transform: 'none',
+          boxShadow: active ? '-8px 8px 26px rgba(45,46,44,0.28)' : (hov ? '-10px 9px 28px rgba(45,46,44,0.24)' : '-4px 4px 14px rgba(45,46,44,0.1)')
+        }
+      };
+    });
+
+    const activeKey = this.state.hoverBasket || this.state.basket;
+    const cfg = this.basketConfig || {};
+    const activeCount = (cfg[activeKey] && cfg[activeKey].count) || 0;
+    const activeName = (cfg[activeKey] && cfg[activeKey].name) || '';
+    const boxIn = this.state.boxIn || 0;
+    const floatY = (i, n, dist) => {
+      const ramp = 2.2;
+      const revealed = Math.max(0, Math.min(1, (boxIn - 0.05) / 0.7)) * (n + ramp);
+      const o = Math.max(0, Math.min(1, (revealed - i) / ramp));
+      return { o: o, y: (1 - o) * (dist || 24) };
+    };
+    const baskets = (this.basketOrder || []).map((k, bi) => {
+      const b = cfg[k]; const sel = this.state.basket === k; const hov = this.state.hoverBasket === k;
+      const fi = floatY(bi, 6, 26);
+      return {
+        name: b.name.replace(' basket', ''), meta: b.count + ' items · ' + b.blurb, price: b.price,
+        onClick: () => this.setState({ basket: k, boxPicked: false }),
+        onEnter: () => this.setState({ hoverBasket: k }),
+        onLeave: () => this.setState({ hoverBasket: null }),
+        style: { position: 'relative', display: 'flex', alignItems: 'center', gap: '16px', width: '100%', cursor: 'pointer', padding: 'clamp(16px,1.6vw,20px) clamp(18px,1.8vw,22px)', borderRadius: '10px', background: sel ? '#F6EDE7' : (hov ? 'rgba(45,46,44,0.04)' : 'transparent'), color: '#2D2E2C', border: sel ? '1.5px solid #2D2E2C' : (hov ? '1.5px solid rgba(45,46,44,0.35)' : '1.5px solid rgba(45,46,44,0.14)'), transition: 'background .2s ease, border-color .2s ease, transform .28s cubic-bezier(0.22,1,0.36,1), opacity .2s linear', transform: 'translateY(' + fi.y + 'px) translateX(' + (hov && !sel ? 3 : 0) + 'px)', opacity: fi.o, outline: 'none' },
+        checkStyle: { display: 'none' },
+        radioStyle: { flexShrink: 0, width: '18px', height: '18px', borderRadius: '50%', border: sel ? '5px solid #2D2E2C' : (hov ? '1.5px solid rgba(45,46,44,0.55)' : '1.5px solid rgba(45,46,44,0.3)'), transition: 'border .2s ease' },
+        radioDotStyle: { display: 'none' },
+        metaStyle: { fontSize: 'clamp(11px,0.95vw,13px)', color: 'rgba(45,46,44,0.55)', lineHeight: 1.3 }
+      };
+    });
+    const produce = (this.produceList || []).map((item, i) => {
+      const inc = i < activeCount;
+      const slug = item.name.toLowerCase().replace(/[^a-z]+/g, '-');
+      const hov = this.state.hoverVeg === slug;
+      return {
+        name: item.name,
+        slotId: 'box-veg-' + slug,
+        // Static PNG/WebP fallback so the box images render on the live site
+        // without depending on the .image-slots.state.json sidecar (a dotfile
+        // the Wix host does not serve — it 504s). image-slot uses `src` as the
+        // fallback whenever the sidecar has no entry for this id.
+        slotSrc: '/box-images/box-veg-' + slug + '.webp',
+        onEnter: () => this.setState({ hoverVeg: slug }),
+        onLeave: () => this.setState({ hoverVeg: null }),
+        slotWrapStyle: { position: 'relative', minWidth: 0, width: '100%', height: '100%', minHeight: 'clamp(120px,14vw,200px)', overflow: 'hidden', background: '#FDF5F2' },
+        slotLayerStyle: { position: 'absolute', inset: 0, width: '100%', height: '100%', filter: inc ? 'none' : 'brightness(0) invert(0.75)', opacity: floatY(i, 12, 30).o, transform: 'translateY(' + floatY(i, 12, 28).y + 'px) scale(' + (0.82 + 0.18 * floatY(i, 12, 30).o).toFixed(3) + ')', transition: 'opacity .16s linear, transform .3s cubic-bezier(0.22,1,0.36,1), filter .3s ease' },
+        nameTagStyle: { position: 'absolute', left: '50%', bottom: '10px', transform: hov ? 'translate(-50%,0)' : 'translate(-50%,4px)', color: 'rgba(45,46,44,0.5)', fontSize: 'clamp(13px,1.15vw,16px)', fontWeight: 400, letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap', pointerEvents: 'none', opacity: hov ? 1 : 0, transition: 'opacity .2s ease, transform .2s ease' }
+      };
+    });
+    const picked = this.state.boxPicked; const pickHov = this.state.pickHover;
+    const cart = this.state.cart || [];
+    // Wix calculates the cart total (currency, tax, shipping). The local sum
+    // below is only a placeholder for the on-page cart before the first
+    // estimate lands, and is never shown once Wix has answered.
+    const wixTotal = this.state.wixTotal || null;
+    const cartTotalNum = cart.reduce((sum, l) => sum + (parseFloat(String(l.price).replace(/[^0-9.]/g, '')) || 0), 0);
+    const cartTotalLabel = wixTotal || (cart[0] && cart[0].price ? String(cart[0].price).replace(/[0-9.,]+/, String(cartTotalNum)) : String(cartTotalNum));
+    const cartItemCount = cart.reduce((sum, l) => sum + (l.count || 0), 0);
+    const step = this.state.checkoutStep || 0;
+
+    return {
+      navHover: { opacity: 0.55 },
+      footLinkStyle: { color: 'rgba(253,245,242,0.75)', textDecoration: 'none', fontSize: 'clamp(14px,1.1vw,16px)', transition: 'color .2s ease' },
+      headerStyle: { position: 'fixed', top: 0, left: 0, right: 0, zIndex: 30, background: '#FDF5F2', borderBottom: '1px solid rgba(45,46,44,0.1)', display: 'flex', alignItems: 'center', gap: 'clamp(12px,2vw,24px)', padding: 'clamp(10px,1.2vw,14px) clamp(16px,3vw,40px)', transform: this.state.headerHidden ? 'translateY(-100%)' : 'translateY(0)', transition: 'transform .4s cubic-bezier(0.22,1,0.36,1)', boxShadow: this.state.headerHidden ? 'none' : '0 1px 0 rgba(45,46,44,0.06)' },
+      navLinkStyle: { color: '#2D2E2C', fontSize: '14px', fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.06em', textDecoration: 'none', whiteSpace: 'nowrap', transition: 'opacity .2s' },
+      headerCartStyle: { display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#2D2E2C', color: '#FDF5F2', border: 'none', borderRadius: '9999px', padding: '9px 16px', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', cursor: 'pointer', flexShrink: 0 },
+      menuBtnStyle: { alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: '#2D2E2C', cursor: 'pointer', padding: '4px', flexShrink: 0 },
+      mobileMenuStyle: { position: 'fixed', inset: 0, zIndex: 60, background: '#FDF5F2', display: 'flex', flexDirection: 'column', opacity: this.state.menuOpen ? 1 : 0, pointerEvents: this.state.menuOpen ? 'auto' : 'none', transform: this.state.menuOpen ? 'translateY(0)' : 'translateY(-12px)', transition: 'opacity .3s ease, transform .35s cubic-bezier(0.22,1,0.36,1)' },
+      mobileMenuLinkStyle: { color: '#2D2E2C', fontSize: 'clamp(34px,10vw,52px)', fontWeight: 500, fontFamily: "'Instrument Serif', serif", fontStyle: 'italic', letterSpacing: '-0.02em', lineHeight: 1.15, textDecoration: 'none', padding: '12px 0', borderBottom: '1px solid rgba(45,46,44,0.1)' },
+      cartBadgeStyle: { display: cart.length > 0 ? 'inline-flex' : 'none', alignItems: 'center', justifyContent: 'center', minWidth: '18px', height: '18px', padding: '0 5px', borderRadius: '9999px', background: 'rgba(253,245,242,0.22)', color: '#FDF5F2', fontSize: '12px', fontWeight: 700 },
+
+      pickerStyle: { position: 'absolute', top: 'clamp(120px,17vh,210px)', right: '-4px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 'clamp(8px,1vw,12px)', zIndex: 6 },
+      pickerLabelStyle: { fontSize: 'clamp(9px,0.8vw,11px)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(45,46,44,0.6)', marginBottom: '2px', width: 'clamp(72px,6.4vw,92px)', textAlign: 'center', writingMode: 'horizontal-tb' },
+      vegItems: vegItems,
+
+      aboutSectionStyle: { padding: 'clamp(48px,7vw,110px) clamp(16px,4vw,32px) clamp(200px,27vw,440px)', background: aboutBg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: this.farmerCursor() },
+      aboutStoryWrapStyle: { position: 'relative', minHeight: '100vh', marginTop: 'clamp(32px,6vh,90px)', background: aboutBg, cursor: this.farmerCursor() },
+      aboutStoryStickyStyle: { position: 'sticky', top: 0, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(24px,5vw,80px)' },
+      aboutCardStyle: { borderRadius: 'clamp(16px,2vw,28px)', padding: 'clamp(36px,5vw,88px) clamp(24px,4vw,64px)', width: '100%', maxWidth: '1152px', margin: '0 auto', textAlign: 'center', background: aboutCardBg, minHeight: 'clamp(440px,56vh,640px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transformOrigin: 'center bottom', transform: 'translateY(' + Math.round((1 - Math.min(1, (this.state.aboutScroll || 0) / 0.7)) * 180) + 'px)', opacity: (0.25 + 0.75 * Math.min(1, (this.state.aboutScroll || 0) / 0.7)).toFixed(3), transition: 'transform .3s cubic-bezier(0.22,1,0.36,1), opacity .3s ease' },
+      aboutLabelStyle: { position: 'absolute', top: 'clamp(80px,17vh,200px)', left: 0, right: 0, textAlign: 'center', color: aboutTextColor, fontSize: '20px', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: labelReveal, transform: 'translateY(' + ((1 - labelReveal) * 14) + 'px)', transition: 'opacity .2s linear, transform .2s linear' },
+      aboutHeadWrapStyle: { fontSize: 'clamp(28px,5vw,72px)', maxWidth: '768px', margin: '0 auto', lineHeight: 0.92, color: aboutTextColor },
+      aboutStoryStyle: { maxWidth: '1040px', margin: '0 auto', textAlign: 'center', fontSize: 'clamp(28px,5vw,72px)', fontWeight: 500, lineHeight: 1.06, letterSpacing: '-0.025em', color: aboutTextColor },
+      aboutSignStyle: { marginTop: 'clamp(20px,2.4vw,30px)', color: aboutTextColor, fontStyle: 'italic', fontFamily: "'Instrument Serif', serif", fontSize: 'clamp(18px,1.6vw,24px)' },
+      aboutBodyStyle: { maxWidth: '760px', margin: 'clamp(28px,4vw,48px) auto 0', color: aboutTextColor, fontSize: 'clamp(16px,1.5vw,22px)', lineHeight: 1.6 },
+
+      featSectionStyle: { minHeight: '100vh', background: featBg, padding: 'clamp(48px,7vw,110px) clamp(16px,4vw,32px)', position: 'relative' },
+
+      heroHeadStyle: {
+        display: 'inline-block',
+        transition: 'transform .8s ' + e + ', opacity .8s ' + e,
+        transform: show ? 'translateY(0)' : 'translateY(20px)',
+        opacity: show ? 1 : 0
+      },
+      heroDescStyle: {
+        margin: 0, color: 'rgba(45,46,44,0.72)', fontSize: 'clamp(18px,1.5vw,24px)', lineHeight: 1.45, maxWidth: 'clamp(280px,38vw,480px)', textAlign: 'left',
+        transition: 'transform .8s ' + e + ', opacity .8s ' + e, transitionDelay: '0.5s',
+        transform: show ? 'translateY(0)' : 'translateY(20px)', opacity: show ? 1 : 0
+      },
+      onBtnEnter: () => this.setState({ btnHover: true }),
+      onBtnLeave: () => this.setState({ btnHover: false }),
+      btnStyle: {
+        display: 'inline-flex', alignItems: 'center', gap: hover ? '12px' : '8px',
+        background: '#2D2E2C', color: '#FDF5F2', borderRadius: '9999px', padding: '14px 26px',
+        fontWeight: 500, fontSize: 'clamp(14px,1vw,16px)', textDecoration: 'none', width: 'fit-content', cursor: 'pointer',
+        transition: 'gap .3s ease, transform .8s ' + e + ', opacity .8s ' + e, transitionDelay: '0s, 0.7s, 0.7s',
+        transform: show ? 'translateY(0)' : 'translateY(20px)', opacity: show ? 1 : 0
+      },
+      circleStyle: {
+        background: '#FEDC0B', borderRadius: '9999px', width: 'clamp(36px,3vw,40px)', height: 'clamp(36px,3vw,40px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2D2E2C', flexShrink: 0,
+        transition: 'transform .3s ease', transform: hover ? 'scale(1.1)' : 'scale(1)'
+      },
+
+      aboutHeadWords: this.buildHeadWords(this.state.aboutScroll || 0),
+
+      aboutStoryWords: this.buildStoryWords(this.state.aboutStoryP || 0, aboutTextColor),
+
+      aboutWords: this.buildRevealWords(),
+
+      featWords1: this.mkWords('Fresh food in three simple steps.', this.state.featShow, 0, { color: '#FDF5F2' }),
+      receiptStyle: (() => {
+        const fin = this.state.featIn || 0;
+        const rise = Math.round((1 - fin) * 150);
+        const tilt = ((1 - fin) * -5).toFixed(2);
+        return {
+          maxWidth: '460px', margin: '0 auto',
+          background: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.05'/%3E%3C/svg%3E\") repeat, #FDFBF7",
+          minHeight: 'clamp(560px,68vh,720px)', display: 'flex', flexDirection: 'column',
+          padding: 'clamp(40px,4.5vw,60px) clamp(24px,2.6vw,36px)', color: '#2D2E2C',
+          boxShadow: '0 24px 60px rgba(34,23,18,0.28)',
+          cursor: 'default',
+          transformOrigin: 'center bottom',
+          transform: 'translateY(' + rise + 'px) rotate(' + tilt + 'deg)',
+          opacity: 1,
+          transition: 'transform .25s cubic-bezier(0.22,1,0.36,1)',
+          WebkitMask: "linear-gradient(#000 0 0) no-repeat 0 11px / 100% calc(100% - 22px), conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 22px 11px repeat-x, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 22px 11px repeat-x",
+          mask: "linear-gradient(#000 0 0) no-repeat 0 11px / 100% calc(100% - 22px), conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 22px 11px repeat-x, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 22px 11px repeat-x"
+        };
+      })(),
+      onReceiptEnter: () => this.setState({ featHover: true }),
+      onReceiptLeave: () => this.setState({ featHover: false }),
+      featLabelStyle: { fontSize: 'clamp(10px,0.9vw,12px)', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#FDF5F2', marginBottom: 'clamp(16px,2vw,24px)', opacity: 0.85 },
+
+      boxSectionStyle: { background: '#FDF5F2', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(440px,1fr))', alignItems: 'stretch', minHeight: 'calc(100vh - 64px)' },
+      boxLabelStyle: { fontSize: 'clamp(10px,0.9vw,12px)', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#E0472B', marginBottom: 'clamp(16px,2vw,24px)' },
+      boxHeadStyle: { margin: 0, fontFamily: "'Instrument Serif', serif", fontStyle: 'italic', fontSize: 'clamp(38px,6vw,88px)', fontWeight: 400, lineHeight: 0.92, letterSpacing: '-0.02em', whiteSpace: 'nowrap', color: '#2D2E2C', opacity: Math.min(1, boxIn / 0.3), transform: 'translateY(' + ((1 - Math.min(1, boxIn / 0.3)) * 30) + 'px)', transition: 'opacity .15s linear, transform .2s cubic-bezier(0.22,1,0.36,1)' },
+      boxSubStyle: { margin: 'clamp(16px,2vw,24px) 0 0', maxWidth: '440px', color: 'rgba(45,46,44,0.7)', fontSize: 'clamp(15px,1.2vw,18px)', lineHeight: 1.55 },
+      baskets: baskets,
+      produce: produce,
+      produceHeadStyle: { fontSize: 'clamp(11px,0.9vw,13px)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#E0472B' },
+      produceHeadText: "What's inside your " + activeName.replace(' basket', '').toLowerCase() + ' box · ' + activeCount + ' items',
+      onPickEnter: () => this.setState({ pickHover: true }),
+      onPickLeave: () => this.setState({ pickHover: false }),
+      totalPrice: (cfg[this.state.basket] ? cfg[this.state.basket].price : ''),
+      // Purchase-mode toggle (one-time vs subscribe & save). 'subscribe' becomes
+      // a real recurring order via wixCart once subscription options are set in
+      // the dashboard; until then it still adds to the (mock) cart.
+      purchaseModeLabelStyle: { marginTop: 'clamp(24px,3vw,34px)', fontSize: 'clamp(11px,0.9vw,13px)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2D2E2C' },
+      purchaseModeWrapStyle: { marginTop: 'clamp(10px,1.2vw,14px)', display: 'flex', gap: '10px' },
+      onModeOnce: () => this.setState({ purchaseMode: 'once' }),
+      onModeSubscribe: () => this.setState({ purchaseMode: 'subscribe' }),
+      modeOnceStyle: { flex: '1 1 0', display: 'flex', flexDirection: 'column', gap: '3px', textAlign: 'left', padding: '14px 16px', borderRadius: '12px', cursor: 'pointer', background: (this.state.purchaseMode !== 'subscribe') ? '#F6EDE7' : 'transparent', border: (this.state.purchaseMode !== 'subscribe') ? '1.5px solid #2D2E2C' : '1.5px solid rgba(45,46,44,0.18)', color: '#2D2E2C', fontSize: 'clamp(14px,1.1vw,16px)', transition: 'background .2s ease, border-color .2s ease' },
+      modeSubStyle: { flex: '1 1 0', display: 'flex', flexDirection: 'column', gap: '3px', textAlign: 'left', padding: '14px 16px', borderRadius: '12px', cursor: 'pointer', background: (this.state.purchaseMode === 'subscribe') ? '#F6EDE7' : 'transparent', border: (this.state.purchaseMode === 'subscribe') ? '1.5px solid #2D2E2C' : '1.5px solid rgba(45,46,44,0.18)', color: '#2D2E2C', fontSize: 'clamp(14px,1.1vw,16px)', transition: 'background .2s ease, border-color .2s ease' },
+      modeSubTextStyle: { fontSize: 'clamp(11px,0.9vw,13px)', color: 'rgba(45,46,44,0.55)', fontWeight: 400 },
+      addBtnLabel: this.state.purchaseMode === 'subscribe' ? 'Subscribe' : 'Add to cart',
+      onAddToCart: () => {
+        const k = this.state.basket; const b = cfg[k];
+        const mode = this.state.purchaseMode === 'subscribe' ? 'subscribe' : 'once';
+        const suffix = mode === 'subscribe' ? ' · ' + (this.selectedFrequencyLabel ? this.selectedFrequencyLabel().toLowerCase() : 'subscription') : '';
+        const line = { key: k + '-' + Date.now(), size: k, mode: mode, name: b.name.replace(' basket', '') + ' box' + suffix, count: b.count, price: b.price };
+        this.setState({ cart: (this.state.cart || []).concat([line]), cartOpen: true, checkoutStep: 0 });
+        // If Wix eCommerce is configured, mirror this add into the real Wix cart
+        // so the hosted checkout has the right line items (one-time or recurring).
+        // The local line above still drives the on-page cart UI. Failures are
+        // non-fatal — the mock UI keeps working and the error is logged.
+        if (window.wixCart && window.wixCart.isConfigured()) {
+          // Keep the on-page cart snappy (local line shows instantly), but track
+          // this add as a promise so checkout can WAIT for it — otherwise a fast
+          // click on "Checkout" hits Wix before the add lands and the Wix cart is
+          // still empty (OWNED_CART_NOT_FOUND). Chain adds so multiple boxes all
+          // finish before checkout.
+          const prev = this._wixAddInFlight || Promise.resolve();
+          this._wixAddInFlight = prev
+            .catch(() => {})
+            .then(() => window.wixCart.addBox(k, {
+              mode: mode,
+              subscriptionId: mode === 'subscribe' ? this.selectedSubscriptionId() : undefined
+            }))
+            .then(() => this.refreshWixTotals())
+            .catch(err => { console.warn('wixCart.addBox failed:', err); throw err; });
+        }
+      },
+      pickBtnIcon: React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, React.createElement('path', { d: 'M5 12h14' }), React.createElement('path', { d: 'm12 5 7 7-7 7' })),
+      pickBtnStyle: { display: 'inline-flex', alignItems: 'center', gap: pickHov ? '12px' : '8px', background: '#2D2E2C', color: '#FDF5F2', borderRadius: '9999px', padding: '16px 32px', fontWeight: 500, fontSize: 'clamp(15px,1.1vw,17px)', border: 'none', cursor: 'pointer', transition: 'gap .3s ease, transform .3s cubic-bezier(0.22,1,0.36,1), opacity .2s linear', transform: 'translateY(' + (floatY(4, 6, 22).y + (pickHov ? -2 : 0)) + 'px)', opacity: floatY(4, 6, 22).o },
+      buyNoteStyle: { fontSize: 'clamp(12px,1vw,14px)', color: 'rgba(45,46,44,0.5)' },
+
+      cartCount: cart.length,
+      cartEmpty: cart.length === 0 && step === 0,
+      showCart: cart.length > 0 && step === 0,
+      showDelivery: step === 1,
+      // Frequency picker only appears for subscriptions — a one-time box has no cadence.
+      showFrequency: this.state.purchaseMode === 'subscribe',
+      showPayment: step === 2,
+      cartPlaced: step === 3,
+      showFooter: cart.length > 0 || step === 3,
+      drawerTitle: ['Your cart', 'Delivery details', 'Payment', 'Confirmed'][step],
+      stepBadge: step < 3 ? ('Step ' + (step + 1) + ' of 3') : '',
+      stepBadgeStyle: { display: step > 0 && step < 3 ? 'inline-block' : 'none', fontSize: 'clamp(10px,0.85vw,12px)', fontWeight: 600, letterSpacing: '0.04em', color: 'rgba(45,46,44,0.45)', whiteSpace: 'nowrap' },
+      backBtnStyle: { display: step === 1 || step === 2 ? 'flex' : 'none', background: 'none', border: 'none', cursor: 'pointer', color: '#2D2E2C', padding: '4px', marginLeft: '-4px' },
+      onCheckoutBack: () => this.setState({ checkoutStep: Math.max(0, (this.state.checkoutStep || 0) - 1) }),
+      cartLines: cart.map(line => ({
+        initial: line.name.charAt(0),
+        name: line.name,
+        meta: line.count + ' seasonal items',
+        price: line.price,
+        onRemove: () => this.setState({ cart: (this.state.cart || []).filter(x => x.key !== line.key) })
+      })),
+      cartTotal: cartTotalLabel,
+      onCartOpen: () => this.setState({ cartOpen: true, menuOpen: false }),
+      onMenuToggle: () => this.setState({ menuOpen: !this.state.menuOpen }),
+      onMenuClose: () => this.setState({ menuOpen: false }),
+      onCartClose: () => this.setState({ cartOpen: false }),
+      onEmptyCta: () => { this.setState({ cartOpen: false }); const el = document.getElementById('box'); if (el) { const y = el.getBoundingClientRect().top + window.scrollY - 64; window.scrollTo({ top: y, behavior: 'smooth' }); } },
+      emptyCtaStyle: { display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#2D2E2C', color: '#FDF5F2', border: 'none', borderRadius: '9999px', padding: '13px 26px', fontSize: 'clamp(14px,1vw,16px)', fontWeight: 600, cursor: 'pointer' },
+
+      fieldLabelStyle: { display: 'flex', flexDirection: 'column', gap: '6px', flex: '1 1 auto', fontSize: 'clamp(12px,1vw,13px)', fontWeight: 600, color: 'rgba(45,46,44,0.7)' },
+      inputStyle: { marginTop: '2px', padding: '12px 14px', borderRadius: '10px', border: '1.5px solid rgba(45,46,44,0.18)', background: 'transparent', fontSize: 'clamp(14px,1.1vw,16px)', color: '#2D2E2C', fontWeight: 500, outline: 'none', width: '100%' },
+      formName: this.state.formName || '', onFormName: (e) => this.setState({ formName: e.target.value }),
+      formEmail: this.state.formEmail || '', onFormEmail: (e) => this.setState({ formEmail: e.target.value }),
+      formAddr: this.state.formAddr || '', onFormAddr: (e) => this.setState({ formAddr: e.target.value }),
+      formCity: this.state.formCity || '', onFormCity: (e) => this.setState({ formCity: e.target.value }),
+      formPost: this.state.formPost || '', onFormPost: (e) => this.setState({ formPost: e.target.value }),
+      formCard: this.state.formCard || '', onFormCard: (e) => this.setState({ formCard: e.target.value }),
+      formExp: this.state.formExp || '', onFormExp: (e) => this.setState({ formExp: e.target.value }),
+      formCvc: this.state.formCvc || '', onFormCvc: (e) => this.setState({ formCvc: e.target.value }),
+      deliveryDays: this.frequencyOptions().map(f => {
+        const sel = (this.state.frequency || 'weekly') === f.key;
+        return {
+          label: f.label, sub: f.sub,
+          onClick: () => this.setState({ frequency: f.key }),
+          style: { display: 'flex', alignItems: 'center', gap: '12px', width: '100%', cursor: 'pointer', padding: '14px 16px', borderRadius: '12px', background: sel ? '#F6EDE7' : 'transparent', border: sel ? '1.5px solid #2D2E2C' : '1.5px solid rgba(45,46,44,0.18)', transition: 'background .2s ease, border-color .2s ease' },
+          radioStyle: { flexShrink: 0, width: '18px', height: '18px', borderRadius: '50%', border: sel ? '5px solid #2D2E2C' : '1.5px solid rgba(45,46,44,0.3)', transition: 'border .2s ease' },
+          subStyle: { fontSize: 'clamp(11px,0.9vw,13px)', color: 'rgba(45,46,44,0.55)' }
+        };
+      }),
+      summaryAddr: (this.state.formAddr || '12 Orchard Lane') + ', ' + (this.state.formPost || 'BS1 4ST'),
+      summaryDay: this.selectedFrequencyLabel(),
+
+      // When Wix eCommerce is live, step 0's button goes straight to Wix's
+      // hosted (PCI-compliant) checkout, which collects delivery + payment — so
+      // we skip the mock delivery/payment steps. Otherwise the original 4-step
+      // mock flow is used unchanged.
+      checkoutBtnLabel: (step === 0 && window.wixCart && window.wixCart.isConfigured())
+        ? (this.state.checkoutRedirecting ? 'Taking you to checkout…' : 'Proceed to secure checkout')
+        : ['Continue to delivery', 'Continue to payment', 'Pay ' + cartTotalLabel + ' · place order', 'Keep browsing'][step],
+      checkoutNote: ['No subscription · free delivery', 'Free delivery on every box', 'Secure payment · cancel anytime', ''][step],
+      onCheckoutNext: () => {
+        const s = this.state.checkoutStep || 0;
+        // Real checkout path: from the cart, hand off to Wix hosted checkout.
+        if (s === 0 && window.wixCart && window.wixCart.isConfigured()) {
+          if (this.state.checkoutRedirecting) return;
+          this.setState({ checkoutRedirecting: true });
+          // Wait for any in-flight addBox to finish so the Wix cart is populated
+          // before we create the checkout. Without this, a quick checkout races
+          // the add and Wix returns OWNED_CART_NOT_FOUND (empty cart).
+          Promise.resolve(this._wixAddInFlight)
+            .catch(() => {}) // an add error shouldn't block trying to check out
+            .then(() => window.wixCart.getCheckoutUrl())
+            .then(url => { if (url) window.location.assign(url); else throw new Error('no checkout url'); })
+            .catch(err => {
+              console.warn('wixCart checkout failed, falling back to mock flow:', err);
+              this.setState({ checkoutRedirecting: false, checkoutStep: 1 });
+            });
+          return;
+        }
+        if (s < 2) { this.setState({ checkoutStep: s + 1 }); }
+        else if (s === 2) { this.setState({ checkoutStep: 3, lastOrderCount: cartItemCount, lastOrderTotal: cartTotalLabel }); }
+        else { this.setState({ cartOpen: false, checkoutStep: 0, cart: [] }); }
+      },
+      onCheckout: () => this.setState({ checkoutStep: 1 }),
+      placedText: 'Your ' + this.selectedFrequencyLabel().toLowerCase() + ' order (' + (this.state.lastOrderCount || 0) + ' items · ' + (this.state.lastOrderTotal || '') + ') is confirmed — first box arrives ' + this.deliveryLabel() + '. A receipt is on its way to ' + (this.state.formEmail || 'your inbox') + '.',
+      cartFabStyle: { position: 'fixed', bottom: 'clamp(16px,2.5vw,32px)', right: 'clamp(16px,2.5vw,32px)', zIndex: 40, display: cart.length > 0 && !this.state.cartOpen ? 'inline-flex' : 'none', alignItems: 'center', gap: '10px', background: '#2D2E2C', color: '#FDF5F2', border: 'none', borderRadius: '9999px', padding: '14px 22px', fontWeight: 600, fontSize: 'clamp(14px,1vw,16px)', cursor: 'pointer', boxShadow: '0 14px 34px rgba(34,23,18,0.28)' },
+      cartOverlayStyle: { position: 'fixed', inset: 0, zIndex: 44, background: 'rgba(34,23,18,0.4)', opacity: this.state.cartOpen ? 1 : 0, pointerEvents: this.state.cartOpen ? 'auto' : 'none', transition: 'opacity .35s ease' },
+      cartDrawerStyle: { position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 45, width: 'min(420px,92vw)', background: '#FDF5F2', display: 'flex', flexDirection: 'column', boxShadow: '-20px 0 60px rgba(34,23,18,0.2)', transform: this.state.cartOpen ? 'translateX(0)' : 'translateX(100%)', transition: 'transform .4s cubic-bezier(0.22,1,0.36,1)' },
+      checkoutBtnStyle: { width: '100%', background: '#2D2E2C', color: '#FDF5F2', border: 'none', borderRadius: '9999px', padding: '16px', fontWeight: 700, fontSize: 'clamp(15px,1.1vw,17px)', cursor: 'pointer' },
+
+      videoCardStyle: this.cardStyle(0),
+      cards: cardsData.map((c, i) => Object.assign({}, c, { style: this.cardStyle(i) })),
+      steps: cardsData.map((c, i) => {
+        const on = this.state.featStep === i;
+        const fin = this.state.featIn || 0;
+        const n = cardsData.length, ramp = 2.4;
+        // steps write on one after another once the receipt has risen in
+        const revealed = Math.max(0, Math.min(1, (fin - 0.35) / 0.6)) * (n + ramp);
+        const o = Math.max(0, Math.min(1, (revealed - i) / ramp));
+        return {
+          num: c.num, title: c.title, desc: c.desc,
+          rowStyle: { display: 'flex', gap: '16px', alignItems: 'center', cursor: 'default', padding: 'clamp(18px,2vw,24px) 4px', borderTop: '1px dashed rgba(45,46,44,0.22)', opacity: o, transform: 'translateY(' + ((1 - o) * 16) + 'px)', transition: 'opacity .12s linear, transform .12s linear' },
+          numStyle: { fontSize: 'clamp(20px,1.8vw,26px)', fontWeight: 500, color: '#E0472B', fontVariantNumeric: 'tabular-nums', flexShrink: 0, lineHeight: 1 },
+          titleStyle: { fontSize: 'clamp(19px,1.8vw,24px)', fontWeight: 700, letterSpacing: '-0.01em', color: '#2D2E2C', transition: 'transform .3s ease', display: 'inline-block', transform: on ? 'translateX(3px)' : 'none' },
+          descStyle: { margin: 0, color: '#6b665d', fontSize: 'clamp(13px,1.05vw,15px)', lineHeight: 1.5 }
+        };
+      }),
+      featActiveIcon: (cardsData[this.state.featStep] || cardsData[0]).icon,
+      featActiveTitle: (cardsData[this.state.featStep] || cardsData[0]).title,
+      featCardLabelStyle: { fontSize: 'clamp(10px,0.9vw,12px)', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#E0472B' },
+      featVisualStyle: { position: 'relative', minHeight: 'clamp(280px,32vw,440px)', overflow: 'hidden', background: '#eaded6' },
+      featImgStyle: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
+    };
+  }
+}
+</script>
+</body>
+</html>
