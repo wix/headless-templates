@@ -126,6 +126,8 @@ const locationOptions = [...locationMap.values()].sort((a, b) => a.name.localeCo
 </Layout>
 
 <script>
+  import { parseYmd, ymd } from "../utils/date-utils";
+
   type Filters = {
     showUnavailable: boolean;
     rentalTypes: string[];
@@ -186,8 +188,14 @@ const locationOptions = [...locationMap.values()].sort((a, b) => a.name.localeCo
       if (locationId) body.locationIds = [locationId];
       if (filters.attributes.length) body.attributes = filters.attributes;
       if (range) {
+        // Availability windows are midnight-to-midnight: the end is midnight of
+        // the day AFTER the last selected day, not 23:59:59. A full-day (24/7)
+        // slot runs [00:00, next-day 00:00], so a 23:59:59 window would exclude
+        // it and the service would wrongly look unavailable.
+        const endExclusive = parseYmd(range.end);
+        endExclusive.setDate(endExclusive.getDate() + 1);
         body.localStartDate = `${range.start}T00:00:00`;
-        body.localEndDate = `${range.end}T23:59:59`;
+        body.localEndDate = `${ymd(endExclusive)}T00:00:00`;
         body.includeUnavailable = filters.showUnavailable;
       }
 
