@@ -69,7 +69,7 @@
       "name": "apex",
       "title": "Apex (Wix Bookings)",
       "subtitle": "Session booking with availability, instructors, and checkout",
-      "siteTemplateId": "",
+      "siteTemplateId": "167cd3d1-380b-45e0-90b3-2040296e6841",
       "gitPath": "astro/apex",
       "vibeCompatible": false
     }
