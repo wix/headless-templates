@@ -67,6 +67,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Events</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/rentals">Rentals</a></td>
+      <td>A template for reserving rental spaces by the hour or day using Astro and Wix Headless.</td>
+      <td></td>
+      <td>Wix Rentals</td>
+    </tr>
+    <tr>
       <td colspan="4" align="center"><strong>Next.js</strong></td>
     </tr>
     <tr>

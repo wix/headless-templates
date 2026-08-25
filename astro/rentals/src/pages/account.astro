@@ -1,0 +1,387 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import ErrorMessage from "../components/ui/ErrorMessage.astro";
+import { BUSINESS_NAME } from "../utils/constants";
+import { getCurrentMember, listMyBookings, type MyBooking } from "../utils/rentals-service";
+import { icons } from "../utils/icons";
+
+// Auth + bookings resolve server-side; the integration authenticates the request.
+const member = await getCurrentMember();
+
+let bookings: MyBooking[] = [];
+let bookingsError = false;
+if (member) {
+  try {
+    bookings = await listMyBookings();
+  } catch (error) {
+    console.error("Error loading member bookings:", error);
+    bookingsError = true;
+  }
+}
+
+const initial = (member?.name ?? "M").trim().charAt(0).toUpperCase();
+
+function statusBadge(status: string): { tone: string; label: string } {
+  const s = status.toUpperCase();
+  const tone =
+    s === "CONFIRMED"
+      ? "bg-green-100 text-green-700"
+      : s === "PENDING" || s === "PENDING_APPROVAL" || s === "WAITING_LIST"
+        ? "bg-amber-100 text-amber-700"
+        : "bg-secondary text-muted-foreground";
+  const label = s.charAt(0) + s.slice(1).toLowerCase().replace(/_/g, " ");
+  return { tone, label };
+}
+---
+
+<Layout title={`My reservations — ${BUSINESS_NAME}`} description="View and manage your rental reservations.">
+  <Navbar />
+
+  <main class="min-h-screen bg-white pt-32 pb-24 px-4">
+    <div class="max-w-3xl mx-auto">
+      <a href="/" class="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-6">
+        <span class="text-base" set:html={icons.chevronLeft} />
+        Back to rentals
+      </a>
+
+      {!member ? (
+        <div class="max-w-md mx-auto glass-panel p-8 text-center animate-fade-up">
+          <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-2xl text-primary" set:html={icons.user} />
+          <h1 class="mt-5 text-xl font-semibold tracking-tight">Log in to view your account</h1>
+          <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Browsing and booking are open to everyone — sign in only to see and manage the bookings tied to your account.
+          </p>
+          <a
+            href="/api/auth/login?returnToUrl=/account"
+            class="mt-6 block w-full rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors"
+          >
+            Log in or sign up
+          </a>
+          <a href="/" class="mt-3 inline-block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            Continue browsing
+          </a>
+        </div>
+      ) : (
+        <>
+          <div class="flex items-center justify-between gap-4 animate-fade-up">
+            <div class="flex items-center gap-4">
+              {member.photo ? (
+                <img src={member.photo} alt="" referrerpolicy="no-referrer" class="h-14 w-14 rounded-full object-cover" />
+              ) : (
+                <span class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-lg font-semibold text-white">{initial}</span>
+              )}
+              <div>
+                <h1 class="text-2xl font-semibold tracking-tight">{member.name}</h1>
+                {member.email && <p class="text-sm text-muted-foreground">{member.email}</p>}
+              </div>
+            </div>
+            <form method="post" action="/api/auth/logout?returnToUrl=/">
+              <button type="submit" class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium hover:border-primary/40 transition-colors">
+                Log out
+              </button>
+            </form>
+          </div>
+
+          <h2 class="mt-10 text-xl font-semibold tracking-tight">My reservations</h2>
+
+          <div id="action-error" class="hidden mt-4">
+            <ErrorMessage message="Something went wrong. Please try again." />
+          </div>
+
+          {bookingsError ? (
+            <div class="mt-4">
+              <ErrorMessage message="We couldn't load your bookings. Please refresh to try again." />
+            </div>
+          ) : bookings.length === 0 ? (
+            <div class="mt-4 glass-panel border-dashed px-6 py-16 text-center">
+              <p class="text-base font-medium">No bookings yet</p>
+              <p class="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                When you reserve a space it'll show up here.
+                <a href="/" class="font-medium text-primary hover:opacity-70"> Browse rentals</a>
+              </p>
+            </div>
+          ) : (
+            <ul class="mt-4 space-y-3">
+              {bookings.map((b) => {
+                const canceled = ["CANCELED", "DECLINED"].includes(b.status.toUpperCase());
+                const hasActions = !canceled && (b.canCancel || b.canReschedule);
+                const badge = statusBadge(b.status);
+                return (
+                  <li
+                    class="booking-item glass-panel p-4 animate-fade-in"
+                    data-id={b.id}
+                    data-revision={b.revision}
+                    data-service-id={b.serviceId}
+                    data-duration={String(b.durationMinutes)}
+                    data-unit={b.unit}
+                    data-title={b.title}
+                    data-when={b.when}
+                  >
+                    <div class="flex items-start justify-between gap-3">
+                      <div>
+                        <p class="font-semibold">{b.title}</p>
+                        <p class="mt-0.5 text-sm text-muted-foreground">{b.when}</p>
+                      </div>
+                      <span class={`pill px-2.5 py-1 text-xs font-medium ${badge.tone}`}>{badge.label}</span>
+                    </div>
+
+                    {hasActions ? (
+                      <div class="booking-actions mt-3 flex gap-2 border-t border-gray-200 pt-3">
+                        {b.canReschedule && (
+                          <button type="button" class="btn-reschedule rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium hover:border-primary/40 transition-colors">
+                            Reschedule
+                          </button>
+                        )}
+                        {b.canCancel && (
+                          <button type="button" class="btn-cancel rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors">
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      !canceled && (
+                        <p class="mt-3 border-t border-gray-200 pt-3 text-xs text-muted-foreground">
+                          Changes aren't available for this booking under its policy.
+                        </p>
+                      )
+                    )}
+
+                    <div class="cancel-confirm hidden mt-3 items-center gap-3 border-t border-gray-200 pt-3 text-sm">
+                      <span class="text-foreground/70">Cancel this booking?</span>
+                      <button type="button" class="btn-cancel-yes rounded-md bg-red-600 px-3 py-1.5 font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-60">
+                        Yes, cancel
+                      </button>
+                      <button type="button" class="btn-cancel-no text-muted-foreground hover:text-foreground transition-colors">
+                        Keep it
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </>
+      )}
+    </div>
+  </main>
+
+  <!-- Reschedule modal (shared across bookings) -->
+  <div id="reschedule-overlay" class="hidden fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
+    <div class="animate-modal w-full max-w-md rounded-t-lg bg-white shadow-xl sm:rounded-lg">
+      <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+        <h2 class="text-lg font-semibold tracking-tight">Reschedule booking</h2>
+        <button id="reschedule-close" type="button" aria-label="Close" class="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground">
+          <span class="text-xl" set:html={icons.close} />
+        </button>
+      </div>
+      <div class="space-y-4 px-6 py-5">
+        <p id="reschedule-context" class="text-sm text-muted-foreground"></p>
+        <label class="block">
+          <span class="mb-1 block text-sm font-medium">New date</span>
+          <input id="reschedule-date" type="date" class="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-hidden focus:border-primary" />
+        </label>
+        <div>
+          <span class="mb-1 block text-sm font-medium">New time</span>
+          <p id="reschedule-loading" class="hidden text-sm text-muted-foreground">Loading availability…</p>
+          <p id="reschedule-none" class="hidden text-sm text-muted-foreground">No availability on this date — try another.</p>
+          <p id="reschedule-error" class="hidden text-sm text-red-600"></p>
+          <select id="reschedule-time" class="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-hidden focus:border-primary">
+            <option value="">Select a time</option>
+          </select>
+        </div>
+        <p id="reschedule-note" class="text-xs text-muted-foreground"></p>
+      </div>
+      <div class="flex items-center justify-end gap-2 border-t border-gray-200 px-6 py-4">
+        <button id="reschedule-cancel" type="button" class="rounded-lg px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          Cancel
+        </button>
+        <button id="reschedule-confirm" type="button" disabled class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white enabled:hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-secondary disabled:text-muted-foreground">
+          Confirm reschedule
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <Footer />
+</Layout>
+
+<script>
+  import {
+    cancelMyBooking,
+    getAvailability,
+    rescheduleMyBooking,
+  } from "../utils/rentals-service";
+  import type { AvailabilitySlot } from "../utils/types";
+  import { formatMinutes, toLocalDateTime } from "../utils/format";
+
+  const actionError = document.getElementById("action-error");
+  function showActionError(show: boolean) {
+    actionError?.classList.toggle("hidden", !show);
+  }
+
+  /* ------------------------------------------------------------ Cancel flow */
+  document.querySelectorAll<HTMLElement>(".booking-item").forEach((item) => {
+    const actions = item.querySelector(".booking-actions");
+    const confirm = item.querySelector<HTMLElement>(".cancel-confirm");
+    const cancelBtn = item.querySelector(".btn-cancel");
+    const yesBtn = item.querySelector<HTMLButtonElement>(".btn-cancel-yes");
+    const noBtn = item.querySelector(".btn-cancel-no");
+
+    cancelBtn?.addEventListener("click", () => {
+      showActionError(false);
+      actions?.classList.add("hidden");
+      confirm?.classList.remove("hidden");
+      confirm?.classList.add("flex");
+    });
+    noBtn?.addEventListener("click", () => {
+      confirm?.classList.add("hidden");
+      confirm?.classList.remove("flex");
+      actions?.classList.remove("hidden");
+    });
+    yesBtn?.addEventListener("click", async () => {
+      const id = item.dataset.id!;
+      const revision = item.dataset.revision!;
+      yesBtn.disabled = true;
+      yesBtn.textContent = "Cancelling…";
+      try {
+        await cancelMyBooking(id, revision);
+        window.location.reload();
+      } catch (error) {
+        console.error("Error cancelling booking:", error);
+        showActionError(true);
+        yesBtn.disabled = false;
+        yesBtn.textContent = "Yes, cancel";
+      }
+    });
+  });
+
+  /* -------------------------------------------------------- Reschedule flow */
+  const overlayRoot = document.getElementById("reschedule-overlay");
+  if (overlayRoot) {
+    const overlay = overlayRoot;
+    const closeBtn = document.getElementById("reschedule-close")!;
+    const cancelBtn = document.getElementById("reschedule-cancel")!;
+    const confirmBtn = document.getElementById("reschedule-confirm") as HTMLButtonElement;
+    const dateInput = document.getElementById("reschedule-date") as HTMLInputElement;
+    const timeSelect = document.getElementById("reschedule-time") as HTMLSelectElement;
+    const contextEl = document.getElementById("reschedule-context")!;
+    const noteEl = document.getElementById("reschedule-note")!;
+    const loadingEl = document.getElementById("reschedule-loading")!;
+    const noneEl = document.getElementById("reschedule-none")!;
+    const errorEl = document.getElementById("reschedule-error")!;
+
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const todayYmd = () => {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    };
+
+    let current: { id: string; revision: string; serviceId: string; duration: number; unit: string } | null = null;
+    let slots: AvailabilitySlot[] = [];
+    let rescheduleTz: string | undefined;
+
+    function setOpen(open: boolean) {
+      overlay.classList.toggle("hidden", !open);
+    }
+
+    async function loadTimes() {
+      if (!current) return;
+      const date = dateInput.value;
+      slots = [];
+      timeSelect.innerHTML = '<option value="">Select a time</option>';
+      confirmBtn.disabled = true;
+      errorEl.classList.add("hidden");
+      noneEl.classList.add("hidden");
+      loadingEl.classList.remove("hidden");
+      try {
+        const res = await getAvailability(current.serviceId, `${date}T00:00:00`, `${date}T23:59:59`);
+        rescheduleTz = res.timeZone ?? rescheduleTz;
+        slots = res.slots.filter((s) => s.bookable);
+        const now = toLocalDateTime(new Date());
+        const isToday = date === todayYmd();
+        const seen = new Set<string>();
+        const options = slots
+          .filter((s) => (!isToday || s.localStartDate > now) && !seen.has(s.localStartDate) && seen.add(s.localStartDate))
+          .sort((a, b) => (a.localStartDate < b.localStartDate ? -1 : 1))
+          .map((s) => ({ key: s.key, label: current!.unit === "DAY" ? "All day" : s.startLabel }));
+        loadingEl.classList.add("hidden");
+        if (options.length === 0) {
+          noneEl.classList.remove("hidden");
+          return;
+        }
+        timeSelect.innerHTML =
+          '<option value="">Select a time</option>' +
+          options.map((o) => `<option value="${o.key}">${o.label}</option>`).join("");
+      } catch (error) {
+        console.error("Error loading availability:", error);
+        loadingEl.classList.add("hidden");
+        errorEl.textContent = "Could not load availability.";
+        errorEl.classList.remove("hidden");
+      }
+    }
+
+    document.querySelectorAll<HTMLElement>(".booking-item").forEach((item) => {
+      const btn = item.querySelector(".btn-reschedule");
+      btn?.addEventListener("click", () => {
+        showActionError(false);
+        current = {
+          id: item.dataset.id!,
+          revision: item.dataset.revision!,
+          serviceId: item.dataset.serviceId!,
+          duration: Number(item.dataset.duration) || 0,
+          unit: item.dataset.unit || "HOUR",
+        };
+        contextEl.innerHTML = `<span class="text-foreground/70">${item.dataset.title}</span> · currently ${item.dataset.when}`;
+        noteEl.textContent = `Your booking keeps its original length (${formatMinutes(current.duration) ?? "same duration"}).`;
+        dateInput.min = todayYmd();
+        dateInput.value = todayYmd();
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Confirm reschedule";
+        setOpen(true);
+        loadTimes();
+      });
+    });
+
+    dateInput.addEventListener("change", loadTimes);
+    timeSelect.addEventListener("change", () => {
+      confirmBtn.disabled = !timeSelect.value;
+    });
+
+    const close = () => setOpen(false);
+    closeBtn.addEventListener("click", close);
+    cancelBtn.addEventListener("click", close);
+    overlay.addEventListener("mousedown", (e) => {
+      if (e.target === overlay) close();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") close();
+    });
+
+    confirmBtn.addEventListener("click", async () => {
+      if (!current) return;
+      const slot = slots.find((s) => s.key === timeSelect.value);
+      if (!slot) return;
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = "Rescheduling…";
+      errorEl.classList.add("hidden");
+      try {
+        await rescheduleMyBooking(current.id, current.revision, {
+          serviceId: current.serviceId,
+          localStartDate: slot.localStartDate,
+          durationMinutes: current.duration,
+          timeZone: rescheduleTz,
+          location: (slot.raw as any)?.location,
+        });
+        window.location.reload();
+      } catch (error) {
+        console.error("Error rescheduling booking:", error);
+        errorEl.textContent = "Could not reschedule this booking.";
+        errorEl.classList.remove("hidden");
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = "Confirm reschedule";
+      }
+    });
+  }
+</script>

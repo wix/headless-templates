@@ -1,0 +1,459 @@
+---
+import { icons } from "../utils/icons";
+import { formatDurationRange } from "../utils/format";
+
+interface Props {
+  serviceId: string;
+  minMinutes: number;
+  maxMinutes: number;
+  priceLabel?: string;
+  priceUnit?: string;
+  initialDate?: string;
+  payInPerson?: boolean;
+  /** The rental's resource type — booked with ANY_RESOURCE (Wix assigns one). */
+  resourceTypeId?: string;
+}
+
+const { serviceId, minMinutes, maxMinutes, priceLabel, priceUnit, initialDate, payInPerson, resourceTypeId } =
+  Astro.props;
+const durationLabel = formatDurationRange(minMinutes, maxMinutes) ?? "";
+---
+
+<div
+  id="reservation-panel"
+  class="glass-panel p-5"
+  data-service-id={serviceId}
+  data-min-minutes={String(minMinutes)}
+  data-max-minutes={String(maxMinutes)}
+  data-initial-date={initialDate ?? ""}
+  data-pay-in-person={payInPerson ? "true" : "false"}
+  data-resource-type-id={resourceTypeId ?? ""}
+>
+  <p class="text-sm font-semibold tracking-wide">Reservation details</p>
+
+  <div class="relative mt-3" id="reservation-field-wrap">
+    <button
+      id="reservation-field"
+      type="button"
+      class="flex w-full items-center gap-2.5 rounded-lg border border-gray-200 bg-secondary/40 px-3.5 py-3 text-left text-sm hover:border-primary/40 transition-colors"
+      aria-expanded="false"
+    >
+      <span class="shrink-0 text-base text-muted-foreground" set:html={icons.calendar} />
+      <span id="reservation-summary" class="text-muted-foreground">Select a date &amp; time</span>
+    </button>
+
+    <div id="reservation-popover" class="hidden absolute right-0 z-30 mt-2 w-[520px] max-w-[calc(100vw-2rem)] glass-panel p-4 shadow-xl">
+      <div class="flex flex-col gap-5 sm:flex-row">
+        <div class="sm:w-1/2">
+          <div class="mb-2 flex items-center justify-between">
+            <button id="cal-prev" type="button" class="rounded-md p-1.5 enabled:hover:bg-secondary disabled:opacity-30" aria-label="Previous month">
+              <span class="text-base" set:html={icons.chevronLeft} />
+            </button>
+            <span id="cal-label" class="text-sm font-medium"></span>
+            <button id="cal-next" type="button" class="rounded-md p-1.5 hover:bg-secondary" aria-label="Next month">
+              <span class="text-base" set:html={icons.chevronRight} />
+            </button>
+          </div>
+          <div id="cal-grid" class="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground"></div>
+        </div>
+
+        <div class="sm:w-1/2">
+          <div id="times-empty" class="pt-2 text-sm text-muted-foreground">Pick a date to see available times.</div>
+          <div id="times-loading" class="hidden pt-2 text-sm text-muted-foreground">Loading times…</div>
+          <div id="times-error" class="hidden pt-2 text-sm text-red-600"></div>
+          <div id="times-none" class="hidden pt-2 text-sm text-muted-foreground">No availability on this date.</div>
+          <div id="times-fields" class="hidden space-y-3">
+            <label class="block">
+              <span class="mb-1 block text-sm">Start time</span>
+              <select id="start-time" class="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-hidden focus:border-primary">
+                <option value="">Select</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="mb-1 block text-sm">End time</span>
+              <select id="end-time" disabled class="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-hidden focus:border-primary disabled:opacity-50">
+                <option value="">Select</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 flex items-center justify-between border-t border-gray-200 pt-3">
+        <button id="reservation-clear" type="button" class="text-sm text-muted-foreground hover:text-foreground">Clear</button>
+        <button id="reservation-done" type="button" disabled class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white enabled:hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-secondary disabled:text-muted-foreground">
+          Select
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4 flex items-baseline justify-between">
+    <div>
+      {priceLabel && <span class="text-xl font-semibold">{priceLabel}</span>}
+      {priceUnit && <span class="text-sm text-muted-foreground"> /{priceUnit}</span>}
+    </div>
+    {durationLabel && <span class="text-xs text-muted-foreground">{durationLabel} booking</span>}
+  </div>
+
+  <div id="hour-breakdown" class="hidden mt-4 rounded-lg border border-gray-200 bg-secondary/30 p-4 text-sm">
+    <div class="flex items-center justify-between text-muted-foreground">
+      <span id="hour-breakdown-sub-label"></span>
+      <span id="hour-breakdown-sub"></span>
+    </div>
+    <div class="mt-2 flex items-center justify-between border-t border-gray-200 pt-2 text-base font-semibold">
+      <span>Total</span>
+      <span id="hour-breakdown-total"></span>
+    </div>
+    <p id="hour-breakdown-pay" class="mt-1 text-xs text-muted-foreground"></p>
+  </div>
+
+  <p id="reserve-error" class="hidden mt-3 text-sm text-red-600"></p>
+
+  <button
+    id="reserve-btn"
+    type="button"
+    disabled
+    class="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white enabled:hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-secondary disabled:text-muted-foreground"
+  >
+    Reserve
+  </button>
+  <p class="mt-2 text-center text-xs text-muted-foreground">
+    You won't be charged until you review and confirm at checkout.
+  </p>
+</div>
+
+<script>
+  import { getAvailability, getSlotEndOptions, reserve, type AvailabilityResult } from "../utils/rentals-service";
+  import type { AvailabilitySlot } from "../utils/types";
+  import { formatTimeLabel } from "../utils/format";
+  import { MONTHS, WEEKDAYS, monthCells, ymd, parseYmd, startOfToday } from "../utils/date-utils";
+
+  const root = document.getElementById("reservation-panel");
+  if (root) {
+    const serviceId = root.dataset.serviceId!;
+    const minMinutes = Number(root.dataset.minMinutes) || 60;
+    const maxMinutes = Number(root.dataset.maxMinutes) || minMinutes;
+    const initialDate = root.dataset.initialDate || null;
+    const resourceTypeId = root.dataset.resourceTypeId || undefined;
+
+    const field = document.getElementById("reservation-field")!;
+    const fieldWrap = document.getElementById("reservation-field-wrap")!;
+    const popover = document.getElementById("reservation-popover")!;
+    const summary = document.getElementById("reservation-summary")!;
+    const calLabel = document.getElementById("cal-label")!;
+    const calGrid = document.getElementById("cal-grid")!;
+    const calPrev = document.getElementById("cal-prev") as HTMLButtonElement;
+    const calNext = document.getElementById("cal-next") as HTMLButtonElement;
+    const timesEmpty = document.getElementById("times-empty")!;
+    const timesLoading = document.getElementById("times-loading")!;
+    const timesError = document.getElementById("times-error")!;
+    const timesNone = document.getElementById("times-none")!;
+    const timesFields = document.getElementById("times-fields")!;
+    const startSel = document.getElementById("start-time") as HTMLSelectElement;
+    const endSel = document.getElementById("end-time") as HTMLSelectElement;
+    const clearBtn = document.getElementById("reservation-clear")!;
+    const doneBtn = document.getElementById("reservation-done") as HTMLButtonElement;
+    const reserveBtn = document.getElementById("reserve-btn") as HTMLButtonElement;
+    const reserveError = document.getElementById("reserve-error")!;
+    const breakdown = document.getElementById("hour-breakdown")!;
+    const breakdownSubLabel = document.getElementById("hour-breakdown-sub-label")!;
+    const breakdownSub = document.getElementById("hour-breakdown-sub")!;
+    const breakdownTotal = document.getElementById("hour-breakdown-total")!;
+    const breakdownPay = document.getElementById("hour-breakdown-pay")!;
+    const payInPerson = root.dataset.payInPerson === "true";
+    let panelTimeZone: string | undefined;
+    let priceReqId = 0;
+
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const localDT = (d: Date) =>
+      `${ymd(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+
+    const today = startOfToday();
+    const todayKey = ymd(today);
+    const startBase = initialDate ? parseYmd(initialDate) : today;
+
+    let selectedDate: string | null = initialDate;
+    let viewYear = startBase.getFullYear();
+    let viewMonth = startBase.getMonth();
+    let slots: AvailabilitySlot[] = [];
+    let loading = false;
+    let errorMsg: string | null = null;
+    let reserving = false;
+
+    type EndOpt = { value: string; label: string; hours: number };
+    let endOpts: EndOpt[] = [];
+
+    function bookableByStart(): Map<string, AvailabilitySlot> {
+      const m = new Map<string, AvailabilitySlot>();
+      for (const s of slots) if (s.bookable) m.set(s.localStartDate, s);
+      return m;
+    }
+
+    function startOptions(): string[] {
+      const nowIso = localDT(new Date());
+      const isToday = selectedDate === todayKey;
+      return slots
+        .filter((s) => s.bookable)
+        .filter((s) => !isToday || s.localStartDate > nowIso)
+        .map((s) => s.localStartDate)
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .sort();
+    }
+
+    // End options come from Time Slots V2 end-options for the chosen start time
+    // (the rentals-correct way — the service's max duration caps the result).
+    async function loadEndOpts(startTime: string): Promise<EndOpt[]> {
+      const base = bookableByStart().get(startTime);
+      const location = (base?.raw as any)?.location;
+      try {
+        const ends = await getSlotEndOptions(serviceId, startTime, panelTimeZone, location);
+        return ends
+          .filter((e) => e.bookable !== false)
+          .map((e) => ({
+            value: e.localEndDate,
+            label: formatTimeLabel(e.localEndDate),
+            hours:
+              Math.round(((new Date(e.localEndDate).getTime() - new Date(startTime).getTime()) / 3600000) * 10) / 10,
+          }));
+      } catch (error) {
+        console.error("Error loading end options:", error);
+        return [];
+      }
+    }
+
+    function setOpen(open: boolean) {
+      popover.classList.toggle("hidden", !open);
+      field.setAttribute("aria-expanded", String(open));
+    }
+
+    function canPrevMonth() {
+      return (
+        viewYear > today.getFullYear() ||
+        (viewYear === today.getFullYear() && viewMonth > today.getMonth())
+      );
+    }
+
+    function goMonth(delta: number) {
+      const d = new Date(viewYear, viewMonth + delta, 1);
+      viewYear = d.getFullYear();
+      viewMonth = d.getMonth();
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      calLabel.textContent = `${MONTHS[viewMonth]} ${viewYear}`;
+      calPrev.disabled = !canPrevMonth();
+      const head = WEEKDAYS.map((w) => `<div class="py-1">${w}</div>`).join("");
+      const cells = monthCells(viewYear, viewMonth)
+        .map((date) => {
+          if (!date) return "<div></div>";
+          const key = ymd(date);
+          const isPast = date < today;
+          const isSelected = key === selectedDate;
+          const isToday = key === todayKey;
+          const cls = [
+            "aspect-square rounded-md text-sm transition-colors",
+            isSelected ? "range-edge" : isPast ? "cursor-not-allowed text-gray-300" : "hover:bg-secondary",
+            isToday && !isSelected ? "ring-1 ring-inset ring-gray-200" : "",
+          ].join(" ");
+          return `<button type="button" data-key="${key}" ${isPast ? "disabled" : ""} class="${cls}">${date.getDate()}</button>`;
+        })
+        .join("");
+      calGrid.innerHTML = head + cells;
+      calGrid.querySelectorAll<HTMLButtonElement>("button[data-key]").forEach((b) => {
+        if (b.disabled) return;
+        b.addEventListener("click", (e) => {
+          // Re-render detaches this button; stop the bubble so the document
+          // click-outside handler doesn't treat it as an outside click + close.
+          e.stopPropagation();
+          selectedDate = b.dataset.key!;
+          renderCalendar();
+          fetchTimes();
+        });
+      });
+    }
+
+    function renderTimeStates() {
+      timesEmpty.classList.toggle("hidden", !!selectedDate);
+      timesLoading.classList.toggle("hidden", !loading);
+      timesError.classList.toggle("hidden", !errorMsg);
+      if (errorMsg) timesError.textContent = errorMsg;
+      const starts = startOptions();
+      const showFields = !!selectedDate && !loading && !errorMsg && starts.length > 0;
+      const showNone = !!selectedDate && !loading && !errorMsg && starts.length === 0;
+      timesNone.classList.toggle("hidden", !showNone);
+      timesFields.classList.toggle("hidden", !showFields);
+
+      if (showFields) {
+        startSel.innerHTML =
+          '<option value="">Select</option>' +
+          starts.map((s) => `<option value="${s}">${formatTimeLabel(s)}</option>`).join("");
+        startSel.value = "";
+        endSel.innerHTML = '<option value="">Select</option>';
+        endSel.disabled = true;
+      }
+    }
+
+    function updateSummaryAndButtons() {
+      const ready = !!(selectedDate && startSel.value && endSel.value);
+      doneBtn.disabled = !ready;
+      reserveBtn.disabled = !ready || reserving;
+      if (ready) {
+        const d = parseYmd(selectedDate!).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        summary.textContent = `${d} · ${formatTimeLabel(startSel.value)} – ${formatTimeLabel(endSel.value)}`;
+        summary.classList.remove("text-muted-foreground");
+      } else {
+        summary.textContent = selectedDate ?? "Select a date & time";
+        summary.classList.toggle("text-muted-foreground", !selectedDate);
+      }
+      renderBreakdown();
+    }
+
+    function formatCurrency(amount: number, currency?: string) {
+      try {
+        return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(amount);
+      } catch {
+        return `${amount}`;
+      }
+    }
+
+    // Price breakdown via the Bookings Pricing API (previewPrice), through the
+    // /api/preview-price backend route — duration-based pricing for the selected span.
+    async function renderBreakdown() {
+      if (!selectedDate || !startSel.value || !endSel.value) {
+        breakdown.classList.add("hidden");
+        return;
+      }
+      const opt = endOpts.find((o) => o.value === endSel.value);
+      const hours = opt?.hours;
+      const unitCount = hours ? `${hours} ${hours === 1 ? "hour" : "hours"}` : "Selected time";
+      const reqId = ++priceReqId;
+      breakdownSubLabel.textContent = unitCount;
+      breakdownSub.textContent = "…";
+      breakdownTotal.textContent = "…";
+      breakdownPay.textContent = "";
+      breakdown.classList.remove("hidden");
+      try {
+        const params = new URLSearchParams({ serviceId, start: startSel.value, end: endSel.value });
+        if (panelTimeZone) params.set("tz", panelTimeZone);
+        const res = await fetch(`/api/preview-price?${params.toString()}`);
+        const data = await res.json();
+        if (reqId !== priceReqId) return;
+        if (typeof data.calculatedPrice === "number") {
+          const money = formatCurrency(data.calculatedPrice, data.currency);
+          // Show the math (e.g. "6 hours × €75.00") so the per-unit rate isn't
+          // just repeated from the header — the line total then reads as derived.
+          if (hours) {
+            breakdownSubLabel.textContent = `${unitCount} × ${formatCurrency(data.calculatedPrice / hours, data.currency)}`;
+          }
+          breakdownSub.textContent = money;
+          breakdownTotal.textContent = money;
+          breakdownPay.textContent = payInPerson ? `Pay in person · ${money}` : `Pay online at checkout · ${money}`;
+        } else {
+          breakdown.classList.add("hidden");
+        }
+      } catch {
+        if (reqId === priceReqId) breakdown.classList.add("hidden");
+      }
+    }
+
+    async function fetchTimes() {
+      if (!selectedDate) return;
+      loading = true;
+      errorMsg = null;
+      startSel.value = "";
+      endSel.value = "";
+      renderTimeStates();
+      updateSummaryAndButtons();
+      try {
+        const res: AvailabilityResult = await getAvailability(
+          serviceId,
+          `${selectedDate}T00:00:00`,
+          `${selectedDate}T23:59:59`
+        );
+        slots = res.slots;
+        panelTimeZone = res.timeZone ?? panelTimeZone;
+      } catch (error) {
+        console.error("Error loading availability:", error);
+        slots = [];
+        errorMsg = "Could not load availability.";
+      } finally {
+        loading = false;
+        renderTimeStates();
+        updateSummaryAndButtons();
+      }
+    }
+
+    startSel.addEventListener("change", async () => {
+      endSel.innerHTML = '<option value="">Select</option>';
+      endSel.disabled = true;
+      endSel.value = "";
+      updateSummaryAndButtons();
+      if (!startSel.value) return;
+      endSel.innerHTML = '<option value="">Loading…</option>';
+      endOpts = await loadEndOpts(startSel.value);
+      endSel.innerHTML =
+        '<option value="">Select</option>' +
+        endOpts.map((o) => `<option value="${o.value}">${o.label} · ${o.hours}h</option>`).join("");
+      endSel.disabled = false;
+      endSel.value = "";
+      updateSummaryAndButtons();
+    });
+    endSel.addEventListener("change", updateSummaryAndButtons);
+
+    field.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setOpen(popover.classList.contains("hidden"));
+    });
+    calPrev.addEventListener("click", () => canPrevMonth() && goMonth(-1));
+    calNext.addEventListener("click", () => goMonth(1));
+    doneBtn.addEventListener("click", () => setOpen(false));
+    clearBtn.addEventListener("click", () => {
+      selectedDate = null;
+      startSel.value = "";
+      endSel.value = "";
+      renderCalendar();
+      renderTimeStates();
+      updateSummaryAndButtons();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!fieldWrap.contains(e.target as Node)) setOpen(false);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") setOpen(false);
+    });
+
+    reserveBtn.addEventListener("click", async () => {
+      if (!selectedDate || !startSel.value || !endSel.value) return;
+      reserving = true;
+      reserveError.classList.add("hidden");
+      reserveBtn.disabled = true;
+      reserveBtn.textContent = "Starting checkout…";
+      try {
+        await reserve({
+          serviceId,
+          localStartDate: startSel.value,
+          localEndDate: endSel.value,
+          timeZone: panelTimeZone,
+          resourceTypeId,
+          location: (bookableByStart().get(startSel.value)?.raw as any)?.location,
+        });
+      } catch (error) {
+        console.error("Error starting checkout:", error);
+        reserveError.textContent = "Could not start checkout. Please try again.";
+        reserveError.classList.remove("hidden");
+        reserving = false;
+        reserveBtn.disabled = false;
+        reserveBtn.textContent = "Reserve";
+      }
+    });
+
+    // Initial render.
+    renderCalendar();
+    renderTimeStates();
+    updateSummaryAndButtons();
+    if (selectedDate) fetchTimes();
+  }
+</script>

@@ -1,0 +1,246 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import RentalCard from "../components/RentalCard.astro";
+import LocationSelect from "../components/LocationSelect.astro";
+import DateRangeSearch from "../components/DateRangeSearch.astro";
+import FilterModal from "../components/FilterModal.astro";
+import ErrorMessage from "../components/ui/ErrorMessage.astro";
+import { BUSINESS_NAME } from "../utils/constants";
+import { listRentals, listResourceTypes, listAttributeDefinitions } from "../utils/rentals-service";
+import type { RentalAttributeDef, RentalLocation, RentalSummary, ResourceTypeCategory } from "../utils/types";
+
+// Fetch the rental catalog + filter option sets server-side (SEO-friendly). The
+// list comes from Catalog Search; filtering happens live via /api/rentals-search.
+let rentals: RentalSummary[] = [];
+let categoryOptions: ResourceTypeCategory[] = [];
+let attributeDefs: RentalAttributeDef[] = [];
+let loadError = false;
+try {
+  [rentals, categoryOptions, attributeDefs] = await Promise.all([
+    listRentals(),
+    listResourceTypes(),
+    listAttributeDefinitions(),
+  ]);
+} catch (error) {
+  console.error("Error loading rentals:", error);
+  loadError = true;
+}
+
+// Locations for the dropdown are derived from the loaded rentals.
+const locationMap = new Map<string, RentalLocation>();
+rentals.forEach((r) => r.locations?.forEach((l) => locationMap.set(l.id, l)));
+const locationOptions = [...locationMap.values()].sort((a, b) => a.name.localeCompare(b.name));
+---
+
+<Layout
+  title={BUSINESS_NAME}
+  description={`Browse and reserve rental spaces from ${BUSINESS_NAME} — by the hour or by the day.`}
+>
+  <Navbar />
+
+  <main class="min-h-screen">
+    <section class="brand-gradient pt-36 pb-14 px-4">
+      <div class="max-w-7xl mx-auto text-center">
+        <p class="eyebrow mb-4 animate-fade-up">Rental Spaces</p>
+        <h1 class="text-4xl md:text-6xl font-normal tracking-tight leading-[1.05] mb-4 text-foreground animate-fade-up">
+          Find a space, reserve it in minutes
+        </h1>
+        <p class="text-lg text-foreground/60 max-w-2xl mx-auto animate-fade-up delay-100">
+          Browse available rentals, check dates, and book online — by the hour or by the day.
+        </p>
+      </div>
+    </section>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 -mt-8">
+      {loadError ? (
+        <div class="pt-16">
+          <ErrorMessage message="We couldn't load the available rentals. Please refresh the page to try again." />
+        </div>
+      ) : (
+        <>
+          <section class="relative z-30 glass-panel p-4 flex flex-col gap-3 sm:flex-row sm:items-center animate-fade-up delay-100">
+            <LocationSelect locations={locationOptions} />
+            <DateRangeSearch />
+            <FilterModal attributes={attributeDefs} />
+          </section>
+
+          {categoryOptions.length > 0 && (
+            <div id="category-chips" class="mt-5 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                data-category-id=""
+                class="category-chip chip-active pill border border-gray-200 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40"
+              >
+                All spaces
+              </button>
+              {categoryOptions.map((c) => (
+                <button
+                  type="button"
+                  data-category-id={c.id}
+                  class="category-chip pill border border-gray-200 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40"
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div id="avail-indicator" class="hidden mt-6">
+            <span class="inline-flex items-center gap-2.5 pill glass-panel px-4 py-2 text-sm font-medium text-muted-foreground">
+              <svg class="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              Updating results…
+            </span>
+          </div>
+
+          <div id="rentals-grid" class="mt-8 grid grid-cols-1 gap-x-6 gap-y-9 pb-16 transition-opacity duration-300 sm:grid-cols-2 lg:grid-cols-3">
+            {rentals.map((rental, i) => (
+              <div class="animate-card-in" style={`animation-delay:${Math.min(i, 8) * 60}ms`}>
+                <RentalCard rental={rental} />
+              </div>
+            ))}
+          </div>
+
+          <div id="rentals-empty" class="hidden pb-16">
+            <div class="glass-panel border-dashed px-6 py-16 text-center">
+              <p class="text-base font-medium text-foreground">
+                {rentals.length === 0 ? "No rentals available yet" : "No spaces match your filters"}
+              </p>
+              <p class="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                {rentals.length === 0
+                  ? "Once rental services are published on this Wix site, they'll appear here."
+                  : "Try clearing filters or choosing different dates."}
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  import { parseYmd, ymd } from "../utils/date-utils";
+
+  type Filters = {
+    showUnavailable: boolean;
+    rentalTypes: string[];
+    payment: string[];
+    attributes: {
+      attributeId: string;
+      enumValue?: string;
+      boolValue?: boolean;
+      numberValues?: { values: number[] };
+    }[];
+  };
+
+  const gridRoot = document.getElementById("rentals-grid");
+  const emptyState = document.getElementById("rentals-empty");
+  const availIndicator = document.getElementById("avail-indicator");
+
+  if (gridRoot) {
+    const grid = gridRoot;
+    const cards = Array.from(grid.querySelectorAll<HTMLElement>("[data-rental-card]"));
+    const wrappers = cards.map((c) => c.closest("div")!);
+    const categoryChips = Array.from(document.querySelectorAll<HTMLButtonElement>(".category-chip"));
+
+    let categoryId: string | null = null;
+    let locationId: string | null = null;
+    let range: { start: string; end: string } | null = null;
+    let filters: Filters = { showUnavailable: false, rentalTypes: [], payment: [], attributes: [] };
+    let reqId = 0;
+
+    // Booking-type + payment are card-level flags, applied client-side on the
+    // server-filtered set. Everything else (category, location, attributes,
+    // availability) is resolved by Catalog Search via /api/rentals-search.
+    function clientMatch(card: HTMLElement): boolean {
+      if (filters.rentalTypes.length && !filters.rentalTypes.includes(card.dataset.unit || "")) return false;
+      if (filters.payment.length) {
+        const ok = filters.payment.some((p) =>
+          p === "online" ? card.dataset.online === "true" : card.dataset.inperson === "true"
+        );
+        if (!ok) return false;
+      }
+      return true;
+    }
+
+    function applyVisibility(idSet: Set<string>) {
+      let visible = 0;
+      wrappers.forEach((wrapper, i) => {
+        const card = cards[i];
+        const show = idSet.has(card.dataset.id || "") && clientMatch(card);
+        wrapper.classList.toggle("hidden", !show);
+        if (show) visible++;
+      });
+      emptyState?.classList.toggle("hidden", visible > 0);
+      grid.classList.toggle("hidden", visible === 0);
+    }
+
+    async function refresh() {
+      const body: Record<string, unknown> = {};
+      if (categoryId) body.resourceTypeIds = [categoryId];
+      if (locationId) body.locationIds = [locationId];
+      if (filters.attributes.length) body.attributes = filters.attributes;
+      if (range) {
+        // Availability windows are midnight-to-midnight: the end is midnight of
+        // the day AFTER the last selected day, not 23:59:59. A full-day (24/7)
+        // slot runs [00:00, next-day 00:00], so a 23:59:59 window would exclude
+        // it and the service would wrongly look unavailable.
+        const endExclusive = parseYmd(range.end);
+        endExclusive.setDate(endExclusive.getDate() + 1);
+        body.localStartDate = `${range.start}T00:00:00`;
+        body.localEndDate = `${ymd(endExclusive)}T00:00:00`;
+        body.includeUnavailable = filters.showUnavailable;
+      }
+
+      const myReq = ++reqId;
+      availIndicator?.classList.remove("hidden");
+      grid.classList.add("opacity-40");
+      try {
+        const res = await fetch("/api/rentals-search", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (myReq !== reqId) return; // superseded by a newer filter change
+        applyVisibility(new Set<string>(Array.isArray(data.ids) ? data.ids : []));
+      } catch (error) {
+        console.error("Filter search failed:", error);
+        if (myReq === reqId) applyVisibility(new Set(cards.map((c) => c.dataset.id || "")));
+      } finally {
+        if (myReq === reqId) {
+          availIndicator?.classList.add("hidden");
+          grid.classList.remove("opacity-40");
+        }
+      }
+    }
+
+    categoryChips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        categoryId = chip.dataset.categoryId || null;
+        categoryChips.forEach((c) => c.classList.toggle("chip-active", c === chip));
+        refresh();
+      });
+    });
+
+    document.addEventListener("rentals:location", (e) => {
+      locationId = (e as CustomEvent<string | null>).detail;
+      refresh();
+    });
+    document.addEventListener("rentals:filters", (e) => {
+      filters = (e as CustomEvent<Filters>).detail;
+      refresh();
+    });
+    document.addEventListener("rentals:range", (e) => {
+      range = (e as CustomEvent<{ start: string; end: string } | null>).detail;
+      refresh();
+    });
+  }
+</script>

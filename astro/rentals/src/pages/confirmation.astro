@@ -1,0 +1,71 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import { BUSINESS_NAME } from "../utils/constants";
+import { getOrderSummary } from "../utils/rentals-service";
+import { icons } from "../utils/icons";
+
+// Wix appends details/hints to the post-checkout return URL.
+const params = Astro.url.searchParams;
+const orderId = params.get("orderId");
+const bookingId = params.get("bookingId");
+const failed = Boolean(params.get("error")) || params.get("status") === "failed";
+
+// The URL carries the order GUID; look up the customer-facing order number.
+let orderNumber: string | undefined;
+if (orderId && !failed) {
+  const summary = await getOrderSummary(orderId);
+  orderNumber = summary?.number;
+}
+---
+
+<Layout
+  title={failed ? "Checkout not completed" : "Booking confirmed"}
+  description="Your rental booking status."
+>
+  <Navbar />
+
+  <main class="min-h-screen bg-white max-w-2xl mx-auto pt-40 pb-16 px-4 text-center">
+    <div
+      class:list={[
+        "inline-flex items-center justify-center w-16 h-16 rounded-full mb-6 animate-scale-in text-2xl",
+        failed ? "bg-amber-100 text-amber-600" : "brand-gradient-card text-primary",
+      ]}
+      set:html={failed ? icons.refresh : icons.checkCircle}
+    />
+
+    <div class="animate-fade-up">
+      <p class="eyebrow mb-3">{failed ? "Not completed" : "Confirmed"}</p>
+      <h1 class="text-3xl font-normal tracking-tight mb-4">
+        {failed ? "Checkout not completed" : "Booking confirmed!"}
+      </h1>
+    </div>
+
+    <p class="text-foreground/55 mb-8 max-w-md mx-auto animate-fade-up delay-100">
+      {failed
+        ? "Looks like the checkout was cancelled. The space is still available — feel free to try again."
+        : `Thanks for your booking with ${BUSINESS_NAME}. If email notifications are enabled for this site, a confirmation will be sent to you, and the details are saved in your account.`}
+    </p>
+
+    {!failed && orderNumber && (
+      <dl class="mx-auto mb-8 w-full max-w-sm glass-panel p-4 text-left text-sm animate-fade-up delay-200">
+        <div class="flex justify-between gap-4 py-1">
+          <dt class="text-muted-foreground">Order number</dt>
+          <dd class="font-semibold">#{orderNumber}</dd>
+        </div>
+      </dl>
+    )}
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fade-up delay-300">
+      <a href="/" class="px-7 py-3 bg-primary text-white pill font-semibold hover:bg-primary/90 transition-colors">
+        Browse more rentals
+      </a>
+      <a href="/account" class="px-7 py-3 border-[1.5px] border-primary text-primary pill font-semibold hover:bg-primary/5 transition-colors">
+        View my bookings
+      </a>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
