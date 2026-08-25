@@ -20,6 +20,7 @@ The Wix integration logic lives in `src/components/bookingDriver.ts` (booking se
 | App | Used for |
 |---|---|
 | Wix Bookings | services, staff, availability, bookings |
+| Wix Forms | the booking form schema attached to each service |
 | Wix CMS (Wix Data) | `About` and `FAQ` collections |
 | Wix eCommerce | cart + hosted checkout (installed as a Bookings dependency) |
 
@@ -29,7 +30,9 @@ Two CMS collections back the content pages: `About` (`heading`, `body`) and `FAQ
 
 The booking form is **not** one of them — its schema comes from the service's own Wix Form (`service.form._id`), read in `src/utils/booking-form-fields.ts`. Each field's `target` is the key `bookings.createBooking` expects in `formSubmission`.
 
-> **Why that file uses REST instead of `@wix/forms`:** the package re-exports an 11 MB generated module through a namespace import, so nothing tree-shakes and a single `getForm` call costs ~4.2 MB of server bundle — one 4,212 KB chunk, over the ~4 MB per-file limit the template registry enforces. `httpClient.fetchWithAuth` hits the same endpoint (`GET /v4/forms/{formId}`) from a package already in the bundle. Same API, same data, ~0 KB. Don't "simplify" it back to the SDK import.
+Services that don't define their own form resolve to the Bookings **default** booking form, served under the all-zero id `00000000-0000-0000-0000-000000000000` — a real id, not a missing one.
+
+> **Why that file uses REST instead of `@wix/forms`:** the package re-exports an 11 MB generated module through a namespace import, so nothing tree-shakes and a single `getForm` call costs ~4.2 MB of server bundle — one 4,212 KB chunk, over the ~4 MB per-file limit the template registry enforces. `httpClient.fetchWithAuth` hits the same endpoint (`GET /form-schema-service/v4/forms/{formId}`) from a package already in the bundle. Same API, same data, ~0 KB. Don't "simplify" it back to the SDK import.
 
 ## Getting started
 
