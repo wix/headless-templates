@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "wix-cycles",
+      "title": "Wix Cycles (Wix Stores)",
+      "subtitle": "Single-product launch page with cart and checkout",
+      "siteTemplateId": "5a9e28ec-cddf-495b-af33-b8067ff99c56",
+      "gitPath": "astro/wix-cycles",
+      "vibeCompatible": false
     }
   ]
 }
