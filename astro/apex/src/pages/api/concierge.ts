@@ -22,7 +22,7 @@ import type { APIRoute } from "astro";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaTool } from "@anthropic-ai/sdk/helpers/beta/json-schema";
 import { availabilityTimeSlots, eventTimeSlots, services } from "@wix/bookings";
-import { auth } from "@wix/essentials";
+import { auth, httpClient } from "@wix/essentials";
 
 // Injected at build time by the Vite `define` in astro.config.mjs.
 declare const __ANTHROPIC_API_KEY__: string | undefined;
@@ -39,7 +39,26 @@ const MCP_URL = () => `${SITE_URL}/_api/mcp`;
 function resolveSiteUrl(site: URL | undefined, request: Request): void {
   SITE_URL = (site?.origin ?? new URL(request.url).origin).replace(/\/$/, "");
 }
-const TIME_ZONE = "Europe/Dublin";
+// The BUSINESS timezone — the wall clock at the track, which is what the
+// availability API returns slots in and what the concierge quotes back. Wix
+// owns it (Dashboard → Business Info), so read it rather than hardcoding a
+// region: a template deployed anywhere else would otherwise quote Irish time.
+// Resolved once per cold start, alongside SITE_URL.
+let TIME_ZONE = "UTC";
+
+async function resolveTimeZone(): Promise<void> {
+  if (TIME_ZONE !== "UTC") return; // already resolved this cold start
+  try {
+    const resp = await auth.elevate(httpClient.fetchWithAuth)(
+      "https://www.wixapis.com/site-properties/v4/properties",
+    );
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const body: any = await resp.json();
+    TIME_ZONE = body?.properties?.timeZone || "UTC";
+  } catch (err) {
+    console.error("[concierge] site timezone lookup failed, using UTC:", err);
+  }
+}
 const MAX_MESSAGES = 24;
 const MAX_MESSAGE_CHARS = 2000;
 const MAX_ITERATIONS = 6; // tool-loop cap per turn (cost bound)
@@ -281,6 +300,7 @@ const SSE_HEADERS = {
 
 export const POST: APIRoute = async ({ request, site }) => {
   resolveSiteUrl(site, request);
+  await resolveTimeZone();
   let body: unknown;
   try {
     body = await request.json();

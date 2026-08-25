@@ -49,7 +49,7 @@ export interface SelectedSlot {
 export interface BookParams {
   service: any; // the @wix/bookings Service (read payment.options + bookingPolicy)
   slot: SelectedSlot;
-  formSubmission: FormValues; // values from the CMS-defined form schema, keyed by target
+  formSubmission: FormValues; // values from the service's Wix Form, keyed by target
   timezone: string;
   totalParticipants?: number;
   /** consumer override; when omitted, derived from service.payment.options */

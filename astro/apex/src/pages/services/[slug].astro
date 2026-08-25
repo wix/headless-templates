@@ -34,13 +34,14 @@ try {
   console.error(`[services/${slug}] detail query failed:`, err);
 }
 
-if (!service) return Astro.redirect("/services", 302);
+// An unknown slug is a missing resource, not a detour — 404 so crawlers and
+// agents get the truth. Astro renders src/pages/404.astro for this response.
+if (!service) return new Response(null, { status: 404 });
 
-// Booking-form SCHEMA — read from the CMS collection `BookingFormFields`
-// (see utils/booking-form-fields.ts for why it is no longer @wix/forms).
-// Keep the field's `target` — that is the key createBooking expects in
-// formSubmission. Never throws; falls back to the contact basics.
-const formFields = await bookingFormFields(slug ?? "");
+// Booking-form SCHEMA — the form belongs to the service (service.form._id).
+// Read server-side from the Forms API and passed to the island; each field's
+// `target` is the key createBooking expects in formSubmission. Never throws.
+const formFields = await bookingFormFields(service.form?._id);
 
 const formatPrice = (p: any): string | undefined => {
   if (!p || p.rateType === "NO_FEE") return undefined;
@@ -309,7 +310,7 @@ try {
           staffMembers={staffMembers}
           locations={serviceLocations}
           locationId={locationId}
-          client:only="react"
+          client:load
         />
       </div>
     </section>

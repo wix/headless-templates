@@ -7,7 +7,7 @@ import type { SelectedSlot } from "./bookingDriver";
 // selected-slot state shared between the calendar and the form, transitions
 // between them, and redirects to the confirmation page on success. The SSR
 // detail page passes the full `service` (the driver reads its payment/policy),
-// the booking-form `fields` (the BookingFormFields CMS schema), the service's `staffMembers`
+// the booking-form `fields` (the service's Wix Form schema), the service's `staffMembers`
 // (for the optional instructor picker), the service's business `locations` + the
 // catalog-chosen `locationId` (so the calendar scopes availability to one
 // location — see AvailabilityCalendar) through to the calendar.

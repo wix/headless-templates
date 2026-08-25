@@ -3,8 +3,8 @@ import { book, navigateToCheckout, BookResultType } from "./bookingDriver";
 import type { SelectedSlot } from "./bookingDriver";
 
 // BookingForm.tsx — client:only="react" island. Renders the service's booking
-// form SCHEMA (from the BookingFormFields CMS collection, read server-side and
-// passed in as `fields`), collects the values keyed by each field's `target`,
+// form SCHEMA (the service's Wix Form, read server-side and passed in as
+// `fields`), collects the values keyed by each field's `target`,
 // and drives the booking sequence in bookingDriver.book(). Schema-driven —
 // generic inputs chosen by `componentType` — so it adapts to whatever fields
 // the booking form defines, rather than hardcoding first/last/email/phone.

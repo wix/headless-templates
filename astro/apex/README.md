@@ -20,29 +20,16 @@ The Wix integration logic lives in `src/components/bookingDriver.ts` (booking se
 | App | Used for |
 |---|---|
 | Wix Bookings | services, staff, availability, bookings |
-| Wix CMS (Wix Data) | `About`, `FAQ`, and `BookingFormFields` collections |
+| Wix CMS (Wix Data) | `About` and `FAQ` collections |
 | Wix eCommerce | cart + hosted checkout (installed as a Bookings dependency) |
 
 ## Backing collections
 
-Three CMS collections back the content pages. `About` (`heading`, `body`) and `FAQ` (`question`, `answer`) are ordinary content collections.
+Two CMS collections back the content pages: `About` (`heading`, `body`) and `FAQ` (`question`, `answer`). Both render rich content through `src/utils/cms-html.ts`, which normalizes Ricos node trees, Ricos JSON, HTML, and plain text to safe HTML.
 
-`BookingFormFields` holds the **booking form schema** — one row per field:
+The booking form is **not** one of them — its schema comes from the service's own Wix Form (`service.form._id`), read in `src/utils/booking-form-fields.ts`. Each field's `target` is the key `bookings.createBooking` expects in `formSubmission`.
 
-| Field | Type | Notes |
-|---|---|---|
-| `sortOrder` | Number | display order |
-| `label` | Text | visible label |
-| `target` | Text | the key `createBooking` expects in `formSubmission` |
-| `required` | Boolean | |
-| `componentType` | Text | `TEXT_INPUT` \| `PHONE_INPUT` \| `DROPDOWN` |
-| `identifier` | Text | `TEXT_AREA` renders a textarea |
-| `options` | Text | JSON array for `DROPDOWN`: `[{"value":"a","label":"A"}]` |
-| `serviceSlug` | Text | blank = every service; set = overrides that one service |
-
-> **`target` is a code contract, not content.** It is the key `bookings.createBooking` expects in `formSubmission` (the Bookings default form uses `first_name`, `last_name`, `email`, `phone`). Changing it in the CMS grid silently breaks submission.
-
-`src/pages/api/_seed-booking-form-fields.ts` creates and seeds the collection. Astro's router ignores `_`-prefixed files, so it ships in neither the route table nor the server bundle — drop the underscore, run `npm run dev`, `GET /api/seed-booking-form-fields`, then rename it back. It is idempotent.
+> **Why that file uses REST instead of `@wix/forms`:** the package re-exports an 11 MB generated module through a namespace import, so nothing tree-shakes and a single `getForm` call costs ~4.2 MB of server bundle — one 4,212 KB chunk, over the ~4 MB per-file limit the template registry enforces. `httpClient.fetchWithAuth` hits the same endpoint (`GET /v4/forms/{formId}`) from a package already in the bundle. Same API, same data, ~0 KB. Don't "simplify" it back to the SDK import.
 
 ## Getting started
 
