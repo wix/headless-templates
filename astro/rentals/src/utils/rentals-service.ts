@@ -276,8 +276,9 @@ async function loadLocationsByAvailability(
           }
         }
         if (seen.size) byService.set(serviceId, [...seen.values()]);
-      } catch {
-        /* ignore — this service simply has no resolvable location */
+      } catch (error) {
+        console.error(`Error resolving locations for service ${serviceId}:`, error);
+        /* this service simply has no resolvable location */
       }
     }),
   );
@@ -304,7 +305,8 @@ async function loadLocationCities(): Promise<Map<string, string>> {
       const city = l?.address?.city;
       if (id && city) byId.set(id, city);
     }
-  } catch {
+  } catch (error) {
+    console.error('Error loading location cities:', error);
     /* locations API unavailable — fall back to the slot's own name */
   }
   return byId;
@@ -460,7 +462,8 @@ export async function getBusinessTimeZone(): Promise<string | undefined> {
     const locs = data?.locations ?? [];
     const def = locs.find((l: any) => l?.default) ?? locs[0];
     cachedBusinessTz = def?.timeZone ?? undefined;
-  } catch {
+  } catch (error) {
+    console.error('Error loading business timezone:', error);
     /* fall back to undefined — availability filter is skipped without a tz */
   }
   return cachedBusinessTz;

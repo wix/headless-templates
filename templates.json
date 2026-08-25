@@ -61,7 +61,7 @@
       "name": "rentals",
       "title": "Rentals (Wix Rentals)",
       "subtitle": "Reserve rentals by the hour or day",
-      "siteTemplateId": "dd1aa5e3-305c-42a2-bb46-70897e5a8adc",
+      "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
     }
