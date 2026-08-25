@@ -1,0 +1,250 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { items } from "@wix/data";
+import { auth } from "@wix/essentials";
+import { toHtml } from "../utils/cms-html";
+import { cached } from "../utils/ssr-cache";
+
+// Collection ID resolved from the seeded CMS slice (.wix/seeded.json → cms.collectionIds.faq).
+// Native user collections take the bare name — no namespace prefix.
+const FAQ_COLLECTION_ID = "FAQ";
+
+// Same-for-everyone page, rarely-changing CMS content — cacheable at the
+// Wix edge for 5 minutes. Kept SHORT: every release 404s the previous
+// build's hashed assets, so stale edge HTML is a broken page.
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, max-age=0, s-maxage=300",
+);
+
+interface FaqEntry {
+  _id: string;
+  anchor: string;
+  question: string;
+  answerHtml: string;
+}
+
+function toAnchor(question: string, index: number): string {
+  const slug = question
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64);
+  return slug || `question-${index + 1}`;
+}
+
+// Live @wix/data query, cached across requests (5-min TTL, serve-stale).
+// Guarded: an uncaught SSR throw would truncate the response stream mid-body,
+// so fall back to the quiet notice below.
+// Ascending _createdDate preserves the seeded briefing order.
+let faqEntries: FaqEntry[] = [];
+try {
+  faqEntries = await cached("cms:faq", 5 * 60_000, async () => {
+    const elevatedQuery = auth.elevate(items.query);
+    const { items: results } = await elevatedQuery(FAQ_COLLECTION_ID)
+      .ascending("_createdDate")
+      .limit(100)
+      .find();
+    return results
+      .map((item, index) => {
+        const question = ((item.question as string) ?? "").trim();
+        return {
+          _id: (item._id as string) ?? `faq-${index}`,
+          anchor: toAnchor(question, index),
+          question,
+          answerHtml: toHtml(item.answer),
+        };
+      })
+      .filter((entry) => entry.question && entry.answerHtml);
+  });
+} catch (err) {
+  console.error("[cms:FAQ] query failed:", err);
+}
+
+// FAQPage structured data — answers as plain text (tags stripped), and `<`
+// escaped in the serialized JSON so CMS content can never close the script tag.
+const stripTags = (h: string) => h.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+const faqStructuredData =
+  faqEntries.length > 0
+    ? JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faqEntries.map((entry) => ({
+          "@type": "Question",
+          name: entry.question,
+          acceptedAnswer: { "@type": "Answer", text: stripTags(entry.answerHtml) },
+        })),
+      }).replace(/</g, "\\u003c")
+    : null;
+---
+
+<Layout
+  title="FAQ"
+  description="The APEX briefing — what to know before you take the wheel: sessions, circuits, requirements, and what happens on the day."
+>
+  {faqStructuredData && (
+    <script slot="head" type="application/ld+json" is:inline set:html={faqStructuredData} />
+  )}
+  <section class="max-w-4xl mx-auto px-6 pt-8 pb-24">
+    <header class="flex flex-col items-center text-center gap-5 mb-12" data-reveal>
+      <p class="eyebrow">The briefing</p>
+      <h1 class="display-lg">
+        Frequently asked questions<span class="accent-dot" aria-hidden="true"></span>
+      </h1>
+      <p class="text-lg text-mute">
+        Everything to know before you take the wheel — read it once, then all
+        that's left is the line
+      </p>
+    </header>
+
+    {
+      faqEntries.length > 0 ? (
+        <div class="border-t border-rule">
+          {faqEntries.map((entry) => (
+            <details class="faq-item" id={entry.anchor}>
+              <summary class="faq-question">
+                <span>{entry.question}</span>
+                <svg
+                  class="faq-toggle"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </summary>
+              <div class="faq-answer" set:html={entry.answerHtml} />
+            </details>
+          ))}
+        </div>
+      ) : (
+        <div class="flex flex-col gap-4 border-t border-rule pt-8">
+          <p class="text-ink-soft leading-relaxed">
+            The briefing is briefly off the timing screens. Refresh in a
+            moment — the answers are on their way back.
+          </p>
+          <p class="text-mute leading-relaxed">
+            Until then, the <a href="/about" class="inline-link">About page</a>{" "}
+            covers who we are and how a session runs.
+          </p>
+        </div>
+      )
+    }
+
+    <aside class="mt-16 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+      <p class="text-sm text-mute max-w-prose">
+        Still weighing it up? Start with who we are — then pick a car, a
+        circuit, and a time.
+      </p>
+      <a href="/about" class="btn-secondary text-sm whitespace-nowrap">About APEX</a>
+    </aside>
+  </section>
+</Layout>
+
+<style>
+  /* Native <details>/<summary> accordion — no client JS. One-off page
+     decoration, so it lives co-located per STYLING.md; tokens only. */
+  .faq-item {
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .faq-question {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: 1.25rem;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    line-height: 1.35;
+    color: var(--color-ink);
+    list-style: none;
+  }
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+  /* Hover keeps the text ink — accent red is too dark to read on the black
+     page — and signals through the underline and chevron instead. */
+  .faq-question span {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: transparent;
+    transition: text-decoration-color 160ms ease;
+  }
+  .faq-question:hover span {
+    text-decoration-color: var(--color-accent);
+  }
+  .faq-question:hover .faq-toggle {
+    color: var(--color-accent);
+  }
+  .faq-question:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+  }
+  .faq-toggle {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+    align-self: center;
+    color: var(--color-mute);
+    transition: transform 200ms ease, color 200ms ease;
+  }
+  .faq-item[open] .faq-toggle {
+    transform: rotate(180deg);
+    color: var(--color-accent);
+  }
+  .faq-answer {
+    padding-bottom: 1.5rem;
+    color: var(--color-ink-soft);
+    max-width: 42rem;
+  }
+  /* Answer HTML arrives via set:html, so Astro scoping never reaches it —
+     style through :global() descendants of the scoped wrapper. */
+  .faq-answer :global(p) {
+    margin-block: 0.5rem;
+    line-height: 1.7;
+  }
+  .faq-answer :global(p:first-child) {
+    margin-top: 0;
+  }
+  .faq-answer :global(ul),
+  .faq-answer :global(ol) {
+    margin-block: 0.75rem;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  .faq-answer :global(ul) {
+    list-style: disc;
+  }
+  .faq-answer :global(ol) {
+    list-style: decimal;
+  }
+  .faq-answer :global(li)::marker {
+    color: var(--color-accent);
+  }
+  .faq-answer :global(a) {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-accent);
+  }
+  .faq-answer :global(a:hover) {
+    color: var(--color-accent);
+  }
+  .inline-link {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-accent);
+  }
+  .inline-link:hover {
+    color: var(--color-accent);
+  }
+</style>

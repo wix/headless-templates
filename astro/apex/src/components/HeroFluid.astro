@@ -1,0 +1,70 @@
+---
+// HeroFluid.astro — interactive fluid-smoke background for the hero (the
+// milano.ddd.live treatment). The engine lives in scripts/fluid.ts; this
+// component owns the hero canvas, the pointer wiring (strokes over the hero
+// splat brand-red dye), seed splats, and a soft ambient stir so the smoke is
+// alive before any pointer arrives. Renders smoke on black over the hero
+// film via mix-blend-mode:screen (black melts away). Desktop-only (no fine
+// pointer → no effect), skipped under reduced motion, degrades to nothing
+// without WebGL2/float render targets.
+---
+<canvas class="hero-fluid" data-hero-fluid></canvas>
+
+<script>
+  import { createFluid } from "../scripts/fluid";
+
+  function initHeroFluid() {
+    const canvas = document.querySelector<HTMLCanvasElement>("[data-hero-fluid]:not([data-init])");
+    if (!canvas) return;
+    canvas.dataset.init = "1";
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    const fluid = createFluid(canvas);
+    if (!fluid) return;
+
+    // Pointer strokes splat dye; strokes are measured in canvas UV space.
+    let px = -1;
+    let py = -1;
+    window.addEventListener(
+      "pointermove",
+      (e) => {
+        const rect = canvas.getBoundingClientRect();
+        if (rect.bottom < 0 || e.clientY < rect.top || e.clientY > rect.bottom) return;
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = 1 - (e.clientY - rect.top) / rect.height;
+        if (px >= 0) {
+          const dx = (x - px) * 900;
+          const dy = (y - py) * 900;
+          if (Math.abs(dx) + Math.abs(dy) > 0.5) fluid.splat(x, y, dx, dy, fluid.brandColor());
+        }
+        px = x;
+        py = y;
+      },
+      { passive: true },
+    );
+
+    // A few seed splats so the smoke is alive before any pointer arrives,
+    // then a soft ambient stir every few seconds.
+    const ambient = (force: number) => {
+      const a = Math.random() * Math.PI * 2;
+      fluid.splat(
+        0.25 + Math.random() * 0.5,
+        0.3 + Math.random() * 0.4,
+        Math.cos(a) * force,
+        Math.sin(a) * force,
+        fluid.brandColor(),
+      );
+    };
+    for (let i = 0; i < 4; i++) ambient(320);
+    const timer = setInterval(() => {
+      if (!canvas.isConnected) {
+        clearInterval(timer);
+        return;
+      }
+      ambient(140);
+    }, 3800);
+  }
+
+  initHeroFluid();
+  document.addEventListener("astro:page-load", initHeroFluid);
+</script>

@@ -1,0 +1,262 @@
+---
+// src/pages/booking-confirmation.astro — post-booking confirmation: the GRID
+// PASS. Renders from the redirect query params the booking step passes
+// through (service, startDate, and — when carried — endDate + instructor).
+// The Wix-hosted checkout returns here after a paid booking; a free /
+// pay-in-person booking lands here directly. Do not re-fetch a stranger's
+// booking from this public page — the pass shows what the flow passed in.
+//
+// The pass is a designed souvenir: session facts plated like the car pages,
+// a deterministic pass number and bay (hashed from the params, so a reload
+// prints the same pass), an SSR QR of this page's own URL (scan to carry the
+// pass to a phone), and an .ics download via /api/grid-pass.ics.
+import Layout from "../layouts/Layout.astro";
+// @ts-ignore — qrcode ships no types; server-side use only.
+import QRCode from "qrcode";
+
+const serviceName = (Astro.url.searchParams.get("service") ?? "your session").slice(0, 120);
+const startDateParam = Astro.url.searchParams.get("startDate");
+const endDateParam = Astro.url.searchParams.get("endDate");
+const instructor = (Astro.url.searchParams.get("instructor") ?? "").slice(0, 80);
+
+// Wall-time parsing — the params carry timezone-less local time; format the
+// literal parts and never convert zones (noon anchor dodges DST edges).
+const timeHM = (s: string | null) => (s ? s.split("T")[1]?.slice(0, 5) ?? null : null);
+const startTime = timeHM(startDateParam);
+const endTime = timeHM(endDateParam);
+const dateAnchor = startDateParam ? new Date(`${startDateParam.split("T")[0]}T12:00:00`) : null;
+const dayLabel = dateAnchor?.toLocaleDateString("en-GB", { weekday: "short" });
+const dateLabel = dateAnchor?.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+// Deterministic garnish — same booking, same pass, every reload.
+const seed = `${serviceName}|${startDateParam ?? ""}`;
+let h = 0;
+for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+const passNo = `GP-${(h % 46656).toString(36).toUpperCase().padStart(3, "0")}`;
+const bay = String((h % 12) + 1).padStart(2, "0");
+const gate = ((h >> 4) % 4) + 1;
+
+const passUrl = new URL(Astro.url.pathname + Astro.url.search, Astro.site).href;
+const qrSvg = startDateParam
+  ? await QRCode.toString(passUrl, {
+      type: "svg",
+      margin: 0,
+      errorCorrectionLevel: "M",
+      color: { dark: "#0A0A0B", light: "#E9E6DE" },
+    })
+  : "";
+
+const icsHref = startDateParam
+  ? `/api/grid-pass.ics?${new URLSearchParams({
+      service: serviceName,
+      startDate: startDateParam,
+      ...(endDateParam ? { endDate: endDateParam } : {}),
+      ...(instructor ? { instructor } : {}),
+    }).toString()}`
+  : null;
+---
+
+<Layout title="Session confirmed" noindex>
+  <section class="max-w-xl mx-auto px-6 pt-8 pb-24 flex flex-col items-center gap-8">
+    <header class="flex flex-col items-center text-center gap-4" data-reveal>
+      <p class="eyebrow">Booking confirmed</p>
+      <h1 class="display-lg">You're on the grid<span class="accent-dot" aria-hidden="true"></span></h1>
+      <p class="text-mute leading-relaxed">
+        Your <strong class="text-ink">{serviceName}</strong> session is confirmed —
+        the briefing details are in your inbox.
+      </p>
+    </header>
+
+    <!-- The grid pass — the souvenir. -->
+    <div class="pass w-full" data-reveal>
+      <div class="pass-stripe" aria-hidden="true"></div>
+      <div class="pass-head">
+        <span class="pass-brand">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 3 A10 10 0 0 0 3 13 L13 13 Z" fill="#E1121F" /></svg>
+          APEX
+        </span>
+        <span class="pass-no">Grid pass · Nº {passNo}</span>
+      </div>
+
+      <p class="pass-session">
+        {serviceName}<span class="accent-dot" aria-hidden="true"></span>
+      </p>
+
+      <dl class="pass-grid">
+        {dayLabel && (
+          <div>
+            <dt>Date</dt>
+            <dd>{dayLabel} {dateLabel}</dd>
+          </div>
+        )}
+        {startTime && (
+          <div>
+            <dt>Time</dt>
+            <dd>{startTime}{endTime ? ` – ${endTime}` : ""}</dd>
+          </div>
+        )}
+        <div>
+          <dt>Assembly</dt>
+          <dd>Gate {gate} · Bay {bay}</dd>
+        </div>
+        {instructor && (
+          <div class="pass-grid-wide">
+            <dt>Race engineer</dt>
+            <dd>{instructor}</dd>
+          </div>
+        )}
+      </dl>
+
+      <div class="pass-perf" aria-hidden="true"></div>
+
+      <div class="pass-stub">
+        {qrSvg && (
+          <div class="pass-qr" set:html={qrSvg} />
+        )}
+        <div class="pass-stub-meta">
+          <p class="text-sm text-mute leading-relaxed">
+            Scan to carry the pass on your phone. Arrive fifteen minutes early —
+            your engineer walks the line with you before you take it.
+          </p>
+          {icsHref && (
+            <a href={icsHref} class="btn-secondary text-sm whitespace-nowrap self-start">Add to calendar</a>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-4 items-center" data-reveal>
+      <a href="/services" class="btn-primary">Book another session</a>
+      <a href="/" class="text-sm text-mute hover:text-ink">Return home</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .pass {
+    position: relative;
+    overflow: hidden;
+    max-width: 28rem;
+    margin-inline: auto;
+    padding: 1.5rem;
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-md);
+    background: var(--color-paper-warm);
+  }
+  /* Livery stripe along the top edge. */
+  .pass-stripe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(to right, var(--color-accent) 0 38%, transparent 38% 42%, var(--color-accent) 42% 46%, transparent 46%);
+  }
+  .pass-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .pass-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    font-size: 0.9375rem;
+  }
+  .pass-brand svg {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+  .pass-no {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-mute);
+    font-variant-numeric: tabular-nums;
+  }
+  .pass-session {
+    font-family: var(--font-display);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    line-height: 1.1;
+    margin-bottom: 1.25rem;
+  }
+  .pass-session .accent-dot {
+    width: 0.18em;
+    height: 0.18em;
+    margin-left: 0.07em;
+  }
+  .pass-grid {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+  }
+  .pass-grid-wide {
+    grid-column: 1 / -1;
+  }
+  .pass-grid dt {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-mute);
+    margin-bottom: 0.3rem;
+  }
+  .pass-grid dd {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.0625rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Perforation — dashed tear line with punched notches riding the card edges. */
+  .pass-perf {
+    position: relative;
+    border-top: 1px dashed var(--color-rule);
+    margin: 1.5rem -1.5rem;
+  }
+  .pass-perf::before,
+  .pass-perf::after {
+    content: "";
+    position: absolute;
+    top: -10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-paper);
+    border: 1px solid var(--color-rule);
+  }
+  .pass-perf::before { left: -11px; }
+  .pass-perf::after { right: -11px; }
+  .pass-stub {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+  .pass-qr {
+    flex: none;
+    width: 5.5rem;
+    height: 5.5rem;
+    padding: 0.45rem;
+    background: var(--color-cream);
+    border-radius: var(--radius-sm);
+  }
+  .pass-qr :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .pass-stub-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    min-width: 0;
+  }
+</style>

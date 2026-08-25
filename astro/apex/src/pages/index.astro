@@ -1,0 +1,525 @@
+---
+// Home — five full-viewport scenes (Pagani pacing · Rimac scale · Aston
+// refinement · Exo Ape motion). The hero carries the TH-12 lap film (streamed
+// from Wix Media, never committed to the repo) with a parallax exit; the
+// fleet is a pinned scroll sequence (one car per scroll beat). Sessions are
+// queried live from Wix Bookings (non-fatal — degrades to a CTA on failure).
+import Layout from '../layouts/Layout.astro';
+import HeroFluid from '../components/HeroFluid.astro';
+import { services } from "@wix/bookings";
+import { auth } from "@wix/essentials";
+import { cached } from "../utils/ssr-cache";
+
+const BOOKING_APP_ID = "13d21c63-b5ec-5912-8397-c3a5ddb27a97";
+
+// The page is identical for every visitor and its data changes rarely — let
+// the Wix edge (Varnish/Fastly) serve HTML hits for 5 minutes. Kept SHORT deliberately: every release
+// 404s the previous build's hashed assets, so stale edge HTML is a broken
+// page — the TTL is the maximum post-release breakage window. No SWR for
+// the same reason.
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, max-age=0, s-maxage=300",
+);
+
+// Organization + WebSite structured data — home page only.
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": new URL("/#organization", Astro.site).href,
+      name: "APEX",
+      url: Astro.site?.href,
+      description:
+        "Supercar driving experiences — book a session behind the wheel of a specific supercar on a specific circuit at a specific time.",
+      logo: new URL("/favicon.svg", Astro.site).href,
+    },
+    {
+      "@type": "WebSite",
+      name: "APEX",
+      url: Astro.site?.href,
+      publisher: { "@id": new URL("/#organization", Astro.site).href },
+    },
+  ],
+};
+
+// Cached across requests (5-min TTL, stale-while-revalidate) — the live
+// Bookings read was most of the ~1s in-grid SSR time on a warm pod.
+const result = await cached("home:sessions", 5 * 60_000, () =>
+  auth
+    .elevate(services.queryServices)()
+    .eq("appId", BOOKING_APP_ID)
+    .limit(8)
+    .find(),
+).catch((err: any) => { console.error("[home] sessions query failed:", err); return null; });
+
+const sessions: any[] = (result?.items ?? []).filter((s: any) => !s.hidden);
+
+const getSlug = (s: any): string => s.mainSlug?.name ?? s.supportedSlugs?.[0]?.name ?? s._id;
+const getDuration = (s: any): number => s.schedule?.availabilityConstraints?.sessionDurations?.[0] ?? 60;
+const formatPrice = (s: any): string | undefined => {
+  const p = s.payment;
+  if (!p || p.rateType === "NO_FEE") return undefined;
+  if (p.rateType === "FIXED" && p.fixed?.price) {
+    const { value, currency } = p.fixed.price;
+    if (!value) return undefined;
+    return new Intl.NumberFormat("en-IE", {
+      style: "currency",
+      currency: currency ?? "EUR",
+      maximumFractionDigits: 0,
+    }).format(Number(value));
+  }
+  return undefined;
+};
+
+// The fleet — fictional in-house designations only. Imagery is AI-generated
+// original design (badge-free, no real marque), served from Wix Media.
+const fleet = [
+  {
+    designation: "TH-12W",
+    href: "/services/th-12w-30-min-circuit-session",
+    cta: "Book a thrill",
+    role: "The circuit weapon. Mid-engined, downforce-led, honest at the limit",
+    image: "https://static.wixstatic.com/media/67964a_688bd941058043ffad139b51410e5983~mv2.png/v1/fill/w_1376,h_768,q_85/th-12.jpg",
+    video: "https://video.wixstatic.com/video/67964a_6d60600de434486fa612ce9589d9d2f1/720p/mp4/file.mp4",
+    videoMobile: "https://video.wixstatic.com/video/67964a_93694f1c75a24e5c834e543b42f37299/480p/mp4/file.mp4",
+    alt: "TH-12W hypercar cornering at the apex of a dark circuit at dusk, brake discs glowing",
+    specs: [
+      { value: "977", unit: "PS", label: "Power" },
+      { value: "2.5", unit: "s", label: "0–60 mph" },
+      { value: "340", unit: "km/h", label: "Top speed" },
+    ],
+  },
+  {
+    designation: "ROCKET 4S",
+    href: "/services/rocket-4s-launch-control-run",
+    cta: "Book a flight",
+    role: "The launch specialist. All-wheel drive, telemetry on every run",
+    image: "https://static.wixstatic.com/media/67964a_75f55bba9ff64d86bfc4d983c9bb8b7e~mv2.png/v1/fill/w_1376,h_768,q_85/rs-launch.jpg",
+    video: "https://video.wixstatic.com/video/67964a_27024945f4a848eba030934f3f8e183a/720p/mp4/file.mp4",
+    videoMobile: "https://video.wixstatic.com/video/67964a_516a9a89852942b082597a46de9f5024/480p/mp4/file.mp4",
+    pos: "50% 35%",
+    alt: "ROCKET 4S coupe launching from the start line at night, tire smoke trailing",
+    specs: [
+      { value: "1130", unit: "PS", label: "Power" },
+      { value: "2.1", unit: "s", label: "0–60 mph" },
+      { value: "305", unit: "km/h", label: "Top speed" },
+    ],
+  },
+  {
+    designation: "Apex GT",
+    href: "/services/apex-gt-half-day-alpine-pass",
+    cta: "Book a drive",
+    role: "The grand tourer. Long-legged, unhurried, built for the high passes",
+    image: "https://static.wixstatic.com/media/67964a_98ec9d42fd54409fac49b479d2b0d2d0~mv2.png/v1/fill/w_1376,h_768,q_85/apex-gt.jpg",
+    video: "https://video.wixstatic.com/video/67964a_90326cc4dcfb401490328519e1b5951b/720p/mp4/file.mp4",
+    videoMobile: "https://video.wixstatic.com/video/67964a_3575fd32d8594e429b0062445fd5ac47/480p/mp4/file.mp4",
+    // The car sits low in this frame — bias the cover crop toward the bottom
+    // so it isn't clipped in the wide card.
+    pos: "50% 85%",
+    alt: "Apex GT sweeping through an alpine hairpin at blue hour, tail lights tracing the road",
+    specs: [
+      { value: "850", unit: "PS", label: "Power" },
+      { value: "3.2", unit: "s", label: "0–60 mph" },
+      { value: "320", unit: "km/h", label: "Top speed" },
+    ],
+  },
+];
+
+// The hero poster carries the first paint of the hero — preloaded in <head>
+// with fetchpriority=high so it never queues behind other requests. Served
+// from the wixstatic image CDN: a same-origin copy (public/media/) was
+// tried 2026-07-09 and DEGRADED real PSI scores — the platform's static
+// path revalidates every hit (~270ms TTFB) while wixstatic serves cached
+// (~150ms), which outweighs the third-party handshake. 1366×768 keeps the
+// decode ~27% cheaper than the original 1600×900. The film itself attaches
+// after load+idle (see the deferral script by the video). NOTE: keep
+// public/media/hero-poster.webp in place — stale edge-cached HTML from the
+// self-hosted window still references it.
+const HERO_POSTER =
+  "https://static.wixstatic.com/media/67964a_26a86398939b49f6b591c8dc0a03c37af002.jpg/v1/fill/w_1366,h_768,q_80/poster.webp";
+
+// Responsive variants of the car stills — the fleet URLs point at the full
+// w_1376 crop, but phones only need ~480-768px. Derive a srcset by swapping
+// the Wix Media fill params (the 1376×768 aspect is preserved per width).
+const CAR_WIDTHS = [480, 768, 1024, 1376];
+const carSrcset = (url: string): string =>
+  CAR_WIDTHS.map((w) => {
+    const h = Math.round((w * 768) / 1376);
+    return `${url.replace(/w_\d+,h_\d+/, `w_${w},h_${h}`)} ${w}w`;
+  }).join(", ");
+---
+<Layout>
+  <script
+    slot="head"
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(structuredData)}
+  />
+  <link slot="head" rel="preload" as="image" href={HERO_POSTER} fetchpriority="high" />
+  <!-- Scene 1 — hero: TH-12 lap film (Wix Media) + parallax exit. The video is
+       NOT in the repo — it lives in the site's Wix Media and streams from the
+       wixstatic CDN. The boot curtain waits for it (BootScreen.astro). -->
+  <section class="scene scene-hero" aria-label="Apex">
+    <div class="hero-scene" aria-hidden="true">
+      {/* Desktop: 720p/24fps low-bitrate encode; phones: the purpose-made
+          480p encode. The original 720p master stays in Wix Media for easy
+          revert: 67964a_d30f1f2be4584a65924f05e849b1df3a. No src in markup
+          and preload=none — the film stays OFF the startup path (it competed
+          with the poster and boot for bandwidth/decode during the LCP
+          window); the deferral script below attaches the rendition after
+          load+idle. The preloaded poster carries the first paint. */}
+      <video
+        data-hero-video
+        class="hero-video"
+        poster={HERO_POSTER}
+        data-src-desktop="https://video.wixstatic.com/video/67964a_26a86398939b49f6b591c8dc0a03c37a/720p/mp4/file.mp4"
+        data-src-mobile="https://video.wixstatic.com/video/67964a_bab789da01e040619705a8490222cc5e/480p/mp4/file.mp4"
+        muted
+        loop
+        playsinline
+        preload="none"
+        fetchpriority="high"
+      ></video>
+      <script is:inline data-astro-rerun>
+        // Attach the hero rendition after load + idle. Under the boot curtain
+        // playback stays parked — the apex:boot-done handler (page module
+        // below) starts the lap at reveal. Reduced motion skips the film
+        // entirely; the poster holds the frame.
+        (() => {
+          const attach = () => {
+            const v = document.querySelector("video[data-hero-video]:not([src])");
+            if (!v || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+            v.src = matchMedia("(max-width: 767px)").matches
+              ? v.dataset.srcMobile
+              : v.dataset.srcDesktop;
+            if (!document.documentElement.classList.contains("booting")) {
+              v.play().catch(() => {});
+            }
+          };
+          const idle = () =>
+            "requestIdleCallback" in window
+              ? window.requestIdleCallback(attach, { timeout: 2500 })
+              : setTimeout(attach, 200);
+          if (document.readyState === "complete") idle();
+          else addEventListener("load", idle, { once: true });
+        })();
+      </script>
+      <div class="hero-video-scrim"></div>
+      <HeroFluid />
+    </div>
+    <div class="scene-watermark" aria-hidden="true">APEX</div>
+    <div class="container-wide flex flex-col gap-12 relative z-10" data-hero-parallax>
+      <p class="eyebrow" data-reveal data-asm="left">Supercar driving experiences</p>
+      <h1 class="display-hero" data-reveal data-asm="left" style="--d:100ms">
+        Commit to<br />the corner<span class="accent-dot" aria-hidden="true"></span>
+      </h1>
+      <p class="text-xl md:text-2xl text-mute max-w-prose leading-relaxed" data-reveal data-asm="right" style="--d:220ms">
+        The car, the circuit, the time slot — book and drive the racing line yourself
+      </p>
+      <div class="flex flex-wrap gap-4 mt-2" data-reveal data-asm="up" style="--d:340ms">
+        <a href="/services" class="btn-primary">Book a drive</a>
+        <a href="#sessions" class="btn-secondary">The sessions</a>
+      </div>
+    </div>
+    <div class="scroll-cue z-10" aria-hidden="true" style="--asm-d:600ms">Scroll</div>
+  </section>
+
+  <!-- Scene 2 — the fleet: pinned scroll sequence, one car per beat -->
+  <section class="pin-stage border-t border-rule" data-pin-stage aria-label="The fleet" style="background-color: var(--color-paper-warm);">
+    <div class="pin-viewport">
+      <div class="container-wide flex flex-col gap-12">
+        <div class="flex flex-col gap-5" data-reveal>
+          <div class="fleet-head">
+            <h2 class="display-lg text-center">Three cars. One discipline</h2>
+            <!-- Scroll progress as a racing curve. Circles at 8%/50%/92% of
+                 the arc (fractions on data-pin-dot); the scroll driver holds
+                 the fill centered in the active car's circle for the length
+                 of its beat and sweeps to the next circle across the beat
+                 boundary (continuous, scroll-driven). The circles are buttons
+                 — clicking one scrolls the stage to that car. -->
+            <div class="pin-progress">
+              <svg class="pin-curve" viewBox="0 0 400 96" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path class="pin-curve-base" d="M2 43 Q120 39 210 60 Q320 84 398 89" />
+                <path class="pin-curve-fill" data-pin-bar pathLength="100" d="M2 43 Q120 39 210 60 Q320 84 398 89" />
+              </svg>
+              <button type="button" class="pin-dot" data-pin-dot="0.08" data-fluid style="left:9%; top:42px" aria-label="Show car 1"><span class="pin-dot-num">1</span></button>
+              <button type="button" class="pin-dot" data-pin-dot="0.5" data-fluid style="left:50%; top:58px" aria-label="Show car 2"><span class="pin-dot-num">2</span></button>
+              <button type="button" class="pin-dot" data-pin-dot="0.92" data-fluid style="left:92%; top:87px" aria-label="Show car 3"><span class="pin-dot-num">3</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="pin-cars">
+          {fleet.map((car, i) => (
+            <article class={`pin-car${i === 0 ? " is-active" : ""}`} data-car-index={i} data-stack={i}>
+              <div class="pin-car-copy">
+                <div class="pin-car-head">
+                  <h3 class="pin-designation">{car.designation}</h3>
+                  <p class="plate-role">{car.role}</p>
+                </div>
+                <div class="pin-car-foot">
+                  <div class="plate-specs">
+                    {car.specs.map((s) => (
+                      <div>
+                        <span class="plate-value">{s.value}<span class="plate-unit">{s.unit}</span></span>
+                        <span class="plate-label">{s.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <a href={car.href} class="btn-primary">{car.cta}</a>
+                </div>
+              </div>
+              <div class="pin-car-media">
+                <img
+                  src={car.image}
+                  srcset={carSrcset(car.image)}
+                  sizes="100vw"
+                  alt={car.alt}
+                  loading="lazy"
+                  decoding="async"
+                  style={"pos" in car && car.pos ? `object-position: ${car.pos}` : undefined}
+                />
+                {/* The film layer — fades in over the still once the car is
+                    in focus and actually playing (driven in Layout.astro).
+                    Same cover crop as the still; preload=none keeps its
+                    ~0.5MB off the startup path — initFleetWarm buffers it
+                    when the stage comes within a viewport of the scroll.
+                    Src is picked by the inline rendition script (480p
+                    phones / 720p desktop). */}
+                <video
+                  data-src-desktop={car.video}
+                  data-src-mobile={car.videoMobile}
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                  style={"pos" in car && car.pos ? `object-position: ${car.pos}` : undefined}
+                />
+              </div>
+            </article>
+          ))}
+          <!-- Prev/next car — same scroll behavior as the numbered circles. -->
+          <button type="button" class="pin-nav pin-nav-prev" data-pin-nav="-1" aria-label="Previous car">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 4 L7 12 L15 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+          <button type="button" class="pin-nav pin-nav-next" data-pin-nav="1" aria-label="Next car">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 4 L17 12 L9 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- home:bookings -->
+  <!-- Scene 3 — the sessions (live from Wix Bookings) -->
+  <section id="sessions" class="scene cv-auto" aria-label="The sessions">
+    <div class="container-wide flex flex-col gap-14">
+      <div class="flex flex-col gap-5" data-reveal>
+        <p class="eyebrow w-full justify-center">The sessions</p>
+        <h2 class="display-xl text-center">Pick your drive</h2>
+      </div>
+      {
+        sessions.length > 0 ? (
+          <div>
+            {sessions.map((s, i) => {
+              // Car-led names read "CAR · session" — paint just the car red.
+              const name = s.name ?? "";
+              const dot = name.indexOf(" · ");
+              // The car's fleet film ghosts behind its row on hover; the
+              // passenger lap brings its own clip (no fleet car to borrow).
+              const film =
+                fleet.find((c) => name.toUpperCase().startsWith(c.designation.toUpperCase())) ??
+                (name.toUpperCase().startsWith("PASSENGER HOT LAP")
+                  ? {
+                      video: "https://video.wixstatic.com/video/67964a_837457251f164d0c9e4a08c325afa181/720p/mp4/file.mp4",
+                      videoMobile: "https://video.wixstatic.com/video/67964a_b1d850576a8b4a7d8e9e2130f3a8d17d/480p/mp4/file.mp4",
+                    }
+                  : undefined);
+              return (
+                <a href={`/services/${getSlug(s)}`} class="index-row" data-roll>
+                  {film && (
+                    <video
+                      class="index-row-film"
+                      data-src-desktop={film.video}
+                      data-src-mobile={film.videoMobile}
+                      muted
+                      loop
+                      playsinline
+                      preload="metadata"
+                      aria-hidden="true"
+                      style={"pos" in film && film.pos ? `object-position: ${film.pos}` : undefined}
+                    />
+                  )}
+                  <span class="index-row-num">{String(i + 1).padStart(2, "0")}</span>
+                  <span class="index-row-name">
+                    {dot === -1 ? (
+                      name
+                    ) : (
+                      <>
+                        <span class="text-accent">{name.slice(0, dot)}</span>
+                        {name.slice(dot)}
+                      </>
+                    )}
+                  </span>
+                  <span class="index-row-meta">
+                    <span>{getDuration(s)} min</span>
+                    {formatPrice(s) && <span class="price">{formatPrice(s)}</span>}
+                    <span class="index-row-arrow" aria-hidden="true">→</span>
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        ) : (
+          <div class="flex flex-col gap-6 items-start" data-reveal style="--d:140ms">
+            <p class="text-mute leading-relaxed max-w-prose">
+              The grid opens soon — sessions are being scheduled.
+            </p>
+            <a href="/services" class="btn-secondary">See all sessions</a>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- Scene 4 — philosophy -->
+  <section class="scene scene-why cv-auto border-t border-rule" aria-label="Philosophy" style="background-color: var(--color-paper-warm);">
+    <div class="container-wide flex flex-col gap-10 items-start">
+      <p class="eyebrow why-eyebrow" data-reveal>Why Apex</p>
+      <div class="why-row">
+        <p class="statement max-w-4xl" data-reveal style="--d:140ms">
+          Speed is not the point.<br />
+          Control at the <span class="text-accent font-semibold" data-fluid>edge</span> of it is.<br />
+          <br />
+          Every session pairs you with an instructor who lives on that edge — and teaches you to hold it.
+        </p>
+        <a href="/about" class="btn-secondary" data-fluid data-reveal style="--d:280ms">The story</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scene 5 — final call -->
+  <section class="scene cv-auto" aria-label="Book">
+    <div class="container-wide flex flex-col gap-10 items-center text-center">
+      <!-- The dot laps the heading — one corner per beat, its rounded corner
+           tracking the corner it sits in, while the text holds still. -->
+      <h2 class="display-hero grid-dot-stage" data-reveal>
+        The grid<br />is open<span class="grid-dot grid-dot-br" data-fluid aria-hidden="true"></span><span class="grid-dot grid-dot-bl" data-fluid aria-hidden="true"></span><span class="grid-dot grid-dot-ul" data-fluid aria-hidden="true"></span><span class="grid-dot grid-dot-ur" data-fluid aria-hidden="true"></span>
+      </h2>
+      <a href="/services" class="btn-primary" data-reveal style="--d:200ms">Book a drive</a>
+    </div>
+  </section>
+
+  {/* Rendition pick for the fleet + session films (480p on phones, 720p on
+      desktop). The hero is excluded — its rendition attaches after load+idle
+      via the deferral script next to it. */}
+  <script is:inline data-astro-rerun>
+    for (const v of document.querySelectorAll("video[data-src-desktop]:not([src]):not([data-hero-video])")) {
+      v.src = matchMedia("(max-width: 767px)").matches
+        ? v.dataset.srcMobile
+        : v.dataset.srcDesktop;
+    }
+  </script>
+</Layout>
+
+<script>
+  // Hero-video readiness — the boot curtain (BootScreen.astro) holds until
+  // this fires (or its own 8s failsafe). Also parks the film under
+  // prefers-reduced-motion: the poster frame stays, nothing moves.
+  function initHeroVideo() {
+    const video = document.querySelector<HTMLVideoElement>("[data-hero-video]:not([data-init])");
+    if (!video) return;
+    video.dataset.init = "1";
+    // The film's src attaches after load+idle (deferral script by the video);
+    // under prefers-reduced-motion it never attaches and the poster holds.
+    // With the loader up, hold playback and start it only when the curtain
+    // finishes (apex:boot-done) — the lap begins at reveal, not behind the
+    // veil. Failsafe mirrors the head watchdog in case the boot module died
+    // and only the watchdog cleared the curtain.
+    if (document.documentElement.classList.contains("booting")) {
+      const start = () => video.play().catch(() => {});
+      document.addEventListener("apex:boot-done", start, { once: true });
+      setTimeout(() => {
+        if (video.paused && !document.documentElement.classList.contains("booting")) start();
+      }, 14000);
+    }
+  }
+  initHeroVideo();
+  document.addEventListener("astro:page-load", initHeroVideo);
+
+  // Fleet films are preload=none (1.8MB that used to download at startup) —
+  // pre-warm them only when the pinned stage is within a viewport of the
+  // scroll, so the focus car's film is buffered by the time its beat plays.
+  function initFleetWarm() {
+    const stage = document.querySelector<HTMLElement>("[data-pin-stage]:not([data-warm])");
+    if (!stage) return;
+    stage.dataset.warm = "1";
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        stage.querySelectorAll<HTMLVideoElement>(".pin-car-media video").forEach((v) => {
+          v.preload = "auto";
+          v.load();
+        });
+      },
+      { rootMargin: "100% 0px" },
+    );
+    io.observe(stage);
+  }
+  initFleetWarm();
+  document.addEventListener("astro:page-load", initFleetWarm);
+
+  // Session-row films — the car's fleet clip ghosts behind its row while
+  // the cursor rests on it (CSS fades it; playback needs JS). Desktop only.
+  function initRowFilms() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    document.querySelectorAll<HTMLElement>(".index-row:not([data-film-live])").forEach((row) => {
+      const vid = row.querySelector<HTMLVideoElement>(".index-row-film");
+      if (!vid) return;
+      row.dataset.filmLive = "1";
+      row.addEventListener("pointerenter", () => {
+        vid.play().catch(() => {});
+      });
+      row.addEventListener("pointerleave", () => vid.pause());
+    });
+  }
+  initRowFilms();
+  document.addEventListener("astro:page-load", initRowFilms);
+
+  // "Book" rides the cursor across the session rows — the Book a drive
+  // button's voice, sized up, in accent red, trailing just right of the
+  // pointer (flipping to its left near the viewport edge).
+  function initBookCursor() {
+    if (document.querySelector(".cursor-book")) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    const tag = document.createElement("span");
+    tag.className = "cursor-book";
+    tag.textContent = "Book";
+    tag.setAttribute("aria-hidden", "true");
+    document.body.appendChild(tag);
+    window.addEventListener(
+      "pointermove",
+      (e) => {
+        const over = (e.target as Element | null)?.closest?.(".index-row");
+        tag.classList.toggle("on", !!over);
+        if (over) {
+          // Near the right edge the tag would run off-screen and sit on the
+          // row's → arrow — flip it to the left of the pointer instead.
+          const w = tag.offsetWidth;
+          const x = e.clientX + 22 + w > window.innerWidth - 8 ? e.clientX - 22 - w : e.clientX + 22;
+          tag.style.transform = `translate3d(${x}px, ${e.clientY - tag.offsetHeight / 2}px, 0)`;
+        }
+      },
+      { passive: true },
+    );
+    // Scrolling can carry a row out from under a resting cursor — drop the tag.
+    window.addEventListener("scroll", () => tag.classList.remove("on"), { passive: true });
+  }
+  initBookCursor();
+  document.addEventListener("astro:page-load", initBookCursor);
+</script>

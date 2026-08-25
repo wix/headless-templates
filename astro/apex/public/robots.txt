@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /booking-confirmation
+
+# CHANGE ME — replace with your published origin.
+Sitemap: https://example.wix-site-host.com/sitemap.xml

@@ -1,0 +1,36 @@
+{
+  "name": "wix-astro-apex",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "astro": "astro",
+    "dev": "astro dev",
+    "build": "astro build"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.106.0",
+    "@astrojs/react": "^4.3.0",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/oswald": "^5.2.8",
+    "@tailwindcss/vite": "^4.3.1",
+    "@wix/astro": "^2.39.0",
+    "@wix/astro-pages": "^2.0.4",
+    "@wix/auto_sdk_ecom_cart-v-2": "^1.0.163",
+    "@wix/bookings": "^1.0.1523",
+    "@wix/data": "^1.0.486",
+    "@wix/essentials": "^1.0.10",
+    "@wix/redirects": "^1.0.118",
+    "@wix/sdk": "^1.21.12",
+    "astro": "^5.8.0",
+    "qrcode": "^1.5.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "tailwindcss": "^4.3.1",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@wix/astro-wix-hosting-adapter": "^2.0.0"
+  }
+}

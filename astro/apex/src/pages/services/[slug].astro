@@ -1,0 +1,345 @@
+---
+// src/pages/services/[slug].astro — SSR session detail + client-side booking flow.
+// Two dirs deep inside src/ → import with ../../ (not three ../).
+import Layout from "../../layouts/Layout.astro";
+import SeoTags from "../../components/SeoTags.astro";
+import ServiceBookingFlow from "../../components/ServiceBookingFlow";
+import { services } from "@wix/bookings";
+import { auth } from "@wix/essentials";
+import { media as wixMedia } from "@wix/sdk";
+import { filmFor } from "../../data/fleetFilms";
+import { bookingFormFields } from "../../utils/booking-form-fields";
+
+const BOOKING_APP_ID = "13d21c63-b5ec-5912-8397-c3a5ddb27a97";
+const { slug } = Astro.params;
+
+// Carried from the catalog's location selector (when the site has >1 location):
+// the default location the availability picker scopes to. Absent on single-location
+// sites (and on deep links — the picker then defaults to the service's first location).
+const reqUrl = new URL(Astro.request.url);
+const locationId = reqUrl.searchParams.get("locationId") ?? undefined;
+
+let service: any = null;
+try {
+  // Ambient SSR via @wix/essentials. Single service by slug: the .eq() builder
+  // chain on mainSlug.name + appId (the form the @wix/bookings SDK expects).
+  const result = await auth
+    .elevate(services.queryServices)({ conditionalFields: ["STAFF_MEMBER_DETAILS"] })
+    .eq("mainSlug.name", slug)
+    .eq("appId", BOOKING_APP_ID)
+    .limit(1)
+    .find();
+  service = result.items?.[0] ?? null;
+} catch (err) {
+  console.error(`[services/${slug}] detail query failed:`, err);
+}
+
+if (!service) return Astro.redirect("/services", 302);
+
+// Booking-form SCHEMA — read from the CMS collection `BookingFormFields`
+// (see utils/booking-form-fields.ts for why it is no longer @wix/forms).
+// Keep the field's `target` — that is the key createBooking expects in
+// formSubmission. Never throws; falls back to the contact basics.
+const formFields = await bookingFormFields(slug ?? "");
+
+const formatPrice = (p: any): string | undefined => {
+  if (!p || p.rateType === "NO_FEE") return undefined;
+  if (p.rateType === "FIXED" && p.fixed?.price) {
+    const { value, currency } = p.fixed.price;
+    if (!value) return undefined;
+    return new Intl.NumberFormat("en-IE", { style: "currency", currency: currency ?? "EUR" }).format(Number(value));
+  }
+  return undefined;
+};
+const price = formatPrice(service.payment);
+const duration = service.schedule?.availabilityConstraints?.sessionDurations?.[0] ?? 60;
+// The SDK returns service images as `wix:image://` URI strings (REST returns
+// an object with a bare media id in `url`) — normalize every shape.
+const rawImage: unknown =
+  service.media?.coverMedia?.image ?? service.media?.mainMedia?.image ?? service.media?.items?.[0]?.image;
+const rawUrl = typeof rawImage === "string" ? rawImage : (rawImage as any)?.url;
+const imageUrl = !rawUrl
+  ? undefined
+  : rawUrl.startsWith("wix:image://")
+    ? wixMedia.getImageUrl(rawUrl).url
+    : rawUrl.startsWith("http")
+      ? rawUrl
+      : `https://static.wixstatic.com/media/${rawUrl}`;
+const serviceName = service.name ?? "Session";
+// Social-card variant — Wix Media fill-crops a bare media URL to the
+// 1200×630 OG frame (skip URLs that already carry a /v1/ transform).
+const ogImage =
+  imageUrl?.startsWith("https://static.wixstatic.com/media/") && !imageUrl.includes("/v1/")
+    ? `${imageUrl}/v1/fill/w_1200,h_630,q_85/social.jpg`
+    : imageUrl;
+const seoTags = service.seoData?.tags ?? [];
+const hasTitleTag = seoTags.some((t: any) => t.type === "title" && !t.disabled);
+
+// Service + BreadcrumbList structured data — machine-readable price, duration,
+// and a declared booking entry point for answer engines and agents. Rendered
+// regardless of hasSeoTags (Wix seoData carries meta tags, not JSON-LD).
+const pageUrl = new URL(`/services/${slug}`, Astro.site).href;
+const fixedPrice = service.payment?.rateType === "FIXED" ? service.payment?.fixed?.price : undefined;
+const serviceStructuredData = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Service",
+      "@id": `${pageUrl}#service`,
+      name: serviceName,
+      description: service.tagLine ?? service.description ?? undefined,
+      url: pageUrl,
+      image: ogImage,
+      provider: {
+        "@type": "Organization",
+        "@id": new URL("/#organization", Astro.site).href,
+        name: "APEX",
+      },
+      ...(fixedPrice?.value && {
+        offers: {
+          "@type": "Offer",
+          price: fixedPrice.value,
+          priceCurrency: fixedPrice.currency ?? "EUR",
+          url: pageUrl,
+          availability: "https://schema.org/InStock",
+        },
+      }),
+      additionalProperty: {
+        "@type": "PropertyValue",
+        name: "Session duration",
+        value: `${duration} minutes`,
+      },
+      potentialAction: {
+        "@type": "ReserveAction",
+        target: { "@type": "EntryPoint", urlTemplate: pageUrl },
+        result: { "@type": "Reservation", name: serviceName },
+      },
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: new URL("/", Astro.site).href },
+        { "@type": "ListItem", position: 2, name: "Sessions", item: new URL("/services", Astro.site).href },
+        { "@type": "ListItem", position: 3, name: serviceName, item: pageUrl },
+      ],
+    },
+  ],
+}).replace(/</g, "\\u003c");
+
+// Fleet films — the shared Wix Media clips (src/data/fleetFilms.ts), keyed
+// by the car the service name leads with (and the same cover crops). The
+// service image stays the poster; the film fades in over it once playing.
+const film = filmFor(serviceName);
+const mediaPos = film?.pos ? `object-position: ${film.pos}` : undefined;
+// "CAR · session" titles break onto two lines: the car, then what it is.
+const nameDot = serviceName.indexOf(" · ");
+
+// Staff for the optional instructor picker — carried on the service via the
+// STAFF_MEMBER_DETAILS conditional field (already requested in the query above).
+// Each entry is { staffMemberId, name } — `staffMemberId` is, despite the name,
+// the resource id (the calendar filters availability + books by it). The calendar
+// shows the picker only when there is more than one; empty/absent → "any
+// instructor" (the ANY_RESOURCE fallback).
+const staffMembers = service.staffMemberDetails?.staffMembers ?? [];
+
+// Business locations the service is offered at — sourced from `queryLocations()`
+// (the site's real business locations, whose ids the availability engine
+// recognizes), intersected with the service's own location ids. Availability is
+// scoped to one of these so a multi-location service doesn't return duplicate
+// per-location time slots (listAvailabilityTimeSlots returns one slot per location
+// otherwise). Source from `queryLocations()`, NOT from `service.locations` alone:
+// a service's location entry can carry an id the availability engine doesn't
+// recognize, and scoping to it returns zero slots. When the site has no business
+// locations this resolves to [] and the calendar fetches unscoped.
+let serviceLocations: { _id: string; name?: string }[] = [];
+try {
+  const locResult: any = await auth.elevate(services.queryLocations)();
+  const businessLocations = locResult?.businessLocations?.locations ?? [];
+  const serviceLocationIds = new Set(
+    (service.locations ?? [])
+      .filter((l: any) => (l.type ?? "BUSINESS") === "BUSINESS")
+      .map((l: any) => l.business?._id ?? l._id)
+      .filter(Boolean),
+  );
+  serviceLocations = businessLocations
+    .filter((l: any) => serviceLocationIds.has(l._id))
+    .map((l: any) => ({ _id: l._id, name: l.business?.name ?? "Circuit" }));
+} catch (err) {
+  console.error(`[services/${slug}] queryLocations failed:`, err);
+}
+---
+
+<Layout
+  title={serviceName}
+  description={service.tagLine ?? service.description}
+  image={ogImage}
+  hasSeoTags={hasTitleTag}
+>
+  <SeoTags tags={seoTags} slot="head" />
+  <script slot="head" type="application/ld+json" is:inline set:html={serviceStructuredData} />
+  <section class="container-wide pt-8 pb-24">
+    <!-- Top row rides close under the header: the eyebrow centers via equal
+         1fr side tracks, and the back link centers inside the left track —
+         halfway between the container edge and the eyebrow (stacked on mobile). -->
+    <div class="mb-8 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center" data-reveal>
+      <a
+        href="/services"
+        class="inline-block text-sm text-mute hover:text-ink mb-4 md:mb-0 md:justify-self-center"
+      >← All sessions</a>
+      <p class="eyebrow w-full justify-center md:w-auto">The session</p>
+    </div>
+
+    <!-- Card hero — the home fleet card, stretched: name top-left with the
+         session line as its subline, service tagline top-right, car stats
+         bottom-left, book CTA bottom-right, the film fading in over the
+         still. Image-less services fall back to the warm-paper ground.
+         The frame is unclipped so the apex cut can straddle the card's
+         bottom edge; the card itself keeps the overflow clip. -->
+    <div class="detail-card-frame" data-reveal>
+    <div class="detail-card" data-detail-media>
+      <div class="pin-car-copy">
+        <div class="pin-car-head">
+          <h1 class="pin-designation">
+            {nameDot === -1 ? (
+              // No car prefix — stack the name one word per line
+              // ("Passenger Hot Lap" → three lines).
+              serviceName.split(" ").map((word: string, i: number) => (
+                <>
+                  {i > 0 && <br />}
+                  {word}
+                </>
+              ))
+            ) : (
+              <>
+                {serviceName.slice(0, nameDot)}
+                <span class="detail-title-sub">{serviceName.slice(nameDot + 3)}</span>
+              </>
+            )}
+          </h1>
+          {service.tagLine && <p class="plate-role">{service.tagLine}</p>}
+        </div>
+        <div class="pin-car-foot">
+          {film?.specs && (
+            <div class="plate-specs">
+              {film.specs.map((s) => (
+                <div>
+                  <span class="plate-value">{s.value}<span class="plate-unit">{s.unit}</span></span>
+                  <span class="plate-label">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <a href="#book" class="btn-primary">Book this drive</a>
+        </div>
+      </div>
+      {imageUrl && (
+        <div class="pin-car-media">
+          <img src={imageUrl} alt={serviceName} style={mediaPos} />
+          {film && (
+            <video
+              data-src-desktop={film.video}
+              data-src-mobile={film.videoMobile}
+              muted
+              loop
+              playsinline
+              preload="auto"
+              aria-hidden="true"
+              style={mediaPos}
+            />
+          )}
+        </div>
+      )}
+    </div>
+    <!-- The apex cut — a curved notch carved out of the card's bottom-centre
+         (page ground fills it, the notch line continues the card frame and
+         replaces the bottom border along its span); duration and price sit
+         centered ON the original border line. -->
+    <div class="detail-apex-cut">
+      {/* Flat crest with horizontal-tangent shoulders — one seamless
+          sweep, no visible stitch; the edge matches the card border. */}
+      <svg viewBox="0 0 800 180" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 180 C 55 90 75 56 130 56 L 670 56 C 725 56 745 90 800 180 Z" fill="var(--color-paper)" />
+        <path d="M0 180 C 55 90 75 56 130 56 L 670 56 C 725 56 745 90 800 180" fill="none" stroke="var(--color-rule)" stroke-width="1" vector-effect="non-scaling-stroke" />
+      </svg>
+      <div class="detail-apex-figures">
+        <div>
+          <span class="plate-value">{duration}<span class="plate-unit">min</span></span>
+          <span class="plate-label">Duration</span>
+        </div>
+        {price && (
+          <div>
+            <span class="plate-value">{price}</span>
+            <span class="plate-label">Session</span>
+          </div>
+        )}
+      </div>
+    </div>
+    </div>
+
+    {/* Rendition pick — 480p on phones, 720p on desktop — before the film
+        module below ever calls play(). */}
+    <script is:inline data-astro-rerun>
+      for (const v of document.querySelectorAll("video[data-src-desktop]:not([src])")) {
+        v.src = matchMedia("(max-width: 767px)").matches
+          ? v.dataset.srcMobile
+          : v.dataset.srcDesktop;
+      }
+    </script>
+
+    {/* The seed duplicates description into tagLine — only render it when
+        it actually says something new. */}
+    {service.description && service.description !== service.tagLine && (
+      <p class="text-ink leading-relaxed max-w-prose mx-auto text-center mb-16">{service.description}</p>
+    )}
+
+    <!-- Availability — intro column rides sticky on the left, the calendar
+         and form get the wide right column. -->
+    <section class="border-t border-rule pt-12 detail-book" id="book">
+      <div class="detail-book-intro">
+        <p class="eyebrow mb-4">Availability</p>
+        <h2 class="font-display text-2xl md:text-3xl uppercase leading-tight mb-3">Book your session</h2>
+        <p class="text-mute leading-relaxed">Pick the window. Commit to the corner</p>
+      </div>
+      <div class="detail-book-flow">
+        <ServiceBookingFlow
+          service={service}
+          serviceName={serviceName}
+          serviceType={service.type ?? "APPOINTMENT"}
+          fields={formFields}
+          staffMembers={staffMembers}
+          locations={serviceLocations}
+          locationId={locationId}
+          client:only="react"
+        />
+      </div>
+    </section>
+  </section>
+</Layout>
+
+<script>
+  // Detail film — the still shows first; the car's clip cues a beat later
+  // and fades in only once playback actually starts (home-deck spirit).
+  // Waits out the boot curtain on hard loads, skipped under reduced motion.
+  function initDetailFilm() {
+    const wrap = document.querySelector<HTMLElement>("[data-detail-media]:not([data-init])");
+    if (!wrap) return;
+    wrap.dataset.init = "1";
+    const vid = wrap.querySelector("video");
+    if (!vid) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const cue = () =>
+      setTimeout(() => {
+        vid
+          .play()
+          .then(() => wrap.classList.add("video-live"))
+          .catch(() => {}); // autoplay blocked — the still holds
+      }, 600);
+    if (document.documentElement.classList.contains("booting")) {
+      document.addEventListener("apex:boot-done", cue, { once: true });
+    } else {
+      cue();
+    }
+  }
+  initDetailFilm();
+  document.addEventListener("astro:page-load", initDetailFilm);
+</script>

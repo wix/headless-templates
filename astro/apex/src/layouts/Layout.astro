@@ -1,0 +1,644 @@
+---
+// Self-hosted variable fonts (woff2 served from _astro with immutable
+// caching). The Google Fonts stylesheet was render-blocking for ~0.9s on
+// mobile — two third-party connections on the critical path.
+import '@fontsource-variable/oswald';
+import '@fontsource-variable/inter';
+// Latin subsets preloaded from <head>: text paint (incl. the boot wordmark,
+// which is the LCP while the curtain is up) chains on these two files —
+// without the hint they queue behind everything the parser finds first.
+import oswaldLatinUrl from '@fontsource-variable/oswald/files/oswald-latin-wght-normal.woff2?url';
+import interLatinUrl from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import '../styles/global.css';
+import '../styles/components-bookings.css';
+import '../styles/components-concierge.css';
+import { ClientRouter } from 'astro:transitions';
+import BootScreen from '../components/BootScreen.astro';
+import CtaFluid from '../components/CtaFluid.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+import GhostLap from '../components/GhostLap.astro';
+import Concierge from '../components/Concierge';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Absolute URL for og:image; falls back to the site-wide card. */
+  image?: string;
+  /** Set on pages that must stay out of search (e.g. booking confirmation). */
+  noindex?: boolean;
+  hasSeoTags?: boolean;
+}
+const { title, description, image, noindex = false, hasSeoTags = false } = Astro.props;
+
+const pageTitle = title ? `${title} · APEX` : "APEX — Supercar driving experiences";
+const pageDescription =
+  description ??
+  "Book a session behind the wheel of a supercar — a specific car, on a specific circuit, in a window of time that's yours alone.";
+// The TH-12W hero still, cropped to the 1200×630 social-card frame by Wix Media.
+const ogImage =
+  image ??
+  "https://static.wixstatic.com/media/67964a_688bd941058043ffad139b51410e5983~mv2.png/v1/fill/w_1200,h_630,q_85/apex-og.jpg";
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      // Entry gate — must run before first paint. Two jobs, never under
+      // reduced motion: show the boot overlay on the first hard load of a
+      // session, and arm the entrance assembly ("assemble": elements start
+      // offset toward the side they live on; "assembled" releases them) on
+      // EVERY hard load — released at boot-done when the curtain runs,
+      // right after first paint on ordinary refreshes.
+      try {
+        if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          document.documentElement.classList.add("assemble");
+          var release = function () {
+            document.documentElement.classList.add("assembled");
+          };
+          if (!sessionStorage.getItem("apex:booted")) {
+            document.documentElement.classList.add("booting");
+            document.addEventListener("apex:boot-done", release, { once: true });
+            setTimeout(function () {
+              document.documentElement.classList.remove("booting");
+              // The boot module normally dispatches this from finish(); fire it
+              // here too so content gated on it (reveals) can never be stranded
+              // if that chunk failed to load (e.g. stale edge HTML referencing
+              // a purged asset hash).
+              document.dispatchEvent(new CustomEvent("apex:boot-done"));
+            }, 13000);
+          } else {
+            var go = function () {
+              // Double rAF: the offset starting styles must get one painted
+              // frame, or the release lands before any transition can run.
+              requestAnimationFrame(function () {
+                requestAnimationFrame(release);
+              });
+            };
+            if (document.readyState === "loading") {
+              document.addEventListener("DOMContentLoaded", go, { once: true });
+            } else {
+              go();
+            }
+            // rAF stalls in background tabs — never leave the page stranded.
+            setTimeout(release, 4000);
+          }
+        }
+      } catch (e) {}
+    </script>
+    <!-- The brand tick — the red corner-apex mark (heavy top-left round).
+         Transparent margin keeps it tick-sized in the tab, not a full tile. -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M13 3 A10 10 0 0 0 3 13 L13 13 Z' fill='%23E1121F'/%3E%3C/svg%3E" />
+    <link rel="preload" as="font" type="font/woff2" href={oswaldLatinUrl} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={interLatinUrl} crossorigin />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {!hasSeoTags && (
+      <>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        {!noindex && <link rel="canonical" href={canonical} />}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="APEX" />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={ogImage} />
+      </>
+    )}
+    <slot name="head" />
+    <ClientRouter />
+  </head>
+  <body>
+    <BootScreen />
+    <CtaFluid />
+    <div class="film-grain" aria-hidden="true"></div>
+    <div class="nav-progress" data-nav-progress aria-hidden="true"></div>
+    <Navigation />
+    <main><slot /></main>
+    <Footer />
+    <Concierge client:idle transition:persist="concierge" />
+    <GhostLap />
+    <script>
+      // Persisted rail aria-current sync + top loading bar + rail-anchored
+      // scroll across listing-to-listing navigation. Stores pack relies on
+      // all three; do not split into separate scripts.
+      function syncCategoryRail() {
+        const path = window.location.pathname;
+        const activeSlug = path.startsWith("/category/")
+          ? path.slice("/category/".length).replace(/\/$/, "")
+          : path === "/products" || path === "/products/"
+            ? ""
+            : null;
+        if (activeSlug === null) return;
+        const pills = document.querySelectorAll<HTMLAnchorElement>(
+          "[data-category-rail] .category-pill",
+        );
+        for (const pill of pills) {
+          const slug = pill.dataset.categorySlug ?? "";
+          if (slug === activeSlug) pill.setAttribute("aria-current", "page");
+          else pill.removeAttribute("aria-current");
+        }
+      }
+      // Eager click feedback — flip aria-current before the network call.
+      document.addEventListener("click", (event) => {
+        const target = event.target as HTMLElement | null;
+        const pill = target?.closest<HTMLAnchorElement>(
+          "[data-category-rail] .category-pill",
+        );
+        if (!pill) return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const pills = document.querySelectorAll<HTMLAnchorElement>(
+          "[data-category-rail] .category-pill",
+        );
+        for (const p of pills) p.removeAttribute("aria-current");
+        pill.setAttribute("aria-current", "page");
+      }, true);
+      const progress = document.querySelector<HTMLElement>("[data-nav-progress]");
+      function startProgress() {
+        if (!progress) return;
+        progress.dataset.state = "loading";
+        document.body.dataset.navigating = "true";
+      }
+      function endProgress() {
+        if (!progress) return;
+        progress.dataset.state = "done";
+        delete document.body.dataset.navigating;
+        window.setTimeout(() => {
+          if (progress.dataset.state === "done") delete progress.dataset.state;
+        }, 320);
+      }
+      // Anchor the persisted rail across listing-to-listing navigation. The
+      // page-header above the rail differs between /products and /category/[slug]
+      // (breadcrumbs, lede, optional image), so naive scroll preservation reads
+      // as a jump. Capture rail.getBoundingClientRect().top before the swap and
+      // re-equalize after.
+      const isListing = (p: string) =>
+        p === "/products" || p === "/products/" || p.startsWith("/category/");
+      let railAnchorTop: number | null = null;
+      document.addEventListener("astro:before-preparation", (event: any) => {
+        const from = window.location.pathname;
+        const to = event?.to?.pathname ?? from;
+        const rail = document.querySelector<HTMLElement>("[data-category-rail]");
+        railAnchorTop =
+          rail && isListing(from) && isListing(to)
+            ? rail.getBoundingClientRect().top
+            : null;
+        startProgress();
+      });
+      document.addEventListener("astro:after-swap", () => {
+        syncCategoryRail();
+        if (railAnchorTop !== null) {
+          const rail = document.querySelector<HTMLElement>("[data-category-rail]");
+          if (rail) {
+            const delta = rail.getBoundingClientRect().top - railAnchorTop;
+            if (Math.abs(delta) > 0.5) {
+              window.scrollBy({ top: delta, left: 0, behavior: "instant" as ScrollBehavior });
+            }
+          }
+        }
+        railAnchorTop = null;
+        endProgress();
+      });
+      document.addEventListener("astro:page-load", endProgress);
+      syncCategoryRail();
+    </script>
+    <script>
+      // Cinematic motion layer — native scroll + reveal-on-scroll. (Lenis was
+      // removed: on touch it rode native scrolling anyway, and its permanent
+      // rAF loop re-measured the pinned stage every frame forever — a large
+      // share of startup main-thread time. Scroll FX are now event-driven and
+      // rAF-throttled; the wheel glide on desktop is the only feel change.)
+      // Respects prefers-reduced-motion (reveals shown instantly, no FX) and
+      // replays reveal setup after every ClientRouter swap.
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // Past-hero gate — mobile CSS collapses the header to the plain bar
+      // (no curve pocket, no lap) once the page is meaningfully scrolled.
+      const heroGate = () => {
+        document.documentElement.classList.toggle(
+          "past-hero",
+          window.scrollY > window.innerHeight * 0.5,
+        );
+      };
+      window.addEventListener("scroll", heroGate, { passive: true });
+      heroGate();
+
+      /* RPM gauge parked — rev-on-scroll commented out on request. The
+         hairline keeps its navigation loading-state duties untouched.
+
+      // RPM gauge — the top hairline doubles as a rev counter: scroll
+      // velocity revs it (redline ≈ 3500px/s), lift-off decays it like a
+      // closed throttle, and holding redline bangs a shift (revs drop, climb
+      // again). Idle = invisible. The bar's loading states own it during
+      // navigation: inline rev styles are cleared on astro:before-preparation
+      // so the [data-state] rules are never shadowed.
+      const rpmBar = document.querySelector<HTMLElement>("[data-nav-progress]");
+      let rev = 0;
+      let rpmRaf = 0;
+      let rpmAcc = 0; // distance banked by the scroll handler, spent per tick
+      let rpmLastY = window.scrollY;
+      let rpmLastT = 0;
+      let redlineAt = 0;
+      function rpmTick(now: number) {
+        const dt = Math.max(now - rpmLastT, 1);
+        rpmLastT = now;
+        const v = rpmAcc / dt; // px per ms
+        rpmAcc = 0;
+        const target = Math.min(v / 3.5, 1);
+        rev = target > rev ? rev + (target - rev) * 0.35 : rev * Math.pow(0.994, dt);
+        if (rev > 0.92) {
+          if (!redlineAt) redlineAt = now;
+          else if (now - redlineAt > 350) {
+            rev = 0.52; // the shift — next gear, revs climb again
+            redlineAt = 0;
+          }
+        } else {
+          redlineAt = 0;
+        }
+        if (rpmBar && !rpmBar.dataset.state && !document.body.dataset.navigating) {
+          rpmBar.style.opacity = rev > 0.02 ? "1" : "0";
+          rpmBar.style.transform = `scaleX(${rev.toFixed(4)})`;
+          rpmBar.classList.toggle("redline", rev > 0.85);
+        }
+        if (rev > 0.005) {
+          rpmRaf = requestAnimationFrame(rpmTick);
+        } else {
+          rpmRaf = 0;
+          if (rpmBar && !rpmBar.dataset.state) {
+            rpmBar.style.opacity = "0";
+            rpmBar.classList.remove("redline");
+          }
+        }
+      }
+      if (!reduced && rpmBar) {
+        window.addEventListener(
+          "scroll",
+          () => {
+            // Bank the delta here (measured against a persistent baseline) —
+            // the tick loop starts and stops, the odometer never does.
+            const y = window.scrollY;
+            rpmAcc += Math.abs(y - rpmLastY);
+            rpmLastY = y;
+            if (rpmRaf) return;
+            rpmLastT = performance.now();
+            rpmRaf = requestAnimationFrame(rpmTick);
+          },
+          { passive: true },
+        );
+        // Hand the element back to the loading states clean.
+        document.addEventListener("astro:before-preparation", () => {
+          rev = 0;
+          rpmBar.classList.remove("redline");
+          rpmBar.style.removeProperty("transform");
+          rpmBar.style.removeProperty("opacity");
+        });
+        // A swap teleports the scroll position — rebaseline, don't rev.
+        document.addEventListener("astro:after-swap", () => {
+          rpmLastY = window.scrollY;
+          rpmAcc = 0;
+        });
+      }
+      */
+
+      // Scroll-driven effects — hero parallax-exit + pinned fleet progress.
+      // Re-scanned after every ClientRouter swap; a no-op on pages without the
+      // hooks. Under reduced motion nothing runs (CSS shows the static layout).
+      let heroEl: HTMLElement | null = null;
+      let heroScene: HTMLElement | null = null;
+      let pinStages: HTMLElement[] = [];
+      function scanScrollFx() {
+        heroEl = document.querySelector("[data-hero-parallax]");
+        heroScene = document.querySelector(".hero-scene");
+        pinStages = Array.from(document.querySelectorAll("[data-pin-stage]"));
+        // Snap each scroller dot onto the browser's own arc parametrization —
+        // getPointAtLength matches the dash-fill math exactly, so the fill
+        // touches a circle at precisely its data-pin-dot fraction (the SSR
+        // inline positions are close-enough estimates until this runs).
+        // Layout offsets ignore transforms, so this stays idempotent.
+        const topWithin = (el: Element | null, root: Element): number => {
+          let y = 0;
+          while (el && el !== root) {
+            y += (el as HTMLElement).offsetTop;
+            el = (el as HTMLElement).offsetParent;
+          }
+          return y;
+        };
+        for (const stage of pinStages) {
+          const path = stage.querySelector<SVGPathElement>(".pin-curve-base");
+          const box = path?.ownerSVGElement?.viewBox?.baseVal;
+          if (!path || !box) continue;
+          const total = path.getTotalLength();
+          stage.querySelectorAll<HTMLElement>("[data-pin-dot]").forEach((dot) => {
+            const f = parseFloat(dot.dataset.pinDot ?? "0");
+            const pt = path.getPointAtLength(f * total);
+            dot.style.left = `${(pt.x / box.width) * 100}%`;
+            dot.style.top = `${pt.y}px`;
+          });
+          // Slide-in spans (layout offsets, so transform-immune; recomputed on
+          // resize, read hot by applyScrollFx): deck and heading exit fully
+          // past the screen's LEFT edge, the scroller past the RIGHT edge.
+          const leftWithin = (el: HTMLElement): number => {
+            let x = 0;
+            let node: Element | null = el;
+            while (node) {
+              x += (node as HTMLElement).offsetLeft;
+              node = (node as HTMLElement).offsetParent;
+            }
+            return x;
+          };
+          const carsBox = stage.querySelector<HTMLElement>(".pin-cars");
+          if (carsBox) {
+            carsBox.dataset.slideSpan = String(leftWithin(carsBox) + carsBox.offsetWidth);
+          }
+          const headEl = stage.querySelector<HTMLElement>(".fleet-head h2");
+          if (headEl) {
+            headEl.dataset.slideSpan = String(leftWithin(headEl) + headEl.offsetWidth);
+          }
+          // Center the scroller vertically in the band between the pinned
+          // viewport's top (where the hero ends) and the car image's top.
+          // Centered by its visible ink (curve + circles + numerals), not
+          // its layout box — the numerals hang below the box's bottom edge.
+          // Desktop only: on mobile the scroller stacks under the title.
+          const vp = stage.querySelector<HTMLElement>(".pin-viewport");
+          const carsEl = stage.querySelector<HTMLElement>(".pin-cars");
+          const prog = stage.querySelector<HTMLElement>(".pin-progress");
+          if (!vp || !carsEl || !prog || !prog.offsetParent) continue;
+          prog.dataset.slideSpan = String(window.innerWidth - leftWithin(prog));
+          if (window.matchMedia("(min-width: 768px)").matches) {
+            // Child rects relative to the box's own rect share its transform,
+            // so this measure stays idempotent across re-runs.
+            const pr = prog.getBoundingClientRect();
+            let inkTop = Infinity;
+            let inkBottom = -Infinity;
+            prog.querySelectorAll(".pin-curve-base, .pin-dot, .pin-dot-num").forEach((el) => {
+              const r = el.getBoundingClientRect();
+              inkTop = Math.min(inkTop, r.top);
+              inkBottom = Math.max(inkBottom, r.bottom);
+            });
+            if (inkTop > inkBottom) {
+              inkTop = pr.top;
+              inkBottom = pr.bottom;
+            }
+            const inkCenter = (inkTop + inkBottom) / 2 - pr.top;
+            // Dead-center reads slightly high next to the title — bias down.
+            const target = topWithin(carsEl, vp) / 2 - inkCenter + 28;
+            const delta = Math.round(target - topWithin(prog, vp));
+            // applyScrollFx composes this vertical shift with the slide-in.
+            prog.dataset.shiftY = String(delta);
+            prog.style.transform = delta ? `translateY(${delta}px)` : "";
+          } else {
+            prog.dataset.shiftY = "0";
+            prog.style.transform = "";
+          }
+        }
+      }
+      function applyScrollFx() {
+        const y = window.scrollY;
+        const vh = window.innerHeight;
+        if (heroEl) {
+          const k = Math.min(y / (vh * 0.9), 1);
+          heroEl.style.transform = `translateY(${y * 0.28}px)`;
+          heroEl.style.opacity = String(1 - k * 0.9);
+          if (heroScene) heroScene.style.transform = `translateY(${y * 0.14}px)`;
+        }
+        for (const stage of pinStages) {
+          const rect = stage.getBoundingClientRect();
+          const total = rect.height - vh;
+          const p = total > 0 ? Math.min(Math.max(-rect.top / total, 0), 1) : 0;
+          // Roll the section in as the stage scrolls up into place — deck and
+          // heading from the screen's left edge, scroller from the right —
+          // eased, settling just before the pin engages, rolling back out on
+          // the way up (scroll-linked both ways).
+          const e = Math.min(Math.max(1 - rect.top / (vh * 0.85), 0), 1);
+          const k = 1 - Math.pow(1 - e, 3);
+          const out = 1 - k;
+          const carsWrap = stage.querySelector<HTMLElement>(".pin-cars");
+          if (carsWrap?.dataset.slideSpan) {
+            carsWrap.style.transform =
+              out > 0
+                ? `translateX(${(-Number(carsWrap.dataset.slideSpan) * out).toFixed(1)}px)`
+                : "";
+          }
+          const headEl = stage.querySelector<HTMLElement>(".fleet-head h2");
+          if (headEl?.dataset.slideSpan) {
+            headEl.style.transform =
+              out > 0
+                ? `translateX(${(-Number(headEl.dataset.slideSpan) * out).toFixed(1)}px)`
+                : "";
+          }
+          const progEl = stage.querySelector<HTMLElement>(".pin-progress");
+          if (progEl?.dataset.slideSpan) {
+            const dx = Number(progEl.dataset.slideSpan) * out;
+            const dy = Number(progEl.dataset.shiftY || 0);
+            progEl.style.transform =
+              dx > 0.5 || dy ? `translate(${dx.toFixed(1)}px, ${dy}px)` : "";
+          }
+          const cars = stage.querySelectorAll<HTMLElement>(".pin-car");
+          const idx = Math.min(cars.length - 1, Math.floor(p * cars.length));
+          cars.forEach((car, i) => {
+            car.classList.toggle("is-active", i === idx);
+            car.dataset.stack = String(i - idx); // deck position vs the focus card
+          });
+          // Fleet films — the focus car's video rolls ~0.5s after its card
+          // settles, and fades in only once playback actually starts (the
+          // still underneath holds the frame until then). Leaving the beat
+          // or scrolling the stage away pauses everything.
+          const onstage = rect.bottom > 0 && rect.top < vh;
+          const beat = onstage ? String(idx) : "off";
+          if (stage.dataset.liveBeat !== beat) {
+            stage.dataset.liveBeat = beat;
+            cars.forEach((car, i) => {
+              const vid = car.querySelector<HTMLVideoElement>(".pin-car-media video");
+              if (!vid) return;
+              clearTimeout(Number(vid.dataset.cue || 0));
+              if (onstage && i === idx) {
+                vid.dataset.cue = String(
+                  window.setTimeout(() => {
+                    vid
+                      .play()
+                      .then(() => car.classList.add("video-live"))
+                      .catch(() => {}); // autoplay blocked / not transcoded yet — still stays
+                  }, 500),
+                );
+              } else {
+                car.classList.remove("video-live");
+                vid.pause();
+              }
+            });
+          }
+          const count = stage.querySelector<HTMLElement>("[data-pin-count]");
+          if (count) count.textContent = String(idx + 1).padStart(2, "0");
+          const dots = stage.querySelectorAll<HTMLElement>("[data-pin-dot]");
+          dots.forEach((dot, i) => dot.classList.toggle("on", i <= idx));
+          stage.querySelector(".pin-nav-prev")?.toggleAttribute("disabled", idx === 0);
+          stage.querySelector(".pin-nav-next")?.toggleAttribute("disabled", idx === cars.length - 1);
+          // Plateau map through the circle stops (arc fractions on
+          // data-pin-dot): while car k is on stage the fill rests centered in
+          // circle k; across each beat boundary it sweeps smoothly to the
+          // next circle (scroll-driven and continuous — the sweep spans the
+          // last/first EDGE of the adjacent beats, meeting halfway exactly at
+          // the boundary).
+          const bar = stage.querySelector<HTMLElement>("[data-pin-bar]");
+          if (bar && dots.length > 0) {
+            const stops = Array.from(dots).map((d) => parseFloat(d.dataset.pinDot ?? "0"));
+            const n = stops.length;
+            const EDGE = 0.18;
+            const seg = Math.min(n - 1e-6, p * n);
+            const k = Math.floor(seg);
+            const t = seg - k;
+            let fill = stops[k];
+            if (t < EDGE && k > 0) {
+              fill = stops[k - 1] + (stops[k] - stops[k - 1]) * (0.5 + (0.5 * t) / EDGE);
+            } else if (t > 1 - EDGE && k < n - 1) {
+              fill = stops[k] + (stops[k + 1] - stops[k]) * ((0.5 * (t - (1 - EDGE))) / EDGE);
+            } else if (t > 1 - EDGE) {
+              // Final beat — complete the short run-out by section end.
+              fill = stops[k] + (1 - stops[k]) * ((t - (1 - EDGE)) / EDGE);
+            }
+            bar.style.setProperty("--p", String(fill));
+          }
+        }
+      }
+
+      // Event-driven FX: scroll/resize fire an rAF-throttled apply pass; the
+      // heavy geometry scan is deferred past first paint (it forces layout on
+      // a five-viewport page and used to sit in the LCP critical path).
+      let ticking = false;
+      const requestFx = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          ticking = false;
+          applyScrollFx();
+        });
+      };
+      if (!reduced) {
+        window.addEventListener("scroll", requestFx, { passive: true });
+        window.addEventListener("resize", () => {
+          scanScrollFx();
+          requestFx();
+        });
+        // Geometry-dependent placement (dots, scroller centering) tracks
+        // web-font layout shifts too.
+        document.fonts?.ready.then(() => {
+          scanScrollFx();
+          requestFx();
+        });
+        const firstScan = () => {
+          scanScrollFx();
+          requestFx();
+        };
+        if ("requestIdleCallback" in window) {
+          window.requestIdleCallback(firstScan, { timeout: 1500 });
+        } else {
+          setTimeout(firstScan, 200);
+        }
+      }
+
+      // Scroller circles and card chevrons share one behavior: scroll the
+      // pinned stage to the center of car i's beat (fill centered in its
+      // circle). Chevrons step relative to the beat under the current scroll.
+      function scrollToBeat(stage: HTMLElement, i: number, count: number) {
+        const total = stage.offsetHeight - window.innerHeight;
+        const top = stage.getBoundingClientRect().top + window.scrollY;
+        const target = top + ((Math.max(0, Math.min(count - 1, i)) + 0.5) / count) * total;
+        window.scrollTo({ top: target, behavior: reduced ? "auto" : "smooth" });
+      }
+      document.addEventListener("click", (event) => {
+        const el = event.target as HTMLElement | null;
+        const dot = el?.closest?.<HTMLElement>("[data-pin-dot]");
+        if (dot) {
+          const stage = dot.closest<HTMLElement>("[data-pin-stage]");
+          if (!stage) return;
+          const dots = Array.from(stage.querySelectorAll("[data-pin-dot]"));
+          scrollToBeat(stage, dots.indexOf(dot), dots.length);
+          return;
+        }
+        const nav = el?.closest?.<HTMLElement>("[data-pin-nav]");
+        if (nav) {
+          const stage = nav.closest<HTMLElement>("[data-pin-stage]");
+          if (!stage) return;
+          const n = stage.querySelectorAll(".pin-car").length;
+          const rect = stage.getBoundingClientRect();
+          const total = rect.height - window.innerHeight;
+          const p = total > 0 ? Math.min(Math.max(-rect.top / total, 0), 1) : 0;
+          const idx = Math.min(n - 1, Math.floor(p * n));
+          scrollToBeat(stage, idx + Number(nav.dataset.pinNav || 0), n);
+        }
+      });
+
+      function setupReveals() {
+        // Hold while the entry curtain is up — astro:page-load fires on the
+        // initial load too, and stamping .in behind the curtain settles the
+        // hero (and the boot assembly) before the page is even visible. The
+        // boot-done listener re-runs this the moment the curtain lifts.
+        if (document.documentElement.classList.contains("booting")) return;
+        const els = document.querySelectorAll<HTMLElement>("[data-reveal]:not(.in)");
+        if (reduced) {
+          els.forEach((el) => el.classList.add("in"));
+          return;
+        }
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("in");
+                io.unobserve(entry.target);
+              }
+            }
+          },
+          { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+        );
+        els.forEach((el) => io.observe(el));
+      }
+
+      // Roll-through elements (data-roll) enter AND exit with the scroll —
+      // the class toggles both ways, so the roll replays on every pass.
+      function setupRolls() {
+        const els = document.querySelectorAll<HTMLElement>("[data-roll]:not([data-roll-live])");
+        if (!els.length) return;
+        els.forEach((el) => el.setAttribute("data-roll-live", "1"));
+        if (reduced) {
+          els.forEach((el) => el.classList.add("in"));
+          return;
+        }
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              entry.target.classList.toggle("in", entry.isIntersecting);
+            }
+          },
+          { threshold: 0.1, rootMargin: "0px 0px -4% 0px" },
+        );
+        els.forEach((el) => io.observe(el));
+      }
+
+      // Hold the first reveal pass while the boot curtain is up so the hero
+      // rises as the curtain clears, not hidden behind it. Failsafed: if the
+      // boot module never runs (dead chunk from stale edge HTML), reveal
+      // anyway right after the head watchdog clears the veil — a page with
+      // no visible content is the one unacceptable outcome.
+      if (document.documentElement.classList.contains("booting")) {
+        document.addEventListener("apex:boot-done", () => setupReveals(), { once: true });
+        setTimeout(() => setupReveals(), 13500);
+      } else {
+        setupReveals();
+      }
+      setupRolls();
+      document.addEventListener("astro:page-load", () => {
+        setupReveals();
+        setupRolls();
+        scanScrollFx();
+        heroGate();
+        requestFx();
+      });
+    </script>
+  </body>
+</html>

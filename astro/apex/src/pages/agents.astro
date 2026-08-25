@@ -1,0 +1,252 @@
+---
+// src/pages/agents.astro — "bring your own agent": the site's MCP endpoint,
+// documented for humans wiring up their AI. Everything on this page is live
+// and verified — the Concierge books through the same endpoint it describes.
+import Layout from "../layouts/Layout.astro";
+
+const MCP_URL = new URL("/_api/mcp", Astro.site).href;
+const CLAUDE_CODE_CMD = `claude mcp add --transport http apex ${MCP_URL}`;
+const MCP_JSON = `{
+  "mcpServers": {
+    "apex": { "type": "http", "url": "${MCP_URL}" }
+  }
+}`;
+const PROMPT = `Find me something fast at apex-drive.co this Saturday morning, under €600 — search the site over its MCP endpoint, check real availability, and hand me the booking link.`;
+
+// Same-for-everyone page, no per-request data — cacheable at the Wix edge
+// for 5 minutes (kept short: a release 404s the previous build's assets).
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, max-age=0, s-maxage=300",
+);
+---
+
+<Layout
+  title="For agents"
+  description="Point your AI at APEX — a live MCP endpoint for searching the site, checking availability, and booking sessions."
+>
+  <article class="max-w-3xl mx-auto px-6 pt-8 pb-24 flex flex-col gap-12">
+    <header class="flex flex-col items-center text-center gap-5" data-reveal>
+      <p class="eyebrow">Agent access</p>
+      <h1 class="display-lg">
+        Bring your own agent<span class="accent-dot" aria-hidden="true"></span>
+      </h1>
+      <p class="text-lg text-mute leading-relaxed max-w-prose">
+        APEX speaks Model Context Protocol. Point any MCP-capable AI at the
+        endpoint below and it can search the site, pull business facts, check
+        live availability, and carry a booking to checkout — the same rails
+        our Concierge runs on.
+      </p>
+    </header>
+
+    <!-- The endpoint — the one line that matters, plated. -->
+    <section class="agents-plate" data-reveal>
+      <div class="flex items-center justify-between gap-4 mb-3">
+        <p class="eyebrow">Site MCP endpoint</p>
+        <button class="agents-copy" data-copy={MCP_URL}>Copy</button>
+      </div>
+      <pre class="agents-code"><code>{MCP_URL}</code></pre>
+      <p class="text-xs text-mute mt-3">Streamable HTTP · JSON-RPC · no key required</p>
+    </section>
+
+    <section class="flex flex-col gap-6" data-reveal>
+      <h2 class="agents-h2">Wire it up</h2>
+
+      <div class="agents-plate">
+        <div class="flex items-center justify-between gap-4 mb-3">
+          <h3 class="text-sm font-medium text-ink">Claude Code</h3>
+          <button class="agents-copy" data-copy={CLAUDE_CODE_CMD}>Copy</button>
+        </div>
+        <pre class="agents-code"><code>{CLAUDE_CODE_CMD}</code></pre>
+      </div>
+
+      <div class="agents-plate">
+        <h3 class="text-sm font-medium text-ink mb-3">Claude.ai &amp; Claude Desktop</h3>
+        <p class="text-sm text-ink-soft leading-relaxed">
+          Settings → Connectors → Add custom connector — paste the endpoint,
+          no authentication step.
+        </p>
+      </div>
+
+      <div class="agents-plate">
+        <div class="flex items-center justify-between gap-4 mb-3">
+          <h3 class="text-sm font-medium text-ink">Any MCP client</h3>
+          <button class="agents-copy" data-copy={MCP_JSON}>Copy</button>
+        </div>
+        <pre class="agents-code"><code>{MCP_JSON}</code></pre>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6" data-reveal>
+      <h2 class="agents-h2">Then say something like</h2>
+      <div class="agents-plate agents-prompt">
+        <div class="flex items-start justify-between gap-4">
+          <p class="text-ink-soft leading-relaxed">“{PROMPT}”</p>
+          <button class="agents-copy" data-copy={PROMPT}>Copy</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6" data-reveal>
+      <h2 class="agents-h2">What your agent gets</h2>
+      <dl class="agents-tools">
+        <div>
+          <dt>SearchInSite</dt>
+          <dd>Full-text search across the sessions, the About story, and the FAQ.</dd>
+        </div>
+        <div>
+          <dt>GetBusinessDetails</dt>
+          <dd>The business card — name, locale, and how to reach the outfit.</dd>
+        </div>
+        <div>
+          <dt>GenerateVisitorToken</dt>
+          <dd>A scoped visitor identity, no account required.</dd>
+        </div>
+        <div>
+          <dt>CallWixSiteAPI</dt>
+          <dd>The big one: the live service catalog, real availability, and the booking flow.</dd>
+        </div>
+        <div>
+          <dt>SearchSiteApiDocs</dt>
+          <dd>With the docs readers alongside it, the agent discovers API shapes on its own.</dd>
+        </div>
+      </dl>
+      <p class="text-sm text-mute">Nine tools on the endpoint; these five do the booking.</p>
+    </section>
+
+    <section class="flex flex-col gap-6" data-reveal>
+      <h2 class="agents-h2">Already machine-readable</h2>
+      <ul class="agents-links">
+        <li>
+          <a href="/llms.txt" class="inline-link">llms.txt</a>
+          <span class="text-mute"> — the curated map, with live session names and prices</span>
+        </li>
+        <li>
+          <a href="/llms-full.txt" class="inline-link">llms-full.txt</a>
+          <span class="text-mute"> — the map plus the full About story and FAQ, generated per request</span>
+        </li>
+        <li>
+          <span class="text-ink-soft">JSON-LD</span>
+          <span class="text-mute"> — Service, Offer, ReserveAction, and FAQPage structured data on the relevant pages</span>
+        </li>
+      </ul>
+      <p class="text-sm text-mute max-w-prose">
+        And the proof it all works: the Concierge riding the corner of every
+        page books through this same endpoint. We run on our own rails.
+      </p>
+    </section>
+
+    <aside class="pt-8 border-t border-rule flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6" data-reveal>
+      <p class="text-sm text-mute max-w-prose">
+        Rather drive it yourself? The catalog is one tap away.
+      </p>
+      <a href="/services" class="btn-secondary text-sm whitespace-nowrap">View sessions</a>
+    </aside>
+  </article>
+</Layout>
+
+<script>
+  // Copy buttons — clipboard write + a moment of confirmation. Rebound after
+  // every ClientRouter swap; the data-bound flag keeps listeners single.
+  function initCopy() {
+    document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((btn) => {
+      if (btn.dataset.bound) return;
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.copy ?? "");
+          btn.textContent = "Copied";
+          setTimeout(() => {
+            btn.textContent = "Copy";
+          }, 1600);
+        } catch {}
+      });
+    });
+  }
+  initCopy();
+  document.addEventListener("astro:page-load", initCopy);
+</script>
+
+<style>
+  .agents-h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 1.375rem;
+  }
+  .agents-plate {
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-sm);
+    background: rgba(26, 27, 30, 0.5);
+    padding: 1.25rem 1.5rem;
+  }
+  .agents-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--color-ink-soft);
+    overflow-x: auto;
+  }
+  .agents-copy {
+    flex: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-mute);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 0.75rem;
+    cursor: pointer;
+    transition: color 200ms ease, border-color 200ms ease;
+  }
+  .agents-copy:hover {
+    color: var(--color-ink);
+    border-color: var(--color-mute);
+  }
+  .agents-tools {
+    display: flex;
+    flex-direction: column;
+  }
+  .agents-tools > div {
+    display: grid;
+    gap: 0.25rem 2rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .agents-tools > div:first-child {
+    border-top: 1px solid var(--color-rule);
+  }
+  @media (min-width: 640px) {
+    .agents-tools > div {
+      grid-template-columns: 14rem 1fr;
+    }
+  }
+  .agents-tools dt {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.875rem;
+    color: var(--color-ink);
+  }
+  .agents-tools dd {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-mute);
+  }
+  .agents-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+  .inline-link {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-accent);
+  }
+  .inline-link:hover {
+    color: var(--color-accent);
+  }
+</style>

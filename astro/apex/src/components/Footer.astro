@@ -1,0 +1,36 @@
+---
+const year = new Date().getFullYear();
+---
+<footer class="site-footer" transition:persist="site-footer">
+  <div class="container-wide pt-8 md:pt-14 pb-6 md:pb-8 flex flex-col gap-6 md:gap-10">
+    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6 md:gap-10">
+      <div class="flex flex-col gap-3 md:gap-4 max-w-prose">
+        <span class="brand-mark text-ink">APEX</span>
+        <p class="footer-tagline text-lg leading-relaxed">The point of maximum commitment. The car, the circuit, the time slot.</p>
+      </div>
+      <nav aria-label="Footer">
+        <ul class="flex flex-col gap-2 md:gap-3 md:items-end md:text-right">
+          <li><a href="/services" class="nav-link">Book a drive</a></li>
+          <li><a href="/about" class="nav-link">About</a></li>
+          <li><a href="/faq" class="nav-link">FAQ</a></li>
+          <li><a href="/agents" class="nav-link">For AI agents</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="border-t border-accent pt-4 md:pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-xs">
+      <p>© {year} APEX. All rights reserved.</p>
+      <p>A fictional marque. Every car, circuit, and pass is ours alone.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  /* The hero-triad echo stays a single line on small screens: the size
+     tracks the viewport (~71 characters across the content column) between
+     a floor and the desktop text-lg. */
+  @media (max-width: 767px) {
+    .footer-tagline {
+      font-size: clamp(0.5625rem, 2.7vw - 1px, 1.125rem);
+    }
+  }
+</style>
