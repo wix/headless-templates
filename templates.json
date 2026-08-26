@@ -5,7 +5,7 @@
       "name": "commerce",
       "title": "Commerce (Wix Stores)",
       "subtitle": "Product catalog, checkout, and more",
-      "siteTemplateId": "e5da13f4-c01e-4b61-a9c7-55dacd961d54",
+      "siteTemplateId": "f436e54f-489f-4421-9830-09f23157853d",
       "gitPath": "astro/commerce",
       "vibeCompatible": false
     },
@@ -13,7 +13,7 @@
       "name": "scheduler",
       "title": "Scheduler (Wix Bookings)",
       "subtitle": "Appointment booking and calendar",
-      "siteTemplateId": "72ade0e3-1871-4c04-ac54-419ca874d9d3",
+      "siteTemplateId": "e73a9218-6898-41b6-bf00-1ade755248ab",
       "gitPath": "astro/scheduler",
       "vibeCompatible": false
     },
@@ -29,7 +29,7 @@
       "name": "cms-catalog",
       "title": "CMS (Wix Data)",
       "subtitle": "Structured content collections",
-      "siteTemplateId": "d8baa51d-c4f0-4604-92ea-a41aa09f8c7a",
+      "siteTemplateId": "6c3e2de7-f92d-48ed-b07b-caea874f32c5",
       "gitPath": "astro/cms-catalog",
       "vibeCompatible": false
     },
@@ -37,7 +37,7 @@
       "name": "blog",
       "title": "Blog (Wix Blog)",
       "subtitle": "Posts, categories, and rich content",
-      "siteTemplateId": "9fb8af28-e85e-4c86-a85a-4ce471766314",
+      "siteTemplateId": "79a555a4-f435-4b95-b404-09e368fe62d6",
       "gitPath": "astro/blog",
       "vibeCompatible": false
     },
@@ -45,7 +45,7 @@
       "name": "blank",
       "title": "Blank",
       "subtitle": "Basic Astro project",
-      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "siteTemplateId": "c6270666-bd92-49da-9176-a5197f2da0b6",
       "gitPath": "astro/blank",
       "vibeCompatible": false
     },
@@ -53,7 +53,7 @@
       "name": "events",
       "title": "Events (Wix Events)",
       "subtitle": "Event listings, RSVP, and ticketed registration",
-      "siteTemplateId": "cac192bb-6c63-4758-bb7e-1c490bfbf86d",
+      "siteTemplateId": "6a036ab2-4b0b-40bd-b718-3995ce170ffd",
       "gitPath": "astro/events",
       "vibeCompatible": false
     },
@@ -61,7 +61,7 @@
       "name": "rentals",
       "title": "Rentals (Wix Rentals)",
       "subtitle": "Reserve rentals by the hour or day",
-      "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
+      "siteTemplateId": "716dedac-0646-422c-8cbc-d109a2cddf1a",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
     }
