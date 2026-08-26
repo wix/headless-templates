@@ -73,6 +73,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Rentals</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/picked">PICKED (Wix Stores)</a></td>
+      <td>Seasonal veg-box subscriptions — 3D produce models, a basket builder, and recurring Wix Stores subscription checkout.</td>
+      <td><a href="https://picked-tuvitk-0606.wix-site-host.com">Live demo</a></td>
+      <td>Wix Stores, Wix eCommerce</td>
+    </tr>
+    <tr>
       <td colspan="4" align="center"><strong>Next.js</strong></td>
     </tr>
     <tr>
