@@ -8,20 +8,30 @@ import DateRangeSearch from "../components/DateRangeSearch.astro";
 import FilterModal from "../components/FilterModal.astro";
 import ErrorMessage from "../components/ui/ErrorMessage.astro";
 import { BUSINESS_NAME } from "../utils/constants";
-import { listRentals, listResourceTypes, listAttributeDefinitions } from "../utils/rentals-service";
+import {
+  listRentals,
+  listResourceTypes,
+  listAttributeDefinitions,
+  getBusinessTimeZone,
+} from "../utils/rentals-service";
 import type { RentalAttributeDef, RentalLocation, RentalSummary, ResourceTypeCategory } from "../utils/types";
 
 // Fetch the rental catalog + filter option sets server-side (SEO-friendly). The
-// list comes from Catalog Search; filtering happens live via /api/rentals-search.
+// list comes from Catalog Search; filtering re-queries Catalog Search from the
+// browser, which visitor credentials are allowed to call directly.
 let rentals: RentalSummary[] = [];
 let categoryOptions: ResourceTypeCategory[] = [];
 let attributeDefs: RentalAttributeDef[] = [];
+let businessTimeZone: string | undefined;
 let loadError = false;
 try {
-  [rentals, categoryOptions, attributeDefs] = await Promise.all([
+  [rentals, categoryOptions, attributeDefs, businessTimeZone] = await Promise.all([
     listRentals(),
     listResourceTypes(),
     listAttributeDefinitions(),
+    // Resolved here so the date-range filter doesn't cost every visitor their own
+    // round-trip to look the time zone up client-side.
+    getBusinessTimeZone(),
   ]);
 } catch (error) {
   console.error("Error loading rentals:", error);
@@ -97,7 +107,11 @@ const locationOptions = [...locationMap.values()].sort((a, b) => a.name.localeCo
             </span>
           </div>
 
-          <div id="rentals-grid" class="mt-8 grid grid-cols-1 gap-x-6 gap-y-9 pb-16 transition-opacity duration-300 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            id="rentals-grid"
+            data-time-zone={businessTimeZone}
+            class="mt-8 grid grid-cols-1 gap-x-6 gap-y-9 pb-16 transition-opacity duration-300 sm:grid-cols-2 lg:grid-cols-3"
+          >
             {rentals.map((rental, i) => (
               <div class="animate-card-in" style={`animation-delay:${Math.min(i, 8) * 60}ms`}>
                 <RentalCard rental={rental} />
@@ -127,6 +141,8 @@ const locationOptions = [...locationMap.values()].sort((a, b) => a.name.localeCo
 
 <script>
   import { parseYmd, ymd } from "../utils/date-utils";
+  import { searchRentalIds } from "../utils/rentals-service";
+  import type { RentalSearchFilters } from "../utils/types";
 
   type Filters = {
     showUnavailable: boolean;
@@ -149,6 +165,7 @@ const locationOptions = [...locationMap.values()].sort((a, b) => a.name.localeCo
     const cards = Array.from(grid.querySelectorAll<HTMLElement>("[data-rental-card]"));
     const wrappers = cards.map((c) => c.closest("div")!);
     const categoryChips = Array.from(document.querySelectorAll<HTMLButtonElement>(".category-chip"));
+    const businessTimeZone = grid.dataset.timeZone || undefined;
 
     let categoryId: string | null = null;
     let locationId: string | null = null;
@@ -156,9 +173,9 @@ const locationOptions = [...locationMap.values()].sort((a, b) => a.name.localeCo
     let filters: Filters = { showUnavailable: false, rentalTypes: [], payment: [], attributes: [] };
     let reqId = 0;
 
-    // Booking-type + payment are card-level flags, applied client-side on the
-    // server-filtered set. Everything else (category, location, attributes,
-    // availability) is resolved by Catalog Search via /api/rentals-search.
+    // Booking-type + payment are card-level flags, applied on top of the
+    // catalog-filtered set. Everything else (category, location, attributes,
+    // availability) is resolved server-side by Catalog Search.
     function clientMatch(card: HTMLElement): boolean {
       if (filters.rentalTypes.length && !filters.rentalTypes.includes(card.dataset.unit || "")) return false;
       if (filters.payment.length) {
@@ -183,10 +200,10 @@ const locationOptions = [...locationMap.values()].sort((a, b) => a.name.localeCo
     }
 
     async function refresh() {
-      const body: Record<string, unknown> = {};
-      if (categoryId) body.resourceTypeIds = [categoryId];
-      if (locationId) body.locationIds = [locationId];
-      if (filters.attributes.length) body.attributes = filters.attributes;
+      const search: RentalSearchFilters = {};
+      if (categoryId) search.resourceTypeIds = [categoryId];
+      if (locationId) search.locationIds = [locationId];
+      if (filters.attributes.length) search.attributes = filters.attributes;
       if (range) {
         // Availability windows are midnight-to-midnight: the end is midnight of
         // the day AFTER the last selected day, not 23:59:59. A full-day (24/7)
@@ -194,24 +211,22 @@ const locationOptions = [...locationMap.values()].sort((a, b) => a.name.localeCo
         // it and the service would wrongly look unavailable.
         const endExclusive = parseYmd(range.end);
         endExclusive.setDate(endExclusive.getDate() + 1);
-        body.localStartDate = `${range.start}T00:00:00`;
-        body.localEndDate = `${ymd(endExclusive)}T00:00:00`;
-        body.includeUnavailable = filters.showUnavailable;
+        search.localStartDate = `${range.start}T00:00:00`;
+        search.localEndDate = `${ymd(endExclusive)}T00:00:00`;
+        search.timeZone = businessTimeZone;
+        search.includeUnavailable = filters.showUnavailable;
       }
 
       const myReq = ++reqId;
       availIndicator?.classList.remove("hidden");
       grid.classList.add("opacity-40");
       try {
-        const res = await fetch("/api/rentals-search", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        const data = await res.json();
+        const ids = await searchRentalIds(search);
         if (myReq !== reqId) return; // superseded by a newer filter change
-        applyVisibility(new Set<string>(Array.isArray(data.ids) ? data.ids : []));
+        applyVisibility(new Set(ids));
       } catch (error) {
+        // Never strand the visitor on an empty grid: on a failed search fall
+        // back to showing everything the server already rendered.
         console.error("Filter search failed:", error);
         if (myReq === reqId) applyVisibility(new Set(cards.map((c) => c.dataset.id || "")));
       } finally {
