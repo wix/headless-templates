@@ -1,0 +1,103 @@
+---
+import { getContactFields, type ContactField } from "../lib/contact-form";
+
+// The fields come from Wix Forms, so relabelling or adding a field in the
+// dashboard changes this form with no code change.
+const fields: ContactField[] = await getContactFields();
+---
+
+{
+  fields.length > 0 && (
+    <form class="footer-form animate-in from-right" id="contact-form">
+      {fields.map((field) =>
+        field.type === "textarea" ? (
+          <textarea
+            class="footer-textarea"
+            name={field.target}
+            data-type={field.type}
+            placeholder={field.label}
+            required={field.required}
+          />
+        ) : field.type === "select" ? (
+          <select class="footer-input" name={field.target} data-type={field.type} required={field.required}>
+            <option value="">{field.label}</option>
+            {field.options.map((option) => (
+              <option value={option}>{option}</option>
+            ))}
+          </select>
+        ) : field.type === "checkbox" ? (
+          <label class="footer-checkbox">
+            <input type="checkbox" name={field.target} data-type={field.type} required={field.required} />
+            <span>{field.label}</span>
+          </label>
+        ) : (
+          <input
+            class="footer-input"
+            type={field.type}
+            name={field.target}
+            data-type={field.type}
+            placeholder={field.label}
+            required={field.required}
+          />
+        ),
+      )}
+      <div class="footer-send-row">
+        <button type="submit" class="footer-send-btn">
+          Send
+        </button>
+      </div>
+    </form>
+  )
+}
+
+<script>
+  import { showToast } from "../scripts/site.js";
+
+  const form = document.getElementById("contact-form");
+
+  // Values are typed per the field's own definition — a number field submits a
+  // number, a checkbox a boolean, a checkbox group an array.
+  function readValues(formEl) {
+    const data = new FormData(formEl);
+    const values = {};
+    formEl.querySelectorAll("[name][data-type]").forEach((input) => {
+      const name = input.name;
+      const type = input.dataset.type;
+      if (type === "checkbox") {
+        values[name] = input.checked;
+      } else if (type === "checkbox-group") {
+        values[name] = data.getAll(name);
+      } else if (type === "number") {
+        const raw = data.get(name);
+        values[name] = raw === "" || raw === null ? null : Number(raw);
+      } else {
+        values[name] = data.get(name) ?? "";
+      }
+    });
+    return values;
+  }
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const button = form.querySelector("button[type=submit]");
+    if (button.disabled) return;
+    button.disabled = true;
+    button.textContent = "…";
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(readValues(form)),
+      });
+      if (!res.ok) throw new Error("submission rejected");
+      showToast("Message sent!");
+      form.reset();
+    } catch (err) {
+      console.error("[contact] submission failed:", err);
+      showToast("Could not send — please try again.");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Send";
+    }
+  });
+</script>
