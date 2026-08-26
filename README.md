@@ -73,6 +73,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Rentals</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/wix-cycles">Wix Cycles (Wix Stores)</a></td>
+      <td>A single-product mountain-bike launch page — a rotating 3D bike, purchasable builds, full cart and hosted checkout, CMS-backed reviews.</td>
+      <td><a href="https://maor-zohar-headless-tuvitk-1306.wix-site-host.com">Live demo</a></td>
+      <td>Wix Stores, Wix eCommerce, Wix CMS</td>
+    </tr>
+    <tr>
       <td colspan="4" align="center"><strong>Next.js</strong></td>
     </tr>
     <tr>

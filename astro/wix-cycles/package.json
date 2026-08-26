@@ -1,0 +1,45 @@
+{
+  "name": "wix-astro-wix-cycles",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "astro": "astro",
+    "dev": "astro dev",
+    "build": "astro build"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.3.0",
+    "@radix-ui/react-dialog": "^1.1.19",
+    "@radix-ui/react-slot": "^1.3.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@tailwindcss/vite": "^4.2.1",
+    "@wix/astro": "^2.39.0",
+    "@wix/astro-pages": "^2.0.4",
+    "@wix/astro-wix-hosting-adapter": "^2.0.0",
+    "@wix/data": "^1.0.486",
+    "@wix/ecom": "^1.0.2289",
+    "@wix/essentials": "^1.0.6",
+    "@wix/redirects": "^1.0.122",
+    "@wix/sdk": "^1.21.13",
+    "@wix/stores": "^1.0.829",
+    "astro": "^5.8.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "embla-carousel-autoplay": "^8.6.0",
+    "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.42.2",
+    "lucide-react": "^1.24.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.2.1",
+    "three": "^0.185.1",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "^0.185.1"
+  }
+}
