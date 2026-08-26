@@ -13,6 +13,7 @@
     "@wix/astro-wix-hosting-adapter": "^2.0.0",
     "@wix/categories": "^1.0.216",
     "@wix/ecom": "^1.0.2252",
+    "@wix/essentials": "^1.0.6",
     "@wix/forms": "^1.0.462",
     "@wix/redirects": "^1.0.118",
     "@wix/sdk": "^1.21.5",

@@ -1,58 +1,9 @@
 ---
-import { forms } from "@wix/forms";
-import { CONTACT_FORM_ID } from "../lib/constants";
+import { getContactFields, type ContactField } from "../lib/contact-form";
 
 // The fields come from Wix Forms, so relabelling or adding a field in the
 // dashboard changes this form with no code change.
-type Field = {
-  target: string;
-  label: string;
-  type: "text" | "email" | "tel" | "number" | "textarea" | "select" | "checkbox";
-  required: boolean;
-  options: string[];
-};
-
-function resolveField(field: any): Field {
-  const inputOptions = field.inputOptions ?? {};
-  const stringOptions = inputOptions.stringOptions ?? {};
-  const target = inputOptions.target || field._id;
-  const required = inputOptions.required ?? false;
-  const dropdown = stringOptions.dropdownOptions;
-  const number = inputOptions.numberOptions?.numberInputOptions;
-  const checkbox = inputOptions.booleanOptions?.checkboxOptions;
-  const phone = stringOptions.phoneInputOptions;
-
-  if (dropdown) {
-    return {
-      target,
-      required,
-      type: "select",
-      label: dropdown.label || target,
-      options: (dropdown.options ?? []).map((o: any) => o.label || o.value || ""),
-    };
-  }
-  if (number) return { target, required, type: "number", label: number.label || target, options: [] };
-  if (checkbox) return { target, required, type: "checkbox", label: checkbox.label || target, options: [] };
-  if (phone) return { target, required, type: "tel", label: phone.label || target, options: [] };
-
-  const type =
-    field.identifier === "TEXT_AREA"
-      ? "textarea"
-      : stringOptions.validation?.format === "EMAIL"
-        ? "email"
-        : "text";
-  return { target, required, type, label: stringOptions.textInputOptions?.label || target, options: [] };
-}
-
-let fields: Field[] = [];
-try {
-  const form = await forms.getForm(CONTACT_FORM_ID);
-  fields = (form.formFields ?? [])
-    .filter((field: any) => field.fieldType === "INPUT" && !field.hidden && !!field._id)
-    .map(resolveField);
-} catch (err) {
-  console.error("[contact] could not load the form:", err);
-}
+const fields: ContactField[] = await getContactFields();
 ---
 
 {
