@@ -92,7 +92,7 @@ const fillers = (count: number, offset: number) =>
   .hero { min-height: 85vh; display: flex; align-items: flex-end; padding-block: 80px; }
   .hero > div { max-width: 640px; }
   .hero .kicker { margin-bottom: 20px; }
-  .hero h1 { font-size: clamp(48px, 6vw, 88px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
+  .hero h1 { font-size: clamp(34px, 9vw, 88px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
   .hero .btn { margin-top: 36px; }
 
   .featured { padding-block: 60px; }
@@ -119,4 +119,15 @@ const fillers = (count: number, offset: number) =>
   .promo .btn { margin-top: 28px; }
 
   .square { aspect-ratio: 1; }
+
+  /* Phones: full-height, bottom-anchored sections push content below the fold. */
+  @media (max-width: 640px) {
+    .hero { min-height: auto; padding-block: 40px 48px; }
+    .hero h1 br, .quote blockquote br, .brand-banner h2 br { display: none; }
+    .brand-banner { min-height: auto; justify-content: flex-start; padding-block: 48px; }
+    .promo { min-height: auto; padding-block: 48px; }
+    .promo .ph { min-height: 220px; }
+    .quote { padding-block: 48px; }
+    .featured, .row { padding-block: 40px; }
+  }
 </style>

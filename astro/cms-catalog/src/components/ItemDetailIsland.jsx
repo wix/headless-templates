@@ -35,7 +35,7 @@ export default function ItemDetailIsland({ item }) {
 				style={{
 					maxWidth: 1280,
 					margin: "0 auto",
-					padding: "40px max(40px, calc((100vw - 1280px) / 2 + 40px))",
+					padding: "clamp(24px, 5vw, 40px) max(20px, calc((100vw - 1280px) / 2 + 40px))",
 				}}
 			>
 				<a
@@ -54,8 +54,8 @@ export default function ItemDetailIsland({ item }) {
 				<div
 					style={{
 						display: "grid",
-						gridTemplateColumns: "1fr 1fr",
-						gap: 60,
+						gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+						gap: "clamp(24px, 4vw, 60px)",
 						alignItems: "start",
 					}}
 				>

@@ -39,7 +39,7 @@ function statusBadge(status: string): { tone: string; label: string } {
 <Layout title={`My reservations — ${BUSINESS_NAME}`} description="View and manage your rental reservations.">
   <Navbar />
 
-  <main class="min-h-screen bg-white pt-32 pb-24 px-4">
+  <main class="min-h-screen bg-white pt-24 sm:pt-32 pb-24 px-4">
     <div class="max-w-3xl mx-auto">
       <a href="/" class="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-6">
         <span class="text-base" set:html={icons.chevronLeft} />

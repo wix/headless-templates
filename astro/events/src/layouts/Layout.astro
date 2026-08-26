@@ -48,8 +48,8 @@ const { title } = Astro.props;
 
       /* Type */
       .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; opacity: 0.5; margin-bottom: 16px; }
-      .h-hero { font-size: clamp(48px, 6vw, 88px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
-      .h-page { font-size: clamp(40px, 5.5vw, 72px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; max-width: 700px; }
+      .h-hero { font-size: clamp(34px, 9vw, 88px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
+      .h-page { font-size: clamp(30px, 8vw, 72px); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; max-width: 700px; }
       .h-md { font-size: clamp(24px, 3vw, 40px); font-weight: 400; line-height: 1.2; }
       .body-copy { font-size: 15px; line-height: 1.8; opacity: 0.6; }
       .muted { opacity: 0.5; font-size: 14px; }
@@ -159,6 +159,19 @@ const { title } = Astro.props;
         .desktop-header-actions { display: none !important; }
         .mobile-menu-btn { display: flex !important; align-items: center; }
         .mobile-menu-panel { display: flex !important; }
+      }
+      @media (max-width: 640px) {
+        /* Phones: kill full-height/bottom-anchored sections so the hero is visible on load. */
+        .pl { padding-left: 20px; }
+        .pr { padding-right: 20px; }
+        .h-hero br, .h-page br, .quote-sec br, .cta-sec br { display: none; }
+        .hero { min-height: auto !important; align-items: flex-start !important; padding: 40px 20px 48px !important; }
+        .about-hero { min-height: auto !important; padding: 40px 20px 48px !important; }
+        .story-sec, .promo-sec { min-height: auto !important; justify-content: flex-start !important; align-items: stretch !important; padding: 48px 20px !important; gap: 32px !important; }
+        .shop-sec, .quote-sec, .cta-sec, .about-sec { padding: 48px 20px !important; }
+        .modal-body { padding: 24px !important; }
+        .car-arrow.left { left: 0; }
+        .car-arrow.right { right: 0; }
       }
       @media (max-width: 480px) {
         .grid-3, .grid-4 { grid-template-columns: 1fr !important; }
