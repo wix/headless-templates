@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "horology-lab",
+      "title": "Horology Lab (Wix Stores)",
+      "subtitle": "Product configurator over variants and options",
+      "siteTemplateId": "ba3a2ee6-0fd8-42ec-b771-d2eba59276e3",
+      "gitPath": "astro/horology-lab",
+      "vibeCompatible": false
     }
   ]
 }

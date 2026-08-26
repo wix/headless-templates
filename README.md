@@ -73,6 +73,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Rentals</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/horology-lab">Horology Lab (Wix Stores)</a></td>
+      <td>A bespoke watch atelier — an interactive 3D exploded movement, a configurator driven by real product options, and a hosted checkout for the resolved variant.</td>
+      <td><a href="https://exploded-horology--1-tuvitk-1406.wix-site-host.com">Live demo</a></td>
+      <td>Wix Stores, Wix eCommerce, Wix CMS</td>
+    </tr>
+    <tr>
       <td colspan="4" align="center"><strong>Next.js</strong></td>
     </tr>
     <tr>
