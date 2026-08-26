@@ -77,7 +77,7 @@ function Header({ categories, active, onSelect }) {
 				style={{
 					maxWidth: 1280,
 					margin: "0 auto",
-					padding: "0 40px",
+					padding: "0 clamp(20px, 5vw, 40px)",
 					height: 72,
 					display: "flex",
 					alignItems: "center",
@@ -144,7 +144,7 @@ function Header({ categories, active, onSelect }) {
 						display: "flex",
 						flexDirection: "column",
 						borderTop: "1px solid #e5e7eb",
-						padding: "12px 40px 20px",
+						padding: "12px 20px 20px",
 					}}
 				>
 					{links.map((l) => (
@@ -178,16 +178,14 @@ function Hero() {
 		<section
 			style={{
 				background: GRAD,
-				minHeight: "60vh",
-				display: "flex",
-				alignItems: "flex-end",
-				padding: "80px 40px 80px max(40px, calc((100vw - 1280px) / 2 + 40px))",
+				padding: "clamp(36px, 7vw, 80px) clamp(20px, 5vw, 40px)",
+				paddingLeft: "max(20px, calc((100vw - 1280px) / 2 + 40px))",
 			}}
 		>
 			<div style={{ maxWidth: 640 }}>
 				<h1
 					style={{
-						fontSize: "clamp(40px, 5.5vw, 72px)",
+						fontSize: "clamp(32px, 7vw, 72px)",
 						fontWeight: 400,
 						lineHeight: 1.05,
 						letterSpacing: "-0.02em",
@@ -195,9 +193,7 @@ function Hero() {
 						margin: 0,
 					}}
 				>
-					Add your CMS business
-					<br />
-					name or title here
+					Add your CMS business name or title here
 				</h1>
 				<p style={{ marginTop: 20, fontSize: 15, lineHeight: 1.7, opacity: 0.6, maxWidth: 480 }}>
 					Every item below is pulled live from a Wix CMS collection — add, edit, or
@@ -276,7 +272,7 @@ function ProductModal({ item, onClose }) {
 					maxWidth: 680,
 					width: "100%",
 					display: "grid",
-					gridTemplateColumns: "1fr 1fr",
+					gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
 					overflow: "hidden",
 					boxShadow: "0 20px 60px rgba(26,29,46,0.2)",
 				}}
@@ -290,7 +286,7 @@ function ProductModal({ item, onClose }) {
 				) : (
 					<GradPlaceholder style={{ minHeight: 360 }} index={0} />
 				)}
-				<div style={{ padding: 36, display: "flex", flexDirection: "column", gap: 16 }}>
+				<div style={{ padding: "clamp(20px, 5vw, 36px)", display: "flex", flexDirection: "column", gap: 16 }}>
 					<button
 						onClick={onClose}
 						style={{
@@ -346,7 +342,7 @@ function Footer() {
 			style={{
 				background: DARK,
 				color: "#fff",
-				padding: "60px max(40px, calc((100vw - 1280px) / 2 + 40px)) 0",
+				padding: "60px max(20px, calc((100vw - 1280px) / 2 + 40px)) 0",
 			}}
 		>
 			<nav style={{ paddingBottom: 60 }}>
@@ -413,7 +409,7 @@ export default function CatalogIsland({ items }) {
 			<section
 				id="shop"
 				style={{
-					padding: "60px max(40px, calc((100vw - 1280px) / 2 + 40px))",
+					padding: "clamp(32px, 6vw, 60px) max(20px, calc((100vw - 1280px) / 2 + 40px))",
 					flex: 1,
 				}}
 			>
@@ -421,7 +417,7 @@ export default function CatalogIsland({ items }) {
 					<div
 						style={{
 							display: "grid",
-							gridTemplateColumns: "repeat(4, 1fr)",
+							gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
 							gap: 16,
 						}}
 					>
@@ -433,7 +429,7 @@ export default function CatalogIsland({ items }) {
 					<div
 						style={{
 							display: "grid",
-							gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+							gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
 							gap: 16,
 						}}
 					>
