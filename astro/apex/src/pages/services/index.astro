@@ -1,0 +1,201 @@
+---
+// src/pages/services/index.astro — SSR sessions listing grid (SEO).
+// One dir deep inside src/pages → ../../ reaches src/.
+//
+// Optional catalog filter (auto-skips when there's nothing to filter):
+//   location — a location selector, shown ONLY when the site has >1 location
+//              (business + custom + customer). The choice is carried as
+//              ?locationId (+?locationType) and forwarded into both the services
+//              query and the detail page's availability.
+// Category filtering is deliberately absent — the catalog always shows every
+// session (the seeded categories are meaningless duplicates).
+// Plain links that re-SSR with query params — no client JS on the catalog.
+import Layout from "../../layouts/Layout.astro";
+import ServiceCard from "../../components/ServiceCard.astro";
+import { services } from "@wix/bookings";
+import { auth } from "@wix/essentials";
+import { media as wixMedia } from "@wix/sdk";
+import { filmFor } from "../../data/fleetFilms";
+
+// Wix Bookings app id — the base filter must scope queryServices to it.
+const BOOKING_APP_ID = "13d21c63-b5ec-5912-8397-c3a5ddb27a97";
+
+const reqUrl = new URL(Astro.request.url);
+const selectedLocation = reqUrl.searchParams.get("locationId") ?? "";
+const selectedLocationType = reqUrl.searchParams.get("locationType") ?? "";
+
+// ── Services filter (appId + optional location) ──────────────────────────────
+// A real business-location id filters by locations.business.id; the synthetic
+// "custom"/"customer" ids map to a location-TYPE filter. Built from URL params
+// only, so it doesn't depend on the locations read.
+const filter: Record<string, any> = { appId: BOOKING_APP_ID };
+if (selectedLocation === "custom") filter["locations.type"] = { $hasSome: ["CUSTOM"] };
+else if (selectedLocation === "customer") filter["locations.type"] = { $hasSome: ["CUSTOMER"] };
+else if (selectedLocation) filter["locations.business.id"] = { $hasSome: [selectedLocation] };
+
+// ── Catalog reads — two INDEPENDENT queries, fetched concurrently ───────────
+// queryServices (the filtered list) + queryLocations (selector) don't depend on
+// each other, so run them in parallel. Each is individually non-fatal: a failed
+// read degrades only its own piece (an empty list / a hidden selector), never
+// the whole page. Ambient @wix/astro SSR client via @wix/essentials — do NOT
+// build createClient({ auth: OAuthStrategy(...) }); that env var is client-only
+// and undefined at server render → 500.
+const [servicesResult, locResult] = await Promise.all([
+  // Object-literal query form (dynamic dotted-field filters) — runtime-valid
+  // but not modeled by the SDK's typed builder overloads, hence the cast.
+  auth
+    .elevate(services.queryServices as any)({ query: { filter, paging: { limit: 100 } }, conditionalFields: ["STAFF_MEMBER_DETAILS"] })
+    .find()
+    .catch((err: any) => { console.error("[services] listing query failed:", err); return null; }),
+  auth.elevate(services.queryLocations)().catch((err: any) => { console.error("[services] queryLocations failed:", err); return null; }),
+]);
+
+const serviceList: any[] = (servicesResult?.items ?? []).filter((s: any) => !s.hidden);
+
+// Locations — auto-skip the selector when ≤1 (business + custom + customer).
+const businessLocations: any[] = locResult?.businessLocations?.locations ?? [];
+const hasCustomLocations: boolean = locResult?.customLocations?.exists ?? false;
+const hasCustomerLocations: boolean = locResult?.customerLocations?.exists ?? false;
+const locationCount =
+  businessLocations.length + (hasCustomLocations ? 1 : 0) + (hasCustomerLocations ? 1 : 0);
+const showLocationSelector = locationCount > 1;
+
+// Build a /services href preserving the current selection, applying overrides.
+// Pass null to clear a param. locationType is always paired with locationId.
+const hrefWith = (patch: Record<string, string | null>): string => {
+  const p = new URLSearchParams();
+  if (selectedLocation) {
+    p.set("locationId", selectedLocation);
+    if (selectedLocationType) p.set("locationType", selectedLocationType);
+  }
+  for (const [k, v] of Object.entries(patch)) {
+    if (v === null) p.delete(k);
+    else p.set(k, v);
+  }
+  if (patch.locationId === null) p.delete("locationType");
+  const qs = p.toString();
+  return qs ? `/services?${qs}` : "/services";
+};
+
+// Is a filter narrowing the list right now? Drives the empty-state copy.
+const filterActive = Boolean(selectedLocation);
+
+const getSlug = (s: any): string => s.mainSlug?.name ?? s.supportedSlugs?.[0]?.name ?? s._id;
+// The SDK returns service images as `wix:image://` URI strings (REST returns
+// an object with a bare media id in `url`) — normalize every shape to an
+// absolute wixstatic URL.
+const absMedia = (img: unknown): string | undefined => {
+  const raw = typeof img === "string" ? img : (img as any)?.url;
+  if (!raw) return undefined;
+  if (raw.startsWith("wix:image://")) return wixMedia.getImageUrl(raw).url;
+  return raw.startsWith("http") ? raw : `https://static.wixstatic.com/media/${raw}`;
+};
+const formatPrice = (s: any): string | undefined => {
+  const p = s.payment;
+  if (!p || p.rateType === "NO_FEE") return undefined;
+  if (p.rateType === "FIXED" && p.fixed?.price) {
+    const { value, currency } = p.fixed.price;
+    if (!value) return undefined;
+    return new Intl.NumberFormat("en-IE", { style: "currency", currency: currency ?? "EUR" }).format(Number(value));
+  }
+  return undefined;
+};
+const getDuration = (s: any): number => s.schedule?.availabilityConstraints?.sessionDurations?.[0] ?? 60;
+const locationName = (loc: any): string => loc?.business?.name ?? loc?.calculatedAddress?.city ?? "Circuit";
+---
+
+<Layout title="Sessions" description="Book a drive behind the wheel — a supercar, a circuit, a window of time.">
+  <section class="container-wide pt-8 pb-24">
+    <header class="flex flex-col items-center text-center gap-5 mb-16" data-reveal>
+      <p class="eyebrow">The line-up</p>
+      <h1 class="display-xl">Sessions</h1>
+      <p class="text-lg text-mute leading-relaxed max-w-prose">
+        One car. One circuit. One window of time. Pick the session — the wheel is yours
+      </p>
+    </header>
+
+    {
+      showLocationSelector && (
+        <nav class="booking-filter-bar" aria-label="Filter by circuit">
+          <a href={hrefWith({ locationId: null })} class={`booking-filter-chip${selectedLocation ? "" : " booking-filter-chip--active"}`}>All circuits</a>
+          {businessLocations.map((loc: any) => (
+            <a
+              href={hrefWith({ locationId: loc._id, locationType: "BUSINESS" })}
+              class={`booking-filter-chip${selectedLocation === loc._id ? " booking-filter-chip--active" : ""}`}
+            >
+              {locationName(loc)}
+            </a>
+          ))}
+          {hasCustomLocations && (
+            <a href={hrefWith({ locationId: "custom", locationType: "CUSTOM" })} class={`booking-filter-chip${selectedLocation === "custom" ? " booking-filter-chip--active" : ""}`}>Custom location</a>
+          )}
+          {hasCustomerLocations && (
+            <a href={hrefWith({ locationId: "customer", locationType: "CUSTOMER" })} class={`booking-filter-chip${selectedLocation === "customer" ? " booking-filter-chip--active" : ""}`}>My location</a>
+          )}
+        </nav>
+      )
+    }
+
+    {
+      serviceList.length === 0 ? (
+        <p class="text-mute text-center">
+          {filterActive
+            ? "No sessions match that selection — try a different filter."
+            : "The grid opens soon — sessions are being scheduled."}
+        </p>
+      ) : (
+        <div class="service-grid">
+          {serviceList.map((s) => {
+            const film = filmFor(s.name ?? "");
+            return (
+              <ServiceCard
+                id={s._id}
+                slug={getSlug(s)}
+                name={s.name ?? "Untitled"}
+                tagLine={s.tagLine ?? s.description}
+                durationMinutes={getDuration(s)}
+                price={formatPrice(s)}
+                imageUrl={absMedia(s.media?.mainMedia?.image ?? s.media?.items?.[0]?.image)}
+                videoUrl={film?.video}
+                videoUrlMobile={film?.videoMobile}
+                videoPos={film?.pos}
+                type={s.type ?? "APPOINTMENT"}
+                locationId={selectedLocation || undefined}
+                locationType={selectedLocationType || undefined}
+              />
+            );
+          })}
+        </div>
+      )
+    }
+
+    {/* Rendition pick — 480p on phones, 720p on desktop. */}
+    <script is:inline data-astro-rerun>
+      for (const v of document.querySelectorAll("video[data-src-desktop]:not([src])")) {
+        v.src = matchMedia("(max-width: 767px)").matches
+          ? v.dataset.srcMobile
+          : v.dataset.srcDesktop;
+      }
+    </script>
+  </section>
+</Layout>
+
+<script>
+  // Card films — a card's clip plays while the cursor rests on it (CSS fades
+  // it over the still). Desktop pointers only; reduced motion sits out.
+  function initCardFilms() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    document.querySelectorAll<HTMLElement>(".service-card:not([data-film-live])").forEach((card) => {
+      const vid = card.querySelector<HTMLVideoElement>(".service-card-film");
+      if (!vid) return;
+      card.dataset.filmLive = "1";
+      card.addEventListener("pointerenter", () => {
+        vid.play().catch(() => {});
+      });
+      card.addEventListener("pointerleave", () => vid.pause());
+    });
+  }
+  initCardFilms();
+  document.addEventListener("astro:page-load", initCardFilms);
+</script>

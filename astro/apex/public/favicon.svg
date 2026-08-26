@@ -1,0 +1,6 @@
+<!-- The brand tick — the red corner-apex mark (heavy top-left round). Same
+     mark the Layout inlines for the tab icon; this file is the referenceable
+     copy (Organization logo in the home page's structured data). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <path d="M13 3 A10 10 0 0 0 3 13 L13 13 Z" fill="#E1121F" />
+</svg>
