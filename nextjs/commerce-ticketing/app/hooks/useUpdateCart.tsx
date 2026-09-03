@@ -3,6 +3,7 @@ import { WixClient } from '@app/components/Provider/ClientProvider';
 import { useWixClient } from './useWixClient';
 
 // Cart V2 quantity update: identify the line by `_id` and set the new quantity.
+// (Built into the SDK's `currentCartV2.LineItemUpdate` / `QuantityUpdate` shape at call time.)
 type LineItemQuantityUpdate = { _id: string; quantity: number };
 
 export const useUpdateCart = () => {

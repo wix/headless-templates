@@ -1,14 +1,14 @@
 'use client';
 import { useUI } from '@app/components/Provider/context';
 import { useCart } from '@app/hooks/useCart';
-import { cartV2 } from '@wix/ecom';
+import { currentCartV2 } from '@wix/ecom';
 
 export const CartBag = () => {
   const { setSidebarView, toggleSidebar } = useUI();
   const { data, isLoading } = useCart();
   const itemsCount = !isLoading
     ? data?.lineItems?.reduce(
-        (count: number, item: cartV2.V2LineItem) =>
+        (count: number, item: currentCartV2.V2LineItem) =>
           count + (item.quantityInfo?.confirmedQuantity ?? 0),
         0
       )

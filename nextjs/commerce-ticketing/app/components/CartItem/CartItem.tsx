@@ -2,7 +2,7 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatPrice } from '@app/utils/price-formatter';
-import { cartV2 } from '@wix/ecom';
+import { currentCartV2 } from '@wix/ecom';
 import { useUI } from '@app/components/Provider/context';
 import { Quantity } from '@app/components/Quantity/Quantity';
 import { useUpdateCart } from '@app/hooks/useUpdateCart';
@@ -15,7 +15,7 @@ export const CartItem = ({
   hideButtons,
   ...rest
 }: {
-  item: cartV2.V2LineItem;
+  item: currentCartV2.V2LineItem;
   currencyCode: string;
   hideButtons?: boolean;
 }) => {

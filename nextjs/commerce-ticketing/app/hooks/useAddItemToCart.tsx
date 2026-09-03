@@ -2,9 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { WixClient } from '@app/components/Provider/ClientProvider';
 import { useWixClient } from './useWixClient';
 
-// NOTE: Cart V2 catalog-item shape passed to `addLineItemsToCurrentCart`.
-// The precise exported V2 type (likely `currentCartV2.CatalogItem`) could not be
-// verified without installed deps, so a structural type is used to keep this compiling.
+// Cart V2 catalog-item shape passed to `addLineItemsToCurrentCart` (the SDK type is
+// `currentCartV2.CatalogItemInput`). A structural type is used here to keep the template
+// decoupled from the SDK's generated typings.
 type AddToCartCatalogItem = {
   quantity?: number;
   catalogReference: {

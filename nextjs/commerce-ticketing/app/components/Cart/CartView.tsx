@@ -52,6 +52,10 @@ export const CartView = ({ layout = 'mini' }: { layout?: 'full' | 'mini' }) => {
         window.location.href = redirectSession.fullUrl;
       }
     } catch (e: any) {
+      // In Cart V2 the "site must accept payments" gate is enforced at place-order on the
+      // Wix-hosted checkout — not on getCurrentCart/createRedirectSession — so a non-premium
+      // site surfaces the error there. This branch is kept as a best-effort fallback in case
+      // the SDK ever surfaces the code client-side.
       if (
         e?.details?.applicationError?.code ===
         'SITE_MUST_ACCEPT_PAYMENTS_TO_CREATE_CHECKOUT'
