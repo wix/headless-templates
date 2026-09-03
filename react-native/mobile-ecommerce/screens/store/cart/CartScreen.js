@@ -1,7 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { currentCart } from "@wix/ecom";
 import * as Linking from "expo-linking";
 import _, { isInteger } from "lodash";
 import * as React from "react";
@@ -21,6 +20,20 @@ import { CheckoutThankYouScreen } from "../checkout/CheckoutThankYouScreen";
 import { usePrice } from "../price";
 
 const Stack = createNativeStackNavigator();
+
+// Cart V2: currency lives on the cart's customer/business info (no top-level `currency`).
+const cartCurrency = (cart) =>
+  cart?.customerInfo?.currencyCode ?? cart?.businessInfo?.currencyCode;
+
+// Cart V2 line-item money is ConvertedMoney { amount, convertedAmount } (raw decimal
+// strings, no preformatted display string). `pricing.totalPrice` is the line total
+// (already multiplied by quantity), so no manual multiply is needed.
+const lineItemTotalAmount = (item) =>
+  Number.parseFloat(
+    item.pricing?.totalPrice?.convertedAmount ??
+      item.pricing?.totalPrice?.amount ??
+      0,
+  );
 
 const EmptyCart = () => {
   const navigation = useNavigation();
@@ -54,12 +67,14 @@ function CartItem({ item, currency }) {
       if (isInteger(quantity) === false) {
         quantity = Math.round(quantity);
       }
-      return wixCient.currentCart.updateCurrentCartLineItemQuantity([
-        {
-          _id: item._id,
-          quantity,
-        },
-      ]);
+      return wixCient.currentCartV2.updateLineItemsInCurrentCart({
+        lineItems: [
+          {
+            lineItemId: item._id,
+            quantity: { newQuantity: quantity },
+          },
+        ],
+      });
     },
     {
       onSuccess: (response) => {
@@ -70,7 +85,8 @@ function CartItem({ item, currency }) {
 
   const removeMutation = useMutation(
     async () => {
-      return wixCient.currentCart.removeLineItemsFromCurrentCart([item._id]);
+      // SDK signature is positional (lineItemIds: string[]), unlike add/update which take options objects.
+      return wixCient.currentCartV2.removeLineItemsFromCurrentCart([item._id]);
     },
     {
       onSuccess: (response) => {
@@ -80,13 +96,13 @@ function CartItem({ item, currency }) {
   );
   return (
     <CartListItem
-      name={item.productName.translated}
+      name={item.name?.translated ?? item.name?.original}
       price={usePrice({
-        amount: Number.parseFloat(item.price?.amount) * item.quantity,
+        amount: lineItemTotalAmount(item),
         currencyCode: currency,
       })}
-      image={item.image}
-      quantity={item.quantity}
+      image={item.attributes?.image}
+      quantity={item.quantityInfo?.confirmedQuantity}
       quantityOnEdit={updateQuantityMutation.isLoading}
       quantityHandlerChange={(quantity) =>
         updateQuantityMutation.mutateAsync(quantity)
@@ -104,47 +120,43 @@ function CartView() {
   const theme = useTheme();
   const navigation = useNavigation();
 
-  const currentCartQuery = useQuery(["currentCart"], () => {
-    try {
-      return wixCient.currentCart.getCurrentCart();
-    } catch (e) {
-      return console.error(e);
-    }
+  const currentCartQuery = useQuery(["currentCart"], async () => {
+    // Cart V2 getCurrentCart returns { cart }; unwrap so the rest of the screen
+    // (and the mutation onSuccess handlers, which store response.cart) all read
+    // the same cart entity shape.
+    const { cart } = await wixCient.currentCartV2.getCurrentCart();
+    return cart;
   });
 
   const checkoutMutation = useMutation(
     async () => {
       setCheckoutRedirect(true);
-      let currentCheckout =
-        await wixCient.currentCart.createCheckoutFromCurrentCart({
-          channelType: currentCart.ChannelType.OTHER_PLATFORM,
-        });
-      if (userNote !== "") {
-        currentCheckout.buyerNote = userNote;
-      }
-      if (userDiscount !== "") {
-        currentCheckout.discountCode = userDiscount;
-      }
+      setTriggerInvalidCoupon(false);
 
-      if (userDiscount !== "") {
+      // Apply the buyer note via updateCurrentCart and the coupon via the
+      // dedicated addCouponToCurrentCart (both on the cart).
+      if (userNote) {
+        await wixCient.currentCartV2.updateCurrentCart({ note: userNote });
+      }
+      if (userDiscount) {
         try {
-          currentCheckout = await wixCient.checkout.updateCheckout(
-            currentCheckout.checkoutId,
-            currentCheckout,
-            {
-              couponCode: userDiscount,
-            },
-          );
-        } catch (e) {
+          await wixCient.currentCartV2.addCouponToCurrentCart({
+            code: userDiscount,
+          });
+        } catch (error) {
           setTriggerInvalidCoupon(true);
           setCheckoutRedirect(false);
-          return undefined;
+          throw error;
         }
       }
 
+      // The current cart's _id IS the checkout id. Create a redirect session
+      // straight from it.
+      const { cart } = await wixCient.currentCartV2.getCurrentCart();
+
       const { redirectSession } =
         await wixCient.redirects.createRedirectSession({
-          ecomCheckout: { checkoutId: currentCheckout.checkoutId },
+          ecomCheckout: { checkoutId: cart._id },
           callbacks: {
             thankYouPageUrl: Linking.createURL("/store/checkout/thank-you"),
           },
@@ -202,9 +214,9 @@ function CartView() {
 
   const subTotal = usePrice({
     amount: currentCartQuery.data.lineItems.reduce((acc, item) => {
-      return acc + Number.parseFloat(item.price?.amount) * item.quantity;
+      return acc + lineItemTotalAmount(item);
     }, 0),
-    currencyCode: currentCartQuery.data.currency,
+    currencyCode: cartCurrency(currentCartQuery.data),
   });
 
   const userAddNoteHandler = _.debounce((text) => {
@@ -252,7 +264,7 @@ function CartView() {
             {currentCartQuery.data.lineItems.map((item, index) => (
               <View key={item._id}>
                 <CartItem
-                  currency={currentCartQuery.data.currency}
+                  currency={cartCurrency(currentCartQuery.data)}
                   key={item._id}
                   item={item}
                 />
