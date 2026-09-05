@@ -1,0 +1,22 @@
+---
+import { ClientRouter } from "astro:transitions";
+import "./globals.css";
+import Navbar from "./navbar/index.astro";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <ClientRouter />
+  </head>
+  <body
+    class="bg-neutral-50 text-black selection:bg-teal-300 dark:bg-neutral-900 dark:text-white dark:selection:bg-pink-500 dark:selection:text-white"
+  >
+    <Navbar />
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+---
+import PlusIcon from "../icons/plus.astro";
+import clsx from "clsx";
+
+type Props = {
+  availableForSale: boolean;
+  selectedVariantId: string | undefined;
+};
+
+const buttonClasses =
+  "relative flex w-full items-center justify-center rounded-full bg-blue-600 p-4 tracking-wide text-white";
+const disabledClasses = "cursor-not-allowed opacity-60 hover:opacity-60";
+---
+
+{
+  !Astro.props.availableForSale ? (
+    <button disabled class={clsx(buttonClasses, disabledClasses)}>
+      Out Of Stock
+    </button>
+  ) : !Astro.props.selectedVariantId ? (
+    <button
+      aria-label="Please select an option"
+      disabled
+      class={clsx(buttonClasses, disabledClasses)}
+    >
+      <div class="absolute left-0 ml-4">
+        <PlusIcon class="h-5" />
+      </div>
+      Add To Cart
+    </button>
+  ) : (
+    <button
+      aria-label="Add to cart"
+      class={clsx(buttonClasses, {
+        "hover:opacity-90": true,
+      })}
+      form="add-to-cart"
+    >
+      <div class="absolute left-0 ml-4">
+        <PlusIcon class="h-5" />
+      </div>
+      Add To Cart
+    </button>
+  )
+}
