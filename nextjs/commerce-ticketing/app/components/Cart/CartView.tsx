@@ -6,23 +6,30 @@ import { useCart } from '@app/hooks/useCart';
 import { useUI } from '@app/components/Provider/context';
 import { useWixClient } from '@app/hooks/useWixClient';
 import { Spinner } from 'flowbite-react';
-import { currentCart } from '@wix/ecom';
 
 export const CartView = ({ layout = 'mini' }: { layout?: 'full' | 'mini' }) => {
   const wixClient = useWixClient();
   const { closeSidebar, openModalNotPremium } = useUI();
   const { data, isLoading } = useCart();
   const [redirecting, setRedirecting] = useState<boolean>(false);
+  // Cart V2 currency lives on the cart, not on a top-level `currency` field.
+  const currencyCode =
+    data?.customerInfo?.currencyCode ?? data?.businessInfo?.currencyCode;
   const subTotal = formatPrice(
     data && {
       amount:
         data.lineItems?.reduce((acc, item) => {
+          // V2 `totalPrice` is already the line total (unit x quantity).
           return (
             acc +
-            Number.parseFloat(item.price?.amount ?? '0') * (item.quantity ?? 0)
+            Number(
+              item.pricing?.totalPrice?.convertedAmount ??
+                item.pricing?.totalPrice?.amount ??
+                0,
+            )
           );
         }, 0) ?? 0,
-      currencyCode: data.currency,
+      currencyCode,
     }
   );
 
@@ -30,13 +37,11 @@ export const CartView = ({ layout = 'mini' }: { layout?: 'full' | 'mini' }) => {
     closeSidebar();
     setRedirecting(true);
     try {
-      const checkout =
-        await wixClient.currentCart.createCheckoutFromCurrentCart({
-          channelType: currentCart.ChannelType.WEB,
-        });
+      // The cart id IS the checkout id.
+      const { cart } = await wixClient.currentCartV2.getCurrentCart();
       const { redirectSession } =
         await wixClient.redirects.createRedirectSession({
-          ecomCheckout: { checkoutId: checkout.checkoutId },
+          ecomCheckout: { checkoutId: cart!._id },
           callbacks: {
             postFlowUrl: window.location.origin,
             thankYouPageUrl: `${window.location.origin}/stores-success`,
@@ -47,8 +52,12 @@ export const CartView = ({ layout = 'mini' }: { layout?: 'full' | 'mini' }) => {
         window.location.href = redirectSession.fullUrl;
       }
     } catch (e: any) {
+      // In Cart V2 the "site must accept payments" gate is enforced at place-order on the
+      // Wix-hosted checkout — not on getCurrentCart/createRedirectSession — so a non-premium
+      // site surfaces the error there. This branch is kept as a best-effort fallback in case
+      // the SDK ever surfaces the code client-side.
       if (
-        e.details.applicationError.code ===
+        e?.details?.applicationError?.code ===
         'SITE_MUST_ACCEPT_PAYMENTS_TO_CREATE_CHECKOUT'
       ) {
         openModalNotPremium();
@@ -58,7 +67,7 @@ export const CartView = ({ layout = 'mini' }: { layout?: 'full' | 'mini' }) => {
   }, [
     closeSidebar,
     openModalNotPremium,
-    wixClient.currentCart,
+    wixClient.currentCartV2,
     wixClient.redirects,
   ]);
 
@@ -110,7 +119,7 @@ export const CartView = ({ layout = 'mini' }: { layout?: 'full' | 'mini' }) => {
                 <CartItem
                   key={item._id}
                   item={item}
-                  currencyCode={data?.currency!}
+                  currencyCode={currencyCode!}
                 />
               ))}
             </ul>

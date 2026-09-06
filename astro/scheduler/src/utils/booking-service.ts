@@ -1,5 +1,5 @@
 import { services, availabilityCalendar, bookings } from "@wix/bookings";
-import { checkout } from "@wix/ecom";
+import { cartV2 } from "@wix/ecom";
 import { redirects } from "@wix/redirects";
 import { BOOKINGS_APP_ID, TIME_FORMAT } from "./constants";
 
@@ -157,8 +157,23 @@ export async function createBooking(
       },
     });
 
-    const createdCheckout = await checkout.createCheckout({
-      lineItems: [
+    // Create a cart, calculate it to get the price-verification token, then
+    // place the order.
+    const createdCart = await cartV2.createCart({
+      cart: {
+        source: { channelType: "WEB" },
+        customerInfo: {
+          email: bookingData.email,
+        },
+        paymentInfo: {
+          billingContact: {
+            firstName: firstName,
+            lastName: lastName,
+            phone: bookingData.phone,
+          },
+        },
+      },
+      catalogItems: [
         {
           quantity: 1,
           catalogReference: {
@@ -167,22 +182,14 @@ export async function createBooking(
           },
         },
       ],
-      channelType: checkout.ChannelType.WEB,
-      checkoutInfo: {
-        billingInfo: {
-          contactDetails: {
-            firstName: firstName,
-            lastName: lastName,
-            phone: bookingData.phone,
-          },
-        },
-        buyerInfo: {
-          email: bookingData.email,
-        },
-      },
     });
 
-    await checkout.createOrder(createdCheckout._id!);
+    const cartId = createdCart._id!;
+    const calculated = await cartV2.calculateCart(cartId);
+    await cartV2.placeOrder(cartId, {
+      priceVerificationToken:
+        calculated.summary?.priceVerificationToken ?? undefined,
+    });
 
     return booking;
   } catch (error) {

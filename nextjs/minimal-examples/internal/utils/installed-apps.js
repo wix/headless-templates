@@ -4,7 +4,7 @@ import {redirects} from "@wix/redirects";
 import Cookies from "js-cookie";
 import {availabilityCalendar, services} from "@wix/bookings";
 import {products} from "@wix/stores";
-import {currentCart} from "@wix/ecom";
+import {currentCartV2} from "@wix/ecom";
 import {plans} from "@wix/pricing-plans";
 import {orders as checkout, wixEventsV2 as wixEvents} from "@wix/events";
 import {jwtDecode} from "jwt-decode";
@@ -25,7 +25,7 @@ const createWixClient = () => {
             availabilityCalendar,
             redirects,
             products,
-            currentCart,
+            currentCartV2,
             plans,
             checkout,
             wixEvents,
@@ -63,11 +63,11 @@ const checkStoresInstalled = async (myWixClient) => {
             {}, // This is the initial value of the reduce function. It's an empty object that we'll add properties to.
         );
 
-        // Then, we call the addToCurrentCart method from the currentCart module of the Wix client.
+        // Then, we call the addLineItemsToCurrentCart method from the currentCartV2 module of the Wix client.
         // This method adds items to the current user's shopping cart.
-        await myWixClient.currentCart.addToCurrentCart({
+        await myWixClient.currentCartV2.addLineItemsToCurrentCart({
             // We pass an object that describes the product to be added.
-            lineItems: [
+            catalogItems: [
                 {
                     // Each product is identified by a catalogReference object.
                     catalogReference: {
@@ -80,8 +80,8 @@ const checkStoresInstalled = async (myWixClient) => {
             ],
         });
 
-        const cartHasItems = (await myWixClient.currentCart.getCurrentCart()).lineItems.length > 0;
-        await myWixClient.currentCart.deleteCurrentCart();
+        const cartHasItems = ((await myWixClient.currentCartV2.getCurrentCart())?.cart?.lineItems?.length ?? 0) > 0;
+        await myWixClient.currentCartV2.deleteCurrentCart();
         return cartHasItems;
     } catch (error) {
         return false;

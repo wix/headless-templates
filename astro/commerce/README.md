@@ -7,8 +7,11 @@ A minimal Astro + React storefront wireframe backed by Wix Stores and Wix eComme
 ## How it connects to Wix
 
 - **Catalog** — pages query products server-side with `@wix/stores` (`productsV3.queryProducts`).
-- **Cart** — the React island uses `@wix/ecom` `currentCart` to add items, read the cart, and estimate totals.
-- **Checkout** — `createCheckoutFromCurrentCart` plus `@wix/redirects` `createRedirectSession` sends the visitor to Wix Checkout.
+- **Cart** — the React island uses `@wix/ecom` `currentCartV2` to add items, read the cart, and estimate totals.
+
+> Migrating from Cart V1 / Checkout V1? This template is V2-only — see the migration guide: https://dev.wix.com/docs/api-reference/business-solutions/e-commerce/purchase-flow/cart-v2/migration-guide
+
+- **Checkout** — the cart id is the checkout id, so `@wix/redirects` `createRedirectSession` is given the current cart's id to send the visitor to Wix Checkout.
 - **Members** — `@wix/members` reads the current member; login/logout go through the built-in `/api/auth/*` routes.
 - **Media** — product images are scaled with `media.getScaledToFillImageUrl` from `@wix/sdk`.
 

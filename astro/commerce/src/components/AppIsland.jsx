@@ -1,10 +1,32 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { currentCart } from '@wix/ecom';
+import { cartV2, currentCartV2 } from '@wix/ecom';
 import { redirects } from '@wix/redirects';
 import { media } from '@wix/sdk';
 
 // Public app id of the Wix Stores catalog, used in ecom catalog references.
 const WIX_STORES_APP_ID = '215238eb-22a5-4c36-9e7b-e7c08025e04e';
+
+// Cart V2 line-item prices are raw decimal strings (ConvertedMoney: { amount, convertedAmount }).
+// Format them client-side from the amount + the cart's currency code.
+function formatMoney(money, currencyCode) {
+  const value = money?.convertedAmount ?? money?.amount;
+  if (value == null) return '';
+  const num = Number(value);
+  if (Number.isNaN(num)) return '';
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currencyCode || 'USD' }).format(num);
+  } catch {
+    return `${value}`;
+  }
+}
+
+function cartCurrency(cart) {
+  return cart?.customerInfo?.currencyCode ?? cart?.businessInfo?.currencyCode;
+}
+
+function lineItemCount(cart) {
+  return cart?.lineItems?.reduce((s, i) => s + (i.quantityInfo?.confirmedQuantity ?? 0), 0) ?? 0;
+}
 
 function imgSrc(mediaMain, w = 600, h = 600) {
   const v = mediaMain?.image ?? mediaMain?.url ?? mediaMain;
@@ -63,8 +85,8 @@ function ProductModal({ product, onClose, onAddedToCart }) {
     if (!canAdd) return;
     setAdding(true); setError('');
     try {
-      await currentCart.addToCurrentCart({
-        lineItems: [{ quantity: 1, catalogReference: {
+      await currentCartV2.addLineItemsToCurrentCart({
+        catalogItems: [{ quantity: 1, catalogReference: {
           catalogItemId: product._id,
           appId: WIX_STORES_APP_ID,
           ...(selectedVariant?._id && { options: { variantId: selectedVariant._id } }),
@@ -119,12 +141,12 @@ function CartPanel({ onClose }) {
 
   useEffect(() => {
     Promise.all([
-      currentCart.getCurrentCart(),
-      currentCart.estimateCurrentCartTotals().catch(() => null),
+      currentCartV2.getCurrentCart(),
+      currentCartV2.estimateCurrentCart().catch(() => null),
     ])
-      .then(([c, estimate]) => {
-        setCart(c);
-        setPriceSummary(estimate?.priceSummary ?? null);
+      .then(([cartRes, estimate]) => {
+        setCart(cartRes?.cart ?? null);
+        setPriceSummary(estimate?.summary?.priceSummary ?? null);
       })
       .catch(() => setCart(null))
       .finally(() => setLoading(false));
@@ -133,19 +155,21 @@ function CartPanel({ onClose }) {
   async function handleCheckout() {
     setCheckingOut(true);
     try {
-      const checkout = await currentCart.createCheckoutFromCurrentCart({ channelType: 'WEB' });
+      // The cart id is the checkout id.
+      // We still use a redirect session so the visitor/member session carries across
+      // to the Wix-hosted checkout on its own domain.
+      const { cart } = await currentCartV2.getCurrentCart();
       const session = await redirects.createRedirectSession({
-        ecomCheckout: { checkoutId: checkout.checkoutId },
+        ecomCheckout: { checkoutId: cart._id },
         callbacks: { postFlowUrl: window.location.origin + '/', thankYouPageUrl: window.location.origin + '/' },
       });
       window.location.href = session.redirectSession.fullUrl;
     } catch (e) { console.error(e); setCheckingOut(false); }
   }
 
-  const itemCount = cart?.lineItems?.reduce((s, i) => s + (i.quantity ?? 0), 0) ?? 0;
-  const subtotal = priceSummary?.subtotal?.formattedConvertedAmount
-    ?? priceSummary?.subtotal?.formattedAmount
-    ?? '';
+  const itemCount = lineItemCount(cart);
+  // V2 summary money is ConvertedMoney (amount/convertedAmount, no formatted string) — format it client-side.
+  const subtotal = formatMoney(priceSummary?.subtotal, cartCurrency(cart));
 
   return (
     <div className="overlay right" onClick={onClose}>
@@ -158,14 +182,14 @@ function CartPanel({ onClose }) {
           {loading && <p className="muted">Loading…</p>}
           {!loading && !cart?.lineItems?.length && <p className="muted">Your cart is empty.</p>}
           {cart?.lineItems?.map((item, i) => {
-            const s = imgSrc(item.image);
-            const price = item.price?.formattedConvertedAmount ?? item.price?.formattedAmount;
+            const s = imgSrc(item.attributes?.image);
+            const price = formatMoney(item.pricing?.totalPrice, cartCurrency(cart));
             return (
-              <div key={i} className="cart-row">
+              <div key={item._id ?? i} className="cart-row">
                 {s ? <img className="cart-thumb" src={s} alt="" /> : <Ph className="cart-thumb" index={i} />}
                 <div className="grow">
-                  <p className="cart-name">{item.productName?.translated ?? item.productName}</p>
-                  <p className="cart-qty">Qty {item.quantity}</p>
+                  <p className="cart-name">{item.name?.translated ?? item.name?.original}</p>
+                  <p className="cart-qty">Qty {item.quantityInfo?.confirmedQuantity}</p>
                 </div>
                 {price && <p className="cart-name">{price}</p>}
               </div>
@@ -302,8 +326,8 @@ export default function AppIsland({ products = [], member = null, page = 'home' 
 
   const refreshCart = useCallback(async () => {
     try {
-      const cart = await currentCart.getCurrentCart();
-      setCartCount(cart?.lineItems?.reduce((s, i) => s + (i.quantity || 0), 0) ?? 0);
+      const { cart } = await currentCartV2.getCurrentCart();
+      setCartCount(lineItemCount(cart));
     } catch { setCartCount(0); }
   }, []);
 

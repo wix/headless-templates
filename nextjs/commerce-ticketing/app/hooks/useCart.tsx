@@ -3,7 +3,14 @@ import { useWixClient } from './useWixClient';
 
 export const useCart = () => {
   const wixClient = useWixClient();
-  return useQuery(['cart'], () => wixClient.currentCart.getCurrentCart(), {
-    retry: false,
-  });
+  return useQuery(
+    ['cart'],
+    async () => {
+      const { cart } = await wixClient.currentCartV2.getCurrentCart();
+      return cart;
+    },
+    {
+      retry: false,
+    }
+  );
 };

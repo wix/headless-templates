@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { checkout } from "@wix/ecom";
 import { products } from "@wix/stores";
 import * as Linking from "expo-linking";
 import * as React from "react";
@@ -47,23 +46,25 @@ export function ProductScreen({ route, navigation }) {
 
   const buyNowMutation = useMutation(
     async (quantity) => {
-      const item = {
-        quantity,
-        catalogReference: cartCatalogReference(
-          product,
-          selectedVariant,
-          selectedProductOptions,
-        ),
-      };
-
-      const currentCheckout = await wixCient.checkout.createCheckout({
-        lineItems: [item],
-        channelType: checkout.ChannelType.OTHER_PLATFORM,
+      // "Buy Now" is an isolated purchase: create a standalone cart with just this
+      // item (so the shopper's current cart is untouched), then use that cart's _id
+      // as the checkout id for the redirect.
+      const cart = await wixCient.cartV2.createCart({
+        catalogItems: [
+          {
+            quantity,
+            catalogReference: cartCatalogReference(
+              product,
+              selectedVariant,
+              selectedProductOptions,
+            ),
+          },
+        ],
       });
 
       const { redirectSession } =
         await wixCient.redirects.createRedirectSession({
-          ecomCheckout: { checkoutId: currentCheckout._id },
+          ecomCheckout: { checkoutId: cart._id },
           callbacks: {
             thankYouPageUrl: Linking.createURL("/store/checkout/thank-you"),
             cartPageUrl: Linking.createURL("/store/cart"),
@@ -86,8 +87,8 @@ export function ProductScreen({ route, navigation }) {
 
   const addToCurrentCartMutation = useMutation(
     async (quantity) =>
-      wixCient.currentCart.addToCurrentCart({
-        lineItems: [
+      wixCient.currentCartV2.addLineItemsToCurrentCart({
+        catalogItems: [
           {
             quantity,
             catalogReference: cartCatalogReference(
