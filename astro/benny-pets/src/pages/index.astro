@@ -1,0 +1,303 @@
+---
+import ContactForm from "../components/ContactForm.astro";
+import Nav from "../components/Nav.astro";
+import ProductCard from "../components/ProductCard.astro";
+import QuickAdd from "../components/QuickAdd.astro";
+import WaveText from "../components/WaveText.astro";
+import Base from "../layouts/Base.astro";
+import { getCartCount } from "../lib/cart";
+import { listProducts } from "../lib/catalog";
+
+const WORD = "BENNY PETS";
+const LETTER_DELAY = 0.07;
+
+const [products, cartCount] = await Promise.all([listProducts(12, 600, 600), getCartCount()]);
+
+const bestSellers = products.slice(0, 4);
+// The gallery has six card slots; fill them from the catalog, cycling when the
+// store has fewer products than slots.
+const gallerySlots = products.length > 0 ? [0, 1, 2, 3, 4, 5].map((i) => products[i % products.length]) : [];
+
+const reviews = [
+  { quote: "My dog's food arrived fast and the quality is outstanding. Totally worth it!", title: '"Absolutely Amazing!"', name: "Sarah Mitchell", dir: "from-left" },
+  { quote: "Best pet store around. My cat loves every toy I've bought here!", title: '"Best Pet Store Ever!"', name: "James Carter", dir: "" },
+  { quote: "Great prices, amazing selection. I've been a loyal customer for over a year.", title: '"Highly Recommend!"', name: "Emma Thompson", dir: "from-right" },
+];
+
+const welcomeText =
+  "Your one-stop destination for premium pet products. We believe every pet deserves the very best — from nourishing food and fun toys to cozy beds and grooming essentials. Shop with confidence and give your furry friend the love they deserve.";
+---
+
+<Base title="BENNY PETS" description="Premium food, toys & accessories for your best friend.">
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-letters" id="loading-letters">
+      {
+        [...WORD].map((ch, i) =>
+          ch === " " ? (
+            <span style="width: 0.28em; display: inline-block;" />
+          ) : (
+            <span class="loading-letter" style={`animation-delay: ${i * LETTER_DELAY}s`}>
+              {ch}
+            </span>
+          ),
+        )
+      }
+    </div>
+  </div>
+  <noscript><style is:inline>.loading-overlay { display: none !important; }</style></noscript>
+
+  <section class="hero">
+    <Nav cartCount={cartCount} shopLabel="Shop" homeScrollsToTop />
+    <WaveText text="BENNY PETS" class="hero-wordmark" id="hero-wordmark" />
+    <img class="hero-dog" src="/hero-bg.jpg" alt="Dalmatian with a tennis ball" />
+    <div class="hero-copy animate-in">
+      <p class="hero-eyebrow">
+        Premium food, toys &amp; accessories for your<br />best friend. Delivered to your door.
+      </p>
+      <a href="/store" class="hero-btn">Shop Now</a>
+    </div>
+  </section>
+
+  <section class="welcome" id="about">
+    <span class="section-tag animate-in">Welcome to Benny Pets</span>
+    <p class="welcome-body">
+      {
+        welcomeText.split(" ").map((word, wi) => (
+          <span class="blur-word" style={`transition-delay: ${wi * 0.04}s`}>
+            {[...word].map((ch) => (
+              <span class="w-letter">{ch}</span>
+            ))}
+          </span>
+        ))
+      }
+    </p>
+  </section>
+
+  <section class="products" id="shop">
+    <span class="section-tag animate-in">Our Best Sellers</span>
+    {
+      bestSellers.length === 0 ? (
+        <p class="store-empty">No products yet — add some in your Wix dashboard and they appear here.</p>
+      ) : (
+        <div class="product-grid">
+          {bestSellers.map((product, i) => (
+            <ProductCard product={product} delay={0.1 + i * 0.1} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+
+  {
+    gallerySlots.length > 0 && (
+      <section class="col-gallery" id="col-gallery">
+        <span class="section-tag">Shop Collection</span>
+        <div class="col-sticky">
+          <div class="gallery-col">
+            <img class="gallery-photo" src="/gallery1.jpg" alt="Dog resting" />
+            <div class="gallery-card">
+              {gallerySlots[0].imageUrl && <img src={gallerySlots[0].imageUrl} alt={gallerySlots[0].name} />}
+              <div class="gallery-card-info">
+                <a class="gallery-card-name" href={`/store/${gallerySlots[0].slug}`}>
+                  {gallerySlots[0].name}
+                </a>
+                <span class="gallery-card-price">{gallerySlots[0].price}</span>
+                <QuickAdd product={gallerySlots[0]} class="gallery-card-btn" />
+              </div>
+            </div>
+            <div class="gallery-accent" style="background: var(--lime); color: #1a1700;">
+              <span class="gallery-accent-label">Best Seller</span>
+              <p class="gallery-accent-heading">Premium Nutrition for Happy Dogs</p>
+            </div>
+            <div class="gallery-card">
+              {gallerySlots[1].imageUrl && <img src={gallerySlots[1].imageUrl} alt={gallerySlots[1].name} />}
+              <div class="gallery-card-info">
+                <a class="gallery-card-name" href={`/store/${gallerySlots[1].slug}`}>
+                  {gallerySlots[1].name}
+                </a>
+                <span class="gallery-card-price">{gallerySlots[1].price}</span>
+                <QuickAdd product={gallerySlots[1]} class="gallery-card-btn" />
+              </div>
+            </div>
+          </div>
+
+          <div class="gallery-col">
+            <div class="gallery-accent" style="background: var(--olive); color: var(--lime);">
+              <span class="gallery-accent-label">Our Collection</span>
+              <p class="gallery-accent-heading">Shop Everything Your Pet Needs</p>
+            </div>
+            <img class="gallery-photo" src="/gallery2.jpg" alt="Dalmatian with a tennis ball" />
+            <div class="gallery-card">
+              {gallerySlots[2].imageUrl && <img src={gallerySlots[2].imageUrl} alt={gallerySlots[2].name} />}
+              <div class="gallery-card-info">
+                <a class="gallery-card-name" href={`/store/${gallerySlots[2].slug}`}>
+                  {gallerySlots[2].name}
+                </a>
+                <span class="gallery-card-price">{gallerySlots[2].price}</span>
+                <QuickAdd product={gallerySlots[2]} class="gallery-card-btn" />
+              </div>
+            </div>
+            <div class="gallery-card">
+              {gallerySlots[3].imageUrl && <img src={gallerySlots[3].imageUrl} alt={gallerySlots[3].name} />}
+              <div class="gallery-card-info">
+                <a class="gallery-card-name" href={`/store/${gallerySlots[3].slug}`}>
+                  {gallerySlots[3].name}
+                </a>
+                <span class="gallery-card-price">{gallerySlots[3].price}</span>
+                <QuickAdd product={gallerySlots[3]} class="gallery-card-btn" />
+              </div>
+            </div>
+          </div>
+
+          <div class="gallery-col">
+            <div class="gallery-card">
+              {gallerySlots[4].imageUrl && <img src={gallerySlots[4].imageUrl} alt={gallerySlots[4].name} />}
+              <div class="gallery-card-info">
+                <a class="gallery-card-name" href={`/store/${gallerySlots[4].slug}`}>
+                  {gallerySlots[4].name}
+                </a>
+                <span class="gallery-card-price">{gallerySlots[4].price}</span>
+                <QuickAdd product={gallerySlots[4]} class="gallery-card-btn" />
+              </div>
+            </div>
+            <img class="gallery-photo" src="/gallery3.jpg" alt="Dog on an olive background" />
+            <div class="gallery-card">
+              {gallerySlots[5].imageUrl && <img src={gallerySlots[5].imageUrl} alt={gallerySlots[5].name} />}
+              <div class="gallery-card-info">
+                <a class="gallery-card-name" href={`/store/${gallerySlots[5].slug}`}>
+                  {gallerySlots[5].name}
+                </a>
+                <span class="gallery-card-price">{gallerySlots[5].price}</span>
+                <QuickAdd product={gallerySlots[5]} class="gallery-card-btn" />
+              </div>
+            </div>
+            <div class="gallery-accent" style="background: var(--cream); color: var(--muted);">
+              <span class="gallery-accent-label">Quality Promise</span>
+              <p class="gallery-accent-heading">Natural &amp; Organic Ingredients</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <div class="testimonials-scroll-wrapper">
+    <section class="testimonials-banner">
+      <h2 class="animate-in">What our happy<br />customers say</h2>
+    </section>
+    {
+      reviews.map(({ quote, title, name, dir }) => (
+        <section class="review-section">
+          <div class={`review-card animate-in ${dir}`}>
+            <div class="review-meta">
+              <span>{title}</span>
+              <span>{name}</span>
+            </div>
+            <p class="review-quote">{quote}</p>
+          </div>
+        </section>
+      ))
+    }
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div class="footer-left animate-in from-left">
+        <span class="footer-label">Get In Touch</span>
+        <p class="footer-desc">
+          Have a question about your order, need product advice, or just want to share a photo of
+          your happy pet? We'd love to hear from you!
+        </p>
+        <div class="footer-contact-item">
+          <span class="footer-label">Phone</span>
+          <span>+1 (800) 729-7283</span>
+        </div>
+        <div class="footer-contact-item">
+          <span class="footer-label">Email</span>
+          <a href="mailto:hello@bennypets.com">hello@bennypets.com</a>
+        </div>
+      </div>
+      <ContactForm />
+    </div>
+    <hr class="footer-rule" />
+    <div class="footer-base">
+      <span>©2025 Benny Pets. All rights reserved. Made with love for pets everywhere.</span>
+    </div>
+    <WaveText text="BENNY PETS" class="footer-wordmark" />
+  </footer>
+</Base>
+
+<script>
+  import { postJSON, setCartCount, showToast } from "../scripts/site.js";
+
+  const WORD_LENGTH = "BENNY PETS".length;
+  const LETTER_DELAY = 0.07;
+
+  // ── LOADING: fly the wordmark into the hero, then drop the overlay ──
+  const overlay = document.getElementById("loading-overlay");
+  const letters = document.getElementById("loading-letters");
+  const heroWordmark = document.getElementById("hero-wordmark");
+  const animDone = (WORD_LENGTH * LETTER_DELAY + 0.85) * 1000;
+
+  setTimeout(() => {
+    const from = letters?.getBoundingClientRect();
+    const to = heroWordmark?.getBoundingClientRect();
+    if (!from || !to || !letters) return;
+    const scale = to.width / from.width;
+    const tx = to.left + to.width / 2 - (from.left + from.width / 2);
+    const ty = to.top + to.height / 2 - (from.top + from.height / 2);
+    letters.style.transition = "transform 0.65s cubic-bezier(0.76,0,0.24,1), opacity 0.3s ease 0.35s";
+    letters.style.transformOrigin = "center center";
+    letters.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+    letters.style.opacity = "0";
+  }, animDone);
+  setTimeout(() => overlay?.classList.add("hide"), animDone + 700);
+  setTimeout(() => overlay?.remove(), animDone + 900);
+
+  // ── PARALLAX: hero dog, column gallery, 3D review cards ──
+  const gallery = document.getElementById("col-gallery");
+  const heroDog = document.querySelector(".hero-dog");
+  const reviewCards = [...document.querySelectorAll(".review-card")];
+
+  function onScroll() {
+    if (heroDog) heroDog.style.transform = `translateX(-50%) translateY(${window.scrollY * 0.12}px)`;
+    if (gallery) {
+      const top = gallery.offsetTop;
+      const height = gallery.offsetHeight - window.innerHeight;
+      const progress = Math.max(0, Math.min(1, (window.scrollY - top) / (height || 1)));
+      gallery.querySelectorAll(".gallery-col").forEach((col, i) => {
+        col.style.transform = `translateY(${(progress - 0.5) * 180 * (i % 2 === 0 ? -1 : 1)}px)`;
+      });
+    }
+    reviewCards.forEach((card, i) => {
+      const rect = card.getBoundingClientRect();
+      const pct = (rect.top + rect.height / 2 - window.innerHeight / 2) / window.innerHeight;
+      card.style.transform = `perspective(900px) rotateY(${pct * 18 * (i % 2 === 0 ? 1 : -1)}deg) rotateX(${pct * -6}deg)`;
+    });
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  document.getElementById("nav-home")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  // ── Quick add for single-variant products ──
+  document.querySelectorAll("[data-quick-add]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (button.disabled) return;
+      button.disabled = true;
+      try {
+        const { count } = await postJSON("/api/cart/add", { productId: button.dataset.productId });
+        setCartCount(count);
+        showToast(`${button.dataset.name} added to cart ✓`);
+      } catch (err) {
+        console.error("[cart] quick add failed:", err);
+        showToast("Could not add to cart. Please try again.");
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script>
