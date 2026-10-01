@@ -1,0 +1,45 @@
+name: Kit templates compose
+
+# On a PR that changes the sources, compose the templates (no relock) and push the result to the
+# PR branch, so nobody runs compose by hand except for a relock. A needed relock is reported by
+# kit-verify instead; this job then changes nothing.
+on:
+  pull_request:
+    paths:
+      - 'verticals/**'
+      - 'rest/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  compose:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compose (no relock)
+        id: compose
+        run: |
+          set +e
+          node verticals/compose.mjs > compose.out 2>&1; status=$?
+          cat compose.out
+          if grep -q "lock root out of line" compose.out; then echo "relock=true" >> "$GITHUB_OUTPUT"; git checkout -- astro/; exit 0; fi
+          echo "relock=false" >> "$GITHUB_OUTPUT"
+          exit $status
+      - name: Commit the composed templates
+        if: steps.compose.outputs.relock == 'false'
+        run: |
+          git add -A astro/
+          if git diff --cached --quiet; then echo "nothing to compose"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: compose kit templates"
+          git push

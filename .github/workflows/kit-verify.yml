@@ -1,0 +1,65 @@
+name: Kit templates verify
+
+on:
+  pull_request:
+    paths:
+      - 'verticals/**'
+      - 'rest/**'
+      - 'astro/kit-*/**'
+      - 'templates.json'
+      - '.github/workflows/kit-verify.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Composed templates match their sources (no relock)
+        id: compose
+        run: |
+          set +e
+          node verticals/compose.mjs > compose.out 2>&1
+          status=$?
+          cat compose.out
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if grep -q "lock root out of line" compose.out; then echo "relock=true" >> "$GITHUB_OUTPUT"; else echo "relock=false" >> "$GITHUB_OUTPUT"; fi
+          git status --porcelain -- astro/ > drift.txt
+          if [ -s drift.txt ]; then echo "drift=true" >> "$GITHUB_OUTPUT"; cat drift.txt; else echo "drift=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Explain
+        if: steps.compose.outputs.drift == 'true' || steps.compose.outputs.relock == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRIFT: ${{ steps.compose.outputs.drift }}
+          RELOCK: ${{ steps.compose.outputs.relock }}
+        run: |
+          body="**Kit templates verify**\n"
+          if [ "$RELOCK" = "true" ]; then body="$body\n- A dependency changed in a vertical's \`package.json\` and its lock no longer covers it. **Relock on a machine that uses the Wix npm mirror** (\`node verticals/compose.mjs <vertical> --relock\`), never here: a lock resolved on the public registry pins versions the mirror cannot serve.\n"; fi
+          if [ "$DRIFT" = "true" ]; then body="$body\n- \`astro/kit-*\` differs from what \`verticals/compose.mjs\` produces from the sources. Either the sources changed without recomposing, or a generated folder was edited by hand. Run compose and commit, or move the change into \`verticals/\`.\n\n\`\`\`\n$(cat drift.txt)\n\`\`\`\n"; fi
+          printf "$body" > comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file comment.md || true
+
+      - name: Fail on drift or a needed relock
+        if: steps.compose.outputs.drift == 'true' || steps.compose.outputs.relock == 'true'
+        run: exit 1
+
+      - name: Locks that changed in this PR install on the public registry
+        run: |
+          git fetch -q origin "${{ github.base_ref }}"
+          changed=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD -- 'astro/kit-*/package-lock.json' | xargs -n1 dirname | sort -u)
+          [ -z "$changed" ] && { echo "no lock changed"; exit 0; }
+          for d in $changed; do
+            echo "== $d"
+            grep -q "npm.dev.wixpress" "$d/package-lock.json" && { echo "mirror URL in lock"; exit 1; }
+            tmp=$(mktemp -d); cp "$d/package.json" "$d/package-lock.json" "$tmp/"
+            (cd "$tmp" && npm ci --ignore-scripts --no-audit --no-fund >/dev/null) || { echo "npm ci failed for $d"; exit 1; }
+            rm -rf "$tmp"
+          done
