@@ -1,3 +1,4 @@
+// hand edit in a generated file
 // REFERENCE listing surface: category + location filters, services grid, load-more, on the @theme
 // tokens. Correct and complete; per the skill's model you design and build your own on useServices.
 import type { ComponentType, ReactNode } from "react";
