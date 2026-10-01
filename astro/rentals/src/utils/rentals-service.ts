@@ -422,7 +422,7 @@ export async function searchRentals(filters: RentalSearchFilters = {}): Promise<
   let cursor: string | undefined;
   try {
     do {
-      const res: any = await auth.elevate(catalogSearch.queryServicesByFilters)({
+      const res: any = await catalogSearch.queryServicesByFilters({
         query: {
           filter: RENTALS_APP_ID ? { appId: RENTALS_APP_ID } : {},
           cursorPaging: { limit: 50, ...(cursor ? { cursor } : {}) },
@@ -470,8 +470,12 @@ export async function getBusinessTimeZone(): Promise<string | undefined> {
 }
 
 /** Like `searchRentals` but returns only the matching rental IDs — used by the
- *  live filter endpoint, which re-uses the server-rendered cards and just shows
- *  or hides them by ID (no client-side re-render). Skips the card enrichment. */
+ *  live filter on the home page, which re-uses the server-rendered cards and just
+ *  shows or hides them by ID (no client-side re-render). Skips the card
+ *  enrichment. Called straight from the browser: Catalog Search is a
+ *  visitor-permitted read, so this needs no backend route. Unlike
+ *  `searchRentals` it deliberately doesn't swallow errors — the caller falls back
+ *  to showing every card, which an empty result set couldn't express. */
 export async function searchRentalIds(filters: RentalSearchFilters = {}): Promise<string[]> {
   const serviceFilters: any = {};
   if (filters.resourceTypeIds?.length) serviceFilters.resourceTypes = filters.resourceTypeIds;
