@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "apex",
+      "title": "Apex (Wix Bookings)",
+      "subtitle": "Session booking with availability, instructors, and checkout",
+      "siteTemplateId": "167cd3d1-380b-45e0-90b3-2040296e6841",
+      "gitPath": "astro/apex",
+      "vibeCompatible": false
     }
   ]
 }

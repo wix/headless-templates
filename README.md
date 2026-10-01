@@ -43,6 +43,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td colspan="4" align="center"><a href="./astro/">Getting Started with Wix Astro templates</a></td>
       </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/apex">Apex</a></td>
+      <td>A cinematic booking template — service catalog, availability calendar with instructor selection, hosted checkout, and a CMS-backed booking form schema.</td>
+      <td><a href="https://apex-test-rig-tuvitk-0d06.wix-site-host.com">Apex Demo</a></td>
+      <td>Wix Bookings, Wix CMS (Wix Data), Wix eCommerce</td>
+    </tr>
+    <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/astro/blog">Blog</a></td>
       <td>Combines the official Astro Blog template with Wix Headless for seamless content management and high-performance static site using Astro.</td>
       <td></td>

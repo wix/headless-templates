@@ -1,0 +1,1643 @@
+/* ── Composer skeleton: src/styles/global.css ──────────────────────────────
+   The fixed bulk below is LITERAL — do not re-author it. Composer's only edit
+   is to replace the {{theme}} block with the @theme palette derived from the
+   inlined designTokens (see compose.mjs). Everything outside
+   {{theme}} references the stable token vocabulary via var(--token) / built-in
+   utilities and is brand-agnostic; ship it byte-for-byte.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #0A0A0B;
+  --color-paper-warm: #1A1B1E;
+  --color-ink: #F2F0EB;
+  --color-ink-soft: #C8C5BD;
+  --color-mute: #8B8983;
+  --color-rule: #2A2B2F;
+  --color-accent: #E1121F;
+  --color-cream: #E9E6DE;
+  --color-error: #E5484D;
+
+  /* Self-hosted @fontsource-variable faces (registered as "* Variable"). */
+  --font-display: "Oswald Variable", Oswald, sans-serif;
+  --font-body: "Inter Variable", Inter, system-ui, sans-serif;
+
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+
+  --container-prose: 42rem;
+  --container-md: 28rem;
+  --container-3xl: 48rem;
+  --container-6xl: 72rem;
+}
+
+/* Reading-width helper so prose pages center without guessing Tailwind sizes. */
+@utility container-reading {
+  max-width: var(--container-prose);
+  margin-inline: auto;
+}
+
+/* Full-bleed shell — content runs edge to edge with a slim responsive gutter. */
+@utility container-wide {
+  width: 100%;
+  padding-inline: clamp(1.25rem, 3vw, 2.75rem);
+}
+
+/* Shared button primitive — declared with @utility so the variants below can
+   @apply it (a plain contract class is NOT @apply-able in Tailwind v4). */
+@utility btn {
+  @apply inline-flex items-center justify-center px-6 py-4 rounded-md font-medium;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* The scrollbar as a red cylinder (Chrome/Edge/Safari): capsule thumb,
+     cross-lit gradient for the 3D rod read, floated off the rail edges by a
+     transparent border. Styling this turns off macOS scrollbar auto-hide —
+     the red rail is always on, deliberately. */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    border-radius: 999px;
+    min-height: 3rem;
+    background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-accent) 40%, black),
+      var(--color-accent) 32%,
+      color-mix(in srgb, var(--color-accent) 62%, white) 50%,
+      var(--color-accent) 68%,
+      color-mix(in srgb, var(--color-accent) 40%, black)
+    );
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-accent) 50%, black),
+      var(--color-accent) 28%,
+      color-mix(in srgb, var(--color-accent) 45%, white) 50%,
+      var(--color-accent) 72%,
+      color-mix(in srgb, var(--color-accent) 50%, black)
+    );
+  }
+  ::-webkit-scrollbar-thumb:horizontal {
+    min-height: 0;
+    min-width: 3rem;
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-accent) 40%, black),
+      var(--color-accent) 32%,
+      color-mix(in srgb, var(--color-accent) 62%, white) 50%,
+      var(--color-accent) 68%,
+      color-mix(in srgb, var(--color-accent) 40%, black)
+    );
+  }
+  /* Firefox can only recolor the native bar — flat accent on black. Guarded
+     so Chrome (121+) never sees scrollbar-color, which would make it drop
+     the ::-webkit-scrollbar redraw above. */
+  @supports not selector(::-webkit-scrollbar) {
+    html {
+      scrollbar-color: var(--color-accent) var(--color-paper);
+      scrollbar-width: thin;
+    }
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    line-height: 1.15;
+    margin: 0;
+  }
+  p {
+    margin: 0;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  button {
+    font: inherit;
+    cursor: pointer;
+  }
+  input, textarea, select {
+    font: inherit;
+  }
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+  ul, ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+/* ── Button family — used on every page in every vertical ─────────────────── */
+.btn-primary {
+  @apply btn;
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-accent);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-secondary {
+  @apply btn;
+  background: transparent;
+  color: var(--color-ink);
+  border: 1px solid var(--color-rule);
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-ghost {
+  @apply btn;
+  background: transparent;
+  color: var(--color-ink);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-paper-warm);
+}
+.btn-ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Cross-cutting decorative patterns ────────────────────────────────────── */
+[data-decorative-slot] {
+  position: relative;
+  overflow: hidden;
+}
+[data-decorative-slot] > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.editorial-rule {
+  border: 0;
+  height: 1px;
+  background: var(--color-accent);
+  opacity: 0.6;
+  margin-block: 1.5rem;
+}
+
+/* ── Universal site chrome ────────────────────────────────────────────────── */
+/* Curve geometry vars live on :root — the header consumes them for the
+   pocket, and the fleet heading aligns to the merge x (--curve-w). */
+:root {
+  --curve-scale: 1;
+  --curve-w: 288px; /* x where the curve merges into the bottom rule (scaled) */
+}
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--color-paper) 88%, transparent);
+  backdrop-filter: saturate(1.1) blur(8px);
+}
+/* The bottom rule starts where the racing line merges into the bar edge; left
+   of that point the curve itself is the header's boundary. */
+.site-nav::after {
+  content: "";
+  position: absolute;
+  left: var(--curve-w);
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--color-rule);
+  pointer-events: none;
+}
+
+/* ── Header racing line (Navigation.astro) — the loader's corner, frozen.
+   .nav-curve-fill paints the region between the bar's bottom edge and the
+   line with the same glass (clip-path traces the curve), .nav-curve-svg
+   strokes the line itself: red gradient brightest at the apex, fading in from
+   the left edge and handing off to the rule color at the merge. The 2px
+   negative margin overlaps the bar so no subpixel seam can show through. */
+.nav-curve {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 288px;
+  height: 64px;
+  margin-top: -2px;
+  transform-origin: 0 0;
+  transform: scale(var(--curve-scale));
+  pointer-events: none;
+}
+.nav-curve-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--color-paper); /* header color, deliberately opaque */
+  clip-path: path("M0 44 Q106 50 183 23 Q245 2 288 2 L288 0 L0 0 Z");
+}
+.nav-curve-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible; /* the lap car's wing rides above the viewBox near the merge */
+}
+.nav-curve-glow {
+  filter: blur(5px);
+}
+/* The lap — an abstract car-suggestive wedge rides the curve (SMIL
+   animateMotion, auto-rotating with the tangent); the apex ring flare shares
+   the same SMIL clock (markup in Navigation.astro). Only the glow lives here. */
+.nav-curve-car {
+  filter: drop-shadow(0 0 3px rgba(225, 18, 31, 0.7));
+}
+@media (prefers-reduced-motion: reduce) {
+  /* SMIL ignores the media query, so remove the moving parts outright. */
+  .nav-curve-car, .nav-curve-ring { display: none; }
+}
+@media (max-width: 1279px) {
+  :root { --curve-scale: 0.85; --curve-w: 245px; }
+}
+@media (max-width: 1023px) {
+  :root { --curve-scale: 0.72; --curve-w: 207px; }
+}
+/* Mobile keeps the pocket + lap + boot handoff, just smaller — but only at
+   the top of the page: once scrolled past the hero (html.past-hero, set by
+   the Layout scroll gate) the chrome collapses to the plain bar. */
+@media (max-width: 767px) {
+  :root { --curve-scale: 0.6; --curve-w: 173px; }
+  .nav-curve { transition: opacity 300ms ease; }
+  html.past-hero .nav-curve { opacity: 0; visibility: hidden; transition: opacity 300ms ease, visibility 0s 300ms; }
+  html.past-hero .site-nav { --curve-w: 0px; }
+  html.past-hero .site-nav .brand-mark { transform: none; }
+}
+.site-nav::after { transition: left 300ms ease; }
+.site-nav .brand-mark { transition: transform 300ms ease; }
+.site-footer {
+  border-top: 1px solid var(--color-rule);
+  background: var(--color-paper-warm);
+  color: var(--color-mute);
+}
+
+/* ── View Transitions wiring (paired with Layout.astro <script>) ──────────────
+   Disable the default ClientRouter root cross-fade; the progress bar + grid-dim
+   carry navigation feedback instead. Do not split into a separate file. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+.nav-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-accent, currentColor);
+  transform: scaleX(0);
+  transform-origin: left;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+}
+.nav-progress[data-state="loading"] {
+  opacity: 1;
+  transform: scaleX(0.85);
+  transition: transform 1.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 120ms ease;
+}
+.nav-progress[data-state="done"] {
+  opacity: 0;
+  transform: scaleX(1);
+  transition: transform 200ms ease, opacity 240ms ease 60ms;
+}
+/* Rev-counter mode (Layout motion layer drives transform from scroll
+   velocity): near redline the hairline flares. */
+.nav-progress.redline {
+  box-shadow:
+    0 0 12px rgba(225, 18, 31, 0.8),
+    0 1px 6px rgba(225, 18, 31, 0.55);
+}
+
+/* Dim the product grid while ClientRouter fetches/swaps for immediate feedback. */
+body[data-navigating="true"] .product-grid {
+  opacity: 0.55;
+  transition: opacity 140ms ease;
+  pointer-events: none;
+}
+.product-grid {
+  transition: opacity 200ms ease;
+}
+
+/* ── Navigation submenu + CategoryRail/pagination (stores pack) ───────────────
+   These reference declared tokens and stay inert when stores is not loaded (no
+   markup uses them), so they ship unconditionally as fixed bulk. */
+.site-nav-item.has-submenu {
+  position: relative;
+}
+.site-nav-submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 12rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  background: var(--color-paper);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms;
+}
+.site-nav-item.has-submenu:hover .site-nav-submenu,
+.site-nav-item.has-submenu:focus-within .site-nav-submenu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.site-nav-sublink {
+  font-size: 0.875rem;
+  color: var(--color-ink-soft, var(--color-mute));
+  padding-block: 0.25rem;
+}
+.site-nav-sublink:hover,
+.site-nav-sublink[aria-current="page"] {
+  color: var(--color-accent);
+}
+
+.category-rail {
+  background: var(--color-paper-warm);
+  border-bottom: 1px solid var(--color-rule);
+}
+.category-rail-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-block: 1rem;
+}
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 1rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-soft, var(--color-ink));
+  transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
+}
+.category-pill:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.category-pill[aria-current="page"] {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border-color: var(--color-ink);
+}
+.pagination {
+  margin-block: 2rem;
+}
+.pagination-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.pagination-link {
+  color: var(--color-ink);
+}
+.pagination-link:hover {
+  color: var(--color-accent);
+}
+.pagination-link.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.breadcrumbs {
+  font-size: 0.8125rem;
+  color: var(--color-mute);
+  margin-bottom: 0.75rem;
+}
+
+/* ── Cinematic layer ──────────────────────────────────────────────────────────
+   Pagani pacing (full-viewport scenes) · Rimac scale (massive condensed type,
+   data-plates) · Aston refinement (eyebrows, hairlines, tracked caps) ·
+   Exo Ape motion (scroll-linked FX + staggered reveals, wired in Layout). */
+
+/* Eyebrow label — tracked caps with a signal-red tick (Aston refinement). */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--color-mute);
+}
+.eyebrow::before {
+  content: "";
+  width: 2.25rem;
+  height: 1px;
+  background: var(--color-accent);
+  flex: none;
+}
+
+/* Display scale — let Oswald actually shout (Rimac). */
+.display-hero {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+  font-size: clamp(3.25rem, 10vw, 9.5rem);
+}
+.display-xl {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  line-height: 0.96;
+  letter-spacing: -0.01em;
+  font-size: clamp(2.5rem, 6.5vw, 5.5rem);
+}
+.display-lg {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  line-height: 1.02;
+  font-size: clamp(1.75rem, 4vw, 3.25rem);
+}
+/* The display-heading full stop — a drawn box (not a period glyph) so it can
+   carry the brand's corner-apex rounding, bottom-right here. Inline-block
+   bottoms sit on the text baseline, exactly where a period would. */
+.accent-dot {
+  display: inline-block;
+  width: 0.14em;
+  height: 0.14em;
+  margin-left: 0.05em;
+  background: var(--color-accent);
+  border-radius: 0 0 100% 0;
+}
+/* On the smaller display sizes the hero's 0.14em ratio reads as a speck —
+   step the dot (and its gap) up so it lands with the same visual weight
+   the home headings carry. */
+.display-lg .accent-dot {
+  width: 0.22em;
+  height: 0.22em;
+  margin-left: 0.09em;
+}
+/* Scene 5's dot laps "The grid is open" — it fades up in one corner of the
+   heading, fades out, and reappears in the next (BR → BL → UL → UR), the
+   rounded corner always pointing out of the corner it occupies. The text
+   never moves; four fixed dots share one staggered opacity loop. */
+.grid-dot-stage {
+  position: relative;
+}
+.grid-dot {
+  position: absolute;
+  width: 0.14em;
+  height: 0.14em;
+  background: var(--color-accent);
+  opacity: 0;
+  animation: grid-dot-lap 6s linear infinite;
+}
+.grid-dot-br { right: -0.19em; bottom: 0.08em; border-radius: 0 0 100% 0; }
+.grid-dot-bl { left: -0.19em; bottom: 0.08em; border-radius: 0 0 0 100%; animation-delay: 1.5s; }
+.grid-dot-ul { left: -0.19em; top: 0.12em; border-radius: 100% 0 0 0; animation-delay: 3s; }
+.grid-dot-ur { right: -0.19em; top: 0.12em; border-radius: 0 100% 0 0; animation-delay: 4.5s; }
+@keyframes grid-dot-lap {
+  0% { opacity: 0; }
+  6% { opacity: 1; }
+  21% { opacity: 1; }
+  27% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grid-dot { animation: none; }
+  .grid-dot-br { opacity: 1; }
+}
+
+/* Full-viewport scene (Pagani pacing — one idea per screen). */
+.scene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100svh;
+  padding-block: 6rem;
+  overflow: hidden;
+}
+/* Below-fold scenes skip style/layout/paint until the scroll approaches —
+   the initial render of a five-viewport page sat squarely in the LCP
+   critical path. `auto` keeps the real size once rendered; the 100svh
+   estimate matches a scene's minimum footprint before that. NOT applied to
+   the pinned fleet stage (its scroll math measures real layout). */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 100svh;
+}
+/* Mobile — non-hero scenes size to content with tighter padding instead of
+   commanding a full viewport each. */
+@media (max-width: 767px) {
+  .scene:not(.scene-hero) {
+    min-height: 0;
+    padding-block: 4rem;
+  }
+}
+
+/* ── Service detail — the home fleet card, stretched into a hero ────────── */
+/* Reuses the card anatomy (.pin-car-copy/head/foot/media): name top-left,
+   tagline top-right, stats bottom-left, book CTA bottom-right; the film
+   fades in over the still (.video-live, cued in the page script). */
+/* Unclipped wrapper — hosts the apex cut so it can straddle the card's
+   bottom edge; the bottom margin also clears the figures' overhang. */
+.detail-card-frame {
+  position: relative;
+  margin-bottom: 6rem;
+}
+.detail-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  min-height: clamp(24rem, 66svh, 44rem);
+  background: var(--color-paper-warm); /* image-less fallback ground */
+}
+.detail-card.video-live .pin-car-media video {
+  opacity: 1;
+}
+/* Long service taglines wrap as a right-aligned block instead of running
+   the whole head row. */
+.detail-card .plate-role {
+  max-width: 34rem;
+}
+/* The apex cut — a curved notch carved out of the card's bottom-centre
+   (the page ground fills it, the accent line traces the edge) carrying
+   duration + price. It sneaks up from below the edge after the card
+   settles; the card's overflow clip sells the rise. */
+.detail-apex-cut {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: clamp(24rem, 54vw, 42rem);
+  height: 140px;
+  z-index: 2;
+  pointer-events: none;
+  animation: apex-cut-rise 800ms cubic-bezier(0.16, 1, 0.3, 1) 700ms both;
+}
+.detail-apex-cut svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* Figures keep the full instrument sizing (the old under-card band's) and
+   straddle the card's edge — the block's midpoint rides the original
+   border line, upper half inside the carve, lower half on the page. */
+.detail-apex-figures {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  transform: translateY(50%);
+  display: flex;
+  justify-content: center;
+  gap: clamp(3.5rem, 6vw, 6.5rem);
+  text-align: center;
+}
+.detail-apex-figures .plate-value {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+}
+.detail-apex-figures .plate-label {
+  font-size: 0.75rem;
+  margin-top: 0.75rem;
+}
+/* No clip to rise out of anymore — a soft lift-and-fade sells the sneak. */
+@keyframes apex-cut-rise {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(1.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+@media (max-width: 1023px) {
+  .detail-apex-cut {
+    width: min(30rem, 92vw);
+    height: 120px;
+  }
+  /* Narrow screens: keep the spread block within the flat crest. */
+  .detail-apex-figures {
+    gap: 2.75rem;
+  }
+  /* The foot rides above the cut — no specs/CTA collision. */
+  .detail-card .pin-car-foot {
+    margin-bottom: 9rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-apex-cut { animation: none; }
+}
+/* The session line rides under the car name, an order quieter. */
+.detail-title-sub {
+  display: block;
+  margin-top: 0.4em;
+  font-size: 0.38em;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  color: var(--color-ink-soft);
+}
+/* Duration and price — big, centered, straight under the film. */
+.detail-figures {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  gap: clamp(3rem, 9vw, 7rem);
+  margin-bottom: 4.5rem;
+}
+.detail-figures .plate-value {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+}
+.detail-figures .plate-label {
+  font-size: 0.75rem;
+  margin-top: 0.75rem;
+}
+/* Availability: sticky intro left, the calendar/form breathe on the right. */
+.detail-book {
+  display: grid;
+  gap: 2.5rem;
+}
+@media (min-width: 1024px) {
+  .detail-book {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: 4rem;
+  }
+  .detail-book-intro {
+    position: sticky;
+    top: 7rem;
+    align-self: start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-card .pin-car-media video { display: none; }
+}
+
+/* Why-Apex scene — the garage shot ghosts through the warm-paper ground
+   (same image that headlines the About page the story CTA leads to).
+   isolate + z:-1 slots it between the section's background and its copy. */
+.scene-why {
+  position: relative;
+  isolation: isolate;
+}
+.scene-why::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /* Ghosted at 8% opacity behind copy — small crops are indistinguishable,
+     so phones get 828px instead of the fixed 1920px (~120KB saved). */
+  background: url("https://static.wixstatic.com/media/67964a_9db8ffeab8184766862166c5c3ab41bd~mv2.png/v1/fill/w_828,h_466,q_80/apex-garage.jpg") center / cover no-repeat;
+  opacity: 0.08;
+  filter: grayscale(0.5);
+  pointer-events: none;
+}
+@media (min-width: 768px) {
+  .scene-why::before {
+    background-image: url("https://static.wixstatic.com/media/67964a_9db8ffeab8184766862166c5c3ab41bd~mv2.png/v1/fill/w_1440,h_810,q_80/apex-garage.jpg");
+  }
+}
+@media (min-width: 1440px) {
+  .scene-why::before {
+    background-image: url("https://static.wixstatic.com/media/67964a_9db8ffeab8184766862166c5c3ab41bd~mv2.png/v1/fill/w_1920,h_1080,q_80/apex-garage.jpg");
+  }
+}
+
+/* Why-Apex row — desktop floats the story CTA right of the statement,
+   vertically centered against it and horizontally centered in the leftover
+   run to the card's right edge (auto inline margins split it evenly; zero
+   column-gap keeps that split exact), a size up from the base button voice. */
+.why-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.5rem;
+  width: 100%;
+}
+@media (min-width: 1024px) {
+  .why-row {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2.5rem 0;
+  }
+  .why-row .btn-secondary {
+    flex: none;
+    margin-inline: auto;
+    font-size: 1rem;
+    padding: 1.25rem 2.25rem;
+  }
+  /* Editorial offset — eyebrow and statement step in from the left edge. */
+  .why-row .statement,
+  .why-eyebrow {
+    margin-left: clamp(3rem, 10vw, 12rem);
+  }
+}
+.scene-hero { min-height: calc(100svh - 3.75rem); }
+.scene-watermark {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -0.14em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(8rem, 26vw, 24rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-align: center;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--color-rule);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Quiet large statement (Aston refinement / philosophy scene). */
+.statement {
+  font-size: clamp(1.875rem, 4vw, 3.25rem);
+  line-height: 1.35;
+  font-weight: 400;
+  color: var(--color-ink);
+}
+
+/* Data-plate — spec numbers typeset like an instrument panel (Rimac). */
+.data-plate {
+  border-top: 1px solid var(--color-rule);
+  padding-top: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.plate-designation {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+  line-height: 1;
+}
+.plate-role {
+  font-size: clamp(1.125rem, 1.5vw, 1.375rem);
+  color: var(--color-ink-soft);
+  line-height: 1.6;
+}
+.plate-specs {
+  display: flex;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+}
+.plate-value {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.plate-unit {
+  font-size: 0.75em;
+  color: var(--color-ink-soft);
+  margin-left: 0.125rem;
+}
+.plate-label {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-mute);
+}
+
+/* Session index rows — editorial listing with a kinetic hover (Exo Ape). */
+.index-row {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr auto;
+  gap: 1.5rem;
+  align-items: baseline;
+  padding-block: 2rem;
+  border-top: 1px solid var(--color-rule);
+  transition:
+    transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
+    padding 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Clip the hover film to the row; isolate lets it sit at z:-1 between
+     the row's ground and its text. */
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+/* The car's fleet clip, ghosting behind the row while hovered (playback
+   driven from index.astro; barely-there by design). */
+.index-row-film {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 500ms ease;
+  pointer-events: none;
+}
+.index-row:hover .index-row-film {
+  opacity: 0.16;
+}
+@media (hover: none), (pointer: coarse) {
+  .index-row-film { display: none; }
+}
+.index-row:last-of-type { border-bottom: 1px solid var(--color-rule); }
+/* Scroll-linked roll: rows roll in from the left as they enter the
+   viewport and roll back out as they leave (the .in class is toggled both
+   ways in Layout.astro — unlike data-reveal, this replays every pass).
+   Transition covers opacity too. */
+[data-roll] {
+  opacity: 0;
+  transform: translateX(-2.5rem);
+  transition:
+    opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 600ms cubic-bezier(0.16, 1, 0.3, 1),
+    padding 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* Hovered session row swells to roughly three times its height — more
+   stage for the ghost film behind it. Hover-capable pointers only. */
+@media (hover: hover) {
+  .index-row:hover {
+    padding-block: 8.25rem;
+  }
+}
+[data-roll].in {
+  opacity: 1;
+  transform: none;
+}
+.index-row-num {
+  /* The row baseline-aligns, which would sink this small figure to the big
+     name's baseline — center it against the name instead. */
+  align-self: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: var(--color-mute);
+  font-variant-numeric: tabular-nums;
+}
+.index-row-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: clamp(1.375rem, 2.6vw, 2.25rem);
+  line-height: 1.05;
+  transition: color 300ms ease;
+  min-width: 0;
+}
+@media (max-width: 640px) {
+  .index-row { grid-template-columns: 2.5rem 1fr; row-gap: 0.75rem; }
+  .index-row-meta { grid-column: 2; }
+}
+.index-row:hover .index-row-name { color: var(--color-accent); }
+.index-row-meta {
+  display: flex;
+  gap: 1.75rem;
+  align-items: baseline;
+  font-size: clamp(1.125rem, 1.6vw, 1.5rem);
+  color: var(--color-mute);
+  font-variant-numeric: tabular-nums;
+}
+.index-row-meta .price { color: var(--color-ink); font-weight: 600; }
+.index-row-arrow {
+  color: var(--color-mute);
+  transition: color 300ms ease;
+}
+.index-row:hover .index-row-arrow { color: var(--color-accent); }
+/* "Book" rides the cursor over session rows (element created and moved in
+   index.astro) — the Book a drive button's text voice, sized up, in accent
+   red. */
+.cursor-book {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--color-accent);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  will-change: transform;
+}
+.cursor-book.on { opacity: 1; }
+
+/* Scroll cue (hero). */
+.scroll-cue {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--color-mute);
+}
+.scroll-cue::after {
+  content: "";
+  width: 1px;
+  height: 3rem;
+  background: linear-gradient(var(--color-accent), transparent);
+  animation: cue-drop 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  transform-origin: top;
+}
+@keyframes cue-drop {
+  0% { transform: scaleY(0); opacity: 0; }
+  35% { transform: scaleY(1); opacity: 1; }
+  100% { transform: scaleY(1) translateY(1.5rem); opacity: 0; }
+}
+
+/* Reveal-on-scroll (Exo Ape). Layout.astro's observer adds .in; stagger via --d. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(2rem);
+  transition:
+    opacity 1000ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1000ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--d, 0ms);
+}
+[data-reveal].in { opacity: 1; transform: none; }
+
+/* Entrance assembly, every hard load — elements arrive from the side they
+   live on. html.assemble is armed in Layout.astro's head gate (never under
+   reduced motion); html.assembled releases them — at apex:boot-done on the
+   once-per-session boot (the inline 13s watchdog fires it too), right after
+   first paint on ordinary refreshes (4s timeout backstop for background
+   tabs). Hero copy carries data-asm to re-aim the reveal's starting vector
+   until the observer stamps .in; nav links and the scroll cue stay out of
+   the reveal system (it would replay them on every client-side nav) and get
+   a one-shot release instead — both classes persist on <html> through
+   ClientRouter swaps, so soft navigations only replay the data-reveal part. */
+html.assemble [data-asm="left"]:not(.in) { transform: translateX(-5rem); }
+html.assemble [data-asm="right"]:not(.in) { transform: translateX(5rem); }
+html.assemble [data-asm="up"]:not(.in) { transform: translateY(3.5rem); }
+/* Opacity lands fast, travel lands slow — on one shared curve the element
+   finishes most of its journey while still invisible and the arrival reads
+   as a plain fade. */
+html.assemble [data-asm] {
+  transition:
+    opacity 450ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1100ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--d, 0ms);
+}
+html.assemble .site-nav-item,
+html.assemble .scroll-cue {
+  opacity: 0;
+  transition:
+    opacity 450ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1100ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--asm-d, 0ms);
+}
+html.assemble .site-nav-item { transform: translateY(-2rem); }
+/* The cue centers itself with translateX(-50%) — carry it through the ride. */
+html.assemble .scroll-cue { transform: translateX(-50%) translateY(2rem); }
+html.assemble.assembled .site-nav-item {
+  opacity: 1;
+  transform: none;
+}
+html.assemble.assembled .scroll-cue {
+  opacity: 1;
+  transform: translateX(-50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { transition: none; opacity: 1; transform: none; }
+  .scroll-cue::after { animation: none; }
+  .index-row, .index-row-arrow { transition: none; }
+}
+
+/* Refined chrome — tracked caps nav + premium button voice. */
+.nav-link {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+  transition: color 200ms ease;
+}
+.nav-link:hover, .nav-link[aria-current="page"] { color: var(--color-ink); }
+.nav-cta {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  border: 1px solid var(--color-accent);
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-sm);
+  transition: border-color 200ms ease, color 200ms ease, background-color 200ms ease;
+}
+.nav-cta:hover { border-color: var(--color-accent); color: var(--color-accent); }
+/* Sized to sit inside the curved pocket the racing line carves out of the
+   header's left side (line-height 1 keeps the bar height set by the CTA). */
+/* Tick and gap in em so the mark keeps identical proportions at any size —
+   the boot screen's wordmark mirrors these ratios, which is what lets the
+   loader-to-header flight land without a style jump. */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.43em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  font-size: clamp(1.375rem, 1.1rem + 1.2vw, 1.75rem);
+  line-height: 1;
+}
+.brand-mark::before {
+  content: "";
+  width: 0.36em;
+  height: 0.36em;
+  background: var(--color-accent);
+  flex: none;
+  /* Heavy top-left round — the tick is a corner apex, not a square. */
+  border-radius: 100% 0 0 0;
+}
+/* In the header, center the mark in the full chrome silhouette — bar plus the
+   curve pocket below it — not just the bar rectangle. Transform only, so the
+   bar's height (set by the CTA) is untouched; a hair above true center reads
+   better optically. Scales with the pocket on every breakpoint. */
+.site-nav .brand-mark { transform: translateY(calc(15px * var(--curve-scale))); }
+/* Stores-pack slot — when nothing mounts in it, collapse it so its flex gap
+   doesn't push the CTA off the right padding edge (left/right asymmetry). */
+.nav-actions:empty { display: none; }
+.btn-primary, .btn-secondary, .btn-ghost {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+/* Fluid-smoke overlay (HeroFluid.astro) — renders smoke on black, screen
+   blend melts the black into the film so only the dye shows. */
+.hero-fluid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+/* Cursor effect — desktop only. */
+@media (hover: none), (pointer: coarse) {
+  .hero-fluid { display: none; }
+}
+
+/* CTA smoke overlay (CtaFluid.astro) — one fixed sim for every booking
+   button, above the chrome (header z-50) and below the film grain (z-200). */
+.cta-fluid {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+@media (hover: none), (pointer: coarse) {
+  .cta-fluid { display: none; }
+}
+
+/* ── Hero media layer (film or canvas) ───────────────────────────────────── */
+.hero-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  will-change: transform;
+}
+.hero-scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.06); /* covers the parallax drift at the frame edges */
+}
+.hero-video-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(10, 10, 11, 0.85) 0%, rgba(10, 10, 11, 0.5) 45%, rgba(10, 10, 11, 0.12) 100%),
+    linear-gradient(0deg, rgba(10, 10, 11, 0.78) 0%, rgba(10, 10, 11, 0) 38%);
+}
+[data-hero-parallax] { will-change: transform, opacity; }
+
+/* ── Pinned fleet sequence — scroll through the cars one beat at a time ──── */
+.pin-stage {
+  position: relative;
+  /* 100svh pinned viewport + the scroll runway across the three beats —
+     kept short so the sequence turns over quickly. */
+  height: 240svh;
+}
+.pin-viewport {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.pin-cars {
+  position: relative;
+  min-height: clamp(24rem, 68svh, 44rem);
+}
+/* One full-bleed image per car; the plate rides on top — designation and
+   role pinned to the top of the card, specs to the bottom (margin-top: auto),
+   both over legibility scrims. */
+.pin-car {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transform: translateY(2.5rem);
+  transition:
+    opacity 1050ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1050ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 1050ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+/* The deck — the cards stack under one another. data-stack is the card's
+   position relative to the active one (set by the scroll driver): passed
+   cards peek as faint edges above, upcoming cards below, each layer
+   smaller, lighter and drained of colour so the focus card owns the
+   frame while the edges whisper "there are more". */
+.pin-car[data-stack="-2"] { opacity: 0.1; transform: translateY(-2.75rem) scale(0.93); z-index: 1; filter: saturate(0.3); }
+.pin-car[data-stack="-1"] { opacity: 0.22; transform: translateY(-1.4rem) scale(0.966); z-index: 2; filter: saturate(0.3); }
+.pin-car[data-stack="1"] { opacity: 0.22; transform: translateY(1.4rem) scale(0.966); z-index: 2; filter: saturate(0.3); }
+.pin-car[data-stack="2"] { opacity: 0.1; transform: translateY(2.75rem) scale(0.93); z-index: 1; filter: saturate(0.3); }
+.pin-car-copy {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  transition: opacity 600ms ease;
+}
+/* Ghost cards show only their image edge — no copy bleeding through. */
+.pin-car:not(.is-active) .pin-car-copy {
+  opacity: 0;
+}
+/* Prev/next car chevrons — big, vertically centered on the card edges;
+   same scroll behavior as the numbered circles (wired in Layout.astro). */
+.pin-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4; /* above the focus card of the deck */
+  width: 3.5rem;
+  height: 3.5rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  transition: color 200ms ease, opacity 300ms ease;
+}
+.pin-nav svg {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+.pin-nav:hover { color: var(--color-accent); }
+.pin-nav-prev { left: clamp(0.25rem, 1vw, 1rem); }
+.pin-nav-next { right: clamp(0.25rem, 1vw, 1rem); }
+/* Nothing to scroll to → the chevron leaves entirely. */
+.pin-nav[disabled] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: color 200ms ease, opacity 300ms ease, visibility 0s 300ms;
+}
+
+/* Bottom row — specs bottom-left, per-car CTA bottom-right. */
+.pin-car-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 2.5rem;
+  flex-wrap: wrap;
+}
+.pin-car-foot .btn-primary {
+  margin-left: auto; /* stays on the right edge even when the row wraps */
+}
+/* Name top-left, role top-right; the role wraps below on narrow cards. */
+.pin-car-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem 3rem;
+}
+.pin-car-head .plate-role {
+  margin-left: auto;
+  text-align: right; /* no max-width — runs one line wherever the card allows */
+}
+.pin-car-media {
+  position: absolute;
+  inset: 0;
+}
+/* Scrims under both text zones — top for the name/role, bottom for the
+   specs — clearing in the middle so the car stays clean. */
+.pin-car-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(10, 10, 11, 0.75), rgba(10, 10, 11, 0.25) 30%, rgba(10, 10, 11, 0) 52%),
+    linear-gradient(to top, rgba(10, 10, 11, 0.85), rgba(10, 10, 11, 0.3) 30%, rgba(10, 10, 11, 0) 52%),
+    linear-gradient(to right, rgba(10, 10, 11, 0.4), rgba(10, 10, 11, 0) 45%);
+}
+.pin-car-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* The film layer sits over the still and only shows while its car is in
+   focus and the video is actually rolling (.video-live, set on play). */
+.pin-car-media video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+.pin-car.video-live .pin-car-media video {
+  opacity: 1;
+}
+.pin-car.is-active .pin-car-media img {
+  animation: media-drift 6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes media-drift {
+  from { transform: scale(1.045); }
+  to { transform: scale(1); }
+}
+.pin-car.is-active {
+  opacity: 1;
+  transform: none;
+  z-index: 3;
+  /* Lift the focus card off the deck. */
+  box-shadow: 0 1.25rem 2.5rem -1rem rgba(10, 10, 11, 0.35);
+  pointer-events: auto;
+}
+.pin-designation {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  font-size: clamp(3rem, 9vw, 8rem);
+}
+/* Fleet heading row — on desktop the title centers between the header
+   curve's merge x (--curve-w, minus the container gutter) and the scroller:
+   the two 1fr margin tracks around the title are equal, so its midpoint is
+   exactly halfway between the offset's end and the scroller's start. The
+   scroller takes the 6fr remainder (¾ of the free run) out to the card's
+   right edge. */
+.fleet-head {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  row-gap: 1.5rem;
+}
+@media (min-width: 768px) {
+  .fleet-head {
+    grid-template-columns:
+      calc(var(--curve-w) - clamp(1.25rem, 3vw, 2.75rem)) 1fr auto 1fr 6fr;
+  }
+  .fleet-head > h2 { grid-column: 3; }
+  .fleet-head > .pin-progress {
+    grid-column: 5;
+    align-self: start; /* anchor to the row top; the curve hangs below */
+  }
+}
+
+/* The fleet scroller — a racing curve stretching to the card's right edge.
+   The base line is the track; the accent line fills with scroll progress
+   (pathLength=100 keeps the dash math stretch-proof under
+   preserveAspectRatio:none); a dot per car
+   lights up as its beat arrives (toggled by the pin-stage scroll driver). */
+/* On desktop the box is taller than its row and overflows downward
+   (negative margin) so the curve descends toward the image; the scroll
+   driver then centers its visible ink between the pinned viewport's top
+   and the image top. On mobile it sits in plain flow under the title. */
+.pin-progress {
+  position: relative;
+  min-width: 12rem;
+  height: 96px;
+}
+@media (min-width: 768px) {
+  .pin-progress { margin-bottom: -56px; }
+}
+.pin-curve {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+/* No non-scaling-stroke here: Chromium dashes non-scaling strokes along
+   the screen-space path while pathLength/getPointAtLength speak user
+   space, so the fill tip would drift off the shapes as the box stretches.
+   The box height always equals the viewBox height (96px), so plain
+   strokes keep their weight anyway — only x stretches, and the curve is
+   shallow enough that the thickness change is invisible. */
+.pin-curve-base {
+  stroke: var(--color-rule);
+  stroke-width: 1.5;
+}
+.pin-curve-fill {
+  stroke: var(--color-accent);
+  stroke-width: 1.5;
+  /* Gap far larger than the path so the pattern can never wrap a second
+     dash copy into view at the right end (pathLength rounding artifact). */
+  stroke-dasharray: 100 400;
+  stroke-dashoffset: calc((1 - var(--p, 0)) * 100);
+}
+.pin-dot {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  appearance: none;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-paper-warm);
+  border: 1px solid var(--color-mute);
+  cursor: pointer;
+  transition: background-color 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+}
+.pin-dot:hover {
+  border-color: var(--color-ink);
+}
+.pin-dot.on {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 12px rgba(225, 18, 31, 0.55);
+}
+/* One shape per beat — circle, triangle, square — same footprint. */
+.pin-dot:nth-of-type(3) {
+  border-radius: 0;
+}
+/* Beat 2's triangle: clip-path can't sit on the button itself (it would
+   clip the numeral hanging below), so two stacked pseudo-triangles fake
+   the outlined shape — ::before is the rim, ::after the face. */
+.pin-dot:nth-of-type(2),
+.pin-dot:nth-of-type(2).on {
+  width: 19px;
+  height: 16px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.pin-dot:nth-of-type(2)::before,
+.pin-dot:nth-of-type(2)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: var(--color-mute);
+  transition: background-color 300ms ease;
+}
+.pin-dot:nth-of-type(2)::after {
+  clip-path: polygon(50% 15%, 89% 93%, 11% 93%);
+  background: var(--color-paper-warm);
+}
+.pin-dot:nth-of-type(2):hover::before {
+  background: var(--color-ink);
+}
+.pin-dot:nth-of-type(2).on {
+  filter: drop-shadow(0 0 6px rgba(225, 18, 31, 0.55));
+}
+.pin-dot:nth-of-type(2).on::before,
+.pin-dot:nth-of-type(2).on::after {
+  background: var(--color-accent);
+}
+.pin-dot-num {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  color: var(--color-mute);
+  font-variant-numeric: tabular-nums;
+  transition: color 300ms ease;
+}
+.pin-dot.on .pin-dot-num {
+  color: var(--color-ink);
+}
+
+/* Reduced motion (also the no-pin fallback): unpin, stack all three cars. */
+@media (prefers-reduced-motion: reduce) {
+  .pin-stage { height: auto; }
+  .pin-viewport {
+    position: static;
+    height: auto;
+    padding-block: 6rem;
+    overflow: visible;
+  }
+  .pin-cars {
+    display: flex;
+    flex-direction: column;
+    gap: 4.5rem;
+    min-height: 0;
+  }
+  .pin-car {
+    /* Overlay layout needs a box of its own once unpinned. */
+    position: relative;
+    min-height: clamp(16rem, 52vw, 26rem);
+    opacity: 1;
+    transform: none;
+    transition: none;
+    pointer-events: auto;
+  }
+  .pin-car.is-active .pin-car-media img { animation: none; }
+  .pin-car-media video { display: none; }
+  /* No deck in the static stack — every card full-strength and readable. */
+  .pin-car[data-stack] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    box-shadow: none;
+  }
+  .pin-car:not(.is-active) .pin-car-copy { opacity: 1; }
+  .pin-progress { display: none; }
+  .pin-nav { display: none; }
+  .hero-scene, [data-hero-parallax] { will-change: auto; }
+}
+
+/* ── Boot screen — the entry curtain (once per session, hard loads only) ──── */
+.boot { display: none; }
+html.booting .boot {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-paper);
+  /* Exit is a dissolve, not a wipe — the wordmark and racing line fly into
+     their header counterparts while the veil clears beneath them. Timed to
+     complete within the 600ms flight. */
+  transition: background-color 500ms ease 100ms;
+}
+html.booting .boot.boot-exit { background-color: transparent; }
+.boot-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  transition: opacity 260ms ease;
+}
+.boot-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.75rem;
+  /* Sit left of the racing line's corner (apex at 64% width) instead of dead
+     center — the wordmark holds the inside of the bend, line clearing its
+     right shoulder. */
+  right: clamp(2.5rem, 8vw, 7.5rem);
+}
+/* The wordmark is a scaled-up copy of .brand-mark — same tracking, same
+   em-relative tick and gap — so the exit flight into the header brand is a
+   pure uniform scale with no style jump at the crossfade. Letters keep their
+   own masks for the staggered rise; spacing between them comes from tracking
+   alone (no flex gap). */
+.boot-mark {
+  display: flex;
+  align-items: center;
+  font-size: clamp(3.25rem, 8.5vw, 6.5rem);
+  line-height: 1;
+  /* FLIP flight into the header brand — measured from the top-left corner. */
+  transform-origin: 0 0;
+}
+/* Flex, not inline-block — collapses each mask to its content's height (no
+   1em text strut), so the tick mask is tick-sized and .boot-mark's centering
+   lands the red square exactly like the header brand's ::before. */
+.boot-mask {
+  display: flex;
+  overflow: hidden;
+}
+.boot-mask:first-child {
+  margin-right: 0.43em; /* tick-to-letters gap, same ratio as .brand-mark */
+}
+.boot-letter,
+.boot-tick {
+  display: inline-block;
+  transform: translateY(115%);
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+.boot-letter {
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  color: var(--color-ink);
+}
+.boot-tick {
+  width: 0.36em;
+  height: 0.36em;
+  background: var(--color-accent);
+  border-radius: 100% 0 0 0; /* same corner-apex shape as .brand-mark::before */
+}
+.boot.boot-play .boot-letter,
+.boot.boot-play .boot-tick { transform: none; }
+/* ── Exit handoff — the mark flies into the header's brand slot (transform
+   set inline from measured rects) while the canvas line morphs onto the
+   header curve; at landing (html.boot-landing) the loader layers crossfade
+   out and the real chrome fades in underneath them. Only the brand and the
+   curve's LINE (svg) hide through the boot — the pocket fill stays, so the
+   veil dissolve reveals the full chrome silhouette with its background and
+   the line lands on reserved space, not bare page. */
+.boot.boot-exit .boot-mark {
+  transition: transform 600ms cubic-bezier(0.76, 0, 0.24, 1), opacity 240ms ease;
+}
+html.boot-landing .boot-canvas,
+html.boot-landing .boot-mark { opacity: 0; }
+html.booting .site-nav .brand-mark,
+html.booting .nav-curve-svg { opacity: 0; }
+html.booting.boot-landing .site-nav .brand-mark,
+html.booting.boot-landing .nav-curve-svg {
+  opacity: 1;
+  transition: opacity 300ms ease;
+}
+
+/* ── Film grain — one static noise pass over everything (cinema, not dust) ── */
+.film-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='128' height='128' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+}

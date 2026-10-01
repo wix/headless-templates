@@ -1,0 +1,273 @@
+---
+// src/pages/404.astro — the run-off area. Rendered by Astro for every
+// unmatched route (status 404 comes with it); the explicit status below
+// covers direct visits to /404 too.
+import Layout from "../layouts/Layout.astro";
+
+Astro.response.status = 404;
+---
+
+<Layout title="404 — Off track" noindex>
+  <section class="max-w-3xl mx-auto px-6 pt-8 pb-24 flex flex-col items-center text-center gap-6">
+    <!-- The scene, framed as a cropped telemetry plate (the About figure's
+         hairline-border treatment): ghost 404 holding the quiet top-left,
+         the racing line sweeping the corner, and the story on the outside of
+         it — brake-lock skid, a dashed trail off the tarmac, the gravel trap
+         behind its lip, the marker where the car came to rest. Draw-in keys
+         off the reveal class so it plays after the boot curtain, never under
+         it. -->
+    <div class="offtrack-scene w-full" data-reveal aria-hidden="true">
+      <span class="offtrack-ghost">404</span>
+      <svg viewBox="0 0 720 300" fill="none" preserveAspectRatio="xMidYMid meet">
+        <!-- the racing line — glow underlay + core share one draw animation.
+             The exit is tuned to leave through the RIGHT edge (y≈6 at x=720)
+             so the viewport never cuts the curve mid-frame along the top. -->
+        <path
+          d="M -20 250 Q 260 265 430 150 Q 570 62 748 -5"
+          pathLength="100"
+          class="offtrack-line offtrack-line-glow"
+        />
+        <path
+          d="M -20 250 Q 260 265 430 150 Q 570 62 748 -5"
+          pathLength="100"
+          class="offtrack-line offtrack-line-core"
+        />
+
+        <!-- the missed corner: brake-lock skid into the departure point,
+             then the dashed run across the grass into the trap -->
+        <g class="offtrack-skid" stroke-width="3">
+          <line x1="201" y1="236" x2="254" y2="223" />
+          <line x1="203" y1="245" x2="256" y2="231" />
+        </g>
+        <path
+          d="M 255 227 L 645 127"
+          pathLength="100"
+          class="offtrack-trail"
+        />
+
+        <!-- the gravel trap: a broken lip where the surface changes, then an
+             organic scatter — dense where the car ploughed in (forward of the
+             marker), thinning toward the fringe -->
+        <path
+          d="M 612 74 Q 560 118 564 168 Q 567 202 600 216"
+          class="offtrack-lip"
+        />
+        <g class="offtrack-gravel">
+          <circle cx="596" cy="144" r="0.9" /><circle cx="607" cy="141" r="0.7" />
+          <circle cx="618" cy="136" r="0.8" /><circle cx="626" cy="126" r="0.9" />
+          <circle cx="630" cy="118" r="1.1" /><circle cx="633" cy="133" r="1.4" />
+          <circle cx="638" cy="110" r="1.5" /><circle cx="640" cy="96" r="0.9" />
+          <circle cx="643" cy="140" r="1" /><circle cx="649" cy="114" r="1" />
+          <circle cx="652" cy="102" r="1.2" /><circle cx="655" cy="138" r="1.9" />
+          <circle cx="658" cy="121" r="1.7" /><circle cx="661" cy="94" r="1.5" />
+          <circle cx="664" cy="131" r="1.2" /><circle cx="668" cy="112" r="1.3" />
+          <circle cx="672" cy="140" r="1" /><circle cx="676" cy="124" r="1.6" />
+          <circle cx="683" cy="106" r="1.1" /><circle cx="686" cy="134" r="0.8" />
+          <circle cx="690" cy="118" r="1.4" /><circle cx="697" cy="131" r="1" />
+          <circle cx="585" cy="110" r="1" /><circle cx="592" cy="132" r="1.5" />
+          <circle cx="577" cy="148" r="1.1" /><circle cx="600" cy="90" r="1.2" />
+          <circle cx="600" cy="170" r="1.3" /><circle cx="610" cy="72" r="0.9" />
+          <circle cx="622" cy="176" r="1.6" /><circle cx="633" cy="68" r="1.3" />
+          <circle cx="648" cy="182" r="1" /><circle cx="657" cy="64" r="1" />
+          <circle cx="671" cy="172" r="1.2" /><circle cx="681" cy="72" r="1.2" />
+          <circle cx="694" cy="172" r="0.9" /><circle cx="700" cy="88" r="1.5" />
+          <circle cx="706" cy="104" r="0.9" /><circle cx="584" cy="98" r="0.8" />
+          <circle cx="570" cy="130" r="1" /><circle cx="572" cy="166" r="0.9" />
+          <circle cx="580" cy="192" r="1.1" /><circle cx="605" cy="204" r="0.8" />
+          <circle cx="634" cy="207" r="1.2" /><circle cx="663" cy="200" r="0.8" />
+          <circle cx="688" cy="192" r="1" /><circle cx="706" cy="146" r="0.8" />
+          <circle cx="709" cy="64" r="0.8" /><circle cx="712" cy="180" r="1" />
+        </g>
+
+        <!-- where you ended up — label below the dot, anchored away from the
+             line so it can't read as labeling the track. Two anchorings: the
+             centered one clips at the frame's right edge once the label is
+             counter-scaled up on small screens, so narrow viewports swap to
+             an end-anchored variant that grows leftward instead. -->
+        <g class="offtrack-marker">
+          <circle cx="645" cy="127" r="8" class="offtrack-ring" />
+          <circle cx="645" cy="127" r="4" class="offtrack-dot" />
+          <text x="645" y="160" text-anchor="middle" class="offtrack-label offtrack-label-wide">You are here</text>
+          <text x="700" y="160" text-anchor="end" class="offtrack-label offtrack-label-narrow">You are here</text>
+        </g>
+      </svg>
+    </div>
+
+    <h1 class="display-lg" data-reveal>
+      You've gone off track<span class="accent-dot" aria-hidden="true"></span>
+    </h1>
+
+    <p class="text-lg text-mute leading-relaxed max-w-prose" data-reveal>
+      There's nothing down this line but gravel. Rejoin where the tarmac
+      starts.
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center gap-4 mt-2" data-reveal>
+      <a href="/" class="btn-primary">Back to the grid</a>
+      <a href="/services" class="btn-secondary">View sessions</a>
+    </div>
+  </section>
+</Layout>
+
+<style is:global>
+  /* This page runs the plain bar — the same collapse past-hero applies on
+     mobile, here page-wide: the scene below draws its own racing curve, and
+     two sweeps in one viewport compete. Page-scoped global style: it leaves
+     with this page's head on client navigation, so the chrome's curve
+     returns everywhere else. display:none also tells the boot handoff there
+     is no curve to morph onto (it fades instead). */
+  .site-nav .nav-curve { display: none; }
+  .site-nav { --curve-w: 0px; }
+  .site-nav .brand-mark { transform: none; }
+</style>
+
+<style>
+  /* The framed plate — the scene reads as a cropped telemetry frame, so the
+     line entering/leaving at the edges reads as a crop, not a clip. */
+  .offtrack-scene {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-sm);
+    background: rgba(26, 27, 30, 0.5);
+  }
+  /* The ghost 404 — a distance board holding the scene's quiet top-left
+     quadrant, one confident step above the surface; nothing crosses it. */
+  .offtrack-ghost {
+    position: absolute;
+    top: 6%;
+    left: 4.5%;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(4.5rem, 12.5vw, 9rem);
+    line-height: 1;
+    letter-spacing: 0.05em;
+    color: rgba(242, 240, 235, 0.09);
+    user-select: none;
+  }
+  .offtrack-scene svg {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Hairline discipline: the story strokes hold their device-pixel weight at
+     every viewport instead of thinning away with the viewBox scale. */
+  .offtrack-line-core,
+  .offtrack-trail,
+  .offtrack-lip,
+  .offtrack-skid line {
+    vector-effect: non-scaling-stroke;
+  }
+
+  .offtrack-line-glow {
+    stroke: rgba(225, 18, 31, 0.22);
+    stroke-width: 5;
+    stroke-linecap: round;
+  }
+  .offtrack-line-core {
+    stroke: var(--color-accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .offtrack-skid line {
+    stroke: rgba(242, 240, 235, 0.3);
+    stroke-linecap: round;
+  }
+  .offtrack-trail {
+    stroke: var(--color-ink-soft);
+    stroke-width: 2;
+    stroke-dasharray: 3 3.5;
+    opacity: 0.7;
+  }
+  .offtrack-lip {
+    stroke: rgba(242, 240, 235, 0.15);
+    stroke-width: 1;
+    stroke-dasharray: 5 7;
+  }
+  .offtrack-gravel circle {
+    fill: var(--color-mute);
+  }
+  .offtrack-gravel {
+    opacity: 0.55;
+  }
+  .offtrack-dot {
+    fill: var(--color-accent);
+  }
+  .offtrack-ring {
+    stroke: var(--color-accent);
+    stroke-width: 1;
+    fill: none;
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+  }
+  .offtrack-label {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    fill: var(--color-ink-soft);
+  }
+
+  /* Counter-scale the story for small screens — SVG text and radii live in
+     viewBox units, so at phone widths they shrink into noise unless pushed
+     back up (the strokes are already non-scaling above). */
+  .offtrack-label-narrow { display: none; }
+  @media (max-width: 767px) {
+    .offtrack-label { font-size: 15px; }
+    .offtrack-label-wide { display: none; }
+    .offtrack-label-narrow { display: inline; }
+    .offtrack-dot { r: 6px; }
+    .offtrack-ring { r: 11px; }
+    .offtrack-trail { stroke-dasharray: 5 6; }
+  }
+  @media (max-width: 480px) {
+    .offtrack-label { font-size: 19px; }
+  }
+
+  /* Choreography — keyed to the reveal's .in (post-curtain): the line draws
+     the corner, skid and trail surface where it was missed, the trap fades
+     up, the marker lands last and its ring keeps pulsing. Reduced motion
+     shows it all settled, no animation. */
+  @media (prefers-reduced-motion: no-preference) {
+    .offtrack-line {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+    }
+    .offtrack-scene.in .offtrack-line {
+      animation: offtrack-draw 1.3s cubic-bezier(0.6, 0, 0.2, 1) 0.2s forwards;
+    }
+    .offtrack-trail,
+    .offtrack-skid,
+    .offtrack-lip,
+    .offtrack-gravel,
+    .offtrack-dot,
+    .offtrack-label {
+      opacity: 0;
+    }
+    .offtrack-scene.in .offtrack-skid { animation: offtrack-in 0.6s ease 0.85s forwards; }
+    .offtrack-scene.in .offtrack-trail { animation: offtrack-in 0.7s ease 1s forwards; }
+    .offtrack-scene.in .offtrack-lip,
+    .offtrack-scene.in .offtrack-gravel { animation: offtrack-in 0.8s ease 1.2s forwards; }
+    .offtrack-scene.in .offtrack-dot,
+    .offtrack-scene.in .offtrack-label { animation: offtrack-in 0.5s ease 1.45s forwards; }
+    .offtrack-scene.in .offtrack-ring {
+      animation: offtrack-pulse 2.6s ease-out 1.75s infinite;
+    }
+  }
+  @keyframes offtrack-draw {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes offtrack-in {
+    to { opacity: var(--to, 1); }
+  }
+  .offtrack-trail { --to: 0.7; }
+  .offtrack-gravel { --to: 0.55; }
+  @keyframes offtrack-pulse {
+    0% { transform: scale(0.4); opacity: 0.6; }
+    70% { transform: scale(2.6); opacity: 0; }
+    100% { transform: scale(2.6); opacity: 0; }
+  }
+</style>

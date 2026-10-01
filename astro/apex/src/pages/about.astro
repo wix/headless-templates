@@ -1,0 +1,244 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { items } from "@wix/data";
+import { auth } from "@wix/essentials";
+import { toHtml } from "../utils/cms-html";
+import { cached } from "../utils/ssr-cache";
+
+// Collection ID resolved from the seeded CMS slice (.wix/seeded.json → cms.collectionIds.about).
+// Native user collections take the bare name — no namespace prefix.
+const ABOUT_COLLECTION_ID = "About";
+
+// Same-for-everyone page, rarely-changing CMS content — cacheable at the
+// Wix edge for 5 minutes. Kept SHORT: every release 404s the previous
+// build's hashed assets, so stale edge HTML is a broken page.
+Astro.response.headers.set(
+  "Cache-Control",
+  "public, max-age=0, s-maxage=300",
+);
+
+interface AboutContent {
+  title: string;
+  bodyHtml: string;
+}
+
+// Live @wix/data query, cached across requests (5-min TTL, serve-stale).
+// Guarded: an uncaught SSR throw would truncate the response stream mid-body,
+// so fall back to the quiet notice below.
+let about: AboutContent | null = null;
+try {
+  about = await cached("cms:about", 5 * 60_000, async () => {
+    const elevatedQuery = auth.elevate(items.query);
+    const { items: results } = await elevatedQuery(ABOUT_COLLECTION_ID)
+      .limit(1)
+      .find();
+    const item = results[0];
+    if (!item) return null;
+    return {
+      title: ((item.title as string) ?? "").trim() || "The point of maximum commitment",
+      bodyHtml: toHtml(item.body),
+    };
+  });
+} catch (err) {
+  console.error("[cms:About] query failed:", err);
+}
+---
+
+<Layout
+  title="About"
+  description="APEX puts you behind the wheel of a supercar on a closed circuit — one car, one line, one timed session."
+>
+  <article class="max-w-4xl mx-auto px-6 pt-8 pb-24">
+    <header class="flex flex-col items-center text-center gap-5 mb-10" data-reveal>
+      <p class="eyebrow">The outfit</p>
+      <h1 class="display-lg">
+        {about?.title ?? "The point of maximum commitment"}<span class="accent-dot" aria-hidden="true"></span>
+      </h1>
+    </header>
+
+    <!-- The garage at first light — cinematic card with an atmosphere plate. -->
+    <figure class="about-figure mb-10" data-reveal>
+      <img
+        src="https://static.wixstatic.com/media/67964a_9db8ffeab8184766862166c5c3ab41bd~mv2.png/v1/fill/w_1440,h_760,q_85/apex-garage.jpg"
+        alt="A carbon-fiber racing helmet on a workbench in a dark garage bay, lit by a single beam"
+        loading="eager"
+        decoding="async"
+      />
+      <figcaption class="eyebrow about-figure-plate">Helmet bench · Bay 3</figcaption>
+    </figure>
+
+    <!-- The outfit in numbers — same instrument voice as the service pages. -->
+    <div class="detail-figures" data-reveal>
+      <div>
+        <span class="plate-value">3</span>
+        <span class="plate-label">Cars</span>
+      </div>
+      <div>
+        <span class="plate-value">4</span>
+        <span class="plate-label">Sessions</span>
+      </div>
+      <div>
+        <span class="plate-value">2</span>
+        <span class="plate-label">Circuits</span>
+      </div>
+      <div>
+        <span class="plate-value">340<span class="plate-unit">km/h</span></span>
+        <span class="plate-label">Ceiling</span>
+      </div>
+    </div>
+
+    {
+      about && about.bodyHtml ? (
+        <div class="prose-body" data-reveal set:html={about.bodyHtml} />
+      ) : (
+        <div class="flex flex-col gap-4">
+          <p class="text-ink-soft leading-relaxed">
+            The full story is briefly off the timing screens. Refresh in a
+            moment — the session isn't over.
+          </p>
+          <p class="text-mute leading-relaxed">
+            In the meantime, the <a href="/faq" class="inline-link">FAQ</a>{" "}
+            covers what happens from the pit gate to the cool-down lap.
+          </p>
+        </div>
+      )
+    }
+
+    {/* mt-7 + the columns' own 1.25rem paragraph tail = 3rem — the same
+        air the lead keeps above the columns. */}
+    <aside class="mt-7 pt-8 border-t border-rule flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6" data-reveal>
+      <p class="text-sm text-mute max-w-prose">
+        Questions before you commit to the corner? The briefing covers
+        sessions, circuits, and what happens on the day.
+      </p>
+      <a href="/faq" class="btn-secondary text-sm whitespace-nowrap">Read the FAQ</a>
+    </aside>
+  </article>
+</Layout>
+
+<style>
+  /* Prose treatment for the CMS-rendered body. The HTML arrives via set:html,
+     so Astro's scoping attributes never reach it — style through :global()
+     descendants of the locally-scoped wrapper. Tokens only; no new palette. */
+  /* The garage figure — taller, scrimmed, with an atmosphere plate riding
+     the bottom-left (the eyebrow class brings the red dash). */
+  .about-figure {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-sm);
+  }
+  .about-figure img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 21 / 10;
+    object-fit: cover;
+  }
+  .about-figure::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(10, 10, 11, 0.72), rgba(10, 10, 11, 0) 45%);
+  }
+  .about-figure-plate {
+    position: absolute;
+    left: 1.5rem;
+    bottom: 1.25rem;
+    z-index: 1;
+    color: var(--color-ink-soft);
+  }
+
+  .prose-body {
+    color: var(--color-ink-soft);
+  }
+  .prose-body :global(p) {
+    margin-block: 1rem;
+    line-height: 1.75;
+  }
+  .prose-body :global(> p:first-child) {
+    margin-top: 0;
+    font-size: 1.375rem;
+    line-height: 1.6;
+    color: var(--color-ink);
+  }
+  /* Magazine spread on desktop: the lead line runs full measure, the rest
+     of the story flows in two columns. Bottom-only paragraph margins keep
+     both column tops flush — a top margin on the paragraph that opens
+     column two would sink it below column one's first line. */
+  @media (min-width: 768px) {
+    .prose-body {
+      columns: 2;
+      column-gap: 3rem;
+    }
+    .prose-body :global(p) {
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+    }
+    .prose-body :global(> p:first-child) {
+      column-span: all;
+      margin-bottom: 3rem;
+    }
+  }
+  .prose-body :global(h2),
+  .prose-body :global(h3),
+  .prose-body :global(h4) {
+    color: var(--color-ink);
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose-body :global(h2) {
+    font-size: 1.5rem;
+  }
+  .prose-body :global(h3) {
+    font-size: 1.25rem;
+  }
+  .prose-body :global(ul),
+  .prose-body :global(ol) {
+    margin-block: 1rem;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .prose-body :global(ul) {
+    list-style: disc;
+  }
+  .prose-body :global(ol) {
+    list-style: decimal;
+  }
+  .prose-body :global(li)::marker {
+    color: var(--color-accent);
+  }
+  .prose-body :global(blockquote) {
+    margin: 1.5rem 0;
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--color-accent);
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+  }
+  .prose-body :global(hr) {
+    border: 0;
+    height: 1px;
+    background: var(--color-rule);
+    margin-block: 2rem;
+  }
+  .prose-body :global(a) {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-accent);
+  }
+  .prose-body :global(a:hover) {
+    color: var(--color-accent);
+  }
+  .inline-link {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-accent);
+  }
+  .inline-link:hover {
+    color: var(--color-accent);
+  }
+</style>

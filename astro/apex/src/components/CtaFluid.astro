@@ -1,0 +1,57 @@
+---
+// CtaFluid.astro — the hero's red fluid smoke, page-wide but button-scoped:
+// one fixed screen-blend canvas (shared engine in scripts/fluid.ts) that
+// splats dye only while the cursor rides a booking CTA (or anything opted
+// in via data-fluid), so every "Book …" button carries the signature
+// effect. Slow hovers still smoke
+// (a soft puff fills in when stroke velocity is low). The engine idles to
+// zero GPU a few seconds after the last stroke. Desktop-only (fine
+// pointers), skipped under reduced motion, degrades to nothing without
+// WebGL2/float render targets.
+---
+<canvas class="cta-fluid" data-cta-fluid aria-hidden="true"></canvas>
+
+<script>
+  import { createFluid } from "../scripts/fluid";
+
+  const CTA_SELECTOR =
+    ".btn-primary, .btn-secondary, .nav-cta, .booking-cta, .index-row, [data-fluid]";
+
+  function initCtaFluid() {
+    const canvas = document.querySelector<HTMLCanvasElement>("[data-cta-fluid]:not([data-init])");
+    if (!canvas) return;
+    canvas.dataset.init = "1";
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    const fluid = createFluid(canvas);
+    if (!fluid) return;
+
+    let px = -1;
+    let py = -1;
+    window.addEventListener(
+      "pointermove",
+      (e) => {
+        const x = e.clientX / window.innerWidth;
+        const y = 1 - e.clientY / window.innerHeight;
+        const overCta = (e.target as Element | null)?.closest?.(CTA_SELECTOR);
+        if (overCta && px >= 0) {
+          let dx = (x - px) * 1100;
+          let dy = (y - py) * 1100;
+          if (Math.abs(dx) + Math.abs(dy) < 24) {
+            // Near-still hover — puff gently so the button still smokes.
+            const a = Math.random() * Math.PI * 2;
+            dx += Math.cos(a) * 90;
+            dy += Math.sin(a) * 90;
+          }
+          fluid.splat(x, y, dx, dy, fluid.brandColor());
+        }
+        px = x;
+        py = y;
+      },
+      { passive: true },
+    );
+  }
+
+  initCtaFluid();
+  document.addEventListener("astro:page-load", initCtaFluid);
+</script>
