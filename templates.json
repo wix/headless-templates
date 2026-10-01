@@ -64,6 +64,110 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "kit-storefront",
+      "title": "Kit: Storefront (Wix Stores)",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-storefront",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-bookings",
+      "title": "Kit: Bookings",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-bookings",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-rentals",
+      "title": "Kit: Rentals",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-rentals",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-blog",
+      "title": "Kit: Blog",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-blog",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-cms",
+      "title": "Kit: CMS (Wix Data)",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-cms",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-events",
+      "title": "Kit: Events",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-events",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-forms",
+      "title": "Kit: Forms",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-forms",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-members",
+      "title": "Kit: Members",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-members",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-portfolio",
+      "title": "Kit: Portfolio",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-portfolio",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-pricing-plans",
+      "title": "Kit: Pricing Plans",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-pricing-plans",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-restaurants",
+      "title": "Kit: Restaurants",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-restaurants",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-faq",
+      "title": "Kit: FAQ",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-faq",
+      "vibeCompatible": false
+    },
+    {
+      "name": "kit-donations",
+      "title": "Kit: Donations",
+      "subtitle": "Wix Headless Kit: shipped data layer and machinery, skeleton pages to design on",
+      "siteTemplateId": "212b41cb-0da6-4401-9c72-7c579e6477a2",
+      "gitPath": "astro/kit-donations",
+      "vibeCompatible": false
     }
   ]
 }
