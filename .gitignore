@@ -28,3 +28,6 @@ astro/**/*-lock.json
 **/wix.config.json
 .claude/settings.local.json
 
+
+# kit templates ship their locks (install at lock speed, versions pinned)
+!astro/kit-*/package-lock.json
