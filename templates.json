@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "benny-pets",
+      "title": "Benny Pets (Wix Stores)",
+      "subtitle": "Designed product catalog, cart, and checkout",
+      "siteTemplateId": "1fe095c6-5015-431d-a216-069181c126ce",
+      "gitPath": "astro/benny-pets",
+      "vibeCompatible": false
     }
   ]
 }

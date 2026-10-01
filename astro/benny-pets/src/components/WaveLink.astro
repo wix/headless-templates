@@ -1,0 +1,36 @@
+---
+interface Props {
+  href: string;
+  text: string;
+  class?: string;
+  id?: string;
+  cartLabel?: boolean;
+}
+
+const { href, text, class: className, id, cartLabel } = Astro.props;
+---
+
+<a
+  href={href}
+  class={className}
+  id={id}
+  data-wave
+  data-wave-amp="8"
+  data-wave-stagger="40"
+  data-cart-label={cartLabel ? "" : undefined}
+>
+  {
+    [...text].map((ch, i) =>
+      ch === " " ? (
+        <span class="wm-space" />
+      ) : (
+        <span
+          class="wm-letter"
+          style={`transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.04}s`}
+        >
+          {ch}
+        </span>
+      ),
+    )
+  }
+</a>

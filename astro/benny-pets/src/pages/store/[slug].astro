@@ -1,0 +1,210 @@
+---
+import WaveLink from "../../components/WaveLink.astro";
+import Base from "../../layouts/Base.astro";
+import { getCartCount } from "../../lib/cart";
+import { getProductBySlug } from "../../lib/catalog";
+
+const { slug } = Astro.params;
+
+const [product, cartCount] = await Promise.all([getProductBySlug(slug ?? "", 800, 800), getCartCount()]);
+
+// An unknown slug is a 404, never a redirect.
+if (!product) Astro.response.status = 404;
+
+const cartLabel = cartCount > 0 ? `Cart (${cartCount})` : "Cart";
+const visibleVariants = product?.variants.filter((variant) => variant.visible) ?? [];
+// With a single variant there is nothing to choose, so it can be added straight away.
+const soleVariantId = visibleVariants.length === 1 ? visibleVariants[0]._id : "";
+---
+
+{
+  product ? (
+    <Base title={`${product.name} — BENNY PETS`} description={product.description || product.name}>
+      <div class="product-page">
+        <nav class="product-page-nav">
+          <WaveLink href="/" text="← Home" class="product-back" />
+          <WaveLink href="/store" text="Store" class="product-back" />
+          <WaveLink href="/cart" text={cartLabel} class="product-back product-back-cart" cartLabel />
+        </nav>
+
+        <div class="product-page-inner">
+          <div class="product-page-img">
+            {product.imageUrl ? (
+              <img src={product.imageUrl} alt={product.name} />
+            ) : (
+              <div class="product-page-img-placeholder" />
+            )}
+          </div>
+
+          <div
+            class="product-page-info"
+            id="product-info"
+            data-product-id={product._id}
+            data-name={product.name}
+            data-variant-id={soleVariantId}
+            data-variants={JSON.stringify(
+              visibleVariants.map((variant) => ({
+                id: variant._id,
+                choices: variant.choices,
+                price: variant.price,
+              })),
+            )}
+          >
+            <span class="section-tag">Benny Pets</span>
+            <h1 class="product-page-name">{product.name}</h1>
+            <p class="product-page-price" id="product-price">{product.price}</p>
+            {product.description && <p class="product-page-desc">{product.description}</p>}
+
+            {product.options.length > 0 && (
+              <div class="product-page-options">
+                {product.options.map((option) => (
+                  <label class="product-option">
+                    <span class="product-option-label">{option.name}</span>
+                    <select data-option={option.name}>
+                      <option value="">Select {option.name}</option>
+                      {option.choices.map((choice) => (
+                        <option value={choice}>{choice}</option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            <div class="product-page-qty">
+              <button data-qty="dec" aria-label="Decrease quantity">
+                −
+              </button>
+              <span id="qty">1</span>
+              <button data-qty="inc" aria-label="Increase quantity">
+                +
+              </button>
+            </div>
+
+            <div class="product-page-actions">
+              <button class="product-page-cart-btn" id="add-to-cart">
+                Add to Cart
+              </button>
+              <button class="product-page-buy-btn" id="buy-now">
+                Buy Now
+              </button>
+            </div>
+
+            <a href="/cart" class="product-page-view-cart" id="view-cart" hidden={cartCount === 0}>
+              {`View Cart (${cartCount} item${cartCount !== 1 ? "s" : ""}) →`}
+            </a>
+          </div>
+        </div>
+      </div>
+    </Base>
+  ) : (
+    <Base title="Not Found — BENNY PETS">
+      <div class="product-page">
+        <nav class="product-page-nav">
+          <WaveLink href="/" text="← Home" class="product-back" />
+          <WaveLink href="/store" text="Store" class="product-back" />
+          <WaveLink href="/cart" text={cartLabel} class="product-back product-back-cart" cartLabel />
+        </nav>
+        <div class="page-message">
+          <p>We couldn't find that product.</p>
+          <a href="/store" class="cart-empty-btn">
+            Browse the Store
+          </a>
+        </div>
+      </div>
+    </Base>
+  )
+}
+
+<script>
+  import { postJSON, setCartCount, showToast } from "../../scripts/site.js";
+
+  const info = document.getElementById("product-info");
+  const qtyLabel = document.getElementById("qty");
+  const priceLabel = document.getElementById("product-price");
+  const addButton = document.getElementById("add-to-cart");
+  const buyButton = document.getElementById("buy-now");
+  const viewCart = document.getElementById("view-cart");
+  const selects = [...document.querySelectorAll("[data-option]")];
+
+  if (info && qtyLabel && addButton && buyButton) {
+    const productId = info.dataset.productId;
+    const productName = info.dataset.name;
+    const variants = JSON.parse(info.dataset.variants || "[]");
+    let variantId = info.dataset.variantId || "";
+    let qty = 1;
+    let busy = false;
+
+    // The shopper's picks resolve to a real variant — nothing is ever added
+    // for a product whose options haven't all been chosen.
+    function syncVariant() {
+      if (selects.length === 0) return;
+      const chosen = {};
+      selects.forEach((select) => {
+        if (select.value) chosen[select.dataset.option] = select.value;
+      });
+      const complete = Object.keys(chosen).length === selects.length;
+      const match = complete
+        ? variants.find((variant) =>
+            Object.entries(chosen).every(([option, value]) => variant.choices[option] === value),
+          )
+        : null;
+      variantId = match?.id ?? "";
+      if (match?.price && priceLabel) priceLabel.textContent = match.price;
+      addButton.disabled = !variantId;
+      buyButton.disabled = !variantId;
+      addButton.title = variantId ? "" : "Choose an option first";
+    }
+
+    selects.forEach((select) => select.addEventListener("change", syncVariant));
+    syncVariant();
+
+    document.querySelectorAll("[data-qty]").forEach((button) => {
+      button.addEventListener("click", () => {
+        qty = button.dataset.qty === "inc" ? qty + 1 : Math.max(1, qty - 1);
+        qtyLabel.textContent = String(qty);
+      });
+    });
+
+    function setBusy(state) {
+      busy = state;
+      addButton.disabled = state || !variantId;
+      buyButton.disabled = state || !variantId;
+      addButton.textContent = state ? "…" : "Add to Cart";
+      buyButton.textContent = state ? "…" : "Buy Now";
+    }
+
+    addButton.addEventListener("click", async () => {
+      if (busy || !variantId) return;
+      setBusy(true);
+      try {
+        const { count } = await postJSON("/api/cart/add", { productId, variantId, quantity: qty });
+        setCartCount(count);
+        if (viewCart) {
+          viewCart.hidden = count === 0;
+          viewCart.textContent = `View Cart (${count} item${count !== 1 ? "s" : ""}) →`;
+        }
+        showToast(`${qty > 1 ? qty + "× " : ""}${productName} added to cart ✓`);
+      } catch (err) {
+        console.error("[cart] add failed:", err);
+        showToast("Could not add to cart. Please try again.");
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    buyButton.addEventListener("click", async () => {
+      if (busy || !variantId) return;
+      setBusy(true);
+      try {
+        await postJSON("/api/cart/add", { productId, variantId, quantity: qty });
+        const { checkoutUrl } = await postJSON("/api/checkout", {});
+        window.location.href = checkoutUrl;
+      } catch (err) {
+        console.error("[checkout] could not start:", err);
+        showToast("Could not start checkout. Please try again.");
+        setBusy(false);
+      }
+    });
+  }
+</script>

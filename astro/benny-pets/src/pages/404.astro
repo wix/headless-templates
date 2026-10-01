@@ -1,0 +1,17 @@
+---
+import Nav from "../components/Nav.astro";
+import Base from "../layouts/Base.astro";
+import { getCartCount } from "../lib/cart";
+
+const cartCount = await getCartCount();
+---
+
+<Base title="Not Found — BENNY PETS">
+  <section class="store-hero cart-hero">
+    <Nav cartCount={cartCount} />
+  </section>
+  <div class="page-message">
+    <p>That page doesn't exist.</p>
+    <a href="/" class="cart-empty-btn">Back to Home</a>
+  </div>
+</Base>

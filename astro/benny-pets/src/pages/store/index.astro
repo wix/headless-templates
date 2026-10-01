@@ -1,0 +1,144 @@
+---
+import Nav from "../../components/Nav.astro";
+import ProductCard from "../../components/ProductCard.astro";
+import QuickAdd from "../../components/QuickAdd.astro";
+import WaveText from "../../components/WaveText.astro";
+import Base from "../../layouts/Base.astro";
+import { getCartCount } from "../../lib/cart";
+import { listCategories, listProducts } from "../../lib/catalog";
+
+const GRID_SIZE = 8;
+
+const [products, categories, cartCount] = await Promise.all([
+  listProducts(40, 600, 600),
+  listCategories(),
+  getCartCount(),
+]);
+
+const gridProducts = products.slice(0, GRID_SIZE);
+// Anything past the grid is listed compactly rather than dropped.
+const listedProducts = products.slice(GRID_SIZE);
+---
+
+<Base title="Our Store — BENNY PETS" description="Shop every product in the Benny Pets catalog.">
+  <section class="store-hero">
+    <Nav cartCount={cartCount} />
+    <WaveText text="OUR STORE" class="store-wordmark" />
+  </section>
+
+  {
+    categories.length > 0 && (
+      <div class="store-categories">
+        <button class="store-cat-btn active" data-cat="all">
+          All
+        </button>
+        {categories.map((category) => (
+          <button class="store-cat-btn" data-cat={category._id}>
+            {category.name}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  <section class="store-grid-section">
+    <p class="store-empty" id="store-empty" hidden>No products in this category yet.</p>
+    {
+      products.length === 0 ? (
+        <p class="store-empty">No products yet — add some in your Wix dashboard and they appear here.</p>
+      ) : (
+        <div class="product-grid">
+          {gridProducts.map((product, i) => (
+            <ProductCard product={product} delay={i * 0.07} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+
+  {
+    listedProducts.length > 0 && (
+      <section class="store-list-section animate-in" id="store-list-section">
+        <span class="section-tag">More Products</span>
+        <ul class="store-list">
+          {listedProducts.map((product, i) => (
+            <li
+              class="store-list-item animate-in"
+              data-categories={product.categoryIds.join(" ")}
+              style={`transition-delay: ${i * 0.05}s`}
+            >
+              <a class="store-list-name" href={`/store/${product.slug}`}>
+                {product.name}
+              </a>
+              <span class="store-list-sub">{product.sub}</span>
+              <span class="store-list-price">{product.price}</span>
+              <QuickAdd product={product} class="store-list-btn" />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <footer class="store-footer-bar">
+    <a href="/" class="store-back-link">← Back to Home</a>
+    <span>©2025 Benny Pets</span>
+  </footer>
+</Base>
+
+<script>
+  import { postJSON, setCartCount, showToast } from "../../scripts/site.js";
+
+  // Filtering is by real category id — the buttons come from the store's own
+  // categories, so one added in the dashboard filters with no code change.
+  const buttons = [...document.querySelectorAll(".store-cat-btn")];
+  const cards = [...document.querySelectorAll(".product-card")];
+  const rows = [...document.querySelectorAll(".store-list-item")];
+  const emptyMessage = document.getElementById("store-empty");
+  const listSection = document.getElementById("store-list-section");
+
+  function matches(element, category) {
+    return category === "all" || (element.dataset.categories || "").split(" ").includes(category);
+  }
+
+  function applyCategory(category) {
+    let visibleCards = 0;
+    let visibleRows = 0;
+    cards.forEach((card) => {
+      const show = matches(card, category);
+      card.hidden = !show;
+      if (show) visibleCards += 1;
+    });
+    rows.forEach((row) => {
+      const show = matches(row, category);
+      row.hidden = !show;
+      if (show) visibleRows += 1;
+    });
+    if (emptyMessage) emptyMessage.hidden = visibleCards > 0 || visibleRows > 0;
+    if (listSection) listSection.hidden = visibleRows === 0;
+  }
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      buttons.forEach((other) => other.classList.toggle("active", other === button));
+      applyCategory(button.dataset.cat);
+    });
+  });
+
+  document.querySelectorAll("[data-quick-add]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (button.disabled) return;
+      button.disabled = true;
+      try {
+        const { count } = await postJSON("/api/cart/add", { productId: button.dataset.productId });
+        setCartCount(count);
+        showToast(`${button.dataset.name} added to cart ✓`);
+      } catch (err) {
+        console.error("[cart] quick add failed:", err);
+        showToast("Could not add to cart. Please try again.");
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script>

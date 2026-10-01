@@ -1,0 +1,138 @@
+---
+import Nav from "../components/Nav.astro";
+import WaveText from "../components/WaveText.astro";
+import Base from "../layouts/Base.astro";
+import { countItems, getCartSafe, getCartSubtotal } from "../lib/cart";
+import { getProductImages, resolveImage } from "../lib/catalog";
+
+const cart = await getCartSafe();
+const lineItems: any[] = cart?.lineItems ?? [];
+const itemCount = countItems(cart);
+
+// Totals come from the estimate call, not from adding up line prices here.
+const subtotal = lineItems.length > 0 ? await getCartSubtotal() : null;
+
+// A line item keeps the image it had when it was added, so fill in anything
+// that was added before its product had one.
+const catalogImages = await getProductImages(
+  lineItems.filter((item) => !resolveImage(item.image)).map((item) => item.catalogReference?.catalogItemId),
+  240,
+  240,
+);
+---
+
+<Base title="Cart — BENNY PETS" description="Your Benny Pets cart.">
+  <section class="store-hero cart-hero">
+    <Nav cartCount={itemCount} />
+    <WaveText text="YOUR CART" class="store-wordmark" />
+  </section>
+
+  <div class="cart-page">
+    {
+      lineItems.length === 0 ? (
+        <div class="cart-empty">
+          <p class="cart-empty-msg">Your cart is empty.</p>
+          <a href="/store" class="cart-empty-btn">
+            Browse the Store
+          </a>
+        </div>
+      ) : (
+        <div class="cart-inner">
+          <ul class="cart-list">
+            {lineItems.map((item) => {
+              const name = item.productName?.original ?? item.productName?.translated ?? "";
+              const imageUrl =
+                resolveImage(item.image, 240, 240) ??
+                catalogImages[item.catalogReference?.catalogItemId] ??
+                null;
+              const quantity = item.quantity ?? 1;
+              return (
+                <li class="cart-item">
+                  <div class="cart-item-img">
+                    {imageUrl ? <img src={imageUrl} alt={name} /> : <div class="cart-item-img-placeholder" />}
+                  </div>
+                  <div class="cart-item-info">
+                    <p class="cart-item-name">{name}</p>
+                    {item.descriptionLines?.map((line: any) => (
+                      <p class="cart-item-variant">
+                        {line.name?.original}: {line.colorInfo?.original ?? line.plainText?.original}
+                      </p>
+                    ))}
+                    <p class="cart-item-price">{item.price?.formattedAmount} each</p>
+                  </div>
+                  <div class="cart-item-qty">
+                    <button data-action="qty" data-line={item._id} data-qty={quantity - 1}>
+                      −
+                    </button>
+                    <span>{quantity}</span>
+                    <button data-action="qty" data-line={item._id} data-qty={quantity + 1}>
+                      +
+                    </button>
+                  </div>
+                  <p class="cart-item-line-price">{item.lineItemPrice?.formattedAmount}</p>
+                  <button class="cart-item-remove" data-action="remove" data-line={item._id} aria-label={`Remove ${name}`}>
+                    ✕
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div class="cart-summary">
+            <div class="cart-summary-row">
+              <span>Subtotal</span>
+              <span>{subtotal ?? "—"}</span>
+            </div>
+            <p class="cart-summary-note">Shipping &amp; taxes calculated at checkout</p>
+            <button class="cart-checkout-btn" id="checkout">Proceed to Checkout</button>
+            <a href="/store" class="cart-continue-link">← Continue Shopping</a>
+          </div>
+        </div>
+      )
+    }
+  </div>
+</Base>
+
+<script>
+  import { postJSON, showToast } from "../scripts/site.js";
+
+  let busy = false;
+
+  // Quantity and removal round-trip through the API and re-render from the
+  // server, so what is on screen is always the real cart.
+  document.querySelectorAll("[data-action]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (busy) return;
+      busy = true;
+      const lineItemId = button.dataset.line;
+      const quantity = Number(button.dataset.qty ?? 0);
+      const remove = button.dataset.action === "remove" || quantity < 1;
+      try {
+        await postJSON(remove ? "/api/cart/remove" : "/api/cart/update", { lineItemId, quantity });
+        window.location.reload();
+      } catch (err) {
+        console.error("[cart] update failed:", err);
+        showToast(remove ? "Could not remove that item." : "Could not update the quantity.");
+        busy = false;
+      }
+    });
+  });
+
+  const checkout = document.getElementById("checkout");
+  checkout?.addEventListener("click", async () => {
+    if (busy) return;
+    busy = true;
+    checkout.disabled = true;
+    checkout.textContent = "Redirecting…";
+    try {
+      const { checkoutUrl } = await postJSON("/api/checkout", {});
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      console.error("[checkout] could not start:", err);
+      showToast("Could not start checkout. Please try again.");
+      checkout.disabled = false;
+      checkout.textContent = "Proceed to Checkout";
+      busy = false;
+    }
+  });
+</script>
