@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "picked",
+      "title": "PICKED (Wix Stores)",
+      "subtitle": "Recurring subscriptions with 3D product models",
+      "siteTemplateId": "1f640b4e-2804-4b73-b0cb-27f46756375c",
+      "gitPath": "astro/picked",
+      "vibeCompatible": false
     }
   ]
 }
