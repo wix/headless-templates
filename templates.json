@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "before-ai-v2",
+      "title": "Code Before AI (Wix Events)",
+      "subtitle": "Event listings and RSVPs on an XP desktop",
+      "siteTemplateId": "ca844d81-95d3-4f92-b710-03ddcf9050f4",
+      "gitPath": "astro/before-ai-v2",
+      "vibeCompatible": false
     }
   ]
 }

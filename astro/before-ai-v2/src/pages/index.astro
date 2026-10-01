@@ -1,0 +1,14 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { XpDesktop } from "../components/XpDesktop";
+import { loadStoryEvents } from "../lib/wix-events";
+
+// Every request renders fresh, so the events load stays request-time.
+export const prerender = false;
+
+const events = await loadStoryEvents();
+---
+
+<Layout>
+  <XpDesktop events={events} client:load />
+</Layout>
