@@ -1,3 +1,4 @@
+// kit-verify test A: a comment in a source file
 // The card's purchase control — the gallery purchase paths, decided from the product:
 //   • no options            → Direct Add: one click, the cheapest variant, quantity 1
 //   • options / choice mods → Quick Add: a picker on the card (bottom sheet on small screens)
