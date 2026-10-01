@@ -1,0 +1,23 @@
+{
+  "name": "wix-astro-horology-lab",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "astro": "astro",
+    "dev": "astro dev",
+    "build": "astro build"
+  },
+  "dependencies": {
+    "@wix/astro": "^2.39.0",
+    "@wix/astro-pages": "^2.0.4",
+    "@wix/astro-wix-hosting-adapter": "^2.0.0",
+    "@wix/data": "^1.0.486",
+    "@wix/ecom": "^1.0.2289",
+    "@wix/essentials": "^1.0.6",
+    "@wix/redirects": "^1.0.122",
+    "@wix/sdk": "^1.21.13",
+    "@wix/stores": "^1.0.829",
+    "astro": "^5.8.0",
+    "typescript": "^5.8.3"
+  }
+}

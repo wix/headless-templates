@@ -1,0 +1,808 @@
+---
+import { productsV3 } from "@wix/stores";
+
+// The configurator's five axes, named as they are configured on the Wix Stores
+// product. Each maps to one option on the product; its choices are the rows the
+// visitor picks from.
+const OPTION_NAMES = ["Bezel", "Dial", "Strap", "Crown", "Movement"];
+
+// The commissioned watch. Matched by being the store's only product; if the
+// store carries several, the first whose options match the configurator wins.
+let product = null;
+
+try {
+  const res = await productsV3
+    .queryProducts({
+      fields: ["CURRENCY", "PLAIN_DESCRIPTION", "VARIANT_OPTION_CHOICE_NAMES"],
+    })
+    .limit(50)
+    .find();
+
+  const match = (res.items ?? []).find((item) =>
+    OPTION_NAMES.every((name) =>
+      (item.options ?? []).some(
+        (option) => (option.name ?? "").toLowerCase() === name.toLowerCase(),
+      ),
+    ),
+  );
+
+  if (match?._id) {
+    product = {
+      productId: match._id,
+      name: match.name ?? "",
+      description: (match.plainDescription ?? "").replace(/<[^>]+>/g, "").trim(),
+      // Option choices, keyed by option name — the labels the configurator shows.
+      options: (match.options ?? []).map((option) => ({
+        name: option.name ?? "",
+        choices: (option.choicesSettings?.choices ?? []).map(
+          (choice) => choice.name ?? "",
+        ),
+      })),
+      // Every buyable combination with its own price. The configurator resolves
+      // the visitor's five picks to one of these and shows ITS formatted price —
+      // no per-option surcharges are invented client-side.
+      variants: (match.variantsInfo?.variants ?? []).map((variant) => ({
+        id: variant._id,
+        inStock: variant.inventoryStatus?.inStock ?? true,
+        formattedPrice: variant.price?.actualPrice?.formattedAmount ?? "",
+        choices: (variant.choices ?? []).map((choice) => ({
+          optionName: choice.optionChoiceNames?.optionName ?? "",
+          choiceName: choice.optionChoiceNames?.choiceName ?? "",
+        })),
+      })),
+      formattedPrice: match.actualPriceRange?.minValue?.formattedAmount ?? "",
+    };
+  }
+} catch (error) {
+  // Logged server-side. With no product the page still renders the 3D lab and
+  // the configurator; only the reserve flow is unavailable.
+  console.error("Failed to load the product from Wix Stores", error);
+}
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- SEO / GEO -->
+<title>Exploded Horology Lab — Bespoke Mechanical Watches, Made to Order in Genève</title>
+<meta name="description" content="Explore the Calibre DW mechanical movement in an interactive exploded 3D view, configure your bezel, dial, strap, crown and movement, and reserve a hand-built, made-to-order watch from a Genève atelier.">
+<link rel="canonical" href="https://your-site.example/">
+<meta name="theme-color" content="#050507">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzBCMEMxMSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjIwIiBmaWxsPSJub25lIiBzdHJva2U9IiNDOEEyNEIiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjE0IiBmaWxsPSJub25lIiBzdHJva2U9IiNDOEEyNEIiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC41Ii8+PGxpbmUgeDE9IjUwIiB5MT0iNTAiIHgyPSI1MCIgeTI9IjM5IiBzdHJva2U9IiNFREU5REYiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iNTAiIHkxPSI1MCIgeDI9IjU4IiB5Mj0iNTQiIHN0cm9rZT0iI0VERTlERiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Exploded Horology Lab">
+<meta property="og:title" content="Exploded Horology Lab — Bespoke Mechanical Watches">
+<meta property="og:description" content="Configure and reserve a hand-built, made-to-order Calibre DW watch. Explore every component in interactive 3D.">
+<meta property="og:url" content="https://your-site.example/">
+<meta property="og:image" content="https://your-site.example/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Exploded Horology Lab — the Calibre DW made-to-order mechanical watch">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Exploded Horology Lab — Bespoke Mechanical Watches">
+<meta name="twitter:description" content="Configure and reserve a hand-built, made-to-order Calibre DW watch. Explore every component in interactive 3D.">
+<meta name="twitter:image" content="https://your-site.example/og.jpg">
+
+<!-- Structured data (Organization + Product) for search + generative engines -->
+<script is:inline type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://your-site.example/#org",
+      "name": "Exploded Horology Lab",
+      "url": "https://your-site.example/",
+      "description": "Independent luxury watch atelier in Genève crafting the made-to-order Calibre DW mechanical watch.",
+      "slogan": "Every component, suspended.",
+      "areaServed": "Worldwide"
+    },
+    {
+      "@type": "Product",
+      "name": "Calibre DW-01",
+      "url": "https://your-site.example/",
+      "image": "https://your-site.example/og.jpg",
+      "description": "Hand-wound, made-to-order mechanical watch. 40 mm forged 904L stainless case, box-domed sapphire crystal, free-sprung balance and a 72-hour power reserve. Configurable bezel, dial, strap, crown and movement.",
+      "category": "Luxury mechanical wristwatch",
+      "brand": { "@type": "Brand", "name": "Exploded Horology Lab" },
+      "offers": {
+        "@type": "Offer",
+        "price": "8900",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/MadeToOrder",
+        "url": "https://your-site.example/",
+        "seller": { "@id": "https://your-site.example/#org" }
+      }
+    }
+  ]
+}
+</script>
+
+<script is:inline src="/support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Italiana&amp;family=Archivo:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style is:inline>
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: #050507; color: #EDE9DF; font-family: 'Archivo', sans-serif; overflow-x: hidden; }
+    a { color: #C8A24B; text-decoration: none; }
+    a:hover { color: #E2C376; }
+    ::selection { background: rgba(200,162,75,.35); }
+    input { outline: none; }
+    @keyframes panelIn { from { transform: translateX(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes cardIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @keyframes fadeUp { from { transform: translateY(18px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @keyframes scrollPulse { 0% { transform: scaleY(0); transform-origin: top; } 45% { transform: scaleY(1); transform-origin: top; } 55% { transform: scaleY(1); transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+    @keyframes livePulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+    @media (max-width: 760px) {
+      [data-mq="header-sub"] { display: none !important; }
+      [data-mq="header-price"] { display: none !important; }
+      [data-mq="hero-h1"] { font-size: 13vw !important; }
+      [data-mq="caption"] { max-width: 72vw !important; margin-left: 20px !important; }
+      [data-mq="customizer"] { width: auto !important; margin: 0 14px !important; }
+      [data-mq="panel"] { left: 10px !important; right: 10px !important; width: auto !important; top: auto !important; bottom: 10px !important; max-height: 52vh !important; }
+      [data-mq="checkout"] { width: auto !important; margin: 0 12px !important; padding: 24px !important; }
+    }
+  </style>
+</helmet>
+
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect width="100" height="100" fill="#0B0C11"></rect>
+    <circle cx="50" cy="50" r="20" fill="none" stroke="#C8A24B" stroke-width="3"></circle>
+    <line x1="50" y1="50" x2="50" y2="38" stroke="#C8A24B" stroke-width="3" stroke-linecap="round"></line>
+    <line x1="50" y1="50" x2="59" y2="55" stroke="#EDE9DF" stroke-width="2.5" stroke-linecap="round"></line>
+  </svg>
+</template>
+
+<x-import component-from-global-scope="watch-lab" from="/watch-lab.js" style="position:fixed;inset:0;width:100%;height:100vh;z-index:0;" hint-size="100%,100vh"></x-import>
+
+<header data-screen-label="Header" style="position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:18px 28px;pointer-events:none;background:linear-gradient(180deg, rgba(5,5,7,.72), rgba(5,5,7,0));">
+  <div style="pointer-events:auto;display:flex;align-items:baseline;gap:12px;">
+    <div style="font-family:'Italiana',serif;font-size:22px;letter-spacing:.32em;color:#EDE9DF;">DISAWATCH</div>
+    <div data-mq="header-sub" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;color:#6E7686;">GENÈVE · ATELIER № 7</div>
+  </div>
+  <div style="pointer-events:auto;display:flex;align-items:center;gap:16px;">
+    <button onClick="{{toggleSound}}" style="display:flex;align-items:center;gap:8px;background:none;border:1px solid rgba(255,255,255,.16);color:#9AA3B5;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;padding:9px 14px;cursor:pointer;" style-hover="border-color:rgba(200,162,75,.6);color:#EDE9DF;">
+      <span style="width:6px;height:6px;border-radius:50%;background:{{soundDot}};"></span>
+      <span>{"{{soundLabel}}"}</span>
+    </button>
+    <div data-mq="header-price" style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.06em;color:#9AA3B5;">{"{{totalLabel}}"}</div>
+    <button onClick="{{scrollToConfigure}}" style="background:#C8A24B;border:none;color:#0B0C11;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.2em;padding:11px 18px;cursor:pointer;" style-hover="background:#E2C376;">CONFIGURE</button>
+  </div>
+</header>
+
+<main style="position:relative;z-index:10;pointer-events:none;">
+
+  <section data-screen-label="Hero" style="height:100vh;position:relative;pointer-events:none;display:flex;flex-direction:column;justify-content:flex-end;padding:0 6vw 9vh;box-sizing:border-box;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.34em;color:#C8A24B;margin-bottom:20px;animation:fadeUp .8s .1s backwards;">THE EXPLODED HOROLOGY LAB</div>
+    <h1 data-mq="hero-h1" style="font-family:'Italiana',serif;font-weight:400;font-size:clamp(52px,7.2vw,120px);line-height:.95;margin:0;max-width:12ch;color:#EDE9DF;animation:fadeUp .8s .25s backwards;">Every component, suspended.</h1>
+    <p style="font-size:15px;line-height:1.65;color:#9AA3B5;max-width:46ch;margin:24px 0 0;animation:fadeUp .8s .4s backwards;">Scroll to lift the Calibre DW-01 apart, plate by plate. Click any component to set it in motion and read its story. Then build the one that leaves our bench with your name on the rotor.</p>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:44px;animation:fadeUp .8s .55s backwards;">
+      <div style="width:1px;height:44px;background:#C8A24B;animation:scrollPulse 2.2s infinite;"></div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.28em;color:#6E7686;">SCROLL TO DISASSEMBLE</div>
+    </div>
+  </section>
+
+  <section data-screen-label="Stage 01 Crystal and Bezel" style="height:140vh;position:relative;pointer-events:none;">
+    <div data-mq="caption" style="position:sticky;top:32vh;margin-left:6vw;max-width:360px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#C8A24B;letter-spacing:.2em;">01</span>
+        <span style="flex:1;height:1px;background:rgba(200,162,75,.35);"></span>
+      </div>
+      <h2 style="font-family:'Italiana',serif;font-weight:400;font-size:38px;margin:0 0 12px;color:#EDE9DF;">Crystal &amp; bezel</h2>
+      <p style="font-size:13.5px;line-height:1.7;color:#9AA3B5;margin:0;">The box-domed sapphire lifts first — 1.8&nbsp;mm of lab-grown corundum, anti-reflective on both faces. Beneath it, the bezel you will choose in a moment.</p>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.24em;color:#565E6D;margin-top:16px;">CLICK A COMPONENT TO INSPECT</div>
+    </div>
+  </section>
+
+  <section data-screen-label="Stage 02 Dial Side" style="height:140vh;position:relative;pointer-events:none;">
+    <div data-mq="caption" style="position:sticky;top:32vh;margin-left:6vw;max-width:360px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#C8A24B;letter-spacing:.2em;">02</span>
+        <span style="flex:1;height:1px;background:rgba(200,162,75,.35);"></span>
+      </div>
+      <h2 style="font-family:'Italiana',serif;font-weight:400;font-size:38px;margin:0 0 12px;color:#EDE9DF;">The dial side</h2>
+      <p style="font-size:13.5px;line-height:1.7;color:#9AA3B5;margin:0;">Dauphine hands, diamond-milled and heat-blued at the tips, part from a galvanic sunburst dial. Twelve applied indices, each set by hand under 10× magnification.</p>
+    </div>
+  </section>
+
+  <section data-screen-label="Stage 03 Going Train" style="height:140vh;position:relative;pointer-events:none;">
+    <div data-mq="caption" style="position:sticky;top:32vh;margin-left:6vw;max-width:360px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#C8A24B;letter-spacing:.2em;">03</span>
+        <span style="flex:1;height:1px;background:rgba(200,162,75,.35);"></span>
+      </div>
+      <h2 style="font-family:'Italiana',serif;font-weight:400;font-size:38px;margin:0 0 12px;color:#EDE9DF;">The going train</h2>
+      <p style="font-size:13.5px;line-height:1.7;color:#9AA3B5;margin:0;">Four wheels carry force from barrel to escapement, pivoting in synthetic ruby. Click a gear and watch the train run free.</p>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.24em;color:#565E6D;margin-top:16px;">31 JEWELS · 132 COMPONENTS</div>
+    </div>
+  </section>
+
+  <section data-screen-label="Stage 04 The Heart" style="height:140vh;position:relative;pointer-events:none;">
+    <div data-mq="caption" style="position:sticky;top:32vh;margin-left:6vw;max-width:360px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#C8A24B;letter-spacing:.2em;">04</span>
+        <span style="flex:1;height:1px;background:rgba(200,162,75,.35);"></span>
+      </div>
+      <h2 style="font-family:'Italiana',serif;font-weight:400;font-size:38px;margin:0 0 12px;color:#EDE9DF;">The heart</h2>
+      <p style="font-size:13.5px;line-height:1.7;color:#9AA3B5;margin:0;">A free-sprung balance beats against a hand-formed hairspring, fed by a mainspring wound to seventy-two hours. This is the part you will hear ticking — turn the sound on.</p>
+    </div>
+  </section>
+
+  <section data-screen-label="Configurator" ref="{{cfgRef}}" style="min-height:100vh;display:flex;justify-content:flex-end;align-items:center;padding:12vh 6vw;box-sizing:border-box;pointer-events:none;">
+    <div data-mq="customizer" style="pointer-events:auto;width:430px;background:rgba(9,10,14,.8);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.09);padding:30px 30px 26px;box-sizing:border-box;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.3em;color:#C8A24B;margin-bottom:10px;">COMMISSION</div>
+      <h2 style="font-family:'Italiana',serif;font-weight:400;font-size:36px;margin:0 0 6px;color:#EDE9DF;">Build yours</h2>
+      <p style="font-size:12.5px;line-height:1.6;color:#7A8294;margin:0 0 24px;">Each configuration is assembled to order at bench №&nbsp;7. Changes render live on the movement behind this panel.</p>
+
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;color:#6E7686;margin-bottom:10px;">BEZEL</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:22px;">
+        <sc-for list="{{bezelOpts}}" as="opt" hint-placeholder-count="3">
+          <button onClick="{{opt.onPick}}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:{{opt.bg}};border:1px solid {{opt.bc}};padding:12px 14px;cursor:pointer;color:inherit;" style-hover="border-color:rgba(200,162,75,.7);">
+            <span><span style="display:block;font-family:'Archivo',sans-serif;font-size:13.5px;font-weight:500;color:#EDE9DF;">{"{{opt.name}}"}</span><span style="display:block;font-size:11px;color:#7A8294;margin-top:2px;">{"{{opt.sub}}"}</span></span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;color:#6E7686;margin-bottom:10px;">DIAL</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:22px;">
+        <sc-for list="{{faceOpts}}" as="opt" hint-placeholder-count="4">
+          <button onClick="{{opt.onPick}}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:{{opt.bg}};border:1px solid {{opt.bc}};padding:12px 14px;cursor:pointer;color:inherit;" style-hover="border-color:rgba(200,162,75,.7);">
+            <span style="display:flex;align-items:center;gap:12px;"><span style="width:22px;height:22px;border-radius:50%;flex:none;background:{{opt.swatch}};border:1px solid rgba(255,255,255,.2);"></span><span><span style="display:block;font-family:'Archivo',sans-serif;font-size:13.5px;font-weight:500;color:#EDE9DF;">{"{{opt.name}}"}</span><span style="display:block;font-size:11px;color:#7A8294;margin-top:2px;">{"{{opt.sub}}"}</span></span></span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;color:#6E7686;margin-bottom:10px;">STRAP</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:22px;">
+        <sc-for list="{{strapOpts}}" as="opt" hint-placeholder-count="3">
+          <button onClick="{{opt.onPick}}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:{{opt.bg}};border:1px solid {{opt.bc}};padding:12px 14px;cursor:pointer;color:inherit;" style-hover="border-color:rgba(200,162,75,.7);">
+            <span><span style="display:block;font-family:'Archivo',sans-serif;font-size:13.5px;font-weight:500;color:#EDE9DF;">{"{{opt.name}}"}</span><span style="display:block;font-size:11px;color:#7A8294;margin-top:2px;">{"{{opt.sub}}"}</span></span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;color:#6E7686;margin-bottom:10px;">CROWN</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:22px;">
+        <sc-for list="{{crownOpts}}" as="opt" hint-placeholder-count="3">
+          <button onClick="{{opt.onPick}}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:{{opt.bg}};border:1px solid {{opt.bc}};padding:12px 14px;cursor:pointer;color:inherit;" style-hover="border-color:rgba(200,162,75,.7);">
+            <span><span style="display:block;font-family:'Archivo',sans-serif;font-size:13.5px;font-weight:500;color:#EDE9DF;">{"{{opt.name}}"}</span><span style="display:block;font-size:11px;color:#7A8294;margin-top:2px;">{"{{opt.sub}}"}</span></span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;color:#6E7686;margin-bottom:10px;">MOVEMENT</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">
+        <sc-for list="{{movementOpts}}" as="opt" hint-placeholder-count="3">
+          <button onClick="{{opt.onPick}}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:{{opt.bg}};border:1px solid {{opt.bc}};padding:12px 14px;cursor:pointer;color:inherit;" style-hover="border-color:rgba(200,162,75,.7);">
+            <span><span style="display:block;font-family:'Archivo',sans-serif;font-size:13.5px;font-weight:500;color:#EDE9DF;">{"{{opt.name}}"}</span><span style="display:block;font-size:11px;color:#7A8294;margin-top:2px;">{"{{opt.sub}}"}</span></span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid rgba(255,255,255,.1);padding-top:18px;margin-bottom:6px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;color:#6E7686;">TOTAL</span>
+        <span style="font-family:'Italiana',serif;font-size:30px;color:#EDE9DF;">{"{{totalFmt}}"}</span>
+      </div>
+      <div style="font-size:11.5px;color:#7A8294;margin-bottom:18px;">Reserve today by paying the <span style="color:#C8A24B;">{"{{totalFmt}}"}</span> commission for this configuration.</div>
+      <button onClick="{{openCheckout}}" style="width:100%;background:#C8A24B;border:none;color:#0B0C11;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.22em;padding:15px 18px;cursor:pointer;" style-hover="background:#E2C376;">RESERVE THIS BUILD</button>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;color:#565E6D;text-align:center;margin-top:12px;">FULLY REFUNDABLE FOR 30 DAYS · 5-YEAR MOVEMENT WARRANTY</div>
+    </div>
+  </section>
+</main>
+
+<sc-if value="{{selectedPart}}" hint-placeholder-val="{{false}}">
+  <aside data-mq="panel" data-screen-label="Component Spec Panel" style="position:fixed;top:92px;right:24px;bottom:24px;width:378px;z-index:45;background:rgba(9,10,14,.84);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.1);overflow:auto;animation:panelIn .45s cubic-bezier(.2,.8,.2,1);padding:26px 26px 22px;box-sizing:border-box;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.28em;color:#C8A24B;">{"{{part.kicker}}"}</div>
+      <button onClick="{{closePanel}}" style="background:none;border:1px solid rgba(255,255,255,.16);color:#9AA3B5;width:28px;height:28px;cursor:pointer;font-size:13px;line-height:1;flex:none;" style-hover="border-color:rgba(200,162,75,.7);color:#EDE9DF;">×</button>
+    </div>
+    <h3 style="font-family:'Italiana',serif;font-weight:400;font-size:32px;margin:10px 0 4px;color:#EDE9DF;">{"{{part.name}}"}</h3>
+    <div style="display:flex;align-items:center;gap:8px;margin:8px 0 16px;">
+      <span style="width:6px;height:6px;border-radius:50%;background:#C8A24B;animation:livePulse 1.4s infinite;"></span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.22em;color:#7A8294;">{"{{part.motion}}"}</span>
+    </div>
+    <p style="font-size:13px;line-height:1.75;color:#9AA3B5;margin:0 0 20px;">{"{{part.history}}"}</p>
+    <div style="display:flex;flex-direction:column;">
+      <sc-for list="{{part.specs}}" as="s" hint-placeholder-count="4">
+        <div style="display:flex;justify-content:space-between;gap:16px;border-top:1px solid rgba(255,255,255,.08);padding:10px 0;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;color:#6E7686;">{"{{s.k}}"}</span>
+          <span style="font-size:12.5px;color:#DDD8CC;text-align:right;">{"{{s.v}}"}</span>
+        </div>
+      </sc-for>
+    </div>
+  </aside>
+</sc-if>
+
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0B0C11"></rect><circle cx="50" cy="50" r="20" fill="none" stroke="#C8A24B" stroke-width="3"></circle><circle cx="50" cy="50" r="14" fill="none" stroke="#C8A24B" stroke-width="1" opacity="0.5"></circle><line x1="50" y1="50" x2="50" y2="39" stroke="#EDE9DF" stroke-width="2.5" stroke-linecap="round"></line><line x1="50" y1="50" x2="58" y2="54" stroke="#EDE9DF" stroke-width="2" stroke-linecap="round"></line></svg></template>
+
+<div data-screen-label="3D View Controls" style="position:fixed;right:24px;bottom:24px;z-index:46;display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+  <sc-if value="{{viewActive}}" hint-placeholder-val="{{false}}">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.2em;color:#7A8294;background:rgba(9,10,14,.72);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);padding:8px 12px;">DRAG TO ROTATE · SCROLL TO ZOOM · CLICK A PART TO INSPECT</div>
+  </sc-if>
+  <div style="display:flex;gap:8px;">
+    <sc-if value="{{viewActive}}" hint-placeholder-val="{{false}}">
+      <button onClick="{{exitView}}" style="background:rgba(9,10,14,.72);border:1px solid rgba(255,255,255,.2);color:#9AA3B5;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;padding:12px 16px;cursor:pointer;" style-hover="border-color:rgba(200,162,75,.6);color:#EDE9DF;">EXIT 3D VIEW</button>
+    </sc-if>
+    <sc-if value="{{viewInactive}}" hint-placeholder-val="{{true}}">
+      <button onClick="{{enterView}}" style="background:#C8A24B;border:none;color:#0B0C11;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.2em;padding:13px 18px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.45);" style-hover="background:#E2C376;">VIEW WATCH IN 3D</button>
+    </sc-if>
+  </div>
+</div>
+
+<sc-if value="{{showCheckout}}" hint-placeholder-val="{{false}}">
+  <div data-screen-label="Reserve Checkout" style="position:fixed;inset:0;z-index:60;background:rgba(3,3,5,.74);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;animation:overlayIn .3s;">
+    <div data-mq="checkout" style="width:490px;max-height:88vh;overflow:auto;background:#0B0C11;border:1px solid rgba(255,255,255,.1);padding:34px;box-sizing:border-box;animation:cardIn .4s cubic-bezier(.2,.8,.2,1);">
+
+      <sc-if value="{{confirmed}}" hint-placeholder-val="{{false}}">
+        <div style="text-align:center;padding:18px 0;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.3em;color:#C8A24B;margin-bottom:14px;">COMMISSION ACCEPTED</div>
+          <h3 style="font-family:'Italiana',serif;font-weight:400;font-size:44px;margin:0 0 10px;color:#EDE9DF;">Reserved.</h3>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#9AA3B5;margin-bottom:22px;">{"{{refNo}}"}</div>
+          <p style="font-size:13px;line-height:1.7;color:#9AA3B5;margin:0 0 8px;">Commission of <span style="color:#C8A24B;">{"{{totalFmt}}"}</span> received. Bench assembly begins within 9–11 weeks; you will follow every stage from regulation to casing.</p>
+          <p style="font-size:12px;color:#6E7686;margin:0 0 26px;">{"{{buildSummary}}"}</p>
+          <button onClick="{{closeCheckout}}" style="background:none;border:1px solid rgba(200,162,75,.5);color:#C8A24B;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;padding:12px 22px;cursor:pointer;" style-hover="background:rgba(200,162,75,.1);">RETURN TO THE LAB</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{notConfirmed}}" hint-placeholder-val="{{true}}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.3em;color:#C8A24B;margin-bottom:8px;">RESERVE YOUR BUILD</div>
+            <h3 style="font-family:'Italiana',serif;font-weight:400;font-size:32px;margin:0;color:#EDE9DF;">Reserve your build</h3>
+          </div>
+          <button onClick="{{closeCheckout}}" style="background:none;border:1px solid rgba(255,255,255,.16);color:#9AA3B5;width:28px;height:28px;cursor:pointer;font-size:13px;line-height:1;" style-hover="border-color:rgba(200,162,75,.7);color:#EDE9DF;">×</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;margin-bottom:18px;">
+          <sc-for list="{{summaryRows}}" as="r" hint-placeholder-count="4">
+            <div style="display:flex;justify-content:space-between;gap:16px;border-top:1px solid rgba(255,255,255,.08);padding:9px 0;">
+              <span style="font-size:12.5px;color:#9AA3B5;">{"{{r.k}}"}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#DDD8CC;">{"{{r.v}}"}</span>
+            </div>
+          </sc-for>
+          <div style="display:flex;justify-content:space-between;gap:16px;border-top:1px solid rgba(200,162,75,.4);padding:12px 0 2px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;color:#C8A24B;">PAY NOW · TOTAL COMMISSION</span>
+            <span style="font-family:'Italiana',serif;font-size:26px;color:#EDE9DF;">{"{{totalFmt}}"}</span>
+          </div>
+          <div style="font-size:11.5px;color:#9AA3B5;line-height:1.55;margin-top:8px;">You’ll pay {"{{totalFmt}}"} now to reserve your build. We’ll notify you at every stage and when your watch is ready.</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+          <input value="{{nameVal}}" onChange="{{onName}}" placeholder="Full name" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);color:#EDE9DF;font-family:'Archivo',sans-serif;font-size:13.5px;padding:13px 14px;">
+          <input value="{{emailVal}}" onChange="{{onEmail}}" placeholder="Email for build updates" type="email" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);color:#EDE9DF;font-family:'Archivo',sans-serif;font-size:13.5px;padding:13px 14px;">
+        </div>
+
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;color:#E0785F;margin-bottom:10px;min-height:12px;">{"{{reserveError}}"}</div>
+        <button onClick="{{confirm}}" disabled="{{confirmDisabled}}" style="width:100%;background:{{confirmBg}};border:none;color:#0B0C11;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.22em;padding:15px 18px;cursor:pointer;" style-hover="background:#E2C376;">{"{{confirmLabel}}"}</button>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#565E6D;text-align:center;margin-top:12px;">SECURE PAYMENT AT NEXT STEP · FULLY REFUNDABLE FOR 30 DAYS</div>
+      </sc-if>
+
+    </div>
+  </div>
+</sc-if>
+
+</x-dc>
+<script is:inline type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#C8A24B&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#C8A24B&quot;,&quot;#B9C1CC&quot;,&quot;#B0765A&quot;],&quot;section&quot;:&quot;Stage&quot;},&quot;autoRotate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Stage&quot;},&quot;tickVolume&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.7,&quot;min&quot;:0,&quot;max&quot;:1,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Sound&quot;}}">
+class Component extends DCLogic {
+  state = {
+    selected: null,
+    muted: true,
+    config: { bezel: 'steel', strap: 'leather', movement: 'dw01', crown: 'classic', dial: 'anthracite' },
+    showCheckout: false,
+    confirmed: false,
+    name: '',
+    email: '',
+    refNo: '',
+    viewMode: 'scroll'
+  };
+
+  cfgRef = React.createRef();
+
+  // Each entry's `name` is the join key to a Wix product option choice; `id`,
+  // `sub` and `swatch` are design data driving the 3D stage and the copy.
+  // Prices deliberately live nowhere here — Wix prices whole variants, and the
+  // configurator reads the matching variant's formattedAmount instead.
+  BEZELS = [
+    { id: 'steel', name: 'Brushed Steel', sub: '904L stainless, satin top' },
+    { id: 'dlc', name: 'DLC Black', sub: 'amorphous carbon over steel' },
+    { id: 'gold', name: 'Rose Gold 5N', sub: '18k, cast in-house' }
+  ];
+  STRAPS = [
+    { id: 'leather', name: 'Barenia Calf', sub: 'hand-stitched, tan patina' },
+    { id: 'rubber', name: 'FKM Rubber', sub: 'graphite, quick-release' },
+    { id: 'bracelet', name: 'Steel Bracelet', sub: 'five-link, micro-adjust clasp' }
+  ];
+  FACES = [
+    { id: 'anthracite', name: 'Anthracite Sunburst', sub: 'galvanic grey, 180-pass grain', swatch: 'radial-gradient(circle at 35% 35%, #2a2e38, #0d0f14)' },
+    { id: 'salmon', name: 'Salmon Sunburst', sub: 'copper-toned, vintage warmth', swatch: 'radial-gradient(circle at 35% 35%, #e2a583, #b26a48)' },
+    { id: 'midnight', name: 'Midnight Blue', sub: 'deep lacquer sunburst', swatch: 'radial-gradient(circle at 35% 35%, #24407c, #0a1226)' },
+    { id: 'porcelain', name: 'Grand Feu Porcelain', sub: 'kiln-fired enamel, matte white', swatch: 'radial-gradient(circle at 35% 35%, #f8f2e4, #ded2b8)' }
+  ];
+  CROWNS = [
+    { id: 'classic', name: 'Fluted Classic', sub: '14 flutes, gold signet cap' },
+    { id: 'onion', name: 'Onion Vintage', sub: 'bulbous, glove-friendly grip' },
+    { id: 'guarded', name: 'Guarded Sport', sub: 'screw-down between crown guards' }
+  ];
+  MOVEMENTS = [
+    { id: 'dw01', name: 'Calibre DW-01', sub: 'hand-wound · 72 h · 3 Hz' },
+    { id: 'dw02', name: 'Calibre DW-02', sub: 'micro-rotor automatic · 4 Hz' },
+    { id: 'dw03', name: 'Calibre DW-03', sub: 'high-beat chronometer · 5 Hz' }
+  ];
+
+  /** The Wix option name backing each configurator axis. */
+  OPTION_FOR = { bezel: 'Bezel', dial: 'Dial', strap: 'Strap', crown: 'Crown', movement: 'Movement' };
+
+  /** The current picks as { 'Bezel': 'Brushed Steel', ... } for variant lookup. */
+  _selection() {
+    const cfg = this.state.config;
+    const lists = { bezel: this.BEZELS, dial: this.FACES, strap: this.STRAPS, crown: this.CROWNS, movement: this.MOVEMENTS };
+    const out = {};
+    Object.keys(this.OPTION_FOR).forEach((key) => {
+      const pick = lists[key].find((o) => o.id === cfg[key]);
+      if (pick) out[this.OPTION_FOR[key]] = pick.name;
+    });
+    return out;
+  }
+
+  /** The configured variant's price, formatted by Wix. '' when unavailable. */
+  _totalFmt() {
+    const wix = window.horologyCommission;
+    return wix && wix.isConfigured() ? wix.priceFor(this._selection()) : '';
+  }
+
+  PARTS = {
+    crystal: {
+      kicker: 'OPTICS', name: 'Sapphire crystal', motion: 'ROTATING · FREE',
+      history: 'Until 1978 every DisaWatch left Genève under hardened mineral glass. The house switched to lab-grown sapphire the year a client returned a watch worn through a season of alpine climbing — case destroyed, crystal untouched.',
+      specs: [
+        { k: 'MATERIAL', v: 'Synthetic corundum, 9 Mohs' },
+        { k: 'PROFILE', v: 'Box-domed, 1.8 mm' },
+        { k: 'COATING', v: 'AR, both faces' },
+        { k: 'SEAL', v: 'Gasket-set, 100 m' }
+      ]
+    },
+    bezel: {
+      kicker: 'CASE ARCHITECTURE', name: 'Bezel', motion: 'ROTATING · FREE',
+      history: 'The stepped bezel is the oldest line in the DW design language, drawn in 1947 and never redrawn. It is machined in one pass, then hand-finished — eleven minutes of satin brushing per piece.',
+      specs: []
+    },
+    hands: {
+      kicker: 'DIAL SIDE', name: 'Dauphine hands', motion: 'KEEPING LOCAL TIME',
+      history: 'Each hand is milled from a solid blank, faceted on a diamond wheel, and flame-blued at the tip by eye — the colour turns in under two seconds, and there is no second chance.',
+      specs: [
+        { k: 'HOUR / MINUTE', v: 'Rhodium-plated brass' },
+        { k: 'SECONDS', v: 'Gilt, counterweighted' },
+        { k: 'LUME', v: 'Old-radium Super-LumiNova' },
+        { k: 'FIT', v: 'Friction-set, 3-tier' }
+      ]
+    },
+    dial: {
+      kicker: 'DIAL SIDE', name: 'Sunburst dial', motion: 'STATIC · APPLIED INDICES',
+      history: 'The anthracite sunburst is cut with a rotating brass brush before galvanic plating, so the grain radiates from the true centre of the hands. Twelve gold indices are riveted by hand under 10× magnification.',
+      specs: [
+        { k: 'BASE', v: 'Brass, galvanic anthracite' },
+        { k: 'FINISH', v: 'Sunburst, 180 passes' },
+        { k: 'INDICES', v: '12 applied, 18k gold' },
+        { k: 'PRINT', v: 'Two-layer pad print' }
+      ]
+    },
+    gears: {
+      kicker: 'GOING TRAIN', name: 'Wheel train', motion: 'RUNNING FREE — CLICK AGAIN TO CALM',
+      history: 'Force leaves the barrel through four wheels, each tooth epicycloid-cut so contact rolls rather than slides. The train loses under 3% of torque between barrel and escapement — the number the DW calibres are built around.',
+      specs: [
+        { k: 'WHEELS', v: '4, gilt brass' },
+        { k: 'TEETH PROFILE', v: 'Epicycloid, rolled' },
+        { k: 'PIVOTS', v: 'Ruby jewels, 8' },
+        { k: 'EFFICIENCY', v: '≥ 97% torque carry' }
+      ]
+    },
+    balance: {
+      kicker: 'REGULATING ORGAN', name: 'Balance wheel', motion: 'OSCILLATING — LISTEN',
+      history: 'Free-sprung, with four gold timing screws in place of a regulator index. The hairspring is still formed by hand at bench № 7; its terminal curve takes an apprentice four years to learn and a master forty seconds to make.',
+      specs: []
+    },
+    barrel: {
+      kicker: 'ENERGY', name: 'Mainspring barrel', motion: 'UNWINDING · 1 REV / 7.6 H',
+      history: 'A metre and a half of cold-rolled alloy spring coiled into a drum the size of a coat button. Wound fully, it holds the torque of roughly four kilograms hanging from a thread — released over three days.',
+      specs: []
+    },
+    plate: {
+      kicker: 'STRUCTURE', name: 'Main plate', motion: 'STATIC · REFERENCE DATUM',
+      history: 'Every measurement in the movement is taken from this plate — maillechort (German silver), which cannot be corrected once cut. A slip in the Côtes de Genève stripes scraps the whole plate.',
+      specs: [
+        { k: 'MATERIAL', v: 'Maillechort' },
+        { k: 'DECORATION', v: 'Côtes de Genève, 9 stripes' },
+        { k: 'EDGES', v: 'Hand-anglage, polished' },
+        { k: 'TOLERANCE', v: '± 2 µm' }
+      ]
+    },
+    rotor: {
+      kicker: 'WINDING', name: 'Micro-rotor', motion: 'SWINGING ON DEMAND',
+      history: 'A 22k gold half-moon recessed into the calibre, winding in both directions through a ratchet-and-pawl. Chosen over a full rotor so the train stays visible through the exhibition back.',
+      specs: [
+        { k: 'MASS', v: '22k gold, 4.1 g' },
+        { k: 'WINDING', v: 'Bidirectional' },
+        { k: 'BEARING', v: 'Ceramic ball race' },
+        { k: 'ENGRAVING', v: 'Owner\u2019s name, gratis' }
+      ]
+    },
+    caseback: {
+      kicker: 'CASE ARCHITECTURE', name: 'Exhibition caseback', motion: 'ROTATING · FREE',
+      history: 'Screwed down against a fluorocarbon gasket, with a sapphire port wide enough to watch the balance breathe. The serial number is engraved on the inner flank, visible only when the watch is opened for service.',
+      specs: [
+        { k: 'PORT', v: 'Sapphire, 24 mm' },
+        { k: 'CLOSURE', v: 'Screw-down, 8-notch' },
+        { k: 'RATING', v: '100 m / 10 ATM' },
+        { k: 'SERIAL', v: 'Inner flank engraving' }
+      ]
+    },
+    crown: {
+      kicker: 'WINDING INTERFACE', name: 'Crown', motion: 'WINDING — CLICK AGAIN TO STOP',
+      history: 'The crown is the only part of the movement you are meant to touch. Forty half-turns from flat wind the mainspring fully; a double gasket keeps water out while you do. Each style is cut on the same 1947 stem geometry, so all three interchange at service.',
+      specs: []
+    },
+    case: {
+      kicker: 'CASE ARCHITECTURE', name: '40 mm case middle', motion: 'STATIC · HOUSING',
+      history: 'Forged, not cut, from 904L stainless — the alloy takes a wetter polish and shrugs at salt water. The crown ribs are milled to the same 1947 drawing as the bezel step.',
+      specs: [
+        { k: 'DIAMETER', v: '40 mm · 11.2 mm thick' },
+        { k: 'ALLOY', v: '904L stainless, forged' },
+        { k: 'CROWN', v: 'Screw-down, 8-rib' },
+        { k: 'LUG WIDTH', v: '20 mm, drilled' }
+      ]
+    },
+    strap: {
+      kicker: 'WRIST SIDE', name: 'Strap', motion: 'STATIC · QUICK-RELEASE',
+      history: 'Straps are cut in-house from shell and saddle leathers or moulded FKM, and every option shares the same drilled 20 mm lug — you are expected to change them with your thumbnail, not a toolkit.',
+      specs: []
+    }
+  };
+
+  componentDidMount() {
+    this._onPart = (e) => this.setState({ selected: e.detail.id });
+    window.addEventListener('watchlab:part', this._onPart);
+    this._onReady = () => this._sync();
+    window.addEventListener('watchlab:ready', this._onReady);
+    this._sync();
+  }
+  componentWillUnmount() {
+    window.removeEventListener('watchlab:part', this._onPart);
+    window.removeEventListener('watchlab:ready', this._onReady);
+  }
+  componentDidUpdate() { this._sync(); }
+
+  _sync() {
+    const L = window.WatchLab;
+    if (!L) return;
+    L.setConfig(this.state.config);
+    L.setMuted(this.state.muted);
+    L.setOptions({
+      accent: this.props.accent ?? '#C8A24B',
+      autoRotate: this.props.autoRotate ?? true,
+      volume: this.props.tickVolume ?? 0.7
+    });
+  }
+
+  _optRows(list, key) {
+    const cfg = this.state.config;
+    return list.map((o) => {
+      const active = cfg[key] === o.id;
+      return Object.assign({}, o, {
+        bc: active ? 'rgba(200,162,75,.75)' : 'rgba(255,255,255,.12)',
+        bg: active ? 'rgba(200,162,75,.07)' : 'rgba(255,255,255,.015)',
+        onPick: () => this.setState((s) => ({ config: Object.assign({}, s.config, { [key]: o.id }) }))
+      });
+    });
+  }
+
+  _dynamicPart() {
+    const id = this.state.selected;
+    if (!id || !this.PARTS[id]) return null;
+    const p = Object.assign({}, this.PARTS[id]);
+    const cfg = this.state.config;
+    const mv = this.MOVEMENTS.find((m) => m.id === cfg.movement);
+    if (id === 'bezel') {
+      const b = this.BEZELS.find((x) => x.id === cfg.bezel);
+      p.specs = [
+        { k: 'FITTED', v: b.name },
+        { k: 'MATERIAL', v: b.sub },
+        { k: 'PROFILE', v: 'Stepped, 1947 drawing' },
+        { k: 'FINISH', v: '11 min hand-brushed' }
+      ];
+    }
+    if (id === 'strap') {
+      const s = this.STRAPS.find((x) => x.id === cfg.strap);
+      p.specs = [
+        { k: 'FITTED', v: s.name },
+        { k: 'DETAIL', v: s.sub },
+        { k: 'LUG', v: '20 mm, quick-release' },
+        { k: 'SIZES', v: 'S / M / L included' }
+      ];
+    }
+    if (id === 'dial') {
+      const f = this.FACES.find((x) => x.id === cfg.dial);
+      p.specs = [
+        { k: 'FITTED', v: f.name },
+        { k: 'FINISH', v: f.sub },
+        { k: 'INDICES', v: '12 applied, 18k gold' },
+        { k: 'PRINT', v: 'Two-layer pad print' }
+      ];
+    }
+    if (id === 'crown') {
+      const c = this.CROWNS.find((x) => x.id === cfg.crown);
+      p.specs = [
+        { k: 'FITTED', v: c.name },
+        { k: 'DETAIL', v: c.sub },
+        { k: 'SEAL', v: 'Double FKM gasket' },
+        { k: 'STEM', v: '1947 geometry, interchangeable' }
+      ];
+    }
+    if (id === 'balance') {
+      const hz = cfg.movement === 'dw03' ? '36,000 vph · 5 Hz' : cfg.movement === 'dw02' ? '28,800 vph · 4 Hz' : '21,600 vph · 3 Hz';
+      p.specs = [
+        { k: 'TYPE', v: 'Free-sprung, 4 screws' },
+        { k: 'FREQUENCY', v: hz },
+        { k: 'HAIRSPRING', v: 'Hand-formed, Breguet curve' },
+        { k: 'RATE', v: '−1 / +4 s per day' }
+      ];
+    }
+    if (id === 'barrel') {
+      const res = cfg.movement === 'dw03' ? '80 hours' : cfg.movement === 'dw02' ? '60 hours' : '72 hours';
+      p.specs = [
+        { k: 'RESERVE', v: res },
+        { k: 'SPRING', v: 'Nivaflex-type, 1.5 m' },
+        { k: 'TORQUE', v: '≈ 40 g·cm at full wind' },
+        { k: 'FEEDS', v: mv.name }
+      ];
+    }
+    return p;
+  }
+
+  renderVals() {
+    const s = this.state;
+    // The price of this exact configuration, as Wix formats it. Empty when the
+    // store has no matching variant — the UI then shows no price rather than
+    // one this template made up.
+    const totalFmt = this._totalFmt();
+    const part = this._dynamicPart();
+    const canConfirm = s.name.trim().length > 1 && s.email.includes('@');
+    const b = this.BEZELS.find((o) => o.id === s.config.bezel);
+    const st = this.STRAPS.find((o) => o.id === s.config.strap);
+    const cr = this.CROWNS.find((o) => o.id === s.config.crown);
+    const fc = this.FACES.find((o) => o.id === s.config.dial);
+    const mv = this.MOVEMENTS.find((o) => o.id === s.config.movement);
+
+    return {
+      viewActive: s.viewMode !== 'scroll',
+      viewInactive: s.viewMode === 'scroll',
+      enterView: () => {
+        if (window.WatchLab) window.WatchLab.setViewMode('orbit');
+        this.setState({ viewMode: 'orbit' });
+      },
+      exitView: () => {
+        if (window.WatchLab) window.WatchLab.setViewMode('scroll');
+        this.setState({ viewMode: 'scroll' });
+      },
+      toggleHand: () => {
+        const next = s.viewMode === 'hand' ? 'orbit' : 'hand';
+        if (window.WatchLab) window.WatchLab.setViewMode(next);
+        this.setState({ viewMode: next });
+      },
+      handLabel: s.viewMode === 'hand' ? 'REMOVE FROM WRIST' : 'SHOW ON WRIST',
+      handBg: s.viewMode === 'hand' ? 'rgba(200,162,75,.22)' : 'rgba(9,10,14,.72)',
+      handColor: s.viewMode === 'hand' ? '#E2C376' : '#C8A24B',
+      soundLabel: s.muted ? 'SOUND OFF' : 'SOUND ON',
+      soundDot: s.muted ? '#565E6D' : '#C8A24B',
+      toggleSound: () => {
+        const next = !s.muted;
+        if (window.WatchLab) window.WatchLab.setMuted(next);
+        this.setState({ muted: next });
+      },
+      totalLabel: totalFmt,
+      cfgRef: this.cfgRef,
+      scrollToConfigure: () => {
+        const el = this.cfgRef.current;
+        if (el) window.scrollTo({ top: el.offsetTop - 20, behavior: 'smooth' });
+      },
+
+      bezelOpts: this._optRows(this.BEZELS, 'bezel'),
+      strapOpts: this._optRows(this.STRAPS, 'strap'),
+      crownOpts: this._optRows(this.CROWNS, 'crown'),
+      faceOpts: this._optRows(this.FACES, 'dial'),
+      movementOpts: this._optRows(this.MOVEMENTS, 'movement'),
+      totalFmt: totalFmt,
+
+      selectedPart: !!part,
+      part: part || { kicker: '', name: '', motion: '', history: '', specs: [] },
+      closePanel: () => {
+        if (window.WatchLab) window.WatchLab.setSelected(null);
+        this.setState({ selected: null });
+      },
+
+      showCheckout: s.showCheckout,
+      confirmed: s.confirmed,
+      notConfirmed: !s.confirmed,
+      openCheckout: () => this.setState({ showCheckout: true }),
+      closeCheckout: () => this.setState({ showCheckout: false, confirmed: false, name: '', email: '' }),
+      // The chosen configuration. Wix prices the combination, not each choice,
+      // so these rows describe the build and the total carries the money.
+      summaryRows: [
+        { k: 'Bezel', v: b.name },
+        { k: 'Dial', v: fc.name },
+        { k: 'Strap', v: st.name },
+        { k: 'Crown', v: cr.name },
+        { k: 'Movement', v: mv.name }
+      ],
+      nameVal: s.name,
+      emailVal: s.email,
+      onName: (e) => this.setState({ name: e.target.value }),
+      onEmail: (e) => this.setState({ email: e.target.value }),
+      confirmDisabled: !canConfirm || !!s.reserving,
+      confirmBg: canConfirm ? '#C8A24B' : '#565E6D',
+      // Records the commission to the CMS and hands off to the Wix-hosted
+      // checkout for the configured variant's real price. The selection is read
+      // from component state — the previous implementation scraped it back out
+      // of the rendered summary markup, which broke on any copy change.
+      confirm: () => {
+        if (!canConfirm || s.reserving) return;
+        const wix = window.horologyCommission;
+
+        if (!wix || !wix.isConfigured()) {
+          // No store behind this site yet: keep the design's own confirmation.
+          this.setState({
+            confirmed: true,
+            refNo: 'COMMISSION № DW-2026-' + String(1000 + Math.floor(Math.random() * 9000))
+          });
+          return;
+        }
+
+        this.setState({ reserving: true, reserveError: '' });
+        wix.reserve({ selection: this._selection(), fullName: s.name, email: s.email })
+          .catch((err) => {
+            console.error('Commission failed:', err);
+            this.setState({
+              reserving: false,
+              reserveError: 'We could not open secure checkout just now. Please try again.'
+            });
+          });
+      },
+      reserving: s.reserving,
+      confirmLabel: s.reserving ? 'OPENING CHECKOUT…' : ('RESERVE & PAY ' + totalFmt),
+      reserveError: s.reserveError || '',
+      refNo: s.refNo,
+      buildSummary: b.name + ' bezel · ' + fc.name + ' dial · ' + st.name + ' · ' + cr.name + ' crown · ' + mv.name
+    };
+  }
+}
+
+</script>
+
+<!-- Wix Headless connection. The product, its option choices and every
+     variant price are resolved server-side (see the frontmatter) and handed
+     over here; src/scripts/wix-commission.ts drives the CMS write and the
+     hosted checkout with plain @wix SDK imports — @wix/astro authenticates
+     them, so there is no client, no OAuth strategy and no client id. -->
+<script is:inline define:vars={{ product }}>
+  window.HOROLOGY_PRODUCT = product;
+</script>
+<script>
+  import "../scripts/wix-commission";
+</script>
+</body>
+</html>
