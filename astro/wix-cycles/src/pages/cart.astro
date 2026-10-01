@@ -1,0 +1,10 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CartApp from "../components/app/CartApp";
+
+export const prerender = false;
+---
+
+<Layout title="Cart | Wix Cycles">
+  <CartApp client:load />
+</Layout>

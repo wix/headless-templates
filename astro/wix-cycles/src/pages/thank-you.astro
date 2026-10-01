@@ -1,0 +1,10 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ThankYouApp from "../components/app/ThankYouApp";
+
+export const prerender = false;
+---
+
+<Layout title="Order Confirmed | Wix Cycles">
+  <ThankYouApp client:load />
+</Layout>
