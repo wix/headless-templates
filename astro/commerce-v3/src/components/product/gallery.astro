@@ -1,0 +1,121 @@
+---
+import { Image } from "astro:assets";
+import GridTileImage from "../grid/tile.astro";
+
+type Props = { images: { src: string; altText: string }[] };
+
+const imagesInputsIds = Astro.props.images.map(() => crypto.randomUUID());
+
+const state = Object.fromEntries(
+  new URLSearchParams(Astro.url.search).entries()
+);
+const imageIndex = state.image ? parseInt(state.image) : 0;
+
+const nextImageIndex =
+  imageIndex + 1 < Astro.props.images.length ? imageIndex + 1 : 0;
+const previousImageIndex =
+  imageIndex === 0 ? Astro.props.images.length - 1 : imageIndex - 1;
+
+const buttonClass =
+  "h-full px-6 transition-all ease-in-out hover:scale-110 hover:text-black dark:hover:text-white flex items-center justify-center";
+---
+
+<div class="relative aspect-square h-full max-h-[550px] w-full overflow-hidden">
+  {
+    Astro.props.images[imageIndex] && (
+      <Image
+        class="h-full w-full object-contain"
+        sizes="(min-width: 1024px) 66vw, 100vw"
+        inferSize
+        loading={"eager"}
+        alt={Astro.props.images[imageIndex]?.altText as string}
+        src={Astro.props.images[imageIndex]?.src as string}
+      />
+    )
+  }
+
+  {
+    Astro.props.images.length > 1 ? (
+      <div class="absolute bottom-[15%] flex w-full justify-center">
+        <div class="mx-auto flex h-11 items-center rounded-full border border-white bg-neutral-50/80 text-neutral-500 backdrop-blur dark:border-black dark:bg-neutral-900/80">
+          <button aria-label="Previous product image" class={buttonClass}>
+            <label for={imagesInputsIds[previousImageIndex]}>
+              <span class="sr-only">Previous product image</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                />
+              </svg>
+            </label>
+          </button>
+          <div class="mx-1 h-6 w-px bg-neutral-500" />
+          <button aria-label="Next product image" class={buttonClass}>
+            <label for={imagesInputsIds[nextImageIndex]}>
+              <span class="sr-only">Next product image</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                />
+              </svg>
+            </label>
+          </button>
+        </div>
+      </div>
+    ) : null
+  }
+</div>
+
+{
+  Astro.props.images.length > 1 ? (
+    <ul class="my-12 flex items-center justify-center gap-2 overflow-auto py-1 lg:mb-0">
+      {Astro.props.images.map((image, index) => {
+        const isActive = index === imageIndex;
+
+        return (
+          <li class="h-20 w-20">
+            <input
+              type="radio"
+              name="image"
+              form="view-selections"
+              onchange="this.form.requestSubmit()"
+              checked={isActive}
+              id={imagesInputsIds[index]}
+              value={index}
+              aria-label="Select product image"
+              class="hidden peer"
+            />
+            <label for={imagesInputsIds[index]}>
+              <span class="sr-only">View product image {index + 1}</span>
+              <GridTileImage
+                alt={image.altText}
+                src={image.src}
+                width={80}
+                height={80}
+                active={isActive}
+                loading="eager"
+              />
+            </label>
+          </li>
+        );
+      })}
+    </ul>
+  ) : null
+}

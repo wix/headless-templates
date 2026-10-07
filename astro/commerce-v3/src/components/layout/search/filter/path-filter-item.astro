@@ -1,0 +1,27 @@
+---
+import clsx from "clsx";
+import type { PathFilterItem } from ".";
+import { createUrl } from "../../../../lib/utils";
+
+type Props = { item: PathFilterItem };
+
+const active = Astro.url.pathname === Astro.props.item.path;
+const newParams = new URLSearchParams(Astro.url.search);
+const DynamicTag = active ? "p" : "a";
+
+newParams.delete("q");
+---
+
+<li class="mt-2 flex text-black dark:text-white">
+  <DynamicTag
+    href={createUrl(Astro.props.item.path, newParams)}
+    class={clsx(
+      "w-full text-sm underline-offset-4 hover:underline dark:hover:text-neutral-100",
+      {
+        "underline underline-offset-4": active,
+      }
+    )}
+  >
+    {Astro.props.item.title}
+  </DynamicTag>
+</li>
