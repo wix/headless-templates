@@ -74,6 +74,8 @@ Remove:
 - `node_modules/`, `dist/`, `.wix/`, `.astro/`, `.git/`, lockfiles (`package-lock.json`, `yarn.lock`)
 - Any hardcoded site-specific IDs in `src/` — move them to constants with a comment explaining where the value comes from, or read them from env
 
+This cleanup is for the committed code template. The registry's published source archive must include a root npm lockfile prepared and tested in the publication copy below.
+
 Normalize:
 - `package.json`: `name` → `wix-astro-<template-name>`, `version` → `0.0.1`, scripts exactly `{ "astro": "astro", "dev": "astro dev", "build": "astro build" }` — no `wix` scripts
 - Adapter/hosting setup per the repo's `AGENTS.md` build standards (currently `@wix/astro` + `@wix/astro-wix-hosting-adapter` where an explicit adapter is needed)
@@ -137,7 +139,29 @@ The template only becomes servable by `CreateSiteFromTemplate` / the gallery aft
 
 - Endpoint: `POST https://manage.wix.com/_api/headless-business-setup/v1/headless-sites/templates/<name>?wixTemplateId=<guid>` — `wixTemplateId` is the **source metasite to clone** (the Step 3 mint result). A same-name POST updates the existing entry and bumps its version.
 - Auth: BO employee cookie — `Cookie: WixBoAuthentication_1_19_0=<boCookie from ~/.dpx-ng/auth.json>; XSRF-TOKEN=nocheck` plus header `X-XSRF-TOKEN: nocheck`.
-- Body: multipart. `bundle` = zip of the built template's `dist/` + `.wix/` (build with `WIX_CLOUD_PROVIDER=KUBERNETES WIX_CLIENT_ID=WIX_CLIENT_ID_PLACEHOLDER NODE_ENV=production npx astro build`); `source` = zip of the rest (minus `node_modules`/`dist`/`.wix`/`.astro`). **Known quirk: two files in one request arrive empty — POST bundle alone first, then bundle+source in a second POST.**
+- Body: multipart. `bundle` = zip of the built template's `dist/` + `.wix/`; `source` = zip of that exact build's source, including its prepared root npm lockfile and excluding `node_modules`/`dist`/`.wix`/`.astro`, credentials and site bindings. Run the preparation and build below before either upload.
 - Gallery metadata via query params (carried forward when omitted): `displayTitle`, `description`, `categories` (comma-separated), `author`, `previewUrl`, `kind` (`FUNCTIONAL`|`INSPIRATIONAL`), `visibility` (`draft`|`published`). Mapping from `templates.json`: `title`→`displayTitle`, `subtitle`→`description`; `categories`/`author`/`kind` exist only in the registry.
 - The publish deploy-validates inline: it provisions/updates a demo site (that's where `deployedUrl` comes from) by pushing files through `wix-code-app-deployments`. Two failure modes: deploys slower than the ~60s gateway timeout return **504 while the backend may still be working**, and any single built file over **~4MB** is rejected outright (gRPC message limit — check `dist` for oversized server chunks before publishing).
 - Verify: `GET …/v1/headless-sites/templates` lists entries (no version field); deploy success/failure is only visible in the service's Grafana app-logs (`artifact_id = 'com.wixpress.coreservices.headless-business-setup'`, log markers `deployTemplateSite.deployFiles`).
+
+### Prepare the registry source and paired bundle
+
+Work in a standalone publication copy. If it has no npm lock, generate one with `npm install --package-lock-only --legacy-peer-deps --ignore-scripts --no-audit --no-fund --registry https://registry.npmjs.org/`. For an existing published source repair, preserve its lock and pinned versions; do not regenerate it or upgrade dependencies to repair tarball URLs.
+
+Prepare each root `package-lock.json` and `npm-shrinkwrap.json` using HBS's existing command (after building `@wix/headless-business-setup` in a headless-bo checkout):
+
+```bash
+node /path/to/headless-bo/packages/headless-business-setup/dist/commands/prepare-template-lock.js package-lock.json package-lock.public.json
+mv package-lock.public.json package-lock.json
+```
+
+For shrinkwrap, use separate shrinkwrap input/output paths too: npm gives it precedence. The command replaces internal-mirror tarball URLs only after public npm metadata matches the exact pinned version and integrity. An unavailable public package or mismatch stops publication; never blindly replace a hostname or change integrity to force a match.
+
+From this exact prepared source, with no existing `node_modules`:
+
+```bash
+npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund --registry https://registry.npmjs.org/
+WIX_CLOUD_PROVIDER=KUBERNETES WIX_CLIENT_ID=WIX_CLIENT_ID_PLACEHOLDER NODE_ENV=production npx --no-install astro build
+```
+
+Require both commands to succeed and verify that lock versions, integrity and other fields are unchanged except the verified public `resolved` URLs. Package both archives from this copy; do not build against another dependency tree. HBS rejects sources without a root npm lock or with `npm.dev.wixpress.com` entries before upload. A merge or service deploy does not repair stored gallery artifacts or existing site pins: publish the corrected pair explicitly, then verify a new site's strict source download, Dev Machine `TEMPLATE_SOURCE` READY, and a completed read-only agent reply. Preserve owned sites; read back cleanup of temporary resources.
