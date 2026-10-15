@@ -58,13 +58,8 @@ export function getVisitorTimezone(): string {
 }
 
 export async function getServices(): Promise<WixService[]> {
-  try {
-    const { items } = await services.queryServices().find();
-    return items as WixService[];
-  } catch (error) {
-    console.error("Error fetching services:", error);
-    throw error;
-  }
+  const { items } = await services.queryServices().find();
+  return items as WixService[];
 }
 
 /**

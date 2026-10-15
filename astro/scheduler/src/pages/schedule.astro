@@ -6,22 +6,20 @@ import DatePicker from "../components/DatePicker.astro";
 import TimeSlots from "../components/TimeSlots.astro";
 import BookingForm from "../components/BookingForm.astro";
 import SessionType from "../components/SessionType.astro";
-import ErrorMessage from "../components/ui/ErrorMessage.astro";
 import { BUSINESS_NAME } from "../utils/constants";
 import {
   getServices,
   toServiceSummaries,
   type ServiceSummary,
 } from "../utils/booking-service";
+import { readFailureResponse } from "../utils/errors";
 
-// Fetch the site's bookable services once per request, server-side, and pass them down
-let services: ServiceSummary[] = [];
-let servicesError = false;
+// Fetch the site's bookable services server-side and pass them down
+let services: ServiceSummary[];
 try {
   services = toServiceSummaries(await getServices());
-} catch (error) {
-  console.error("Error loading services:", error);
-  servicesError = true;
+} catch (e) {
+  return readFailureResponse(e, "The services list");
 }
 ---
 
@@ -55,11 +53,7 @@ try {
     </p>
 
     <div class="max-w-2xl mx-auto mb-8 animate-fade-up delay-100">
-      {servicesError ? (
-        <ErrorMessage message="We couldn't load the available services. Please refresh the page to try again." />
-      ) : (
-        <SessionType services={services} />
-      )}
+      <SessionType services={services} />
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
