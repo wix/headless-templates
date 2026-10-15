@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { cartV2, currentCartV2 } from '@wix/ecom';
+import { members } from '@wix/members';
 import { redirects } from '@wix/redirects';
 import { media } from '@wix/sdk';
 
@@ -318,7 +319,8 @@ function AboutPage() {
 }
 
 /* ─── App Island ────────────────────────────────────────────────────────── */
-export default function AppIsland({ products = [], member = null, page = 'home' }) {
+export default function AppIsland({ products = [], page = 'home' }) {
+  const [member, setMember] = useState(null);
   const [selected, setSelected] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -332,6 +334,12 @@ export default function AppIsland({ products = [], member = null, page = 'home' 
   }, []);
 
   useEffect(() => { refreshCart(); }, [refreshCart]);
+
+  useEffect(() => {
+    members.getCurrentMember({ fieldsets: ['FULL'] })
+      .then(({ member }) => setMember(member ?? null))
+      .catch((e) => console.error('Current member failed to load', e));
+  }, []);
 
   function handleAddedToCart() { setSelected(null); refreshCart(); setCartOpen(true); }
 

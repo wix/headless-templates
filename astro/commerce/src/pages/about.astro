@@ -1,19 +1,7 @@
 ---
-import { members } from '@wix/members';
 import Layout from '../layouts/Layout.astro';
 import AppIsland from '../components/AppIsland.jsx';
-
-let member = null;
-try {
-  const { member: m } = await members.getCurrentMember({ fieldsets: ['FULL'] });
-  if (m) {
-    member = {
-      loginEmail: m.loginEmail ?? null,
-      profile: { nickname: m.profile?.nickname ?? null },
-    };
-  }
-} catch {}
 ---
 <Layout title="Our Story — Brand Name">
-  <AppIsland products={[]} member={member} page="about" client:load />
+  <AppIsland products={[]} page="about" client:load />
 </Layout>

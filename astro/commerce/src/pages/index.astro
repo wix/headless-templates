@@ -1,11 +1,10 @@
 ---
 import { productsV3 } from '@wix/stores';
-import { members } from '@wix/members';
 import Layout from '../layouts/Layout.astro';
 import AppIsland from '../components/AppIsland.jsx';
+import { readFailureResponse } from '../wix/errors';
 
-let products = [];
-let member = null;
+let products;
 
 try {
   const res = await productsV3
@@ -35,18 +34,10 @@ try {
       })),
     })),
   }));
-} catch {}
-
-try {
-  const { member: m } = await members.getCurrentMember({ fieldsets: ['FULL'] });
-  if (m) {
-    member = {
-      loginEmail: m.loginEmail ?? null,
-      profile: { nickname: m.profile?.nickname ?? null },
-    };
-  }
-} catch {}
+} catch (e) {
+  return readFailureResponse(e, 'Products');
+}
 ---
 <Layout title="Brand Name">
-  <AppIsland products={products} member={member} page="home" client:load />
+  <AppIsland products={products} page="home" client:load />
 </Layout>
