@@ -338,7 +338,8 @@ export default function AppIsland({ products = [], page = 'home' }) {
   useEffect(() => {
     members.getCurrentMember({ fieldsets: ['FULL'] })
       .then(({ member }) => setMember(member ?? null))
-      .catch((e) => console.error('Current member failed to load', e));
+      // A visitor's read is a 403: stay logged out.
+      .catch(() => {});
   }, []);
 
   function handleAddedToCart() { setSelected(null); refreshCart(); setCartOpen(true); }
