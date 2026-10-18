@@ -15,6 +15,7 @@ export default defineConfig({
   cache: { provider: cacheWix() },
   routeRules: {
     "/": { maxAge: 3600 },
+    "/about": { maxAge: 3600 },
   },
   integrations: [wix({ auth: true }), wixPages(), react()],
   security: { checkOrigin: false },
