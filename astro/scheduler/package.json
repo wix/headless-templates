@@ -14,7 +14,6 @@
     "@wix/astro-wix-hosting-adapter": "^3.0.2",
     "@wix/bookings": "^1.0.667",
     "@wix/ecom": "^1.0.1044",
-    "@wix/essentials": "^1.0.15",
     "@wix/redirects": "1.0.60",
     "@wix/sdk": "^1.21.5",
     "astro": "^7.3.2",
