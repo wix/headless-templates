@@ -9,14 +9,14 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.7",
-    "@wix/astro": "^2.39.0",
-    "@wix/astro-pages": "^2.0.4",
-    "@wix/astro-wix-hosting-adapter": "^2.0.0",
+    "@wix/astro": "^3.0.1",
+    "@wix/astro-pages": "^3.0.1",
+    "@wix/astro-wix-hosting-adapter": "^3.0.2",
     "@wix/bookings": "^1.0.667",
     "@wix/ecom": "^1.0.1044",
     "@wix/redirects": "1.0.60",
     "@wix/sdk": "^1.21.5",
-    "astro": "^5.8.0",
+    "astro": "^7.3.2",
     "tailwindcss": "^4.1.7",
     "typescript": "^5.8.3"
   }
