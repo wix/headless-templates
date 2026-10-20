@@ -15,6 +15,7 @@ export default defineConfig({
   routeRules: {
     "/": { maxAge: 3600 },
     "/schedule": { maxAge: 3600 },
+    "/confirmation": { maxAge: 3600 },
   },
   security: { checkOrigin: false },
   vite: {
