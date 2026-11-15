@@ -518,3 +518,15 @@
 .sheet-actions--single { grid-template-columns: 1fr; }
 .chips__clear.btn { min-height: 36px; padding: 0 var(--s-3); font-size: var(--fs-small); }
 .qa__img.media--product { aspect-ratio: 3 / 4; } /* product photos are 3:4 everywhere */
+
+/* Outlined controls (size/option pills): fill with ink on hover. */
+.pill { transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease); }
+.pill:hover:not(:disabled):not([data-unavailable="true"]) { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+
+/* Text buttons and text links: a visible opacity change on hover (on top of any underline). */
+.link, .link-arrow, .card__name, .footcats__item, .footer__col a, .crumbs a, .footer__logo, .header__logo, .cat-tile__name, .quote figcaption a {
+  transition: opacity var(--t-fast) var(--ease);
+}
+.link:hover, .link-arrow:hover, .card__name:hover, .footcats__item:hover, .footer__col a:hover, .crumbs a:hover, .footer__logo:hover, .header__logo:hover, .cat-tile:hover .cat-tile__name {
+  opacity: 0.6;
+}
