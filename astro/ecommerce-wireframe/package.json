@@ -1,0 +1,37 @@
+{
+  "name": "wix-astro-ecommerce-wireframe",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "astro": "astro",
+    "dev": "astro dev",
+    "build": "astro build"
+  },
+  "dependencies": {
+    "@fontsource/wix-madefor-text": "^5.3.0",
+    "@wix/astro": "^2.39.0",
+    "@wix/astro-pages": "^2.0.4",
+    "@wix/business-tools": "^1.0.233",
+    "@wix/categories": "^1.0.224",
+    "@wix/dashboard": "^1.3.43",
+    "@wix/data": "^1.0.522",
+    "@wix/ecom": "^1.0.2515",
+    "@wix/essentials": "^1.0.15",
+    "@wix/forms": "^1.0.524",
+    "@wix/redirects": "^1.0.129",
+    "@wix/sdk": "^1.21.5",
+    "@wix/seo": "^1.0.91",
+    "@wix/stores": "^1.0.924",
+    "astro": "^5.8.0",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@astrojs/react": "^4.3.0",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@wix/astro-wix-hosting-adapter": "^2.0.0",
+    "@wix/cli": "^1.1.92",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

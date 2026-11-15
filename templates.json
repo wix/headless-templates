@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "ecommerce-wireframe",
+      "title": "Wireframe Store (Wix Stores)",
+      "subtitle": "Non-branded storefront: catalog, filters, quick add, cart and checkout",
+      "siteTemplateId": "5ae13b47-c316-47b9-807f-63f5dc9f27fe",
+      "gitPath": "astro/ecommerce-wireframe",
+      "vibeCompatible": false
     }
   ]
 }

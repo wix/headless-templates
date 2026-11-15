@@ -1,0 +1,32 @@
+---
+// A snapping horizontal rail with prev/next controls on pointer desktops
+// (touch users swipe; the peek is the affordance). Used for server-rendered
+// collections; ProductList.tsx is the island equivalent.
+interface Props { label: string; class?: string }
+const { label, class: cls = "" } = Astro.props;
+---
+<div class="plist" data-rail-root>
+  <div class="rail-nav plist__nav">
+    <button type="button" class="icon-btn" data-rail-prev aria-label={`Previous ${label}`}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg></button>
+    <button type="button" class="icon-btn" data-rail-next aria-label={`Next ${label}`}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg></button>
+  </div>
+  <ul role="list" class={`rail ${cls}`} aria-label={label} data-rail><slot /></ul>
+</div>
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>("[data-rail-root]")) {
+    const rail = root.querySelector<HTMLElement>("[data-rail]")!;
+    const prev = root.querySelector<HTMLButtonElement>("[data-rail-prev]")!;
+    const next = root.querySelector<HTMLButtonElement>("[data-rail-next]")!;
+    const nav = root.querySelector<HTMLElement>(".rail-nav")!;
+    const upd = () => {
+      prev.disabled = rail.scrollLeft < 8;
+      next.disabled = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 8;
+      nav.hidden = prev.disabled && next.disabled; // everything fits: no controls
+    };
+    prev.addEventListener("click", () => rail.scrollBy({ left: -rail.clientWidth * 0.8, behavior: "smooth" }));
+    next.addEventListener("click", () => rail.scrollBy({ left: rail.clientWidth * 0.8, behavior: "smooth" }));
+    rail.addEventListener("scroll", upd, { passive: true });
+    addEventListener("resize", upd);
+    upd();
+  }
+</script>

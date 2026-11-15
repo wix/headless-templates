@@ -1,0 +1,160 @@
+---
+// Home — a merchandising surface, not the shop page again. Order: hero with
+// one shopping action, categories, featured products, what to expect,
+// a promo band, why us, testimonials. Every collection is a rail on phones.
+import Layout from "../layouts/Layout.astro";
+import ProductList from "../components/ProductList";
+import ProductSlider from "../components/ProductSlider";
+import Rail from "../components/Rail.astro";
+import { IconChevronRight } from "../components/Icons";
+import { getSections, getNavCategories, getTestimonials, searchGallery } from "../lib/server";
+import { imgSrc, imgSrcSet } from "../lib/store";
+
+const [sec, cats, testimonials, featured] = await Promise.all([
+  getSections(),
+  getNavCategories(),
+  getTestimonials(),
+  searchGallery({ limit: 8 }).catch(() => ({ products: [] as any[] })), // "Featured" = the catalog's own order, not a ranking
+]);
+const saleCat = cats.find((c) => c.slug === "sale");
+const saleItems = saleCat ? (await searchGallery({ categoryId: saleCat._id, limit: 3 }).catch(() => ({ products: [] as any[] }))).products : [];
+const hero = sec["hero"], catSec = sec["categories"], feat = sec["featured"], promo = sec["promo"], tSec = sec["testimonials"], why = sec["why"], about = sec["about"];
+const whyItems = ["why-1", "why-2", "why-3", "why-4"].map((k) => sec[k]).filter(Boolean);
+---
+<Layout>
+  {hero && (
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__media media">
+        {hero.image && (
+          <picture>
+            {hero.imageMobile && <source media="(max-width: 767px)" srcset={imgSrcSet(hero.imageMobile, 0.75, [480, 720, 960, 1200])} sizes="100vw" />}
+            <img src={imgSrc(hero.image, 1600, 800)} srcset={imgSrcSet(hero.image, 0.5, [960, 1280, 1600, 2000, 2400])} sizes="100vw" width="1600" height="800" alt="" fetchpriority="high" />
+          </picture>
+        )}
+      </div>
+      <div class="hero__copy wrap">
+        <div class="hero__text">
+          <h1 id="hero-title" class="display">{hero.title}</h1>
+          {hero.body && <p class="lead">{hero.body}</p>}
+          {hero.ctaLabel && <a class="btn btn--primary hero__cta" href={hero.ctaLink ?? "/shop"}>{hero.ctaLabel}</a>}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {cats.length > 1 && (
+    <section class="section section--gutter-top" aria-labelledby="cats-title">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-head__text">
+            <h2 id="cats-title" class="h2">{catSec?.title ?? "Shop by Category"}</h2>
+            {catSec?.body && <p class="lead">{catSec.body}</p>}
+          </div>
+        </div>
+        <Rail label="categories" class="rail--categories">
+          {cats.map((c) => (
+            <li>
+              <a class="cat-tile" href={c.href}>
+                <span class="media media--square cat-tile__media">
+                  {imgSrc(c.image) ? <img src={imgSrc(c.image, 480, 480)} srcset={imgSrcSet(c.image, 1, [240, 360, 480, 720])} sizes="(min-width: 1280px) 15vw, (min-width: 768px) 22vw, 37vw" width="480" height="480" alt="" loading="lazy" /> : <span class="media__fallback" />}
+                  {imgSrc(c.hoverImage) && <img class="cat-tile__img-alt" src={imgSrc(c.hoverImage, 480, 480)} srcset={imgSrcSet(c.hoverImage, 1, [240, 360, 480, 720])} sizes="(min-width: 1280px) 15vw, (min-width: 768px) 22vw, 37vw" width="480" height="480" alt="" loading="lazy" aria-hidden="true" />}
+                  <span class="cat-tile__count btn btn--primary btn--sm" aria-hidden="true">View {c.itemCount} {c.itemCount === 1 ? "item" : "items"}</span>
+                </span>
+                <span class="cat-tile__name">{c.name}</span>
+              </a>
+            </li>
+          ))}
+        </Rail>
+      </div>
+    </section>
+  )}
+
+  {featured.products.length > 0 && (
+    <section class="section section--flush-top" aria-labelledby="feat-title">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-head__text">
+            <h2 id="feat-title" class="h2">{feat?.title ?? "Featured Products"}</h2>
+            {feat?.body && <p class="lead">{feat.body}</p>}
+          </div>
+          {feat?.ctaLabel && <a class="link-arrow section-head__link" href={feat.ctaLink ?? "/shop"}><span>{feat.ctaLabel}</span><IconChevronRight /></a>}
+        </div>
+        <ProductList client:visible products={featured.products} layout="rail-grid" label={feat?.title ?? "Featured products"} />
+      </div>
+    </section>
+  )}
+
+  {promo && (
+    <section class="section" aria-labelledby="promo-title">
+      <div class="wrap split split--media-wide">
+        <div class="split__media media promo__media">
+          {promo.image && <img src={imgSrc(promo.image, 1200, 800)} srcset={imgSrcSet(promo.image, 2 / 3, [640, 960, 1280, 1800])} sizes="(min-width: 1024px) 58vw, 100vw" width="1200" height="800" alt="" loading="lazy" />}
+        </div>
+        <div class="split__text">
+          <h2 id="promo-title" class="h1">{promo.title}</h2>
+          {promo.body && <p class="body muted">{promo.body}</p>}
+          {promo.ctaLabel && <a class="btn btn--primary" href={promo.ctaLink ?? "/shop"}>{promo.ctaLabel}</a>}
+          {saleItems.length > 0 && <ProductSlider client:visible products={saleItems} label="Sale products" />}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {why && whyItems.length > 0 && (
+    <section class="section" aria-labelledby="why-title">
+      <div class="wrap">
+        <div class="section-head why__head"><div class="section-head__text">
+          <h2 id="why-title" class="h2">{why.title}</h2>
+          {why.body && <p class="lead">{why.body}</p>}
+        </div></div>
+        <ul role="list" class="why__grid">
+          {whyItems.map((w: any) => (
+            <li class="why__item">
+              <svg class="why__icon" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15.25" fill="none" stroke="currentColor" stroke-width="1.5" /><path d="m10 16.5 4 4 8-9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <h3 class="h3">{w.title}</h3>
+              {w.body && <p class="muted">{w.body}</p>}
+            </li>
+          ))}
+        </ul>
+        <div class="why__photo">
+        <div class="media why__media">
+          {why.image && <img src={imgSrc(why.image, 1600, 900)} srcset={imgSrcSet(why.image, 9 / 16, [960, 1280, 1600, 2000, 2400])} sizes="(min-width: 1440px) 1344px, 100vw" width="1600" height="900" alt="" loading="lazy" />}
+        </div>
+          {about && (
+            <div class="why__about">
+              <h3 class="why__about-title">{about.title}</h3>
+              {about.body && <p class="why__about-body">{about.body}</p>}
+              {about.ctaLabel && <a class="btn btn--primary btn--sm" href={about.ctaLink ?? "/about"}>{about.ctaLabel}</a>}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {testimonials.length > 0 && (
+    <section class="section section--gutter-bottom" aria-labelledby="t-title">
+      <div class="wrap">
+        <div class="section-head testimonials-head"><div class="section-head__text"><h2 id="t-title" class="h2">{tSec?.title ?? "What Customers Say"}</h2></div></div>
+        <Rail label="testimonials" class="rail--wide testimonials">
+          {testimonials.map((t: any) => (
+            <li>
+              <figure class="quote">
+                <div class="quote__text">
+                  {t.title && <h3 class="quote__title h3">{t.title}</h3>}
+                  <blockquote><p>“{t.quote}”</p></blockquote>
+                  <figcaption class="small muted">{t.name}</figcaption>
+                </div>
+                {imgSrc(t.image) && (
+                  <span class="media media--square quote__media">
+                    <img src={imgSrc(t.image, 480, 480)} srcset={imgSrcSet(t.image, 1, [240, 360, 480, 720])} sizes="(min-width: 768px) 30vw, 78vw" width="480" height="480" alt="" loading="lazy" />
+                  </span>
+                )}
+              </figure>
+            </li>
+          ))}
+        </Rail>
+      </div>
+    </section>
+  )}
+</Layout>

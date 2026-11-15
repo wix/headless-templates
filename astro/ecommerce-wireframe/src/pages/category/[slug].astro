@@ -1,0 +1,32 @@
+---
+// A category page per category, at its own URL, with owner-managed SEO.
+import Layout from "../../layouts/Layout.astro";
+import GalleryPage from "../../components/GalleryPage.astro";
+import { WIX_APPS } from "@wix/essentials";
+import { SEO } from "@wix/seo/components";
+import { loadSEOTagsServiceConfig } from "@wix/seo/services";
+import { seoTags } from "@wix/seo";
+import { getCategoryBySlug } from "../../lib/server";
+
+export const wixMetadata = {
+  appDefId: WIX_APPS.checkoutAndOrders.id,
+  pageIdentifier: WIX_APPS.checkoutAndOrders.categoryPageMetadata.pageIdentifier,
+  identifiers: { slug: WIX_APPS.checkoutAndOrders.categoryPageMetadata.identifiers.collection },
+};
+
+const slug = Astro.params.slug!;
+const forwardedUrl = Astro.request.headers.get("x-wix-forwarded-url");
+const pageUrl = forwardedUrl && URL.canParse(forwardedUrl) && /^https?:$/.test(new URL(forwardedUrl).protocol) ? forwardedUrl : Astro.url.href;
+let category: any = null, seoTagsServiceConfig: any = null;
+try {
+  [category, seoTagsServiceConfig] = await Promise.all([
+    getCategoryBySlug(slug),
+    loadSEOTagsServiceConfig({ pageUrl, itemType: seoTags.ItemType.STORES_CATEGORY, itemData: { slug } }).catch(() => null),
+  ]);
+} catch (e) { console.error("category page", e); }
+if (!category || category.visible === false) return Astro.rewrite("/404");
+---
+<Layout title={category.name}>
+  {seoTagsServiceConfig && <SEO.Tags seoTagsServiceConfig={seoTagsServiceConfig} slot="seo-tags" />}
+  <GalleryPage title={category.name} description={category.description} categoryId={category._id} crumb={category.name} />
+</Layout>

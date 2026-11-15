@@ -1,0 +1,74 @@
+/*
+ * Design tokens — the ONE place the visual system is decided.
+ * Direction: a non-branded wireframe. Warm-neutral greys, a single ink colour
+ * doing all the emphasis, no accent hue — the cloning user brings the brand.
+ * Change a value here and every surface follows; nothing below hardcodes these.
+ */
+:root {
+  /* Colour — contrast checked on --bg and --surface (WCAG 2.2 AA) */
+  --bg: #ffffff;
+  --surface: #f2f2f2;       /* quiet fill: secondary buttons, chips, fields, footer */
+  --surface-2: #e7e7e7;     /* hover of --surface */
+  --line: #dbdbdb;          /* hairline: form fields, the single header rule */
+  --ink: #161616;           /* text, primary action, selected state — 17.8:1 */
+  --ink-hover: #3a3a3a;
+  --muted: #5c5c5c;         /* secondary text — 6.6:1 on --bg, 5.9:1 on --surface */
+  --on-ink: #ffffff;
+  --danger: #161616;        /* errors only — monochrome palette */
+  --ok: #161616;            /* in-stock / success only — monochrome palette */
+  --scrim: rgb(22 22 22 / 0.42);
+  --media: #eaeaea;         /* prototype placeholder fill behind every image slot */
+
+  /* Type — headings in Wix Madefor Text Medium, everything else Arial Regular; a scale with real steps between sizes */
+  --font: Arial, Helvetica, sans-serif;
+  --font-heading: "Wix Madefor Text", Arial, Helvetica, sans-serif;
+  --fs-micro: 0.75rem;      /* 12 — ribbons, labels in caps */
+  --fs-small: 0.875rem;     /* 14 — meta, captions */
+  --fs-body: 0.9375rem;     /* 15 — body floor */
+  --fs-lead: 1.125rem;      /* 18 */
+  --fs-h3: 1.25rem;         /* 20 */
+  --fs-h2: clamp(1.625rem, 1.2rem + 1.6vw, 2.375rem);   /* 26 → 38 */
+  --fs-h1: clamp(2rem, 1.35rem + 2.6vw, 3.25rem);       /* 32 → 52 */
+  --fs-display: clamp(2.5rem, 1.4rem + 4.4vw, 4.75rem); /* 40 → 76 */
+  --lh-tight: 1.1;
+  --lh-snug: 1.3;
+  --lh-body: 1.55;
+  --measure: 62ch;
+
+  /* Spacing tiers — inside a group / between groups / between sections.
+     Adjacent tiers differ by >= 8px so grouping is always legible. */
+  --s-1: 4px;
+  --s-2: 8px;    /* label → control, name → price */
+  --s-3: 16px;   /* control → control inside a group */
+  --s-4: 24px;   /* group → group */
+  --s-5: 40px;   /* last decision → next block */
+  --s-6: 64px;
+  --section: 56px;          /* section → section (phone); grows at desktop below */
+  --gutter: 20px;
+  --max: 1440px;            /* content stops here; wider screens add gutter, not columns */
+
+  /* Shape — controls get a small radius; media stays square-edged and full-bleed */
+  --r-control: 6px;
+  --r-pill: 999px;
+  --tap: 44px;              /* minimum target */
+  --control-h: 48px;        /* primary actions */
+
+  /* Motion — one easing, one duration family, nothing that bounces */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --t-fast: 160ms;
+  --t-panel: 260ms;
+
+  --header-h: calc(var(--tap) + 8px);
+  --z-header: 20;
+  --z-overlay: 50;
+}
+
+@media (min-width: 768px) {
+  :root { --gutter: 32px; --section: 80px; }
+}
+@media (min-width: 1024px) {
+  :root { --gutter: 48px; --section: 104px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --t-fast: 0ms; --t-panel: 0ms; }
+}

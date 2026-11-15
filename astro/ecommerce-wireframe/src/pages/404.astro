@@ -1,0 +1,13 @@
+---
+import Layout from "../layouts/Layout.astro";
+Astro.response.status = 404;
+---
+<Layout title="Page not found">
+  <section class="section">
+    <div class="wrap state state--page">
+      <h1 class="h1">We couldn't find that page</h1>
+      <p class="lead">It may have moved, or the link may be out of date.</p>
+      <div class="state__actions"><a class="btn btn--primary" href="/shop">Shop all products</a><a class="btn btn--secondary" href="/">Go to the home page</a></div>
+    </div>
+  </section>
+</Layout>

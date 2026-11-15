@@ -1,0 +1,28 @@
+---
+import Layout from "../layouts/Layout.astro";
+import WixForm from "../components/WixForm";
+import { forms } from "@wix/forms";
+import { getSections } from "../lib/server";
+import { FORM_IDS } from "../lib/forms-config";
+const [sec, form] = await Promise.all([getSections(), forms.getForm(FORM_IDS.contact).catch(() => null)]);
+const c = sec["contact"];
+const details = ["contact-address", "contact-details", "contact-hours"].map((k) => sec[k]).filter(Boolean);
+---
+<Layout title={c?.title ?? "Contact"}>
+  <section class="section">
+    <div class="wrap contact">
+      <div class="contact__intro">
+        <h1 class="h1">{c?.title ?? "Contact"}</h1>
+        {c?.body && <p class="lead">{c.body}</p>}
+        <dl class="contact__details">
+          {details.map((d) => (
+            <div><dt class="kicker">{d!.title}</dt><dd>{(d!.body ?? "").split("\n").map((l) => <span class="contact__line">{l}</span>)}</dd></div>
+          ))}
+        </dl>
+      </div>
+      <div class="contact__form">
+        {form ? <WixForm client:load form={form} formId={FORM_IDS.contact} submitFallback="Send" /> : <p class="muted">The contact form is unavailable right now.</p>}
+      </div>
+    </div>
+  </section>
+</Layout>

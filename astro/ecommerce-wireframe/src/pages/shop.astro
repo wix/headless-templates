@@ -1,0 +1,11 @@
+---
+// All products. Filter/sort/search state lives in the URL (?sort=&min=&max=&instock=&choices=&q=).
+import Layout from "../layouts/Layout.astro";
+import GalleryPage from "../components/GalleryPage.astro";
+import { getSections } from "../lib/server";
+const q = Astro.url.searchParams.get("q");
+const sec = await getSections();
+---
+<Layout title={q ? `Search: ${q}` : "Shop All"}>
+  <GalleryPage title={q ? `Results for “${q}”` : "Shop All"} description={q ? undefined : sec["categories"]?.body} />
+</Layout>

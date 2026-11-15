@@ -1,0 +1,133 @@
+---
+// Page shell: announcement bar, header, footer (with the newsletter form),
+// and the cart drawer mounted once at the root. Everything a shopper reads
+// here comes from Stores (categories), the CMS (SiteSections, LegalPages)
+// or Wix Forms (newsletter) — see COPY_INVENTORY.md.
+import "../styles/global.css";
+import "../styles/surfaces.css"; // after global: surface rules override the base component classes
+import { forms } from "@wix/forms";
+import { getNavCategories, getSections, getLegalPages, getSiteInfo } from "../lib/server";
+import { FORM_IDS } from "../lib/forms-config";
+import { PAGES } from "../lib/site";
+import CartButton from "../components/CartButton";
+import CartDrawer from "../components/CartDrawer";
+import MobileNav from "../components/MobileNav";
+import ShopMenu from "../components/ShopMenu";
+import SearchSuggest from "../components/SearchSuggest";
+import { imgSrc } from "../lib/store";
+import WixForm from "../components/WixForm";
+import { IconSearch } from "../components/Icons";
+
+interface Props { title?: string; description?: string; }
+const { title, description } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+
+const [cats, sec, legal, newsletter, site] = await Promise.all([
+  getNavCategories(),
+  getSections(),
+  getLegalPages(),
+  forms.getForm(FORM_IDS.newsletter).catch(() => null),
+  getSiteInfo(),
+]);
+// 48px thumbnails: fetched at 4× with higher quality and no sharpening, so soft placeholder shapes stay smooth on retina.
+const THUMB = { quality: 90, unsharpMask: { radius: 0, amount: 0, threshold: 0 } };
+const footCats = cats.map((c) => ({ name: c.name, slug: c.slug, href: c.href, count: c.itemCount, thumb: imgSrc(c.image, 192, 192, THUMB) }));
+const menuCats = cats.map((c) => ({ name: c.name, slug: c.slug, href: c.href, count: c.itemCount, thumb: imgSrc(c.image, 192, 192, THUMB) }));
+const menuPromo = sec["promo"] ? { title: sec["promo"].title, body: sec["promo"].body, href: sec["promo"].ctaLink ?? "/shop", image: imgSrc(sec["promo"].image, 240, 240) } : null;
+const announce = sec["announcement"]?.body;
+const sub = sec["subscribe"];
+const q = Astro.url.searchParams.get("q") ?? "";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {/* SEO: Wix injects title/description/OG for main pages automatically (edited in Dashboard → SEO);
+        item pages (products, categories) fill the seo-tags slot from each entity's SEO settings.
+        So the layout prints no <title> of its own — that would duplicate the platform's. */}
+    <slot name="seo-tags" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div id="page">
+      {announce && <div class="announce"><p class="wrap">{announce}</p></div>}
+      <header class="header">
+        <div class="wrap header__inner">
+          <div class="header__start">
+            <a class:list={["header__logo", { "header__logo--img": site.logo }]} href="/">{site.logo ? <img src={site.logo} alt="" height="28" /> : null}{site.name}</a>
+            <nav class="header__nav" aria-label="Main">
+              <ShopMenu client:load categories={menuCats} promo={menuPromo} />
+              {PAGES.map((p) => <a class="nav-link" href={p.href} aria-current={path === p.href ? "page" : undefined}>{p.label}</a>)}
+            </nav>
+          </div>
+          <div class="header__end">
+            <SearchSuggest client:idle id="hdr-q" className="header__search" defaultValue={q} />
+            <CartButton client:only="react" />
+            <MobileNav client:load categories={menuCats} pages={PAGES} current={path} />
+          </div>
+        </div>
+      </header>
+      <main id="main" tabindex="-1" class:list={[{ "main--inner": path !== "/" }]}><slot /></main>
+      <footer class="footer">
+        <div class="wrap footer__top">
+          <a class:list={["header__logo footer__logo", { "header__logo--img": site.logo }]} href="/">{site.logo ? <img src={site.logo} alt="" height="28" /> : null}{site.name}</a>
+          {footCats.length > 0 && (
+            <ul role="list" class="footcats__list" aria-label="Shop by category">
+              {footCats.map((c) => (
+                <li>
+                  <a class="footcats__item" href={c.href}>{c.name}</a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div class="wrap footer__grid">
+          {newsletter && (
+            <div class="footer__sub">
+              {sub?.title && <h2 class="h3">{sub.title}</h2>}
+              {sub?.body && <p class="muted small">{sub.body}</p>}
+              <WixForm client:visible form={newsletter} formId={FORM_IDS.newsletter} variant="inline" submitFallback="Subscribe" />
+            </div>
+          )}
+          <div class="footer__nav">
+            <nav class="footer__col footer__col--main" aria-label="Pages">
+              <ul role="list">
+                {PAGES.map((p) => <li><a href={p.href}>{p.label}</a></li>)}
+              </ul>
+            </nav>
+            <nav class="footer__col footer__col--quiet" aria-label="Policies">
+              <ul role="list">
+                {legal.map((l: any) => <li><a href={`/policies/${l.slug}`}>{l.title}</a></li>)}
+              </ul>
+            </nav>
+          </div>
+        </div>
+        {sec["footer-credit"]?.body && <div class="footer__credit"><p class="wrap small">{sec["footer-credit"].body}</p></div>}
+      </footer>
+    </div>
+    <CartDrawer client:only="react" />
+  <script>
+      // Colour names: a bubble above the hovered/focused/tapped swatch, kept inside the screen.
+      const tip = document.createElement("div"); tip.className = "swatch-tip"; tip.setAttribute("aria-hidden", "true"); document.body.append(tip);
+      let t = 0;
+      const show = (el: Element | null, ms = 0) => {
+        if (!(el instanceof HTMLElement) || !el.matches(".swatch")) return;
+        tip.textContent = el.getAttribute("aria-label") ?? ""; tip.setAttribute("data-on", "");
+        const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight, m = 8;
+        const left = Math.min(Math.max(m, r.left + r.width / 2 - w / 2), innerWidth - w - m);
+        const top = r.top - h - 6 < m ? r.bottom + 6 : r.top - h - 6;
+        tip.style.left = `${left}px`; tip.style.top = `${top}px`;
+        clearTimeout(t); if (ms) t = window.setTimeout(hide, ms);
+      };
+      const hide = () => tip.removeAttribute("data-on");
+      document.addEventListener("pointerover", (e) => { if ((e as PointerEvent).pointerType === "mouse") show((e.target as Element).closest(".swatch")); });
+      document.addEventListener("pointerout", (e) => { if ((e.target as Element).closest?.(".swatch")) hide(); });
+      document.addEventListener("focusin", (e) => { const s = (e.target as Element).closest?.(".swatch"); s && (s as HTMLElement).matches(":focus-visible") ? show(s) : null; });
+      document.addEventListener("focusout", hide);
+      document.addEventListener("pointerup", (e) => { if ((e as PointerEvent).pointerType !== "mouse") show((e.target as Element).closest(".swatch"), 1400); });
+      addEventListener("scroll", hide, { passive: true, capture: true });
+    </script>
+  </body>
+</html>
