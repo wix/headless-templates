@@ -58,7 +58,7 @@ const q = Astro.url.searchParams.get("q") ?? "";
           <div class="header__start">
             <a class:list={["header__logo", { "header__logo--img": site.logo }]} href="/">{site.logo ? <img src={site.logo} alt="" height="28" /> : null}{site.name}</a>
             <nav class="header__nav" aria-label="Main">
-              <ShopMenu client:load categories={menuCats} promo={menuPromo} />
+              <ShopMenu client:load categories={menuCats} promo={menuPromo} current={path === "/shop" || path.startsWith("/category/") || path.startsWith("/products/")} />
               {PAGES.map((p) => <a class="nav-link" href={p.href} aria-current={path === p.href ? "page" : undefined}>{p.label}</a>)}
             </nav>
           </div>

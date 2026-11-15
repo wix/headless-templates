@@ -7,7 +7,7 @@ import { IconChevronDown } from "./Icons";
 type Cat = { name: string; slug: string; href: string; count: number; thumb: string };
 type Promo = { title?: string; body?: string; href: string; image: string } | null;
 
-export default function ShopMenu({ categories, promo }: { categories: Cat[]; promo: Promo }) {
+export default function ShopMenu({ categories, promo, current = false }: { categories: Cat[]; promo: Promo; current?: boolean }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const btn = useRef<HTMLButtonElement>(null);
@@ -24,7 +24,7 @@ export default function ShopMenu({ categories, promo }: { categories: Cat[]; pro
   const cats = categories.filter((c) => c.slug !== "sale");
   return (
     <div className="shopmenu" ref={root} onPointerEnter={(e) => e.pointerType === "mouse" && show()} onPointerLeave={(e) => e.pointerType === "mouse" && hide()}>
-      <button ref={btn} type="button" className="nav-link shopmenu__btn" aria-expanded={open} aria-controls="shopmenu-panel" onClick={() => setOpen((o) => !o)}>
+      <button ref={btn} type="button" className="nav-link shopmenu__btn" data-current={current || undefined} aria-expanded={open} aria-controls="shopmenu-panel" onClick={() => setOpen((o) => !o)}>
         Shop <IconChevronDown />
       </button>
       <div id="shopmenu-panel" className="shopmenu__panel mega" hidden={!open}>

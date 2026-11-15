@@ -40,7 +40,7 @@ export function productImages(p: any): { m: any; alt: string; key: string }[] {
     const key = idOf(it);
     if (!key || seen.has(key)) continue;
     seen.add(key);
-    out.push({ m: it, alt: it.altText || p?.name || "", key });
+    out.push({ m: it, alt: it.altText || "", key });
   }
   return out;
 }

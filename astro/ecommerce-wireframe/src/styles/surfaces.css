@@ -20,7 +20,7 @@
 .header__nav { display: none; align-items: center; gap: var(--s-1); margin-left: var(--s-5); }
 .nav-link { display: inline-flex; align-items: center; gap: var(--s-1); min-height: var(--tap); padding: 0 var(--s-3); border: 0; border-radius: var(--r-control); background: transparent; font-size: var(--fs-body); font-weight: 400; text-decoration: none; transition: background-color var(--t-fast) var(--ease); }
 .nav-link:hover, .shopmenu__btn[aria-expanded="true"] { background: var(--surface); }
-.nav-link[aria-current="page"] { text-decoration: underline; text-underline-offset: 0.35em; }
+.nav-link[aria-current="page"], .shopmenu__btn[data-current] { text-decoration: underline; text-underline-offset: 0.35em; }
 .header__search { display: none; align-items: center; gap: var(--s-2); height: var(--tap); padding: 0 var(--s-3); border-radius: var(--r-control); background: var(--surface); transition: background-color var(--t-fast) var(--ease); }
 .header__search:hover, .header__search:focus-within { background: var(--surface-2); }
 .header__search svg { width: 18px; height: 18px; color: var(--muted); flex: none; }
@@ -530,3 +530,7 @@
 .link:hover, .link-arrow:hover, .card__name:hover, .footcats__item:hover, .footer__col a:hover, .crumbs a:hover, .footer__logo:hover, .header__logo:hover, .cat-tile:hover .cat-tile__name {
   opacity: 0.6;
 }
+
+/* Menu states: current page = underline; hover = outline; pressed (clicked) = solid ink fill. */
+.nav-link:active, .mega__item:active, .legal__nav a:active, .mnav__list a:active { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+.mega__item:active * { color: var(--on-ink); }
