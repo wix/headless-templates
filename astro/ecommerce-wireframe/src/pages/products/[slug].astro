@@ -1,0 +1,114 @@
+---
+// Product page: gallery + purchase column. Name, breadcrumbs and ribbons are
+// here; price, options and the action live in the island so the price can
+// follow the variant. Description and info sections come after the action.
+import Layout from "../../layouts/Layout.astro";
+import PdpGallery from "../../components/PdpGallery";
+import ProductPurchase from "../../components/ProductPurchase";
+import ProductList from "../../components/ProductList";
+import { WIX_APPS } from "@wix/essentials";
+import { SEO } from "@wix/seo/components";
+import { loadSEOTagsServiceConfig } from "@wix/seo/services";
+import { seoTags } from "@wix/seo";
+import { getProductBySlug, searchGallery } from "../../lib/server";
+import { productImages, ribbons, ribbonClass, sanitize, stripTags } from "../../lib/store";
+
+export const wixMetadata = {
+  appDefId: WIX_APPS.checkoutAndOrders.id,
+  pageIdentifier: WIX_APPS.checkoutAndOrders.productPageMetadata.pageIdentifier,
+  identifiers: { slug: WIX_APPS.checkoutAndOrders.productPageMetadata.identifiers.handle },
+};
+
+const slug = Astro.params.slug!;
+const forwardedUrl = Astro.request.headers.get("x-wix-forwarded-url");
+const pageUrl = forwardedUrl && URL.canParse(forwardedUrl) && /^https?:$/.test(new URL(forwardedUrl).protocol) ? forwardedUrl : Astro.url.href;
+let product: any = null, seoTagsServiceConfig: any = null;
+try {
+  [product, seoTagsServiceConfig] = await Promise.all([
+    getProductBySlug(slug).catch(() => null),
+    loadSEOTagsServiceConfig({ pageUrl, itemType: seoTags.ItemType.STORES_PRODUCT, itemData: { slug } }).catch(() => null),
+  ]);
+} catch (e) { console.error("product page", e); }
+if (!product) return Astro.rewrite("/404");
+
+// Skip Wix's system "All Products" crumb — it isn't a category the owner made.
+const crumbs = (product.breadcrumbsInfo?.breadcrumbs ?? []).filter((c: any) => c.categorySlug !== "all-products");
+const lastCrumb = crumbs[crumbs.length - 1];
+const images = productImages(product);
+const rbs = ribbons(product);
+const descHtml = sanitize(product.plainDescription ?? "");
+// The headline's lead-in: the description's first sentence (the full text lives in the details block below).
+const plain = stripTags(product.plainDescription ?? "").trim();
+const summary = (plain.match(/^[^.!?]+[.!?]/)?.[0] ?? plain).slice(0, 160);
+const info = (product.infoSections ?? []).filter((s: any) => s.title);
+
+// "More from <category>": same category, this product excluded, capped so the rail can't grow.
+let related: any[] = [];
+const catId = lastCrumb?.categoryId;
+if (catId) {
+  try { related = (await searchGallery({ categoryId: catId, limit: 9 })).products.filter((p: any) => p._id !== product._id).slice(0, 8); } catch (e) { console.error("related products", e); }
+}
+---
+<Layout title={product.name} description={stripTags(product.plainDescription).slice(0, 155)}>
+  {seoTagsServiceConfig && <SEO.Tags seoTagsServiceConfig={seoTagsServiceConfig} slot="seo-tags" />}
+  <div class="pdp wrap">
+    <div class="pdp__media"><PdpGallery client:load images={images} name={product.name} /></div>
+    <div class="pdp__info">
+      <div class="pdp__panel">
+        <nav aria-label="Breadcrumb" class="crumbs">
+          <ol role="list">
+            <li><a href="/shop">Shop</a></li>
+            {lastCrumb && <li><a href={`/category/${lastCrumb.categorySlug}`}>{lastCrumb.categoryName}</a></li>}
+          </ol>
+        </nav>
+        {rbs.length > 0 && <div class="ribbons ribbons--inline pdp__ribbons">{rbs.map((r) => <span class={ribbonClass(r)}>{r}</span>)}</div>}
+        <div class="pdp__headline">
+          <h1 class="pdp__name">{product.name}</h1>
+          {summary && <p class="pdp__summary">{summary}</p>}
+        </div>
+        <ProductPurchase client:load product={product} />
+      </div>
+    </div>
+  </div>
+  <script>
+    // Desktop: keep the buy panel fixed over the right half of the photo block, then park it at the block's end.
+    const info = document.querySelector<HTMLElement>(".pdp__info");
+    const panel = document.querySelector<HTMLElement>(".pdp__panel");
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const place = () => {
+      if (!info || !panel) return;
+      if (!mq.matches) { panel.removeAttribute("data-parked"); panel.style.left = panel.style.width = ""; return; }
+      const r = info.getBoundingClientRect();
+      panel.style.left = `${r.left}px`; panel.style.width = `${r.width}px`;
+      panel.toggleAttribute("data-parked", r.bottom <= window.innerHeight);
+    };
+    place();
+    addEventListener("scroll", place, { passive: true }); addEventListener("resize", place); mq.addEventListener("change", place);
+  </script>
+  {(descHtml || info.length > 0) && (
+    <section class="pdp-more" aria-label="Product details">
+      <div class="wrap pdp-more__grid">
+        {descHtml && <div class="prose pdp__desc" set:html={descHtml} />}
+        {info.length > 0 && (
+          <div class="accordion">
+            {info.map((s: any, i: number) => (
+              <details open={i === 0}>
+                <summary><span>{s.title}</span></summary>
+                <div class="prose" set:html={sanitize(s.plainDescription ?? "")} />
+              </details>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+  {related.length > 0 && lastCrumb && (
+    <section class="section" aria-labelledby="rel-title">
+      <div class="wrap">
+        <div class="section-head"><div class="section-head__text"><h2 id="rel-title" class="h2">More from {lastCrumb.categoryName}</h2></div>
+          <a class="link-arrow section-head__link" href={`/category/${lastCrumb.categorySlug}`}><span>View all</span></a></div>
+        <ProductList client:visible products={related} layout="rail" label={`More from ${lastCrumb.categoryName}`} />
+      </div>
+    </section>
+  )}
+</Layout>

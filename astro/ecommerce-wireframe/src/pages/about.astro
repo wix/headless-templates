@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getSections } from "../lib/server";
+import { imgSrc, imgSrcSet } from "../lib/store";
+const s = (await getSections())["about-page"];
+const paras = (s?.body ?? "").split(/\n\s*\n/).filter(Boolean);
+---
+<Layout title={s?.title ?? "About"}>
+  <section class="section">
+    <div class="wrap split split--reverse split--top">
+      <div class="split__media media about__media">
+        {s?.image && <img src={imgSrc(s.image, 960, 1200)} srcset={imgSrcSet(s.image, 1.25, [480, 720, 960, 1200])} sizes="(min-width: 1024px) 42vw, 100vw" width="960" height="1200" alt="" />}
+      </div>
+      <div class="split__text">
+        <h1 class="h1">{s?.title ?? "About"}</h1>
+        <div class="prose muted">{paras.map((p) => <p>{p}</p>)}</div>
+        <a class="btn btn--primary" href="/shop">Shop all products</a>
+      </div>
+    </div>
+  </section>
+</Layout>

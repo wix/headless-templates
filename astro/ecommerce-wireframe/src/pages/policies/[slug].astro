@@ -1,0 +1,23 @@
+---
+// Legal pages (Terms, Privacy, Shipping, Refund, Accessibility) from the LegalPages CMS collection.
+import Layout from "../../layouts/Layout.astro";
+import { getLegalPages } from "../../lib/server";
+import { sanitize } from "../../lib/store";
+const pages = await getLegalPages();
+const page: any = pages.find((p: any) => p.slug === Astro.params.slug);
+if (!page) return Astro.rewrite("/404");
+const html = typeof page.body === "string" ? page.body : "";
+---
+<Layout title={page.title}>
+  <section class="section">
+    <div class="wrap legal">
+      <nav class="legal__nav" aria-label="Policies">
+        <ul role="list">{pages.map((p: any) => <li><a href={`/policies/${p.slug}`} aria-current={p.slug === page.slug ? "page" : undefined}>{p.title}</a></li>)}</ul>
+      </nav>
+      <article class="legal__body">
+        <h1 class="h1">{page.title}</h1>
+        <div class="prose" set:html={sanitize(html)} />
+      </article>
+    </div>
+  </section>
+</Layout>

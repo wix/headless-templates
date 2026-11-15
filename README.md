@@ -55,6 +55,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Stores</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/ecommerce-wireframe">Wireframe Store</a></td>
+      <td>A non-branded storefront wireframe with category merchandising, filters, quick add, cart drawer and hosted checkout, with all copy and images managed in Wix.</td>
+      <td><a href="https://business-name-itayka0-0d07.wix-site-host.com">Demo</a></td>
+      <td>Wix Stores, Wix eCommerce, Wix Forms, Wix CMS</td>
+    </tr>
+    <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/astro/cms-catalog">CMS</a></td>
       <td>A catalog template backed by a Wix CMS (Wix Data) collection using Astro and Wix Headless.</td>
       <td></td>

@@ -1,0 +1,35 @@
+---
+// Shared body of /shop and /category/<slug>: heading + the gallery island,
+// with the first page rendered on the server so a real product card is in
+// the first screen before any JavaScript runs.
+import ShopGallery from "./ShopGallery";
+import { searchGallery, getFacets, SORT_LABELS } from "../lib/server";
+
+interface Props { title: string; description?: string; categoryId?: string; crumb?: string }
+const { title, description, categoryId, crumb } = Astro.props;
+const p = Astro.url.searchParams;
+const filters = {
+  sort: SORT_LABELS[p.get("sort") ?? ""] ? p.get("sort")! : "featured",
+  min: p.get("min") ?? "", max: p.get("max") ?? "",
+  inStock: p.get("instock") === "1",
+  choices: (p.get("choices") ?? "").split(",").filter(Boolean),
+  q: p.get("q") ?? "",
+};
+const num = (v: string) => (v ? Number(v) : undefined);
+const [initial, facets] = await Promise.all([
+  searchGallery({ categoryId, sort: filters.sort, min: num(filters.min), max: num(filters.max), inStock: filters.inStock, choiceIds: filters.choices, q: filters.q })
+    .catch(() => ({ products: [], nextCursor: null, count: 0 })),
+  getFacets(categoryId),
+]);
+---
+<div class="wrap page-head">
+  {crumb && (
+    <nav aria-label="Breadcrumb" class="crumbs"><ol role="list"><li><a href="/">Home</a></li><li><a href="/shop">Shop</a></li><li aria-current="page">{crumb}</li></ol></nav>
+  )}
+  <h1 class="h1">{title}</h1>
+  {description && <p class="lead">{description}</p>}
+</div>
+<div class="wrap">
+  <ShopGallery client:load categoryId={categoryId} initial={initial} initialFilters={filters} facets={facets.facets}
+    priceMin={facets.priceMin} priceMax={facets.priceMax} sortLabels={SORT_LABELS} />
+</div>
