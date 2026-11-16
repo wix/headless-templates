@@ -1,0 +1,22 @@
+---
+// Subcategory previews above a product grid: a swipeable row of small square photos with the name underneath.
+// The current one (and "All …") is ringed; hover draws the same 1px ink ring. Used by the category pages
+// (children of a department / siblings of a subcategory) and by /shop (the departments).
+import { imgSrc } from "../wix/media";
+
+export interface SubTile { label: string; href: string; imageUrl?: string | null; current?: boolean }
+interface Props { tiles: SubTile[]; label: string; class?: string }
+const { tiles, label, class: cls = "" } = Astro.props;
+---
+<ul class:list={["rail rail-subs rail-center", cls]} aria-label={label}>
+  {tiles.map((t) => (
+    <li>
+      <a href={t.href} class="subtile group block text-foreground no-underline" aria-current={t.current ? "page" : undefined}>
+        <span class="subtile__media relative block aspect-square overflow-hidden bg-muted">
+          {t.imageUrl && <img src={imgSrc(t.imageUrl, 288, 288)} alt="" width="288" height="288" loading="lazy" class="h-full w-full object-cover" />}
+        </span>
+        <span class="mt-2 block text-sm leading-snug">{t.label}</span>
+      </a>
+    </li>
+  ))}
+</ul>

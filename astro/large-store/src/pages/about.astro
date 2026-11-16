@@ -1,0 +1,17 @@
+---
+import Media from "../components/Media.astro";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { getSections } from "../lib/content";
+
+const s = (await getSections())["about-page"];
+const paras = String(s?.body ?? "").split(/\n\n+/).filter(Boolean);
+---
+<SiteLayout title={s?.title || "About"}>
+  <article class="wrap section grid items-start gap-10 lg:grid-cols-4 lg:gap-x-0">
+    <div class="lg:col-span-2 lg:col-start-1 lg:pr-16">
+      <h1 class="text-h2">{s?.title || "About"}</h1>
+      <div class="prose-site mt-6">{paras.map((p) => <p>{p}</p>)}</div>
+    </div>
+    {s?.image && <div class="aspect-[4/5] overflow-hidden bg-muted lg:col-start-4 lg:ml-[25px]"><Media src={s.image} alt="" ratio={1.25} sizes="(min-width: 1024px) 40vw, 100vw" /></div>}
+  </article>
+</SiteLayout>

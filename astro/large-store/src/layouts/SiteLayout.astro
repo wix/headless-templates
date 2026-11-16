@@ -1,0 +1,243 @@
+---
+// Site chrome for every page: announcement bar, header (with the mega menu), footer, bag.
+// Kept from the kit contract:
+//   - <slot name="seo-tags" /> in <head> (item pages' owner-editable SEO, incl. <title>)
+//   - the global.css import (Tailwind + the tokens every shipped component reads)
+//   - one <CartButton> in the header and one <CartDrawer> per page (client:only — browser state)
+//   - every category reachable by a real link (/category/<slug>), from the LIVE tree
+//
+// Navigation decisions:
+//   desktop  one "Shop" link (to /shop) opens, on hover, a panel (departments left, the chosen department's subcategories
+//            right) + three store-wide collection links + About. A nav that listed every department
+//            inline would grow with the catalog; the panel's footprint is fixed and scrolls.
+//   phone    a drawer that drills department → subcategory (MobileNav).
+import CartButton from "../components/storefront/CartButton";
+import CartDrawer from "../components/storefront/CartDrawer";
+import HeaderSearch from "../components/HeaderSearch";
+import HeroBestSellers from "../components/HeroBestSellers";
+import MobileNav from "../components/MobileNav";
+import WixForm from "../components/WixForm";
+import { getBrand, getLegalPages, getSocialLinks, getSections } from "../lib/content";
+import { findFormId } from "../lib/forms";
+import { HEADER_COLLECTIONS, PAGE_LINKS } from "../lib/site";
+import { getFreeShippingThreshold } from "../lib/shipping";
+import { getTree } from "../lib/taxonomy";
+import { imgSrc } from "../wix/media";
+import { fetchProductsByCategory } from "../wix/storefront/catalog";
+import type { ProductSummary } from "../wix/storefront/types";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** The page renders the phone buy bar (product page): reserve its height after the footer. */
+  buyBar?: boolean;
+}
+const { title, description, buyBar = false } = Astro.props;
+
+const [tree, sections, legal] = await Promise.all([getTree(), getSections(), getLegalPages()]);
+const { departments } = tree;
+const bar = sections.announcement?.body;
+const footer = sections.footer;
+const credit = sections["footer-credit"]?.body;
+const newsletter = sections.subscribe;
+// Footer widget: the Best Sellers category named by the CMS row (same source as the home rail); nothing if it has none.
+const bestCategory = sections.best?.categorySlug ? tree.bySlug.get(sections.best.categorySlug) ?? null : null;
+let bestSellers: ProductSummary[] = [];
+if (bestCategory) { try { bestSellers = (await fetchProductsByCategory(bestCategory.id, { limit: 5 })).slice(0, 5); } catch (err) { console.error("layout: best-sellers widget skipped", err); } }
+const freeShippingThreshold = await getFreeShippingThreshold();
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const collectionPaths = HEADER_COLLECTIONS.map((c) => `/category/${c.slug}`);
+// current page for the header nav: Shop covers the catalog (shop, categories that are not a header collection, products)
+const current = (href: string) => path === href;
+const inShop = path === "/shop" || path.startsWith("/products/") || (path.startsWith("/category/") && !collectionPaths.includes(path));
+const BUSINESS_NAME = getBrand(sections);
+const SOCIAL_LINKS = getSocialLinks(sections);
+const newsletterFormId = newsletter ? await findFormId("Newsletter") : null;
+const pageTitle = title === BUSINESS_NAME ? title : `${title} | ${BUSINESS_NAME}`;
+const collectionLinks = HEADER_COLLECTIONS.filter((c) => tree.bySlug.has(c.slug)).map((c) => ({ label: c.label, href: `/category/${c.slug}` }));
+const MEGA_SUBS = 12; // a department panel lists at most this many; "Shop all" reaches the rest
+const q = Astro.url.searchParams.get("q") ?? "";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {!Astro.slots.has("seo-tags") && <title>{pageTitle}</title>}
+    {description && <meta name="description" content={description} />}
+    <slot name="seo-tags" />
+  </head>
+  <body class="min-h-svh">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:bg-background focus:px-4 focus:py-3">Skip to content</a>
+
+    {bar && <p class="flex min-h-(--bar-h) items-center justify-center bg-inverse px-(--gutter) py-2 text-center text-sm text-inverse-foreground">{bar}</p>}
+
+    <header data-header class="sticky top-0 z-40 border-b border-border bg-background">
+      <div class="wrap flex h-(--header-h) items-center gap-2 lg:gap-6 xl:gap-8">
+        <div class="lg:hidden"><MobileNav client:load departments={departments.map((d) => ({ name: d.name, slug: d.slug, children: d.children.map((c) => ({ name: c.name, slug: c.slug })) }))} collections={collectionLinks} pages={PAGE_LINKS} current={path} /></div>
+        <a href="/" class="inline-flex min-h-11 items-center whitespace-nowrap logo font-display text-base font-bold tracking-tight text-foreground no-underline">{BUSINESS_NAME}</a>
+
+        <nav aria-label="Main" class="hidden items-center lg:flex">
+          <a id="shop-trigger" href="/shop" aria-current={inShop ? "page" : undefined} aria-haspopup="true" aria-expanded="false" aria-controls="mega" class="group nav-link inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap px-3 text-sm font-semibold text-foreground no-underline">
+            Shop
+            <svg class="transition-transform duration-[160ms] group-aria-expanded:rotate-180" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"></path></svg>
+          </a>
+          {collectionLinks.map((l) => <a href={l.href} aria-current={current(l.href) ? "page" : undefined} class="nav-link inline-flex min-h-11 items-center whitespace-nowrap px-3 text-sm font-medium text-foreground no-underline">{l.label}</a>)}
+          {/* About / Contact join the header from xl up; below that they live in the footer (the header would crowd at 1024). */}
+          {PAGE_LINKS.map((l) => <a href={l.href} aria-current={current(l.href) ? "page" : undefined} class="nav-link hidden min-h-11 items-center whitespace-nowrap px-3 text-sm font-medium text-foreground no-underline xl:inline-flex">{l.label}</a>)}
+        </nav>
+
+        <div class="ml-auto flex items-center gap-1 lg:gap-3">
+          <HeaderSearch client:load brand={BUSINESS_NAME} initial={q} tiles={departments.map((d) => ({ name: d.name, href: `/category/${d.slug}`, imageUrl: d.imageUrl ? imgSrc(d.imageUrl, 560, 747) : "" }))} />
+          <div class="-mr-1.5 flex h-11 w-11 items-center justify-center lg:mr-0 lg:h-9 lg:w-9"><CartButton client:only="react" /></div>
+        </div>
+      </div>
+
+      {/* The mega panel hangs directly from the header's bottom edge (no gap to cross), one hairline below it. */}
+      <div id="mega" data-open="false" class="absolute inset-x-0 top-full border-b border-border bg-background">
+        <div class="wrap grid min-h-[21rem] grid-cols-12 gap-x-10 py-8">
+          <ul class="mega-left isolate relative -my-8 -mr-8 col-span-3 flex flex-col py-8 pr-8" aria-label="Departments">
+            {departments.map((d, i) => (
+              <li><a href={`/category/${d.slug}`} data-dept={d.slug} class="mega-dept flex min-h-11 items-center justify-between px-3 text-base font-medium text-foreground no-underline" aria-current={i === 0 ? "true" : undefined}>{d.name}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></a></li>
+            ))}
+          </ul>
+          {departments.map((d, i) => (
+            <div data-panel={d.slug} hidden={i !== 0} class="col-span-9 grid grid-cols-9 gap-x-10 pl-6">
+              <div class="col-span-6">
+                <a href={`/category/${d.slug}`} class="inline-flex min-h-11 items-center gap-2 font-display text-h3 font-semibold text-foreground no-underline hover:opacity-60">Shop all {d.name}</a>
+                <ul class="mt-2 columns-2 gap-x-10 xl:columns-3">
+                  {d.children.slice(0, MEGA_SUBS).map((c) => <li class="break-inside-avoid"><a href={`/category/${c.slug}`} class="inline-flex min-h-11 items-center text-sm text-foreground no-underline hover:opacity-60">{c.name}</a></li>)}
+                </ul>
+              </div>
+              <a href={`/category/${d.slug}`} class="col-span-3 block self-start no-underline" tabindex="-1" aria-hidden="true">
+                <div class="aspect-[4/3] overflow-hidden bg-muted">{d.imageUrl && <img src={imgSrc(d.imageUrl, 560, 420)} alt="" width="560" height="420" loading="lazy" class="h-full w-full object-cover" />}</div>
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="bg-background">
+      {/* 1px ink rule across the content area (not the full window) */}
+      <div class="wrap"><div class="border-t border-foreground"></div></div>
+      {/* Four equal columns on desktop, the same split as the testimonials strip: the widget is column 1 wide, the link lists start at the
+            text edge of columns 2 and 3 (1px border + 24px cell padding = 25px), and the sign-up sits in column 4 on the same text edge (+25px left, 24px right). */}
+      <div class="wrap section grid gap-12 lg:grid-cols-4 lg:gap-x-0">
+        <div class="min-w-0">
+          <a href="/" class="inline-flex min-h-11 items-center logo font-display text-base font-bold tracking-tight text-foreground no-underline">{BUSINESS_NAME}</a>
+          {footer?.body && <p class="mt-4 max-w-[34ch] text-muted-foreground">{footer.body}</p>}
+          <ul class="mt-4 flex flex-wrap gap-x-5 text-sm" aria-label="Social media">
+            {SOCIAL_LINKS.map((l) => <li><a href={l.href} target="_blank" rel="noopener noreferrer" class="inline-flex min-h-8 items-center text-foreground no-underline hover:opacity-60">{l.label}</a></li>)}
+          </ul>
+          {bestSellers.length > 0 && <div class="mt-6"><HeroBestSellers client:visible products={bestSellers} label={sections.best?.title || bestCategory?.name || "Best Sellers"} /></div>}
+        </div>
+        {/* The sitemap: both lists live inside column 3 (same width as the third column of the testimonials strip). Shop's text edge is at +25px, like the quotes; Information starts exactly on the column's centre line. */}
+        <div class="grid grid-cols-2 gap-x-6 lg:col-start-3 lg:gap-x-0">
+          <nav aria-label="Shop" class="lg:pl-[25px]">
+            <h2 class="kicker mb-2 text-muted-foreground">Shop</h2>
+            <ul class="text-sm">
+              {departments.slice(0, 8).map((d) => <li><a href={`/category/${d.slug}`} class="inline-flex min-h-8 items-center text-foreground no-underline hover:opacity-60">{d.name}</a></li>)}
+              {collectionLinks.map((l) => <li><a href={l.href} class="inline-flex min-h-8 items-center text-foreground no-underline hover:opacity-60">{l.label}</a></li>)}
+            </ul>
+          </nav>
+          <nav aria-label="Information">
+            <h2 class="kicker mb-2 text-muted-foreground">Information</h2>
+            <ul class="text-sm">
+              {PAGE_LINKS.map((l) => <li><a href={l.href} class="inline-flex min-h-8 items-center text-foreground no-underline hover:opacity-60">{l.label}</a></li>)}
+              {legal.map((p) => <li><a href={`/policies/${p.slug}`} class="inline-flex min-h-8 items-center text-foreground no-underline hover:opacity-60">{p.title}</a></li>)}
+            </ul>
+          </nav>
+        </div>
+        {newsletter && newsletterFormId && (
+          <section aria-labelledby="nl-title" class="lg:pl-[25px] lg:pr-6">
+            <h2 id="nl-title" class="text-h3">{newsletter.title}</h2>
+            {newsletter.body && <p class="mt-2 text-muted-foreground">{newsletter.body}</p>}
+            <div class="mt-6"><WixForm client:load formId={newsletterFormId} idPrefix="nl" thanks="Thanks for signing up." again="Sign Up Another Email" /></div>
+          </section>
+        )}
+      </div>
+      {credit && <div class="wrap pb-8 text-xs text-muted-foreground">{credit}</div>}
+    </footer>
+    {buyBar && <div aria-hidden="true" class="h-[calc(5rem+env(safe-area-inset-bottom))] bg-background md:hidden"></div>}
+    <CartDrawer client:only="react" freeShippingThreshold={freeShippingThreshold} recommended={bestSellers} recommendedTitle={sections.best?.title || bestCategory?.name || "Best Sellers"} />
+  </body>
+</html>
+
+<style is:global>
+  /* The mega panel: closed by default and always closed below lg (the phone uses the drawer). */
+  #mega { display: none; }
+  #mega[data-open='true'] { display: block; }
+  @media (max-width: 1023px) { #mega, #mega[data-open='true'] { display: none; } }
+  /* One hover treatment across the whole header cluster: the label dims. */
+  .mega-dept { transition: background-color 160ms var(--ease-site); }
+  .mega-dept:hover, .mega-dept[aria-current='true'] { background: var(--color-background); }
+  /* left pane: light grey from the window edge to the end of its column; the right pane stays white */
+  #mega { overflow-x: clip; }
+  .mega-left::before { content: ""; position: absolute; inset: 0 0 0 -100vw; background: var(--color-secondary); z-index: -1; }
+  /* dims the page below the open menu, like the other pop-ups; clicks and hover pass through it */
+  #mega[data-open='true']::after { content: ""; position: absolute; top: 100%; left: 0; right: 0; height: 100vh; background: color-mix(in srgb, var(--color-foreground) 40%, transparent); pointer-events: none; }
+  .mega-dept svg { opacity: 0; transition: opacity 160ms var(--ease-site); }
+  .mega-dept[aria-current='true'] svg, .mega-dept:hover svg { opacity: 1; }
+</style>
+
+<script>
+  // Rail edge fades: mark each .rail with data-start / data-end ("false" = more content that way), so the CSS mask
+  // fades only the edges that actually hide something. Re-measured on scroll, resize and when islands add rails.
+  const mark = (el: HTMLElement) => {
+    const max = el.scrollWidth - el.clientWidth;
+    el.dataset.start = String(el.scrollLeft <= 4);
+    el.dataset.end = String(max <= 4 || el.scrollLeft >= max - 4);
+  };
+  const seen = new WeakSet<Element>();
+  const ro = new ResizeObserver((entries) => entries.forEach((e) => mark(e.target as HTMLElement)));
+  const bind = () => document.querySelectorAll<HTMLElement>(".rail").forEach((el) => {
+    if (seen.has(el)) return;
+    seen.add(el);
+    el.addEventListener("scroll", () => mark(el), { passive: true });
+    ro.observe(el);
+    mark(el);
+  });
+  bind();
+  new MutationObserver(bind).observe(document.body, { childList: true, subtree: true });
+</script>
+
+<script>
+  // Mega menu behaviour. Click toggles (keyboard + touch laptops); a mouse also opens it after a short
+  // intent delay and closes it after a longer one, so crossing between trigger and panel never
+  // flickers. The panel is attached to the header edge, so there is no dead band to cross.
+  const header = document.querySelector<HTMLElement>("[data-header]");
+  const trigger = document.getElementById("shop-trigger") as HTMLAnchorElement | null;
+  const mega = document.getElementById("mega");
+  if (header && trigger && mega) {
+    let openT: number, closeT: number;
+    const depts = [...mega.querySelectorAll<HTMLAnchorElement>("[data-dept]")];
+    const panels = [...mega.querySelectorAll<HTMLElement>("[data-panel]")];
+    const activate = (slug: string) => {
+      depts.forEach((a) => (a.dataset.dept === slug ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current")));
+      panels.forEach((p) => (p.hidden = p.dataset.panel !== slug));
+    };
+    const setOpen = (on: boolean) => {
+      mega.dataset.open = String(on);
+      trigger.setAttribute("aria-expanded", String(on));
+    };
+    // Clicking "Shop" is a plain link to /shop (all products); the panel opens on hover (mouse), and from the keyboard with ArrowDown.
+    trigger.addEventListener("keydown", (e) => { if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); (mega.querySelector("[data-dept]") as HTMLElement | null)?.focus(); } });
+    trigger.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") { clearTimeout(closeT); openT = window.setTimeout(() => setOpen(true), 120); } });
+    header.addEventListener("pointerenter", () => clearTimeout(closeT));
+    header.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") { clearTimeout(openT); closeT = window.setTimeout(() => setOpen(false), 260); } });
+    header.addEventListener("focusout", (e) => { if (!header.contains(e.relatedTarget as Node | null)) setOpen(false); });
+    depts.forEach((a) => {
+      a.addEventListener("pointerenter", () => activate(a.dataset.dept!));
+      a.addEventListener("focus", () => activate(a.dataset.dept!));
+    });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && mega.dataset.open === "true") { setOpen(false); trigger.focus(); } });
+    document.addEventListener("pointerdown", (e) => { if (!header.contains(e.target as Node)) setOpen(false); });
+  }
+</script>

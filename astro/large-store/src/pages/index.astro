@@ -1,0 +1,137 @@
+---
+// Home. Composition (top to bottom): hero → department tiles → New Arrivals rail → promo pair →
+// Best Sellers rail → two department spotlights → About → testimonials. Every repeating collection is a
+// rail (phone: peek + snap; desktop: all-in-view or prev/next). All copy comes from the SiteSections
+// CMS collection by key; each product rail's CATEGORY is a field there too (categorySlug), so the owner
+// retargets a rail from the dashboard. Nothing here is fabricated: rails render only what the catalog holds.
+import Media from "../components/Media.astro";
+import { ProductRail, TileRail } from "../components/Rails";
+import ReviewsStrip from "../components/ReviewsStrip";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { getBanners, getBrand, getReviewSummary, getSections, getTestimonials, type Section } from "../lib/content";
+import { titleCase } from "../lib/text";
+import { getTree } from "../lib/taxonomy";
+import { fetchProductsByCategory } from "../wix/storefront/catalog";
+import type { Category, ProductSummary } from "../wix/storefront/types";
+
+const [tree, s, quotes] = await Promise.all([getTree(), getSections(), getTestimonials()]);
+
+// A rail's products: the category its CMS row names (slug), else nothing — never a guess.
+async function railFor(sec?: Section, limit = 12): Promise<{ category: Category | null; products: ProductSummary[] }> {
+  const category = sec?.categorySlug ? tree.bySlug.get(sec.categorySlug) ?? null : null;
+  if (!category) return { category: null, products: [] };
+  try { return { category, products: await fetchProductsByCategory(category.id, { limit }) }; } catch (err) { console.error("home: rail products failed", err); return { category, products: [] }; }
+}
+const [fresh, best, spot1, spot2] = await Promise.all([railFor(s.new), railFor(s.best), railFor(s["spotlight-1"], 8), railFor(s["spotlight-2"], 8)]);
+
+const hero = s.hero;
+const banners = getBanners(s);
+const reviewSummary = getReviewSummary(s);
+const promos = [s["promo-1"], s["promo-2"]].filter(Boolean) as Section[];
+const about = s.about;
+const tiles = tree.departments.map((d) => ({ name: d.name, href: `/category/${d.slug}`, imageUrl: d.imageUrl }));
+const spots = [
+  { sec: s["spotlight-1"], ...spot1 },
+  { sec: s["spotlight-2"], ...spot2 },
+].filter((x) => x.category && x.products.length);
+---
+<SiteLayout title={getBrand(s)}>
+  {/* First screen: hero + category slider always fill exactly one viewport (below the announcement bar and header);
+      the hero takes whatever the slider leaves. min-h, not h: a very short screen grows instead of clipping. */}
+  <div class="flex min-h-[calc(100svh-var(--bar-h)-var(--header-h))] flex-col">
+    {hero && (
+      // Two full-bleed banners side by side (stacked on a phone), no gap. Each: photo, kicker + title at the top, paragraph + outline
+      // button at the bottom; the padding equals the page gutter on every side. The banners take whatever height the category slider leaves.
+      // lg min-height = the whole first screen minus the COLLAPSED category slider (14.5rem), so the hero keeps its height when the
+      // slider is expanded and the content below is pushed down instead.
+      <section aria-labelledby="hero-title" class="grid min-h-0 flex-1 lg:min-h-[max(34rem,calc(100svh-var(--bar-h)-var(--header-h)-14.5rem))] lg:grid-cols-[var(--hero-split)_1fr]" style="--hero-split: calc((100% - min(100%, var(--content-max))) / 2 + var(--gutter) + 3 * ((min(100%, var(--content-max)) - 2 * var(--gutter) - 3 * var(--card-gap)) / 4.25 + var(--card-gap)))">
+        {[
+          { title: hero.title, body: hero.body, ctaLabel: hero.ctaLabel, ctaLink: hero.ctaLink || "/shop", image: hero.image, imageMobile: hero.imageMobile, id: "hero-title" },
+          s["hero-2"] && { title: s["hero-2"].title, body: s["hero-2"].body, ctaLabel: s["hero-2"].ctaLabel, ctaLink: s["hero-2"].ctaLink || "/shop", image: s["hero-2"].image, imageMobile: s["hero-2"].imageMobile, id: "hero-title-2" },
+        ].filter(Boolean).map((b: any, i: number) => (
+          <div class="relative flex min-h-[26rem] flex-col justify-between overflow-hidden bg-muted p-5 lg:only:col-span-full lg:min-h-0 lg:p-(--gutter)">
+            <div class="absolute inset-0"><Media src={b.image} srcMobile={b.imageMobile} ratio={0.8} ratioMobile={1.1} sizes={i === 0 ? "(min-width: 1024px) 75vw, 100vw" : "(min-width: 1024px) 25vw, 100vw"} alt="" eager={i === 0} class="object-right" /></div>
+            {i === 0 ? (
+              <>
+                <div class="relative mt-auto">
+                  <h1 id={b.id} class="text-h1">{b.title}</h1>
+                  {b.body && <p class="mt-4 max-w-[34rem] text-foreground">{b.body}</p>}
+                  {b.ctaLabel && <a href={b.ctaLink} class="btn btn-outline mt-5">{titleCase(b.ctaLabel)}</a>}
+                </div>
+              </>
+            ) : (
+              // narrow column: styled like the grid banners (h3, muted paragraph), the whole block at the bottom so both buttons share a baseline
+              <div class="relative mt-auto">
+                <h2 id={b.id} class="text-h3">{b.title}</h2>
+                {b.body && <p class="mt-3.5 text-muted-foreground">{b.body}</p>}
+                {b.ctaLabel && <a href={b.ctaLink} class="btn btn-outline mt-5">{titleCase(b.ctaLabel)}</a>}
+              </div>
+            )}
+          </div>
+        ))}
+      </section>
+    )}
+
+    {tiles.length > 0 && (
+      <section class="wrap shrink-0 py-6 lg:py-8" aria-label={s.departments?.title || "Shop by category"}>
+        <TileRail client:load tiles={tiles} title={s.departments?.title} ctaLabel="All Products" ctaHref="/shop" />
+      </section>
+    )}
+  </div>
+
+  {fresh.products.length > 0 && (
+    <section class="wrap section">
+      <ProductRail client:load banner={banners.rail.new} products={fresh.products} title={s.new?.title || fresh.category?.name} body={s.new?.body} ctaLabel={s.new?.ctaLabel} ctaHref={`/category/${fresh.category!.slug}`} />
+    </section>
+  )}
+
+  {promos.length > 0 && (
+    // Split screen: two full-bleed photo banners side by side (stacked on a phone), no gap, the copy lying on the photos — title at the
+    // top, paragraph + outline button at the bottom, padded by the page gutter. The whole banner is the link (the button fills on hover).
+    <section aria-label="Promotions" class="grid lg:grid-cols-2">
+      {promos.map((p) => (
+        <a href={p.ctaLink || "/shop"} class="group relative flex min-h-[80svh] flex-col justify-between overflow-hidden bg-muted p-5 text-foreground no-underline lg:p-(--gutter)">
+          <div class="absolute inset-0"><Media src={p.image} alt="" ratio={0.9} ratioMobile={1} sizes="(min-width: 1024px) 50vw, 100vw" class="object-right" /></div>
+          <h2 class="relative text-h2">{p.title}</h2>
+          <div class="relative">
+            {p.body && <p class="max-w-[34rem] text-foreground">{p.body}</p>}
+            {p.ctaLabel && <span class="btn btn-outline mt-5">{titleCase(p.ctaLabel)}</span>}
+          </div>
+        </a>
+      ))}
+    </section>
+  )}
+
+  {best.products.length > 0 && (
+    <section class="wrap section">
+      <ProductRail client:load banner={banners.rail.best} products={best.products} title={s.best?.title || best.category?.name} body={s.best?.body} ctaLabel={s.best?.ctaLabel} ctaHref={`/category/${best.category!.slug}`} />
+    </section>
+  )}
+
+  {spots.map((x) => (
+    <section class="wrap section pt-0 lg:pt-0">
+      <ProductRail client:load products={x.products} title={x.category!.name} body={x.sec?.body} ctaLabel={x.sec?.ctaLabel} ctaHref={`/category/${x.category!.slug}`} />
+    </section>
+  ))}
+
+  {about && (
+    // Full-bleed photo; the copy sits in a grey panel (same fill and 16px-class padding as the cards) lying on it.
+    <section class="relative flex flex-col bg-muted lg:min-h-[36rem] lg:flex-row lg:items-center" aria-labelledby="about-title">
+      <div class="relative order-2 aspect-[4/5] lg:absolute lg:inset-0 lg:aspect-auto"><Media src={about.image} alt="" ratio={0.5} ratioMobile={0.8} sizes="100vw" /></div>
+      <div class="wrap relative order-1 w-full bg-background py-8 lg:bg-transparent lg:py-14">
+        {/* desktop: exactly as wide as a product card in the rails above ((content − 3 gaps) / 4.3, the rail-products item width) */}
+        <div class="bg-background lg:w-[calc((100%-3*var(--card-gap))/4.3)] lg:p-6">
+          <h2 id="about-title" class="text-h2">{about.title}</h2>
+          {about.body && <p class="mt-3 text-muted-foreground">{about.body}</p>}
+          {about.ctaLabel && <a href={about.ctaLink || "/about"} class="btn btn-outline mt-6">{titleCase(about.ctaLabel)}</a>}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {quotes.length > 0 && (
+    <section class="wrap section">
+      <ReviewsStrip client:load quotes={quotes.map((q) => ({ quote: String(q.quote ?? ""), name: String(q.name ?? "") }))} title={s.testimonials?.title} summary={reviewSummary} />
+    </section>
+  )}
+</SiteLayout>

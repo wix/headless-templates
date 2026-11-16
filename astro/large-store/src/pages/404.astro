@@ -1,0 +1,11 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+Astro.response.status = 404;
+---
+<SiteLayout title="Page not found">
+  <div class="wrap section flex min-h-[50svh] flex-col items-center justify-center gap-6 text-center">
+    <h1 class="text-h2">We can’t find that page</h1>
+    <p class="max-w-[48ch] text-muted-foreground">It may have moved, or the link may be wrong. Try the shop instead.</p>
+    <div class="flex flex-wrap justify-center gap-(--card-gap)"><a href="/shop" class="btn btn-primary">Shop All Products</a><a href="/" class="btn btn-secondary">Back to Home</a></div>
+  </div>
+</SiteLayout>
