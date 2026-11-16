@@ -1,0 +1,56 @@
+---
+// /classes/<slug>: one class or course. Photo, description and facts on top; below, a calendar with every date of this class
+// (a client island: availability is read live in the visitor's time zone), each date leading to the booking form.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import Timetable from "../../components/schedule/Timetable";
+import ReviewsRail from "../../components/ReviewsRail.astro";
+import { getTeam } from "../../lib/team";
+import { getContentItems, applyLevels, toReviews } from "../../lib/content";
+import { listServices, formatMoney, type ServiceDTO } from "../../lib/services";
+
+let services: ServiceDTO[] = [];
+try { services = await listServices(); } catch (err) { console.error(err); /* guarded */ }
+await applyLevels(services);
+const reviews = await getContentItems("testimonials");
+const team = await getTeam(services).catch(() => []);
+const svc = services.find((s) => s.slug === Astro.params.slug);
+if (!svc) return Astro.rewrite("/404");
+const price = svc.price ? formatMoney(Number(svc.price.value), svc.price.currency) : "Free";
+const staff = svc.staff.map((s) => s.name).filter(Boolean).join(", ");
+const desc = (svc.description || svc.tagLine || "").trim();
+---
+<SiteLayout title={svc.name} description={svc.tagLine || undefined}>
+  <section class="section on-plain">
+    <div class="wrap">
+      <a href="/#classes-title" class="back-link">← All classes</a>
+      <div class="mt-6 grid gap-8 lg:grid-cols-2 lg:gap-16">
+        {svc.image && <img src={svc.image} alt="" width="960" height="720" class="r-card aspect-[4/3] w-full object-cover" />}
+        <div>
+          <p class="plan-badge w-fit">{svc.type === "COURSE" ? "Course" : svc.category.name || "Class"}</p>
+          <h1 class="text-h2 mt-4">{svc.name}</h1>
+          {desc && <p class="mt-4 max-w-[56ch] text-lg text-muted-foreground">{desc}</p>}
+          <dl class="cls-facts">
+            {staff && <div><dt>Featuring</dt><dd>{staff}</dd></div>}
+            <div><dt>Where</dt><dd>{svc.locationLabel}</dd></div>
+            <div><dt>Price</dt><dd>{price}</dd></div>
+          </dl>
+          <a href="#dates" class="btn btn-primary mt-8">See dates</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="section on-plain" id="dates" aria-labelledby="dates-title">
+    <div class="wrap">
+      <h2 id="dates-title" class="text-h2 text-center">Dates</h2>
+      <div class="mt-6"><!-- client:only on purpose: sessions are read and shown in the visitor's own time zone, which the server does not know. --><Timetable client:only="react" services={[svc]} title={svc.name} hideTitle /></div>
+    </div>
+  </section>
+  {reviews.length > 0 && (
+    <section class="section on-plain rv-sec" aria-labelledby="class-reviews-title">
+      <div class="wrap">
+        <h2 id="class-reviews-title" class="text-h2 text-center">What People Say About This Class</h2>
+      </div>
+      <div class="mt-6 lg:mt-10"><ReviewsRail id="class-reviews-title-rail" items={toReviews(reviews, team.map((m) => m.photo), svc.name)} /></div>
+    </section>
+  )}
+</SiteLayout>

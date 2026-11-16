@@ -1,0 +1,1180 @@
+@import url('https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:wght@400;500;600&display=swap');
+@import 'tailwindcss';
+
+/* ─── THE design system ─────────────────────────────────────────────────────────────────
+   Every colour, type size, radius, spacing tier and motion value on the site is decided
+   HERE, and every component reads these tokens through Tailwind utilities (bg-secondary,
+   text-muted-foreground, text-h2 …) or the .component classes below. Change a token,
+   everything follows. Nothing in a component repeats a value from this file.
+
+   Direction: a non-branded Wix Studio wireframe for a schedule (classes and courses) booking site.
+   Greys only, ink as the single emphasis colour; the cloning user brings the brand.
+   Contrast (WCAG AA): foreground on background 18:1, muted-foreground on background 6.7:1
+   and on secondary 6.1:1, inverse-muted on inverse 7.9:1, destructive on white 6.1:1. */
+@theme {
+  /* ── colour ── */
+  --color-background: #ffffff;
+  --color-foreground: #161616;
+  --color-primary: #161616;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f2f2f2;            /* light band; quiet fills (cards, notes, day buttons) */
+  --color-secondary-foreground: #161616;
+  --color-muted: #e7e7e7;                /* mid band; hover fill of quiet controls */
+  --color-muted-foreground: #5c5c5c;
+  --color-inverse: #161616;
+  --color-inverse-foreground: #ffffff;
+  --color-inverse-muted: #9a9a9a;
+  --color-border: #dbdbdb;               /* hairlines and form-field edges only */
+  --color-destructive: #161616;
+
+  /* ── shape ── media and cards are square-edged; controls are pills (change --radius-control for
+     square buttons). Fields, counters and payment rows use --radius-chip, sheets and modals --radius-sheet. */
+  --radius-card: 0.75rem;                /* the one outer rounding of every plaque, card and photo */
+  --radius-lg: var(--radius-card);
+  --radius-md: var(--radius-card);
+  --radius-sm: var(--radius-card);
+  --radius-control: 9999px;
+  --radius-field: 6px;                   /* header nav links, icon buttons on desktop */
+  --radius-chip: 6px;
+  --radius-sheet: 12px;
+
+  /* ── type ── Arial body at 15px, Wix Madefor Text headings at weight 500 (the reference's scale) */
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-display: 'Wix Madefor Text', Arial, Helvetica, sans-serif;
+  --text-xs: 0.875rem;                                   /* 14: meta (the minimum for running text) */
+  --text-sm: 0.875rem;                                   /* 14: labels */
+  --text-base: 0.9375rem;                                /* 15: body */
+  --text-lg: 1.125rem;                                   /* 18: lead */
+  --text-lead: 1.125rem;
+  --text-h3: 1.25rem;                                    /* 20: card and tile titles */
+  --text-h3--line-height: 1.3;
+  --text-h3--letter-spacing: -0.005em;
+  --text-h2: clamp(1.625rem, 1.2rem + 1.6vw, 2.375rem);  /* 26→38: section titles */
+  --text-h2--line-height: 1.1;
+  --text-h2--letter-spacing: -0.015em;
+  --text-h1: clamp(2rem, 1.35rem + 2.6vw, 3.25rem);      /* 32→52 */
+  --text-h1--line-height: 1.1;
+  --text-h1--letter-spacing: -0.02em;
+  --text-display: clamp(2.5rem, 1.4rem + 4.4vw, 4.75rem); /* 40→76: hero */
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.025em;
+
+  /* ── motion ── one easing, two durations (state 160ms, sheet 260ms), everywhere. */
+  --ease-site: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ── spacing tiers ── declared once; the section tier and gutter CHANGE at each breakpoint.
+     8   label → control            (gap-2)
+     16  control → control           (gap-4)
+     24  group → group               (gap-6)
+     40  last decision → next block  (gap-10 / mt-10)
+     section: 56 phone / 80 tablet / 104 desktop
+     gutter:  20 phone / 32 tablet / 48 desktop; content stops at 1440.
+   The booking flow is a narrow column (--flow-max, 720 as drawn in Figma) centred in the page.
+   --bar-h is the sticky action bar's footprint (phone and desktop). */
+:root {
+  --section-y: 3.5rem;
+  --gutter: 1.25rem;
+  --header-h: 3.25rem;
+  --content-max: 90rem;
+  --flow-max: 45rem;
+  --bar-h: 4.5rem;
+  --tt-grid-max: 110rem;      /* the desktop timetable grid is bounded: past ~5 rows of sessions a day it scrolls inside, the page never grows with the data */
+}
+@media (min-width: 768px) { :root { --section-y: 5rem; --gutter: 2rem; } }
+@media (min-width: 1024px) { :root { --section-y: 6.5rem; --gutter: 3rem; } }
+
+@layer base {
+  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 1rem); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 500; line-height: 1.1; text-wrap: balance; }
+  p { text-wrap: pretty; }
+  :focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 3px; }
+  .bg-inverse :focus-visible { outline-color: var(--color-inverse-foreground); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+  }
+}
+
+@layer components {
+  /* The page container: gutter on both sides, content capped at 1440. */
+  .wrap { width: 100%; max-width: calc(var(--content-max) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+  /* The booking column: the same gutter, content capped at the Figma 720. */
+  .flow { width: 100%; max-width: calc(var(--flow-max) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+  .section { padding-block: var(--section-y); }
+
+  /* The one button system (the reference's). Pills, 15px regular weight. Primary = filled ink, 48px; secondary = quiet fill.
+     Hover on every button: the fill clears and a 1px ink ring appears. Press: 1px down. .btn-sm is for in-card actions. */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-height: 3rem; padding-inline: 1.5rem; border-radius: var(--radius-control); text-align: center;
+    font-size: var(--text-base); font-weight: 400; line-height: 1; white-space: nowrap; text-decoration: none;
+    transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site), box-shadow 160ms var(--ease-site), opacity 160ms var(--ease-site);
+  }
+  /* Every button is the same size (48px, 24px side padding, 15px, label centred, no capitals); only the header's compact CTA is smaller. */
+  header .btn-sm { min-height: 2.125rem; padding-inline: 1rem; font-size: var(--text-sm); }
+  .btn-primary { background: var(--color-primary); color: var(--color-primary-foreground); min-height: 3rem; }
+  /* Secondary = the outline button: transparent with a 1px ink ring; on hover it fills with ink. */
+  .btn-secondary { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .btn-secondary:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--color-foreground); color: var(--color-background); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .btn:hover:not(:disabled):not([aria-disabled="true"]) { background-color: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary:disabled { opacity: 1; background: var(--color-muted); color: var(--color-muted-foreground); }
+  .bg-inverse .btn-primary { background: var(--color-inverse-foreground); color: var(--color-inverse); }
+  .bg-inverse .btn:hover:not(:disabled) { color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+  /* A text action (Back, Edit, Remove, Show more): underlined, 44px target. */
+  .link-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; min-height: 2.75rem; min-width: 2.75rem; font-size: var(--text-sm); font-weight: 400; text-decoration: underline 1px; text-underline-offset: 0.2em; }
+  .link-btn:hover { text-decoration-thickness: 2px; }
+
+  .prose-site { max-width: 68ch; }
+  .prose-site > * + * { margin-top: 1em; }
+  .prose-site h2 { font-size: var(--text-h3); margin-top: 2.25em; }
+  .prose-site h2 + * { margin-top: 0.75em; }
+  .prose-site ul { list-style: disc; padding-left: 1.25em; }
+  .prose-site li + li { margin-top: 0.4em; }
+  .prose-site a { text-decoration: underline 1px; text-underline-offset: 0.2em; }
+  .prose-site a:hover { text-decoration-thickness: 2px; }
+
+  /* Horizontal rail (phone): snaps, peeks the next card, pulls the track to the viewport edge
+     while the first card stays on the page gutter. */
+  .rail {
+    display: grid; grid-auto-flow: column; gap: 1rem;
+    overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+    margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail > * { scroll-snap-align: start; }
+
+  /* ── Schedule: the timetable ────────────────────────────────────────────────────────────────────────────
+     Two designs sharing one card. Phone and tablet (<1024): week switcher, a day strip (a rail with a peek) and a
+     single-day list of cards. Desktop (>=1024): the Figma 7-day grid, Mon to Sun, cards stacked per day. */
+  .week-nav { display: flex; align-items: center; justify-content: center; gap: 1rem; }
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; flex: none;
+    border-radius: 9999px; border: 0; background: transparent;
+    transition: background-color 160ms var(--ease-site), box-shadow 160ms var(--ease-site), opacity 160ms var(--ease-site);
+  }
+  .week-nav .icon-btn { background: var(--color-secondary); }
+  .icon-btn:hover:not(:disabled) { background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Filters: quiet text dropdowns on desktop (native selects, so they work by keyboard and screen reader). */
+  .filter-select { position: relative; display: inline-flex; align-items: center; min-height: 2.75rem; }
+  .filter-select select {
+    appearance: none; -webkit-appearance: none; min-height: 2.75rem; padding: 0 1.5rem 0 0; background: transparent; border: 0;
+    font-size: var(--text-sm); font-weight: 500; color: var(--color-foreground); cursor: pointer; max-width: 14rem; text-overflow: ellipsis; field-sizing: content;
+  }
+  .filter-select select[data-active="true"] { font-weight: 500; text-decoration: underline; text-underline-offset: 4px; }
+  .filter-select svg { position: absolute; right: 0; pointer-events: none; color: var(--color-muted-foreground); }
+  .filter-select:hover select { opacity: 0.7; }
+
+  /* Header nav (the reference's .nav-link): 15px regular, 6px corners, a 1px ring on hover, underline for the current page. */
+  .nav-link { display: inline-flex; align-items: center; min-height: 2rem; padding-inline: 1rem; border-radius: var(--radius-field); font-size: var(--text-base); font-weight: 400; text-decoration: none; transition: box-shadow 160ms var(--ease-site); }
+  .nav-link:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .nav-link[aria-current="page"] { text-decoration: underline; text-underline-offset: 0.35em; }
+
+  .day-rail { display: flex; gap: 0.25rem; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; overscroll-behavior-x: contain;
+    margin-inline: calc(-1 * var(--gutter)); padding: 0.25rem var(--gutter); scroll-padding-inline: var(--gutter); }
+  .day-rail::-webkit-scrollbar { display: none; }
+  .day-rail > * { scroll-snap-align: start; flex: none; width: 3.5rem; }
+  .day-btn .dot { width: 0.375rem; height: 0.375rem; border-radius: 9999px; background: var(--color-foreground); opacity: 0.6; }
+  .day-btn .dot[data-none="true"] { background: transparent; }
+  .day-btn[data-today="true"] .num { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+
+  /* The desktop grid: seven columns, one row per session position; bounded, scrolls inside past --tt-grid-max. */
+  .tt-grid-wrap { max-height: var(--tt-grid-max); overflow-y: auto; overscroll-behavior: contain; padding-top: 0.25rem; }
+  .tt-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); column-gap: 0.5rem; row-gap: 0.5rem; }
+  .tt-grid > div > .tt-card, .tt-grid > div > .tt-empty { flex: 1; } /* every cell of a row is as tall as its tallest card, so prices, spots and actions line up */
+  .tt-head { padding: 0 0 0.75rem; text-align: center; font-size: var(--text-sm); font-weight: 500; color: var(--color-muted-foreground); }
+  .tt-head[data-today="true"] { color: var(--color-foreground); font-weight: 500; }
+  .tt-head[data-today="true"] span { display: inline-block; padding: 0.125rem 0.625rem; border-radius: 9999px; background: var(--color-primary); color: var(--color-primary-foreground); }
+
+  /* The Timetable Card: image, time, name, meta, Read more, price, spots, action. One component, six states
+     (Class: Book / Waitlist / Full; Course: Enroll / Enrollment closed; Empty). */
+  .tt-card { position: relative; display: flex; flex-direction: column; min-width: 0; font-size: var(--text-xs); line-height: 1.4; color: var(--color-foreground); }
+  .tt-media { position: relative; aspect-ratio: 4 / 3; background: var(--color-secondary); overflow: hidden; }
+  .tt-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 600ms var(--ease-site); }
+  .tt-card:hover .tt-media img { transform: scale(1.03); }
+  .tt-tag { position: absolute; left: 0.375rem; top: 0.375rem; padding: 0.125rem 0.5rem; border-radius: 9999px; background: var(--color-background); font-size: var(--text-xs); font-weight: 500; line-height: 1.3; }
+  /* Ribbon (a label from live capacity: few spots left, Full, Waitlist). Dark for scarcity, a quiet fill for the rest; no outline. */
+  .ribbon { position: absolute; right: 0.375rem; top: 0.375rem; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: var(--text-xs); font-weight: 500; line-height: 1.3; white-space: nowrap; }
+  .ribbon[data-kind="low"] { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .ribbon[data-kind="full"], .ribbon[data-kind="waitlist"] { background: var(--color-muted); color: var(--color-foreground); }
+  .ribbon { display: inline-flex; align-items: center; gap: 0.25rem; }
+  .ribbon svg { width: 0.875rem; height: 0.875rem; flex: none; }
+  .ribbon[data-inline] { position: static; }
+  .tt-time { margin-top: 0.5rem; font-variant-numeric: tabular-nums; }
+  .tt-name { margin-top: 0.125rem; font-family: var(--font-display); font-size: var(--text-base); font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; hyphens: auto; }
+  .tt-meta { color: var(--color-muted-foreground); overflow-wrap: anywhere; }
+  .tt-more { display: inline-flex; align-items: center; min-height: 2.75rem; padding-right: 0.5rem; margin-block: -0.25rem; font-weight: 400; text-decoration: underline 1px; text-underline-offset: 0.2em; }
+  .tt-more:hover { text-decoration-thickness: 2px; }
+  .tt-foot { margin-top: auto; padding-top: 0.5rem; }
+  .tt-price { font-weight: 500; }
+  .tt-spots { color: var(--color-muted-foreground); }
+  .tt-spots[data-low="true"] { display: inline-flex; align-items: center; gap: 0.25rem; color: var(--color-foreground); font-weight: 500; }
+  .tt-spots svg { width: 0.875rem; height: 0.875rem; flex: none; }
+  .tt-action {
+    display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2.75rem; font-size: var(--text-sm); font-weight: 500; text-decoration: none;
+    transition: opacity 160ms var(--ease-site);
+  }
+  a.tt-action:hover, button.tt-action:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+  .tt-action[data-off="true"] { color: var(--color-muted-foreground); font-weight: 500; }
+  .tt-empty { display: flex; align-items: flex-start; justify-content: center; min-height: 6rem; padding: 1rem 0.5rem; background: var(--color-secondary); color: var(--color-muted-foreground); font-size: var(--text-xs); text-align: center; }
+  .tt-empty[data-filler="true"] { background: color-mix(in srgb, var(--color-secondary) 55%, transparent); }
+  .tt-empty[data-filler="true"][role="status"] { opacity: 0.8; }
+
+  /* Phone / tablet list: the same card as a row (thumbnail | text), action beneath. */
+  @media (max-width: 1279.98px) {
+    .tt-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .tt-list .tt-card { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); column-gap: 1rem; padding: 1rem; background: var(--color-secondary); font-size: var(--text-sm); }
+    .tt-list .tt-media { grid-row: 1 / span 3; align-self: start; aspect-ratio: 1; }
+    /* On the small thumbnail the ribbon is a strip across its foot. */
+    .tt-list .ribbon { left: 0; right: 0; top: auto; bottom: 0; border-radius: 0; padding-block: 0.125rem; text-align: center; }
+    .tt-list .tt-time { margin-top: 0; font-size: var(--text-xs); color: var(--color-muted-foreground); }
+    .tt-list .tt-name { font-size: var(--text-lg); }
+    .tt-list .tt-body { grid-column: 2; }
+    .tt-list .tt-foot { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--color-border); }
+    .tt-list .tt-more { margin-block: 0; }
+    .tt-list .tt-empty { min-height: 8rem; align-items: center; flex-direction: column; gap: 0.75rem; font-size: var(--text-sm); }
+  }
+  @media (min-width: 1280px) { .tt-list-only { display: none !important; } }
+  @media (max-width: 1279.98px) { .tt-grid-only { display: none !important; } }
+
+  /* Number-of-participants counter and payment rows (booking form). */
+  .counter { display: inline-flex; align-items: stretch; border: 1px solid var(--color-border); border-radius: var(--radius-chip); overflow: hidden; }
+  .counter button { display: flex; align-items: center; justify-content: center; width: 2.75rem; min-height: 2.75rem; font-size: var(--text-lg); font-weight: 500; transition: background-color 160ms var(--ease-site); }
+  .counter button:hover:not(:disabled) { background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .counter button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .counter output { display: flex; align-items: center; justify-content: center; min-width: 3.5rem; border-inline: 1px solid var(--color-border); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .pay-row { display: flex; align-items: center; gap: 0.75rem; min-height: 3rem; padding: 0.5rem 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-chip); background: var(--color-background); cursor: pointer; transition: border-color 160ms var(--ease-site), background-color 160ms var(--ease-site); }
+  .pay-row:has(input:checked) { border-color: var(--color-foreground); background: var(--color-secondary); }
+  .pay-row:has(input:disabled) { cursor: not-allowed; color: var(--color-muted-foreground); background: var(--color-secondary); border-style: dashed; }
+  .pay-row input { width: 1.125rem; height: 1.125rem; flex: none; accent-color: var(--color-foreground); }
+  .pay-row:has(input:focus-visible) { outline: 2px solid var(--color-foreground); outline-offset: 2px; }
+  .note { padding: 0.75rem 1rem; border-left: 3px solid var(--color-border); background: var(--color-secondary); font-size: var(--text-sm); color: var(--color-muted-foreground); }
+  .note strong { color: var(--color-foreground); }
+  /* Links inside a note or an error are 44px targets like every other control. */
+  .note a, #booking-error a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+
+
+  /* Phone menu: a panel under the sticky header, full width, the page behind stays put. */
+  .menu-panel { position: absolute; inset-inline: 0; top: 100%; background: var(--color-background); border-bottom: 1px solid var(--color-border); box-shadow: 0 16px 32px rgb(20 20 20 / 0.08); max-height: calc(100svh - var(--header-h)); overflow-y: auto; }
+  .menu-panel[hidden] { display: none; }
+  .menu-panel li:last-child a { border-bottom: 0; }
+
+  /* Home "Upcoming Classes" (layout of almastudio.co.nz/pages/our-classes): two halves. Left, the title and a line of copy, pinned
+     under the header while the right half scrolls past; right, a two-column run of grey plaques (the photo slot of the reference, 319:370),
+     each holding the session's whole text. Below 1024 the halves stack and nothing is pinned. */
+  .up-layout { display: grid; gap: 2.5rem; margin-top: 4rem; }
+  .up-side { align-self: start; }
+  .up-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  /* From 1024 the section sits on the same three-column grid as the class tiles above (gap 1rem): the left third holds the pinned
+     title and filters, the right two thirds hold two plaques per row, each exactly one tile wide with a tile's gap between them. */
+  @media (min-width: 1024px) {
+    .up-layout { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 1rem; margin-top: 6rem; }
+    .up-side { position: sticky; top: calc(var(--header-h) + 2rem); padding-right: 1rem; }
+    .up-cards { grid-column: 2 / span 2; }
+  }
+  @media (max-width: 599.98px) { .up-cards { grid-template-columns: minmax(0, 1fr); } }
+  .up-box.note { grid-column: 1 / -1; align-content: center; min-height: 12rem; }
+  .up-skel { aspect-ratio: 319 / 370; }
+  /* A plaque: date, a large name, staff and minutes, then one wide pill - "Book Now" with the spots chip inside it when few remain. */
+  /* A plaque: date, name and minutes at the top; staff, a two-line description and the Book Now pill at the bottom. The plaque's size is fixed
+     (the tile ratio) and clips its content, so the Learn More that opens on hover only eats the empty space inside it - it never grows the plaque
+     or pushes the grid. */
+  .up-card { container-type: inline-size; position: relative; display: flex; flex-direction: column; aspect-ratio: 319 / 370; min-height: 0; overflow: hidden; padding: 1.25rem; background: var(--color-secondary); }
+  .up-card .up-when { font-size: var(--text-base); color: var(--color-foreground); }
+  .up-card .up-name { margin-top: 1rem; font-family: var(--font-display); font-size: clamp(1.375rem, 1.15rem + 0.9vw, 1.75rem); font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+  .up-card .up-kind { font-size: var(--text-sm); color: var(--color-muted-foreground); letter-spacing: 0; }
+  .up-card .up-dur { margin-top: 1rem; color: var(--color-foreground); }
+  .up-card .up-top { flex: none; }
+  .up-card .up-bottom { display: flex; flex-direction: column; margin-top: auto; min-height: 0; }
+  .up-card .up-meta { color: var(--color-muted-foreground); }
+  .up-card .up-desc { margin-top: 0.5rem; color: var(--color-muted-foreground); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  /* The narrowest plaques get a taller ratio so the description, the pill and the Learn More that opens on hover all fit inside. */
+  @media (min-width: 600px) and (max-width: 719.98px), (min-width: 1024px) and (max-width: 1119.98px) { .up-card { aspect-ratio: 319 / 430; } }
+  .up-book { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; width: 100%; min-height: 3rem; margin-top: 1rem; padding-inline: 1.5rem; border-radius: 9999px; font-size: var(--text-base); }
+  /* The label is centred in the pill; the spots chip sits at the right edge (on a wide plaque it is out of the flow, so the label stays truly centred). */
+  .up-book.btn { position: relative; justify-content: center; padding-inline: 1.5rem; }
+  .up-book.btn .up-chip { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); }
+  .up-book-off { padding-inline: 1.5rem; justify-content: center; background: var(--color-muted); color: var(--color-muted-foreground); }
+  /* Label at the left edge, chip at the right edge (space-between). A plaque is never narrower than ~270px, so both always fit on one line;
+     on the narrowest the paddings and the chip tighten rather than wrap. */
+  @container (max-width: 17.5rem) {
+    .up-book.btn { padding-inline: 0.75rem 0.5rem; }
+    .up-book.btn .up-chip { position: static; transform: none; margin-left: auto; }
+    .up-book.btn > span:first-child { flex: 1; text-align: center; }
+    .up-chip { padding-inline: 0.5rem; font-size: var(--text-xs); }
+  }
+  .up-chip { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.625rem; border-radius: 9999px; background: #3a3a3a; color: #fff; font-size: var(--text-sm); line-height: 1.2; white-space: nowrap; flex: none; }
+  .up-chip svg { width: 0.875rem; height: 0.875rem; flex: none; }
+  /* Category buttons (left, pinned): one pressed at a time. */
+  .up-cats { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
+  .up-cat { display: inline-flex; align-items: center; min-height: 2.25rem; padding-inline: 1rem; border-radius: 9999px; background: var(--color-secondary); font-size: var(--text-sm); font-weight: 500; transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site), box-shadow 160ms var(--ease-site); }
+  .up-cat:hover { background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .up-cat[aria-pressed="true"] { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .up-cat[aria-pressed="true"]:hover { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  /* Hover: the plaque turns transparent with a 1px ink outline, and Learn More slides up from under the Book Now pill, pushing it higher.
+     The wrapper animates its row height from 0 to the button's; on touch screens there is no hover, so it is not drawn. */
+  .up-card { transition: background-color 260ms var(--ease-site), box-shadow 260ms var(--ease-site); }
+  .up-card:hover, .up-card:focus-within { background-color: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .up-more-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 260ms var(--ease-site); }
+  .up-more-wrap > div { overflow: hidden; min-height: 0; }
+  .up-card:hover .up-more-wrap, .up-card:focus-within .up-more-wrap { grid-template-rows: 1fr; }
+  .up-more { display: flex; align-items: center; justify-content: center; min-height: 3rem; margin-top: 0.5rem; border-radius: 9999px; background: var(--color-background); box-shadow: inset 0 0 0 1px var(--color-foreground); font-size: var(--text-base); text-decoration: none; opacity: 0; transform: translateY(100%); transition: opacity 260ms var(--ease-site), transform 260ms var(--ease-site), background-color 160ms var(--ease-site); }
+  .up-card:hover .up-more, .up-card:focus-within .up-more { opacity: 1; transform: none; }
+  .up-more:hover { background: var(--color-foreground); color: var(--color-background); }
+  @media (hover: none) { .up-more-wrap { display: none; } }
+  /* ── First screen: a 100vh band (below the sticky header). Top: the H1 and its text. Bottom: a 3-block slider; the block under the pointer
+     (the last one touched, it stays) goes bright and its photo fades in as the background; the others dim. ── */
+  .hero-fs { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 2.5rem; min-height: calc(100svh - var(--header-h)); padding-block: 2.5rem; overflow: hidden; background: var(--color-secondary); color: var(--color-foreground); }
+  .hero-bgs { position: absolute; inset: 0; }
+  .hero-bgs img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 600ms var(--ease-site); }
+  .hero-bgs img[data-on="true"] { opacity: 1; }
+  .hero-top, .hero-slides { position: relative; z-index: 1; }
+  .hero-top h1 { max-width: 16ch; }
+  .hero-slides { display: grid; gap: 1.5rem; }
+  @media (min-width: 768px) { .hero-slides { grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 1rem; } .hero-fs { padding-block: 3rem; } }
+  .hero-slide { display: flex; flex-direction: column; align-items: flex-start; opacity: 0.55; transition: opacity 400ms var(--ease-site); }
+  .hero-slide[data-active="true"], .hero-slide:focus-within { opacity: 1; }
+  .hero-slide-title { padding-bottom: 1rem; border-bottom: 1px solid rgb(22 22 22 / 0.35); width: 100%; font-size: var(--text-lg); font-weight: 400; letter-spacing: 0; transition: border-color 400ms var(--ease-site); }
+  .hero-slide[data-active="true"] .hero-slide-title { border-bottom-color: var(--color-foreground); }
+  .hero-slide-text { margin-top: 1rem; max-width: 34ch; min-height: 4.5em; }
+  .hero-cta { display: inline-flex; align-items: center; min-height: 3rem; margin-top: 1.5rem; padding-inline: 1.5rem; justify-content: center; text-align: center; border-radius: 9999px; border: 1px solid rgb(22 22 22 / 0.45); background: transparent; color: var(--color-foreground); font-size: var(--text-base); text-decoration: none; transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site), border-color 160ms var(--ease-site); }
+  .hero-slide[data-active="true"] .hero-cta { border-color: var(--color-foreground); }
+  .hero-cta:hover { background: var(--color-foreground); color: var(--color-background); border-color: var(--color-foreground); }
+  .hero-cta:focus-visible { outline-color: var(--color-foreground); }
+
+  /* A section band's cards: white on a grey (secondary) section, grey on a plain one. */
+  .on-grey .card { background: var(--color-background); }
+  .on-plain .card { background: var(--color-secondary); }
+
+  /* ── Booking surface ─────────────────────────────────────────────────────────────────── */
+
+  /* Day buttons of the phone day strip: seven, a fixed footprint (never grows with sessions). */
+  .day-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 0.25rem; min-height: 4.5rem; padding-block: 0.25rem;
+    font-size: var(--text-xs); font-weight: 500; color: var(--color-muted-foreground);
+  }
+  .day-btn .num {
+    display: flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; border-radius: 9999px;
+    background: var(--color-secondary); color: var(--color-foreground); font-size: var(--text-sm); font-weight: 500; font-variant-numeric: tabular-nums;
+    transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site), box-shadow 160ms var(--ease-site);
+  }
+  .day-btn:hover:not(:disabled):not([aria-pressed="true"]) .num { background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .day-btn[aria-pressed="true"] .num { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .day-btn[aria-pressed="true"] { color: var(--color-foreground); }
+  .day-btn:disabled { cursor: not-allowed; }
+  .day-btn:disabled .num { background: transparent; color: var(--color-muted-foreground); opacity: 0.5; }
+
+  /* Form fields: the only outlined controls on the site. 16px text so iOS never zooms. */
+  .field { display: block; width: 100%; min-height: 3rem; padding: 0.75rem 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-chip); background: var(--color-background); font-size: 1rem; /* 16: iOS never zooms into the field */ }
+  .field:hover { border-color: var(--color-muted-foreground); }
+  .field[aria-invalid="true"] { border-color: var(--color-destructive); }
+  textarea.field { min-height: 6.5rem; resize: vertical; }
+  .field-label { display: block; margin-bottom: 0.5rem; font-size: var(--text-sm); font-weight: 500; }
+  .field-error { margin-top: 0.375rem; font-size: var(--text-sm); color: var(--color-destructive); }
+
+  /* The sticky action bar: total + Book now (booking form). Fixed to the foot
+     of the viewport at every width, so the primary action never scrolls away; pages reserve --bar-h. */
+  .action-bar {
+    position: fixed; inset-inline: 0; bottom: 0; z-index: 40;
+    padding: 0.75rem 0 calc(0.75rem + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--color-background) 94%, transparent); backdrop-filter: blur(8px);
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* Bottom sheet (phone) / centred modal (>=768): one overlay primitive for the staff picker and details. */
+  .scrim { position: fixed; inset: 0; z-index: 60; background: rgb(20 20 20 / 0.45); animation: scrim-in 260ms var(--ease-site); }
+  .sheet {
+    position: fixed; inset-inline: 0; bottom: 0; z-index: 61; display: flex; flex-direction: column;
+    max-height: calc(100svh - 1rem); background: var(--color-background);
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0; box-shadow: 0 -12px 40px rgb(20 20 20 / 0.18);
+    padding-bottom: env(safe-area-inset-bottom); animation: sheet-in 260ms var(--ease-site);
+  }
+  @media (min-width: 768px) {
+    .sheet.sheet-modal { inset: 0; margin: auto; width: min(32.5rem, calc(100vw - 2rem)); height: fit-content; max-height: calc(100svh - 3rem); border-radius: var(--radius-sheet); box-shadow: 0 24px 64px rgb(20 20 20 / 0.28); animation: scrim-in 260ms var(--ease-site); }
+  }
+  @keyframes sheet-in { from { transform: translateY(100%); } to { transform: none; } }
+  @keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+}
+
+/* Membership plan card (PlanCard.astro) */
+@layer components {
+  .plan-card { container-type: inline-size; min-width: 0; display: flex; flex-direction: column; gap: 1rem; padding: 2.5rem; background: var(--color-background); border: 1px solid var(--color-border); border-radius: var(--radius-card); }
+  @media (max-width: 599.98px) { .plan-card { padding: 1.5rem; } }
+  .plan-card[data-popular="true"] { border-color: var(--color-foreground); }
+  .plan-card { gap: 1.5rem; }
+  .plan-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
+  .plan-name { font-family: var(--font-display); font-size: var(--text-h3, 1.5rem); font-weight: 500; line-height: 1.2; }
+  .plan-badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.125rem 0.625rem; border-radius: 9999px; background: var(--color-secondary); border: 1px solid var(--color-border); font-size: var(--text-sm); font-weight: 500; }
+  .plan-desc { color: var(--color-muted-foreground); }
+  .plan-price { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; column-gap: 0.75rem; row-gap: 0.25rem; padding: 1.5rem clamp(1rem, 6cqi, 2.75rem); border-radius: var(--radius-card); background: var(--color-secondary); }
+  .plan-amount { font-family: var(--font-display); font-size: clamp(2.25rem, 13cqi, 4.5rem); font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
+  .plan-cycle { font-size: clamp(1rem, 4cqi, 1.5rem); line-height: 1.3; white-space: nowrap; }
+  .plan-price { min-width: 0; } .plan-amount { overflow-wrap: anywhere; }
+  .plan-perks li { min-width: 0; } .plan-perks li span { min-width: 0; overflow-wrap: anywhere; }
+  .plan-perks { display: grid; gap: 0.875rem; margin-top: 0.5rem; }
+  .plan-perks li { display: flex; align-items: center; gap: 0.75rem; color: var(--color-muted-foreground); }
+  .plan-perks svg { flex: none; color: var(--color-foreground); }
+  .plan-action { margin-top: auto; padding-top: 1rem; }
+  .plan-action .btn { width: 100%; }
+}
+
+/* About: photo gallery (stage + tab strip; the active tab fills as the slide plays, like equinox.com club pages) */
+@layer components {
+  .gal-stage { position: relative; aspect-ratio: 16 / 9; background: var(--color-secondary); }
+  .gal-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 700ms var(--ease-site); }
+  .gal-stage img[data-on="true"] { opacity: 1; }
+  @media (max-width: 599.98px) { .gal-stage { aspect-ratio: 4 / 3; } }
+  .gal-tabs { display: flex; gap: 1rem; margin-top: 1.25rem; overflow-x: auto; scrollbar-width: none; }
+  .gal-tabs::-webkit-scrollbar { display: none; }
+  .gal-tab { flex: 1 0 9rem; display: flex; flex-direction: column; gap: 0.75rem; padding: 0; border: 0; background: transparent; text-align: left; cursor: pointer; color: var(--color-muted-foreground); transition: color 250ms; }
+  .gal-tab:hover, .gal-tab[aria-selected="true"] { color: var(--color-foreground); }
+  .gal-line { display: block; height: 2px; background: var(--color-border); overflow: hidden; }
+  .gal-fill { display: block; height: 100%; width: 0; background: var(--color-foreground); }
+  .gal-label { font-size: 15px; font-weight: 400; line-height: 1.3; padding-bottom: 0.25rem; }
+}
+
+@layer components {
+  .card, .up-card, .up-skel, .tt-media, .tt-empty, .plan-card, .plan-price, .about-plaque, .note, .r-card { border-radius: var(--radius-card); }
+  .card, .tt-media, .r-card { overflow: hidden; }
+  .note { border-left-width: 1px; border-left-color: var(--color-border); }
+}
+
+/* Home "Our Classes" carousel: full page width, small cards (Peloton-style) */
+@layer components {
+  .cls-carousel { position: relative; }
+  .cls-track { display: flex; gap: 1.5rem; overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 1.25rem var(--gutter) 1.25rem; scroll-padding-inline: var(--gutter); }
+  .cls-track::-webkit-scrollbar { display: none; }
+  .cls-tile { flex: 0 0 clamp(14rem, 17.5vw, 20.5rem); scroll-snap-align: start; display: flex; flex-direction: column; min-width: 0; color: var(--color-foreground); }
+  @media (max-width: 599.98px) { .cls-tile { flex-basis: 70%; } }
+  .cls-photo { position: relative; display: block; aspect-ratio: 3 / 2; background: var(--color-secondary); overflow: hidden; }
+  .cls-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .cls-photo { transition: transform 400ms var(--ease-site); transform-origin: center; }
+  .cls-tile:hover .cls-photo, .cls-tile:focus-visible .cls-photo { transform: scale(1.08); z-index: 2; }
+  .cls-badge { position: absolute; left: 0.75rem; bottom: 0.75rem; z-index: 1; display: flex; align-items: center; height: 2.75rem; border-radius: 1.375rem; background: rgb(255 255 255 / 0.9); color: var(--color-foreground); overflow: hidden; }
+  .cls-ico { display: flex; align-items: center; justify-content: center; flex: none; width: 2.75rem; height: 2.75rem; }
+  .cls-lbl { display: grid; grid-template-columns: 0fr; opacity: 0; font-size: 15px; white-space: nowrap; transition: grid-template-columns 300ms var(--ease-site), opacity 250ms var(--ease-site); }
+  .cls-lbl > span { overflow: hidden; min-width: 0; }
+  .cls-tile:hover .cls-lbl, .cls-tile:focus-visible .cls-lbl { grid-template-columns: 1fr; opacity: 1; }
+  .cls-tile:hover .cls-lbl > span, .cls-tile:focus-visible .cls-lbl > span { padding-right: 1.25rem; }
+  @media (hover: none) { .cls-lbl { display: none; } }
+  .cls-name { margin-top: 1.25rem; font-size: var(--text-lg, 1.125rem); font-weight: 500; line-height: 1.3; }
+  .cls-sub { margin-top: 0.75rem; font-size: 0.8125rem; line-height: 1.4; color: var(--color-muted-foreground); }
+  .cls-arrow { position: absolute; top: calc(1.25rem + (clamp(14rem, 17.5vw, 20.5rem) / 3)); transform: translateY(-50%); display: none; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; border-radius: 9999px; background: rgb(60 60 60 / 0.55); color: #fff; border: 0; cursor: pointer; transition: background-color 200ms; z-index: 2; }
+  .cls-arrow:hover { background: rgb(30 30 30 / 0.8); }
+  .cls-arrow[hidden] { display: none !important; }
+  .cls-prev { left: 1.5rem; } .cls-next { right: 1.5rem; }
+  @media (min-width: 768px) { .cls-arrow { display: flex; } }
+  .cls-dots { display: flex; justify-content: center; gap: 0.75rem; margin-top: 2.5rem; }
+  .cls-dots button { width: 0.5rem; height: 0.5rem; padding: 0; border: 0; border-radius: 9999px; background: #b5b5b5; cursor: pointer; transition: width 200ms var(--ease-site), background-color 200ms; }
+  .cls-dots button[hidden] { display: none; }
+  .cls-dots button[aria-current="true"] { width: 1.5rem; background: #6b6b6b; }
+}
+
+/* Class page + calendar */
+@layer components {
+  .back-link { display: inline-block; color: var(--color-muted-foreground); font-size: var(--text-sm); text-decoration: none; }
+  .back-link:hover { color: var(--color-foreground); text-decoration: underline; text-underline-offset: 0.2em; }
+  .cls-facts { display: grid; gap: 0.75rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border); }
+  .cls-facts div { display: flex; gap: 1rem; } .cls-facts dt { width: 6rem; flex: none; color: var(--color-muted-foreground); }
+}
+
+/* Upcoming Classes, second layout: title row, all class-type tags, then three columns of short cards (no photo, no hover button). */
+@layer components {
+  .up-layout { display: block; margin-top: 4rem; }
+  @media (min-width: 1024px) { .up-layout { margin-top: 6rem; } }
+  .up-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1.5rem; }
+  .up-cats { margin-top: 2rem; gap: 0.75rem; }
+  .up-cat { min-height: 2.75rem; padding-inline: 1.25rem; background: transparent; box-shadow: inset 0 0 0 1px var(--color-border); font-size: 15px; font-weight: 400; }
+  .up-cat:hover, .up-cat[aria-pressed="true"], .up-cat[aria-pressed="true"]:hover { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .up-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 2rem; }
+  @media (max-width: 1023.98px) { .up-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 599.98px) { .up-cards { grid-template-columns: minmax(0, 1fr); } }
+  .up-skel { aspect-ratio: 3 / 2; }
+  .up-card { aspect-ratio: auto; overflow: visible; padding: 1.25rem; }
+  .up-card:hover, .up-card:focus-within { background-color: var(--color-secondary); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .up-card .up-name { margin-top: 0.5rem; }
+  .up-card .up-meta { margin-top: 0.25rem; }
+  .up-card .up-desc { margin-top: 0.5rem; }
+  .up-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: auto; padding-top: 1rem; }
+  .up-tag { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.75rem; border-radius: 9999px; background: var(--color-background); font-size: var(--text-sm); line-height: 1.3; }
+  .up-tag svg { width: 0.875rem; height: 0.875rem; }
+  .up-tag-low { background: #3a3a3a; color: #fff; }
+  .up-card .up-book { margin-top: 1rem; }
+  .up-card .up-book.btn { justify-content: center; }
+}
+
+/* Upcoming: centered heading, tags and footer button; Book Now slides up from the bottom of the card (the card is a fixed-height mask). */
+@layer components {
+  .up-head { flex-direction: column; align-items: center; text-align: center; }
+  .up-head p { margin-inline: auto; }
+  .up-cats { justify-content: center; }
+  .up-foot { display: flex; justify-content: center; margin-top: 2.5rem; }
+  .up-card { height: 19rem; overflow: hidden; }
+  .up-card .up-desc { flex: none; }
+  .up-slot { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms var(--ease-site); }
+  .up-slot > div { overflow: hidden; min-height: 0; }
+  .up-card:hover .up-slot, .up-card:focus-within .up-slot { grid-template-rows: 1fr; }
+  .up-slot .up-book { transform: translateY(100%); opacity: 0; transition: transform 280ms var(--ease-site), opacity 280ms var(--ease-site); }
+  .up-card:hover .up-slot .up-book, .up-card:focus-within .up-slot .up-book { transform: none; opacity: 1; }
+  .up-card .up-book { margin-top: 1rem; }
+  @media (hover: none) { .up-slot { grid-template-rows: 1fr; } .up-slot .up-book { transform: none; opacity: 1; } .up-card { height: auto; min-height: 19rem; } }
+}
+
+/* Upcoming: the one-sentence description opens on hover (two balanced lines), inside the fixed-height card. */
+@layer components {
+  .up-card { height: 19.5rem; }
+  .up-card .up-desc { display: block; -webkit-line-clamp: unset; overflow: visible; margin-top: 0.5rem; text-wrap: balance; }
+  @media (hover: none) { .up-card { min-height: 19.5rem; } }
+}
+
+/* Upcoming: the description fades in on hover (the slot still opens in the same 280ms). */
+@layer components {
+  .up-card .up-desc { opacity: 0; transition: opacity 400ms var(--ease-site); }
+  .up-card:hover .up-desc, .up-card:focus-within .up-desc { opacity: 1; transition-delay: 120ms; }
+  @media (hover: none) { .up-card .up-desc { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .up-card .up-desc { transition: none; } }
+}
+
+/* First screen, bottom band: opening hours, contact info, address (three columns). */
+@layer components {
+  .hero-info { position: relative; z-index: 1; }
+  .hero-info-grid { display: grid; gap: 2rem; padding-top: 1.5rem; border-top: 1px solid rgb(22 22 22 / 0.3); }
+  @media (min-width: 768px) { .hero-info-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; } }
+  .info-h { font-size: var(--text-base); font-weight: 400; text-transform: uppercase; letter-spacing: 0; }
+  .info-col { color: var(--color-foreground); }
+  .info-row { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1.5rem; max-width: 22rem; opacity: 0.75; }
+  .info-all { margin-top: 0.5rem; max-width: 22rem; opacity: 0.75; display: grid; gap: 0.25rem; }
+  .info-all[hidden] { display: none; }
+  .info-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 22rem; margin-top: 1rem; padding: 0; border: 0; background: transparent; cursor: pointer; font: inherit; }
+  .info-toggle span { text-decoration: underline; text-underline-offset: 0.3em; text-decoration-thickness: 1px; }
+  .info-text { margin-top: 1.5rem; opacity: 0.75; display: block; }
+  .info-text a, a.info-text { color: inherit; text-decoration: none; }
+  .info-text a:hover, a.info-text:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+  .info-addr { display: inline-flex; align-items: flex-end; gap: 0.75rem; max-width: 22rem; }
+  .info-addr svg { flex: none; margin-bottom: 0.35rem; }
+}
+
+/* First screen info band, revised: a line under each column title (three lines), no caps, today's hours under "Today", hours open smoothly. */
+@layer components {
+  .hero-info-grid { border-top: 0; padding-top: 0; }
+  .info-h { text-transform: none; padding-bottom: 1rem; border-bottom: 1px solid rgb(22 22 22 / 0.35); font-size: var(--text-lg); }
+  .info-row { flex-direction: column; justify-content: flex-start; gap: 0.25rem; margin-top: 1.25rem; }
+  .info-text { margin-top: 1.25rem; }
+  .info-all { display: grid; grid-template-rows: 0fr; max-width: 22rem; margin-top: 0; opacity: 0.75; transition: grid-template-rows 320ms var(--ease-site); }
+  .info-all[hidden] { display: grid; }
+  .info-all > ul { overflow: hidden; min-height: 0; display: grid; gap: 0.25rem; }
+  .info-col[data-open="true"] .info-all { grid-template-rows: 1fr; }
+  .info-col[data-open="true"] .info-all > ul { padding-top: 0.75rem; }
+  .info-toggle svg { transition: transform 320ms var(--ease-site); }
+  .info-col[data-open="true"] .info-toggle svg { transform: rotate(180deg); }
+  @media (prefers-reduced-motion: reduce) { .info-all, .info-toggle svg { transition: none; } }
+}
+
+/* Upcoming: a session that cannot be booked (Enrollment closed, Full, Waitlist, Not available) is drawn with grey text. */
+@layer components {
+  .up-card[data-open="false"], .up-card[data-open="false"] .up-when, .up-card[data-open="false"] .up-name, .up-card[data-open="false"] .up-meta, .up-card[data-open="false"] .up-desc, .up-card[data-open="false"] .up-tag { color: #a8a8a8; }
+  .up-card[data-open="false"] .up-tag-low { color: #fff; }
+}
+
+/* Team card: bio clamped, a tag per class at the bottom */
+@layer components {
+  .team-bio { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .team-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 1rem; }
+}
+
+/* "Why Us" check icon: a bare outlined circle with a tick (32px), no plate behind it. */
+@layer components { .why-icon { display: block; color: var(--color-foreground); } }
+
+/* First screen per the sketch: centred title block, a two-column band (Hours, Address), and a hero short enough that the Our Classes
+   heading and the class cards sit inside the first screen (header + hero + ~24rem for the heading and the photos). */
+@layer components {
+  .hero-fs { min-height: max(30rem, calc(100svh - var(--header-h) - 22rem)); padding-block: 2.5rem; }
+  .hero-top { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .hero-top h1 { max-width: 20ch; }
+  .hero-top p { margin-inline: auto; }
+  .hero-info-grid { max-width: 57rem; margin-inline: auto; }
+  @media (min-width: 768px) { .hero-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem; } .hero-fs { padding-block: 2.5rem; } }
+  .classes-sec { padding-top: 4.5rem; padding-bottom: 3.5rem; }
+  .classes-sec .cls-carousel { margin-top: 2.5rem; }
+}
+
+/* First screen: "Open Today" card (white, rounded): hours on the left, address on the right; See All Hours opens inside the card. */
+@layer components {
+  .info-card { max-width: 41.5rem; margin-inline: auto; padding: 1.5rem 2rem 1.75rem; background: var(--color-background); border-radius: var(--radius-card); color: var(--color-foreground); }
+  .info-card-h { padding-bottom: 0.75rem; border-bottom: 1px solid #b3b3b3; font-size: 1.25rem; font-weight: 400; line-height: 1.3; }
+  .info-card-body { display: grid; gap: 1.25rem; margin-top: 1.25rem; color: var(--color-muted-foreground); }
+  @media (min-width: 600px) { .info-card-body { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; } }
+  .info-card .info-col { color: inherit; }
+  .info-card .info-all { opacity: 1; max-width: none; }
+  .info-card .info-toggle { max-width: none; width: auto; gap: 0.5rem; margin-top: 0.75rem; justify-content: flex-start; color: var(--color-muted-foreground); }
+  .info-card .info-addr { display: block; max-width: none; margin: 0; color: inherit; text-decoration: none; line-height: 1.6; }
+  .info-card .info-addr:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+}
+
+/* "Open Today" card, compact. */
+@layer components {
+  .info-card { max-width: 26rem; padding: 0.75rem 1rem 0.875rem; }
+  .info-card-h { padding-bottom: 0.375rem; font-size: 0.9375rem; line-height: 1.3; }
+  .info-card-body { margin-top: 0.625rem; gap: 0.75rem; font-size: 0.8125rem; line-height: 1.45; }
+  @media (min-width: 600px) { .info-card-body { gap: 1rem; } }
+  .info-card .info-toggle { margin-top: 0.375rem; font-size: 0.8125rem; gap: 0.375rem; }
+  .info-card .info-toggle svg { width: 12px; height: 12px; }
+  .info-card .info-all > ul { gap: 0.125rem; }
+  .info-card .info-col[data-open="true"] .info-all > ul { padding-top: 0.375rem; }
+  .info-card .info-addr { line-height: 1.45; }
+}
+
+/* Membership: pricing-table cards (PlanCard.astro). Three columns, the featured plan taller with a tab on top. */
+@layer components {
+  .pc-grid { display: grid; gap: 1.5rem; margin-top: 3rem; align-items: center; }
+  @media (min-width: 900px) { .pc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; align-items: center; } }
+  .pc-col { min-width: 0; }
+  .pc-col[data-popular="true"] { background: var(--color-secondary); border-radius: calc(var(--radius-card) + 8px); padding: 0 0.5rem 0.5rem; box-shadow: inset 0 0 0 1px var(--color-border); }
+  .pc-tab { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 0; font-weight: 500; }
+  .pc-card { display: flex; flex-direction: column; padding: 2rem; background: var(--color-background); border: 1px solid var(--color-border); border-radius: var(--radius-card); }
+  .pc-col[data-popular="true"] .pc-card { border-color: transparent; }
+  .pc-name { font-family: var(--font-display); font-size: 1.25rem; font-weight: 500; line-height: 1.3; }
+  .pc-price { display: flex; align-items: baseline; gap: 0.25rem; margin-top: 0.75rem; }
+  .pc-amount { font-family: var(--font-display); font-size: clamp(2.75rem, 2.2rem + 2vw, 4rem); font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
+  .pc-cycle { font-size: 1.25rem; color: var(--color-muted-foreground); }
+  .pc-desc { margin-top: 1rem; color: var(--color-muted-foreground); min-height: 3.2em; }
+  .pc-action { margin-top: 1.75rem; }
+  .pc-perks { display: grid; gap: 0.75rem; margin-top: 2rem; }
+  .pc-perks li { display: flex; align-items: center; gap: 0.625rem; font-size: var(--text-sm); }
+  .pc-perks svg { flex: none; }
+}
+
+/* Membership billing toggle (segmented control) and the yearly note */
+@layer components {
+  .bill-toggle { display: flex; width: fit-content; margin: 2rem auto 0; padding: 0.25rem; gap: 0.25rem; background: var(--color-secondary); border-radius: 9999px; }
+  .bill-toggle button { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.5rem; padding-inline: 1.5rem; border: 0; border-radius: 9999px; background: transparent; color: var(--color-muted-foreground); font: inherit; font-size: 15px; cursor: pointer; transition: background-color 200ms var(--ease-site), color 200ms var(--ease-site); }
+  .bill-toggle button[aria-pressed="true"] { background: var(--color-background); color: var(--color-foreground); box-shadow: 0 1px 3px rgb(0 0 0 / 0.12); }
+  .bill-save { padding: 0.125rem 0.5rem; border-radius: 9999px; background: var(--color-foreground); color: var(--color-background); font-size: var(--text-xs); }
+  .pc-grid { margin-top: 2.5rem; }
+  .pc-billed { min-height: 1.4em; margin-top: 0.25rem; font-size: var(--text-sm); color: var(--color-muted-foreground); }
+}
+
+/* Billing toggle: no shadow, tighter right padding after the Save badge, hover states. */
+@layer components {
+  .bill-toggle button[aria-pressed="true"] { box-shadow: none; }
+  .bill-toggle button:has(.bill-save) { padding-right: 0.5rem; }
+  .bill-toggle button:hover { color: var(--color-foreground); background: var(--color-muted); }
+  .bill-toggle button[aria-pressed="true"]:hover { background: var(--color-background); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+}
+
+/* Membership cards: the Get started button slides up from the bottom of its slot on hover/focus (the slot keeps its height, so nothing moves). */
+@layer components {
+  .pc-action { height: 3rem; overflow: hidden; }
+  .pc-action .btn { transform: translateY(110%); opacity: 0; transition: transform 300ms var(--ease-site), opacity 300ms var(--ease-site), background-color 160ms var(--ease-site), box-shadow 160ms var(--ease-site), color 160ms var(--ease-site); }
+  .pc-col:hover .pc-action .btn, .pc-col:focus-within .pc-action .btn { transform: none; opacity: 1; }
+  @media (hover: none) { .pc-action .btn { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .pc-action .btn { transition: none; } }
+}
+
+/* Membership cards: hover scales the whole column 8%, like the photos in Our Classes. */
+@layer components {
+  .pc-col { position: relative; transition: transform 400ms var(--ease-site); transform-origin: center; }
+  .pc-col:hover, .pc-col:focus-within { transform: scale(1.08); z-index: 2; }
+  @media (prefers-reduced-motion: reduce) { .pc-col { transition: none; } }
+}
+
+/* Membership cards, revised: on hover only the card's box grows (5%); the text, price, list and button keep their size. The boxes are
+   pseudo-elements behind the content. */
+@layer components {
+  .pc-col, .pc-col:hover, .pc-col:focus-within { transform: none; }
+  .pc-col:hover, .pc-col:focus-within { z-index: 2; }
+  .pc-col { isolation: isolate; }
+  .pc-col[data-popular="true"] { background: transparent; box-shadow: none; }
+  .pc-col[data-popular="true"]::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: calc(var(--radius-card) + 8px); background: var(--color-secondary); box-shadow: inset 0 0 0 1px var(--color-border); transition: transform 400ms var(--ease-site); }
+  .pc-card { position: relative; isolation: isolate; background: transparent; border-color: transparent; }
+  .pc-card::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: var(--radius-card); background: var(--color-background); border: 1px solid var(--color-border); transition: transform 400ms var(--ease-site); }
+  .pc-col[data-popular="true"] .pc-card::before { border-color: transparent; }
+  .pc-col:hover .pc-card::before, .pc-col:focus-within .pc-card::before, .pc-col[data-popular="true"]:hover::before, .pc-col[data-popular="true"]:focus-within::before { transform: scale(1.05); }
+  @media (prefers-reduced-motion: reduce) { .pc-card::before, .pc-col::before { transition: none; } }
+}
+
+/* "Popular Plan" tab: on hover the grey plaque and the card box both grow about 13px upward, so the label rises with them and stays centred in the grey strip. */
+@layer components {
+  .pc-tab { transition: transform 400ms var(--ease-site); }
+  .pc-col:hover .pc-tab, .pc-col:focus-within .pc-tab { transform: translateY(-0.8125rem); }
+  @media (prefers-reduced-motion: reduce) { .pc-tab { transition: none; } }
+}
+
+/* Why Us: bento grid. Desktop (4 columns, 2 rows): [1][tall photo][3][small photo] / [2][tall photo][4 wide]. */
+@layer components {
+  .bento { display: grid; gap: 1rem; margin-top: 3rem; grid-template-columns: minmax(0, 1fr); }
+  .bento-card { display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; min-height: 13rem; padding: 1.5rem; border-radius: var(--radius-card); background: var(--color-secondary); color: var(--color-foreground); }
+  .bento-2, .bento-4 { background: var(--color-background); box-shadow: inset 0 0 0 1px var(--color-border); }
+  .bento-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 500; line-height: 1.2; }
+  .bento-body { color: var(--color-muted-foreground); }
+  .bento-title + .bento-body { margin-top: 0.5rem; }
+  .bento-photo { position: relative; overflow: hidden; border-radius: var(--radius-card); background: var(--color-secondary); min-height: 13rem; }
+  .bento-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  @media (min-width: 640px) and (max-width: 1023.98px) {
+    .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bento-1 { order: 1; } .bento-2 { order: 2; } .bento-3 { order: 3; } .bento-photo-small { order: 4; }
+    .bento-4 { order: 5; grid-column: 1 / -1; }
+    .bento-photo-tall { order: 6; grid-column: 1 / -1; min-height: 16rem; }
+  }
+  @media (min-width: 1024px) {
+    .bento { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(14rem, 1fr)); }
+    .bento-1 { grid-column: 1; grid-row: 1; } .bento-2 { grid-column: 1; grid-row: 2; }
+    .bento-photo-tall { grid-column: 2; grid-row: 1 / span 2; }
+    .bento-3 { grid-column: 3; grid-row: 1; } .bento-photo-small { grid-column: 4; grid-row: 1; }
+    .bento-4 { grid-column: 3 / span 2; grid-row: 2; }
+  }
+}
+
+/* First-month offer card (replaces the dark promo band) */
+@layer components {
+  .offer-card { display: flex; flex-direction: column; align-items: center; max-width: 36rem; margin-inline: auto; padding: 2rem 1.5rem 2.25rem; text-align: center; background: var(--color-secondary); border-radius: calc(var(--radius-card) + 8px); }
+  .offer-badge { display: inline-flex; align-items: center; gap: 0.75rem; padding: 0.375rem 1.25rem 0.375rem 0.375rem; background: var(--color-background); border-radius: 9999px; }
+  .offer-badge-ico { display: flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; border-radius: 9999px; background: var(--color-foreground); color: var(--color-background); }
+  .offer-badge-num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
+  .offer-title { margin-top: 1.5rem; font-family: var(--font-display); font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem); font-weight: 500; line-height: 1.15; }
+  .offer-text { margin-top: 0.5rem; max-width: 30ch; color: var(--color-muted-foreground); }
+  .offer-timer { display: flex; align-items: flex-start; justify-content: center; gap: 0.5rem; margin-top: 1.75rem; }
+  .offer-timer > div { display: flex; flex-direction: column; align-items: center; gap: 0.375rem; }
+  .offer-timer i { font-style: normal; font-size: 1.5rem; line-height: 3rem; color: var(--color-muted-foreground); }
+  .offer-num { display: inline-flex; align-items: center; justify-content: center; min-width: 3.5rem; height: 3rem; padding-inline: 0.5rem; background: var(--color-background); border-radius: 0.5rem; font-family: var(--font-display); font-size: 1.75rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .offer-unit { font-size: var(--text-sm); }
+  .offer-cta { margin-top: 2rem; }
+  @media (max-width: 479.98px) { .offer-num { min-width: 2.75rem; font-size: 1.5rem; } .offer-timer { gap: 0.25rem; } }
+}
+
+/* Offer banner on a photo: full-width photo (replace /public/hero-1.jpg), the card sits on top. */
+@layer components {
+  .offer-sec { position: relative; overflow: hidden; background: var(--color-secondary); padding-block: 5rem; }
+  @media (min-width: 1024px) { .offer-sec { padding-block: 7rem; } }
+  .offer-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .offer-wrap { position: relative; z-index: 1; }
+  .offer-sec .offer-card { background: var(--color-background); }
+  .offer-sec .offer-num { background: var(--color-secondary); }
+}
+
+/* Nav links: fully rounded. Hover for the last buttons that had none (hours toggle, gallery-like dots). */
+@layer components {
+  .nav-link { border-radius: 9999px; }
+  .info-toggle:hover span { text-decoration-thickness: 2px; }
+  .info-toggle:hover { color: var(--color-foreground); }
+  .cls-dots button:not([aria-current="true"]):hover { background: #6b6b6b; transform: scale(1.3); }
+}
+
+/* Remaining hover states: day buttons of the phone day strip, booking payment rows. */
+@layer components {
+  .day-btn:hover:not(:disabled):not([aria-pressed="true"]) { background: var(--color-muted); }
+  .pay-row:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+}
+
+/* Footer (reference: energy-park.co.uk): brand + large phone/email, a hairline, short about + Book now on the left and three link
+   columns on the right, then copyright and Back to top. */
+@layer components {
+  .site-footer { background: var(--color-background); color: var(--color-foreground); border-top: 1px solid var(--color-border); }
+  .ft-top { display: grid; gap: 1.5rem; padding-block: 3rem 2.5rem; border-bottom: 1px solid var(--color-border); }
+  .ft-brand { font-family: var(--font-display); font-size: 1.25rem; font-weight: 500; letter-spacing: -0.01em; color: inherit; text-decoration: none; width: fit-content; }
+  .ft-brand:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+  .ft-contact { display: grid; gap: 0.25rem; }
+  .ft-contact a { width: fit-content; font-size: clamp(1.25rem, 1rem + 0.8vw, 1.5rem); line-height: 1.4; color: inherit; text-decoration: none; overflow-wrap: anywhere; }
+  .ft-contact a:hover { text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+  .ft-mid { display: grid; gap: 2.5rem; padding-block: 3rem 4.5rem; }
+  .ft-about { display: flex; flex-direction: column; align-items: flex-start; font-size: var(--text-sm); line-height: 1.5; }
+  .ft-hours { margin-top: 0.75rem; white-space: pre-line; color: var(--color-muted-foreground); }
+  .ft-cta { margin-top: 2rem; }
+  .ft-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 1.5rem; }
+  @media (min-width: 640px) { .ft-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .ft-h { font-size: var(--text-sm); font-weight: 500; margin-bottom: 1.25rem; }
+  .ft-cols ul { display: grid; gap: 0.5rem; }
+  .ft-cols a { font-size: var(--text-sm); color: var(--color-muted-foreground); text-decoration: none; transition: color 160ms var(--ease-site); }
+  .ft-cols a:hover { color: var(--color-foreground); }
+  .ft-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; padding-block: 1.5rem 2rem; font-size: var(--text-sm); color: var(--color-muted-foreground); }
+  .ft-top-link { color: inherit; text-decoration: none; }
+  .ft-top-link:hover { color: var(--color-foreground); }
+  @media (min-width: 1024px) {
+    .ft-top, .ft-mid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1rem; }
+    .ft-about p { max-width: 34ch; }
+  }
+}
+
+/* Timetable card hover (all calendars): photo zooms inside its frame, the name underlines, the action arrow nudges right. */
+@layer components {
+  .tt-spots[data-low="true"] { display: flex; width: fit-content; }
+  .tt-card .tt-media img { transition: transform 600ms var(--ease-site); }
+  .tt-card:hover .tt-media img { transform: scale(1.08); }
+  .tt-name { transition: color 200ms var(--ease-site); text-decoration: underline 1px transparent; text-underline-offset: 0.18em; transition: text-decoration-color 200ms var(--ease-site); }
+  .tt-card:hover .tt-name { text-decoration-color: currentColor; }
+  .tt-action svg { transition: transform 250ms var(--ease-site); }
+  .tt-card:hover a.tt-action svg, .tt-card:hover button.tt-action svg { transform: translateX(0.25rem); }
+}
+
+/* Testimonials rail (home + class pages): white section, centred snapping grey cards with neighbours peeking, round arrows pill. */
+@layer components {
+  .rv { position: relative; }
+  .rv-track { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-inline: calc((100% - min(46rem, 86vw)) / 2); list-style: none; margin: 0; }
+  .rv-track::-webkit-scrollbar { display: none; }
+  .rv-card { flex: 0 0 min(46rem, 86vw); scroll-snap-align: center; display: flex; flex-direction: column; gap: 3rem; min-height: 22rem; padding: clamp(1.25rem, 3vw, 2rem); background: var(--color-secondary); border-radius: var(--radius-card); }
+  .rv-head { display: flex; align-items: flex-start; gap: 1rem; }
+  .rv-who { min-width: 0; padding-right: clamp(1rem, 4vw, 2.5rem); border-right: 1px solid var(--color-border); }
+  .rv-cls { min-width: 0; flex: 1; }
+  .rv-name { font-size: var(--text-sm); color: var(--color-foreground); overflow-wrap: anywhere; }
+  .rv-sub { font-size: var(--text-sm); color: var(--color-muted-foreground); }
+  .rv-photo { flex: none; width: clamp(4rem, 12vw, 6rem); aspect-ratio: 3 / 4; height: auto; object-fit: cover; border-radius: var(--radius-card); }
+  .rv-quote { margin-top: auto; position: relative; padding-left: 1.75rem; max-width: 30rem; }
+  .rv-mark { position: absolute; left: 0; top: -0.6rem; font-size: 2.5rem; line-height: 1; color: var(--color-muted-foreground); opacity: 0.5; font-family: Georgia, serif; }
+  .rv-quote p { font-size: var(--text-sm); line-height: 1.5; }
+  .rv-nav { display: flex; justify-content: center; gap: 0.25rem; width: fit-content; margin: 1.5rem auto 0; padding: 0.375rem; border: 1px solid var(--color-border); border-radius: 9999px; background: var(--color-background); }
+  .rv-nav button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 9999px; color: var(--color-muted-foreground); transition: color 200ms var(--ease-site), box-shadow 200ms var(--ease-site); }
+  .rv-nav button:hover { color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+}
+
+/* Testimonials v2: no edge padding (the loop always has neighbours), quote in the footer-contact size, label black / class grey. */
+@layer components {
+  .rv-track { padding-inline: 0; }
+  .rv-card { min-height: 28rem; }
+  .rv-quote { max-width: 36rem; padding-left: 2rem; }
+  .rv-quote p { font-size: clamp(1.25rem, 1rem + 0.8vw, 1.5rem); line-height: 1.4; }
+  .rv-mark { top: -0.4rem; font-size: 3rem; }
+}
+
+/* Testimonials v3: quote text flush with the name, the quote mark sits above it. */
+@layer components {
+  .rv-quote { padding-left: 0; }
+  .rv-mark { position: static; display: block; height: 1.5rem; margin-bottom: 0.25rem; }
+}
+
+/* Timetable card hover v2 (grid calendars): the content draws in a little and a black 1px frame appears at the card's edge.
+   Frame radius = the card radius; the inset photo takes a smaller radius so the two corners read as concentric. */
+@layer components {
+  .tt-grid .tt-card { border-radius: var(--radius-card); transition: padding 300ms var(--ease-site), box-shadow 300ms var(--ease-site); }
+  .tt-grid .tt-card .tt-media { transition: border-radius 300ms var(--ease-site); }
+  .tt-grid .tt-card:hover { padding: 0.875rem 0.875rem 0.5rem; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .tt-grid .tt-card:hover .tt-media { border-radius: 0.4375rem; }
+  .tt-grid .tt-card:hover .tt-media img { transform: none; }
+}
+
+@layer components { .tt-card:hover .tt-name { text-decoration-color: transparent; } }
+
+/* Week grid: the day headings stay pinned to the top of the calendar while it scrolls. */
+@layer components {
+  .tt-grid .tt-head { position: sticky; top: 0; z-index: 2; background: var(--color-background); padding-top: 0.5rem; }
+}
+@layer components {
+  .tt-grid-wrap { max-height: none; overflow: visible; }
+  .tt-grid .tt-head { top: var(--header-h, 4rem); }
+}
+
+/* Week grid focus: hovering a card fades every other day's column to 40% opacity (60% transparent). */
+@layer components {
+  .tt-grid > [data-col] { transition: opacity 250ms var(--ease-site); }
+  .tt-grid:has(> [data-col="1"] .tt-card:hover) > [data-col]:not([data-col="1"]),
+  .tt-grid:has(> [data-col="2"] .tt-card:hover) > [data-col]:not([data-col="2"]),
+  .tt-grid:has(> [data-col="3"] .tt-card:hover) > [data-col]:not([data-col="3"]),
+  .tt-grid:has(> [data-col="4"] .tt-card:hover) > [data-col]:not([data-col="4"]),
+  .tt-grid:has(> [data-col="5"] .tt-card:hover) > [data-col]:not([data-col="5"]),
+  .tt-grid:has(> [data-col="6"] .tt-card:hover) > [data-col]:not([data-col="6"]),
+  .tt-grid:has(> [data-col="7"] .tt-card:hover) > [data-col]:not([data-col="7"]) { opacity: 0.4; }
+}
+
+/* Hover focus v2: day headings keep an opaque background (only their label fades) and the hovered day gets a black bar on top. */
+@layer components {
+  .tt-grid > .tt-head[data-col] { box-shadow: inset 0 0 0 0 var(--color-foreground); transition: box-shadow 250ms var(--ease-site); }
+  .tt-grid > .tt-head[data-col] span { transition: opacity 250ms var(--ease-site); }
+  .tt-grid:has(> [data-col="1"] .tt-card:hover) > .tt-head[data-col]:not([data-col="1"]),
+  .tt-grid:has(> [data-col="2"] .tt-card:hover) > .tt-head[data-col]:not([data-col="2"]),
+  .tt-grid:has(> [data-col="3"] .tt-card:hover) > .tt-head[data-col]:not([data-col="3"]),
+  .tt-grid:has(> [data-col="4"] .tt-card:hover) > .tt-head[data-col]:not([data-col="4"]),
+  .tt-grid:has(> [data-col="5"] .tt-card:hover) > .tt-head[data-col]:not([data-col="5"]),
+  .tt-grid:has(> [data-col="6"] .tt-card:hover) > .tt-head[data-col]:not([data-col="6"]),
+  .tt-grid:has(> [data-col="7"] .tt-card:hover) > .tt-head[data-col]:not([data-col="7"]) { opacity: 1; }
+  .tt-grid:has(> [data-col="1"] .tt-card:hover) > .tt-head[data-col]:not([data-col="1"]) span,
+  .tt-grid:has(> [data-col="2"] .tt-card:hover) > .tt-head[data-col]:not([data-col="2"]) span,
+  .tt-grid:has(> [data-col="3"] .tt-card:hover) > .tt-head[data-col]:not([data-col="3"]) span,
+  .tt-grid:has(> [data-col="4"] .tt-card:hover) > .tt-head[data-col]:not([data-col="4"]) span,
+  .tt-grid:has(> [data-col="5"] .tt-card:hover) > .tt-head[data-col]:not([data-col="5"]) span,
+  .tt-grid:has(> [data-col="6"] .tt-card:hover) > .tt-head[data-col]:not([data-col="6"]) span,
+  .tt-grid:has(> [data-col="7"] .tt-card:hover) > .tt-head[data-col]:not([data-col="7"]) span { opacity: 0.4; }
+  .tt-grid:has(> [data-col="1"] .tt-card:hover) > .tt-head[data-col="1"]:not([data-today="true"]) span,
+  .tt-grid:has(> [data-col="2"] .tt-card:hover) > .tt-head[data-col="2"]:not([data-today="true"]) span,
+  .tt-grid:has(> [data-col="3"] .tt-card:hover) > .tt-head[data-col="3"]:not([data-today="true"]) span,
+  .tt-grid:has(> [data-col="4"] .tt-card:hover) > .tt-head[data-col="4"]:not([data-today="true"]) span,
+  .tt-grid:has(> [data-col="5"] .tt-card:hover) > .tt-head[data-col="5"]:not([data-today="true"]) span,
+  .tt-grid:has(> [data-col="6"] .tt-card:hover) > .tt-head[data-col="6"]:not([data-today="true"]) span,
+  .tt-grid:has(> [data-col="7"] .tt-card:hover) > .tt-head[data-col="7"]:not([data-today="true"]) span { display: inline-block; padding: 0.125rem 0.625rem; border-radius: 9999px; background: var(--color-secondary); color: var(--color-foreground); }
+}
+
+/* ── About page (reference: persona + insights layout), monochrome: grey page, white cards, grey run as the "highlight". */
+@layer components {
+  .ab-sec { padding-bottom: 0; }
+  .ab-sec:last-of-type { padding-bottom: clamp(3.5rem, 8vw, 6.5rem); }
+  .ab-label { display: inline-flex; align-items: center; gap: 0.5rem; font-size: var(--text-xs); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+  .ab-label i { width: 0.4375rem; height: 0.4375rem; border-radius: 2px; background: var(--color-foreground); }
+  .ab-intro { display: grid; gap: 1.25rem; }
+  .ab-statement { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.375rem, 1rem + 1.4vw, 2rem); line-height: 1.25; letter-spacing: -0.01em; max-width: 40ch; text-wrap: pretty; }
+  .ab-statement-left { margin-top: 1.25rem; max-width: 28ch; }
+  .ab-hl { color: var(--color-muted-foreground); }
+  @media (min-width: 64rem) {
+    .ab-intro { grid-template-columns: 1fr 2.6fr; align-items: start; }
+    .ab-intro .ab-statement { text-indent: 4em; }
+  }
+  .ab-persona { display: grid; gap: 1rem; margin-top: clamp(3rem, 6vw, 5.5rem); }
+  @media (min-width: 64rem) { .ab-persona { grid-template-columns: 1fr 1fr; } }
+  .ab-photo { position: relative; margin: 0; min-height: 26rem; overflow: hidden; border-radius: var(--radius-card); background: var(--color-muted); }
+  .ab-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ab-avatars { position: absolute; top: 1.25rem; left: 1.25rem; display: flex; gap: 0.375rem; list-style: none; margin: 0; padding: 0; }
+  .ab-avatars img { width: 2rem; height: 2rem; object-fit: cover; border-radius: 0.5rem; box-shadow: 0 0 0 2px rgb(255 255 255 / 0.8); }
+  .ab-plate { position: absolute; left: 1.25rem; right: 1.25rem; bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; border-radius: calc(var(--radius-card) - 0.25rem); background: rgb(30 30 30 / 0.55); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #fff; }
+  .ab-plate strong { display: block; font-family: var(--font-display); font-weight: 500; font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem); line-height: 1.2; }
+  .ab-plate small { display: block; margin-top: 0.125rem; font-size: var(--text-xs); opacity: 0.75; }
+  .ab-mark { flex: none; width: 1.75rem; height: 1.75rem; }
+  .ab-blocks { display: grid; gap: 1rem; }
+  .ab-block { padding: clamp(1.25rem, 2.5vw, 1.75rem); border-radius: var(--radius-card); background: var(--color-background); }
+  .ab-block-title { display: flex; align-items: center; gap: 0.75rem; font-family: var(--font-display); font-weight: 500; font-size: var(--text-base); }
+  .ab-ico { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 9999px; background: var(--color-secondary); }
+  .ab-list { margin-top: 1.25rem; padding-left: 1.125rem; list-style: disc; font-size: var(--text-sm); line-height: 1.6; color: var(--color-muted-foreground); }
+  .ab-list li::marker { color: var(--color-foreground); }
+  .ab-sec-tight { padding-top: clamp(4rem, 9vw, 7.5rem); }
+  .ab-stats { display: grid; gap: 1rem; margin-top: clamp(2.5rem, 5vw, 4.5rem); list-style: none; padding: 0; }
+  @media (min-width: 48rem) { .ab-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .ab-stat { display: flex; flex-direction: column; padding: clamp(1.25rem, 2.5vw, 1.75rem); border-radius: var(--radius-card); background: var(--color-background); }
+  .ab-stat-label { font-size: var(--text-xs); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+  .ab-stat-num { margin-top: clamp(2.5rem, 5vw, 4rem); font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 1.5rem + 1.6vw, 2.75rem); line-height: 1; letter-spacing: -0.02em; }
+  .ab-bar { display: flex; gap: 0.3125rem; height: 2.25rem; margin-top: 1.25rem; }
+  .ab-bar i { flex: 1; border-radius: 1px; background: #ececec; }
+  .ab-stat[data-tone="ink"] .ab-bar i[data-on] { background: var(--color-foreground); }
+  .ab-stat[data-tone="mid"] .ab-bar i[data-on] { background: #7a7a7a; }
+  .ab-stat[data-tone="light"] .ab-bar i[data-on] { background: #b5b5b5; }
+  .ab-stat-text { margin-top: 1.25rem; font-size: var(--text-sm); line-height: 1.55; color: var(--color-muted-foreground); }
+  .ab-outro { display: grid; gap: 1.5rem; justify-items: start; margin-top: clamp(3rem, 6vw, 5rem); max-width: 34rem; margin-left: auto; font-size: var(--text-base); line-height: 1.6; }
+  .ab-team { display: grid; gap: 1rem; margin-top: clamp(2.5rem, 5vw, 4.5rem); list-style: none; padding: 0; }
+  @media (min-width: 40rem) { .ab-team { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) { .ab-team { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+}
+
+@layer components { .offer-badge-num { font-family: var(--font-display); font-size: clamp(2.75rem, 2.2rem + 2vw, 4rem); font-weight: 500; line-height: 1; letter-spacing: -0.02em; } }
+
+/* Week arrows on the day-heading row (desktop): prev before the first day, next after the last. */
+@layer components {
+  .tt-grid .tt-head[data-col] { display: flex; align-items: center; justify-content: center; min-height: 3rem; }
+  .tt-head .tt-wk { position: absolute; top: 50%; transform: translateY(-50%); }
+  .tt-head .tt-wk-prev { left: 0; }
+  .tt-head .tt-wk-next { right: 0; }
+  .tt-head .tt-wk:disabled { opacity: 0.35; }
+}
+
+/* Hovered day: grey pill (no bar); the today pill keeps its padding box always so nothing shifts. */
+@layer components { .tt-grid > .tt-head[data-col] span { display: inline-block; padding: 0.125rem 0.625rem; border-radius: 9999px; transition: background-color 200ms var(--ease-site), color 200ms var(--ease-site), opacity 250ms var(--ease-site); } }
+
+/* Full cards read greyed; "Read more" shows only while the card is hovered (pointer devices, week grid; it keeps its space). */
+@layer components {
+  .tt-card[data-state="full"] .tt-body, .tt-card[data-state="full"] .tt-body .tt-name, .tt-card[data-state="full"] .tt-price { color: var(--color-muted-foreground); }
+  @media (hover: hover) {
+    .tt-grid .tt-more { opacity: 0; transition: opacity 200ms var(--ease-site); }
+    .tt-grid .tt-card:hover .tt-more, .tt-grid .tt-more:focus-visible { opacity: 1; }
+  }
+}
+
+/* ── About v2 (bento): centred intro, a 4-column bento of figures + photos + social tiles, two value rows, the team. */
+@layer components {
+  .ab2-intro { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .ab2-pill { padding: 0.25rem 0.75rem; border-radius: 9999px; background: var(--color-secondary); font-size: var(--text-xs); font-weight: 500; }
+  .ab2-title { margin-top: 1rem; }
+  .ab2-lead { margin-top: 1rem; max-width: 56ch; color: var(--color-muted-foreground); }
+  .ab2-bento { display: grid; gap: 0.75rem; margin-top: clamp(2.5rem, 5vw, 4rem);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas: "photo photo" "month month" "types level" "social team" "studio team" "photo2 photo2"; }
+  @media (min-width: 64rem) {
+    .ab2-bento { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: minmax(12rem, auto) minmax(10rem, auto) minmax(12rem, auto);
+      grid-template-areas: "photo photo month types" "social team month level" "studio team photo2 photo2"; }
+  }
+  .ab2-card { display: flex; flex-direction: column; justify-content: space-between; gap: 1.5rem; min-width: 0; padding: clamp(1rem, 2vw, 1.5rem); border-radius: var(--radius-card); background: var(--color-secondary); color: var(--color-foreground); }
+  .ab2-dark { background: var(--color-foreground); color: var(--color-background); }
+  .ab2-dark .ab2-p { color: rgb(255 255 255 / 0.6); }
+  .ab2-tint { background: #e4e4e4; }
+  .ab2-photo { position: relative; margin: 0; padding: 0; min-height: 12rem; overflow: hidden; }
+  .ab2-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ab2-num { font-family: var(--font-display); font-weight: 400; font-size: clamp(2.25rem, 1.6rem + 2vw, 3.25rem); line-height: 1; letter-spacing: -0.02em; }
+  .ab2-num-sm { font-size: clamp(1.75rem, 1.4rem + 1vw, 2.25rem); }
+  .ab2-h { font-family: var(--font-display); font-weight: 500; font-size: var(--text-base); }
+  .ab2-p { margin-top: 0.375rem; font-size: var(--text-xs); line-height: 1.5; color: var(--color-muted-foreground); }
+  .ab2-social { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; list-style: none; margin: 0; padding: 0; }
+  .ab2-sq { height: 100%; min-height: 4.5rem; align-items: center; justify-content: center; padding: 0; transition: background-color 200ms var(--ease-site), color 200ms var(--ease-site); }
+  .ab2-sq:hover { background: var(--color-foreground); color: var(--color-background); }
+  .ab2-row { display: grid; gap: 1.5rem; margin-top: clamp(4rem, 8vw, 7rem); }
+  @media (min-width: 64rem) { .ab2-row { grid-template-columns: 1fr 1fr; gap: 4rem; padding-inline: 3rem; } }
+  .ab2-kicker { margin-bottom: 0.75rem; font-size: var(--text-xs); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-muted-foreground); }
+  .ab2-text { display: grid; gap: 1rem; font-size: var(--text-sm); line-height: 1.65; color: var(--color-muted-foreground); }
+  .ab2-team { display: grid; gap: 1rem; margin-top: clamp(2rem, 4vw, 3rem); list-style: none; padding: 0; }
+  @media (min-width: 40rem) { .ab2-team { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 64rem) { .ab2-team { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+}
+
+/* About bento: 1.5x taller rows; card headings at the team-name size (text-h3). */
+@layer components {
+  @media (min-width: 64rem) { .ab2-bento { grid-template-rows: minmax(18rem, auto) minmax(15rem, auto) minmax(18rem, auto); } }
+  .ab2-photo { min-height: 18rem; }
+  .ab2-h { font-size: var(--text-h3); line-height: var(--text-h3--line-height, 1.25); }
+  .ab2-p { margin-top: 0.5rem; font-size: var(--text-sm); }
+}
+
+/* About value rows: same side inset as the cards (none), a footer-style hairline above each. Footer top line inside the wrap. */
+@layer components {
+  @media (min-width: 64rem) { .ab2-row { padding-inline: 0; } }
+  .ab2-row { padding-top: clamp(2rem, 4vw, 3rem); border-top: 1px solid var(--color-border); margin-top: clamp(3rem, 6vw, 5rem); }
+  .site-footer { border-top: 0; }
+  .site-footer .ft-top { border-top: 1px solid var(--color-border); }
+}
+
+/* Current-page nav link: the underline gives way to the hover ring (never both). */
+@layer components { .nav-link[aria-current="page"]:hover { text-decoration: none; } }
+
+/* About: two closing banners (photo, dark scrim, title, line, white pill), side by side from 768. */
+@layer components {
+  .ab2-cta-sec { padding-top: 0; }
+  .ab2-ctas { display: grid; gap: 0.75rem; }
+  @media (min-width: 48rem) { .ab2-ctas { grid-template-columns: 1fr 1fr; } }
+  .ab2-cta { position: relative; display: flex; align-items: flex-end; min-height: 22rem; overflow: hidden; border-radius: var(--radius-card); color: #fff; text-decoration: none; isolation: isolate; }
+  .ab2-cta img { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; transition: transform 600ms var(--ease-site); }
+  .ab2-cta::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, rgb(0 0 0 / 0.6), rgb(0 0 0 / 0.1) 70%); }
+  .ab2-cta:hover img { transform: scale(1.05); }
+  .ab2-cta-body { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; padding: clamp(1.25rem, 3vw, 2rem); }
+  .ab2-cta-body strong { font-family: var(--font-display); font-weight: 500; font-size: var(--text-h2); line-height: 1.1; }
+  .ab2-cta-body > span:not(.btn) { font-size: var(--text-sm); opacity: 0.85; }
+  .ab2-cta-btn { margin-top: 0.75rem; background: #fff; color: var(--color-foreground); }
+  .ab2-cta:hover .ab2-cta-btn { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+}
+
+/* About banners v2: plain photo (no scrim), black text, outlined black pill. */
+@layer components {
+  .ab2-cta { color: var(--color-foreground); }
+  .ab2-cta::before { content: none; }
+  .ab2-cta-body > span:not(.btn) { opacity: 1; color: var(--color-foreground); }
+  .ab2-cta-btn { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); transition: background-color 200ms var(--ease-site), color 200ms var(--ease-site); }
+  .ab2-cta:hover .ab2-cta-btn { background: var(--color-foreground); color: var(--color-background); }
+}
+
+/* Hero v3: everything centred in the same-height band; one white bar: Open Today + today's hours | address | Book now. */
+@layer components {
+  .hero-fs { justify-content: center; }
+  .hero-center { display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
+  .hero-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.75rem 1.5rem; margin-top: 2.5rem; padding: 0.625rem 0.625rem 0.625rem 1.25rem; border-radius: var(--radius-card); background: var(--color-background); text-align: left; }
+  .hero-bar-open { display: flex; align-items: baseline; gap: 0.75rem; }
+  .hero-bar-h { font-family: var(--font-display); font-size: var(--text-base); }
+  .hero-bar-muted { font-size: var(--text-sm); color: var(--color-muted-foreground); text-decoration: none; }
+  a.hero-bar-addr:hover { color: var(--color-foreground); text-decoration: underline; text-underline-offset: 0.2em; }
+  .hero-bar-sep { width: 1px; align-self: stretch; min-height: 2.25rem; background: var(--color-foreground); }
+  @media (max-width: 40rem) { .hero-bar-sep { display: none; } .hero-bar { padding: 1rem; } }
+  /* Header CTA: outline until the page scrolls. */
+  html:not([data-scrolled]) .hdr-cta { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .hdr-cta { transition: background-color 200ms var(--ease-site), color 200ms var(--ease-site), box-shadow 200ms var(--ease-site); }
+}
+
+@layer components { .hero-bar-sep { background: rgb(0 0 0 / 0.2); } }
+
+/* Booking form, site style: pill stepper with round buttons, rounded summary card, rounded payment rows and notes. */
+@layer components {
+  .counter { align-items: center; gap: 0.25rem; padding: 0.25rem; border-radius: 9999px; overflow: visible; }
+  .counter button { width: 2.5rem; min-height: 2.5rem; border-radius: 9999px; }
+  .counter output { min-width: 2.5rem; border-inline: 0; }
+  .bk-sum { overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-card); }
+  .bk-sum > :last-child { border-top-color: var(--color-border); }
+  .pay-row { min-height: 3.5rem; padding: 0.75rem 1.25rem; border-radius: var(--radius-card); }
+  .pay-row:has(input:disabled) { border-style: solid; }
+  .note { border: 0; border-radius: var(--radius-card); padding: 1rem 1.25rem; line-height: 1.6; }
+  .note a { display: inline; min-height: 0; }
+}
+
+/* Button hover contract (all link/action buttons): solid black -> outline, outline -> solid black. Declared last and a step
+   more specific so per-component rules above cannot undo it. */
+@layer components {
+  .btn { transition: background-color 200ms var(--ease-site), color 200ms var(--ease-site), box-shadow 200ms var(--ease-site), transform 300ms var(--ease-site), opacity 300ms var(--ease-site); }
+  .btn.btn-primary:hover:not(:disabled):not([aria-disabled="true"]) { background-color: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .btn.btn-secondary:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--color-foreground); color: var(--color-background); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  /* Header CTA at the top of the page is drawn as an outline, so it fills on hover. */
+  html:not([data-scrolled]) .hdr-cta.btn.btn-primary:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--color-foreground); background-color: var(--color-foreground); color: var(--color-background); }
+  /* About banners: the outlined pill fills when the button itself or its banner is hovered. */
+  .ab2-cta:hover .ab2-cta-btn { background-color: var(--color-foreground); color: var(--color-background); }
+}
+
+/* Phone / tablet timetable (list view below 1280): centred day strip, larger thumbnails (the spots ribbon fits),
+   price, spots and action inside the card under the text. Read more is always visible on touch screens. */
+@layer components {
+  @media (max-width: 1279.98px) {
+    .day-rail { justify-content: safe center; }
+    .tt-list .tt-card { grid-template-columns: 7.5rem minmax(0, 1fr); align-items: start; }
+    .tt-list .tt-media { grid-row: 1 / span 2; aspect-ratio: 1; }
+    .tt-list .ribbon { font-size: 0.6875rem; padding-inline: 0.25rem; justify-content: center; }
+    .tt-list .tt-foot { grid-column: 2; margin-top: 0.75rem; padding-top: 0.75rem; }
+  }
+  @media (min-width: 600px) and (max-width: 1279.98px) {
+    .tt-list .tt-card { grid-template-columns: 10rem minmax(0, 1fr); column-gap: 1.25rem; }
+    .tt-list .tt-media { aspect-ratio: 4 / 3; }
+  }
+  @media (hover: none) { .tt-grid .tt-more { opacity: 1; } }
+}
+
+/* Plan checkout page: the perks list in a two-column grid, the payment button at a natural width from tablet up. */
+@layer components {
+  .co-perks { display: grid; gap: 0.75rem 1.5rem; }
+  @media (min-width: 600px) { .co-perks { grid-template-columns: repeat(2, minmax(0, 1fr)); } .co-pay { max-width: 20rem; } }
+}
+
+/* List cards on iPad Safari: every part is placed explicitly (no auto-placement) and the thumbnail has a fixed size instead of
+   an aspect-ratio, so the rows size from the text and the price/Book line always stays inside the card. */
+@layer components {
+  @media (max-width: 1279.98px) {
+    .tt-list .tt-card { grid-template-rows: auto auto; align-content: start; height: auto !important; min-height: 0; overflow: hidden; }
+    .tt-list .tt-media { grid-column: 1; grid-row: 1 / 3; width: 7.5rem; height: 7.5rem; aspect-ratio: auto; align-self: start; }
+    .tt-list .tt-body { grid-column: 2; grid-row: 1; }
+    .tt-list .tt-foot { grid-column: 2; grid-row: 2; position: static; }
+  }
+  @media (min-width: 600px) and (max-width: 1279.98px) { .tt-list .tt-media { width: 10rem; height: 7.5rem; } }
+}
+
+/* Phone / tablet timetable cards: the same rounded corners as every other card (desktop grid cards are rounded too). */
+@layer components { @media (max-width: 1279.98px) { .tt-list .tt-card { border-radius: var(--radius-card); } } }
+
+/* Text buttons and text links: one hover everywhere, a visible fade to 55% opacity (colour and underline stay as they are). */
+@layer components {
+  .link-btn, .tt-more, a.tt-action, button.tt-action, .back-link, .ft-contact a, .ft-cols a, .ft-top-link, a.hero-bar-addr, .prose-site a, .ft-brand, .field-label a, .note a {
+    transition: opacity 180ms var(--ease-site);
+  }
+  .link-btn:hover, .tt-more:hover, a.tt-action:hover, button.tt-action:hover, .back-link:hover, .ft-contact a:hover, .ft-cols a:hover,
+  .ft-top-link:hover, a.hero-bar-addr:hover, .prose-site a:hover, .ft-brand:hover, .note a:hover { opacity: 0.55; }
+  .link-btn:hover, .prose-site a:hover { text-decoration-thickness: 1px; }
+  .back-link:hover, .ft-contact a:hover, a.hero-bar-addr:hover { text-decoration: none; }
+  .back-link:hover, .ft-cols a:hover, .ft-top-link:hover, a.hero-bar-addr:hover { color: inherit; }
+  .back-link:hover { color: var(--color-muted-foreground); }
+  .ft-cols a:hover { color: var(--color-muted-foreground); }
+}
+
+/* Accessibility: 14px minimum for running text, and full-strength muted text on the past-day placeholders (contrast >= 4.5:1). */
+@layer components {
+  .cls-sub, .ab2-pill, .ab2-kicker, .bill-save, .tt-tag, .ribbon, .tt-list .ribbon { font-size: var(--text-xs); }
+  .tt-empty[data-filler="true"][role="status"] { opacity: 1; }
+  .tt-empty[data-filler="true"] { background: var(--color-secondary); }
+  @media (max-width: 599.98px) { .tt-list .tt-card { grid-template-columns: 8.5rem minmax(0, 1fr); } .tt-list .tt-media { width: 8.5rem; height: 8.5rem; } }
+}
+
+/* Menu states, each visibly different: hover = 1px ring, current page = underline, pressed (clicked) = filled grey pill. */
+@layer components {
+  .nav-link:active, .nav-link[aria-current="page"]:active { background: var(--color-secondary); box-shadow: none; text-decoration: none; }
+  .menu-link:active { opacity: 1; background: var(--color-secondary); }
+}

@@ -1,0 +1,146 @@
+---
+// Site chrome for every page: header, footer. Header CTA = the site's one action ("Book now" -> /schedule, as Figma draws it).
+//   hideCta   the page IS a booking surface: the header's "Book now" would point at itself.
+//   barSpace  the page renders the fixed action bar: reserve its height after the footer.
+import { getSections, getLegalPages, getSocialLinks } from "../lib/content";
+import { BUSINESS_NAME, NAV, BOOK_LABEL } from "../lib/site";
+import "../styles/global.css";
+
+interface Props { title: string; description?: string; hideCta?: boolean; barSpace?: boolean; footer?: boolean; }
+const { title, description, hideCta = false, barSpace = false, footer: showFooter = true } = Astro.props;
+
+const [sections, legal, social] = await Promise.all([getSections(), getLegalPages(), getSocialLinks()]);
+const PLATFORM_LABEL = { instagram: "Instagram", tiktok: "TikTok", facebook: "Facebook" } as const;
+const f = sections.footer;
+const contactBits = (f?.bodySecondary ?? "").split("·").map((x) => x.trim()).filter(Boolean);
+const pageTitle = title === BUSINESS_NAME ? title : `${title} | ${BUSINESS_NAME}`;
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => path === href || (href !== "/" && path.startsWith(href));
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" href="/favicon.svg" />
+  </head>
+  <body class="min-h-svh" id="top">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:bg-background focus:px-4 focus:py-3">Skip to content</a>
+
+    <header class="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
+      <div class="wrap flex h-(--header-h) items-center justify-between gap-4">
+        <a href="/" class="inline-flex min-h-11 items-center font-display text-lg font-medium tracking-tight text-foreground no-underline hover:underline hover:underline-offset-[0.25em]">{BUSINESS_NAME}</a>
+        <div class="flex items-center gap-2 md:gap-6">
+          <nav aria-label="Main" class="hidden items-center gap-1 md:flex">
+            {NAV.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? "page" : undefined} class="nav-link">{l.label}</a>)}
+          </nav>
+          {!hideCta && <a href="/#schedule" class="btn btn-primary btn-sm hdr-cta">{BOOK_LABEL}</a>}
+          <!-- Phone and tablet (<768): the five links live in a menu panel under the header. -->
+          <button type="button" id="menu-btn" class="icon-btn md:hidden" aria-expanded="false" aria-controls="menu-panel" aria-label="Menu">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path id="menu-open" d="M2 5h14M2 9h14M2 13h14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /><path id="menu-close" class="hidden" d="M3 3l12 12M15 3L3 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /></svg>
+          </button>
+        </div>
+      </div>
+      <div id="menu-panel" class="menu-panel md:hidden" hidden>
+        <nav aria-label="Menu" class="wrap py-2">
+          <ul>
+            {NAV.map((l) => <li><a href={l.href} aria-current={isCurrent(l.href) ? "page" : undefined} class="flex min-h-12 items-center border-b border-border text-lg text-foreground no-underline menu-link transition-opacity hover:opacity-55 aria-[current=page]:underline aria-[current=page]:underline-offset-[0.35em]">{l.label}</a></li>)}
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    {showFooter && (
+      <footer class="site-footer">
+        <div class="wrap">
+          <div class="ft-top">
+            <a href="/" class="ft-brand">{f?.title ?? BUSINESS_NAME}</a>
+            {contactBits.length > 0 && (
+              <div class="ft-contact">
+                {contactBits.map((b) => <a href={b.includes("@") ? `mailto:${b}` : `tel:${b.replace(/[^+\d]/g, "")}`}>{b}</a>)}
+              </div>
+            )}
+          </div>
+          <div class="ft-mid">
+            <div class="ft-about">
+              {f?.body && <p>{f.body}</p>}
+              {f?.hours && <p class="ft-hours">{f.hours}</p>}
+              <a href="/#schedule" class="btn btn-primary btn-sm ft-cta">{BOOK_LABEL}</a>
+            </div>
+            <div class="ft-cols">
+              <nav aria-label="Pages">
+                <p class="ft-h">Navigation</p>
+                <ul>{NAV.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+              </nav>
+              {social.length > 0 && (
+                <nav aria-label="Social media">
+                  <p class="ft-h">Follow us</p>
+                  <ul>{social.map((l) => <li><a href={l.url} target="_blank" rel="noopener noreferrer" aria-label={`${PLATFORM_LABEL[l.platform]} (opens in a new tab)`}>{PLATFORM_LABEL[l.platform]}</a></li>)}</ul>
+                </nav>
+              )}
+              {legal.length > 0 && (
+                <nav aria-label="Legal">
+                  <p class="ft-h">Legal</p>
+                  <ul>{legal.map((p) => <li><a href={`/policies/${p.slug}`}>{p.title}</a></li>)}</ul>
+                </nav>
+              )}
+            </div>
+          </div>
+          <div class="ft-bottom">
+            <p>{f?.credit ?? `© ${new Date().getFullYear()} ${BUSINESS_NAME}`}</p>
+            <a href="#top" class="ft-top-link">Back to top</a>
+          </div>
+        </div>
+      </footer>
+    )}
+    {barSpace && <div aria-hidden="true" class="h-(--bar-h)"></div>}
+    <script is:inline>
+      // Phone menu: a disclosure. Escape, a tap outside or a link closes it; the button keeps aria-expanded in step.
+      (function () {
+        var btn = document.getElementById("menu-btn"), panel = document.getElementById("menu-panel");
+        if (!btn || !panel) return;
+        function set(open) {
+          panel.hidden = !open; btn.setAttribute("aria-expanded", String(open));
+          btn.setAttribute("aria-label", open ? "Close menu" : "Menu");
+          document.getElementById("menu-open").classList.toggle("hidden", open); document.getElementById("menu-close").classList.toggle("hidden", !open);
+        }
+        btn.addEventListener("click", function () { set(panel.hidden); });
+        document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !panel.hidden) { set(false); btn.focus(); } });
+        document.addEventListener("click", function (e) { if (!panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) set(false); });
+        window.matchMedia("(min-width: 768px)").addEventListener("change", function (m) { if (m.matches) set(false); });
+      })();
+    </script>
+    <script is:inline>
+      // Hash links (/#membership, /#schedule): sections above the target (the timetable) finish loading after the browser
+      // has scrolled, which leaves the view short of the target. Re-align on the target a few times while the page settles.
+      (function () {
+        var go = function () { var h = location.hash.slice(1); var el = h && document.getElementById(decodeURIComponent(h)); if (el) el.scrollIntoView({ block: "start" }); };
+        if (location.hash) { var n = 0, t = setInterval(function () { go(); if (++n > 8) clearInterval(t); }, 400); addEventListener("wheel", function () { clearInterval(t); }, { once: true, passive: true }); addEventListener("touchstart", function () { clearInterval(t); }, { once: true, passive: true }); }
+        document.addEventListener("click", function (e) {
+          var a = e.target.closest && e.target.closest('a[href^="/#"]'); if (!a || location.pathname !== "/") return;
+          var el = document.getElementById(a.getAttribute("href").slice(2)); if (!el) return;
+          e.preventDefault(); history.replaceState(null, "", location.pathname + location.search + "#" + el.id); el.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      })();
+      // Menu on Home: the in-page links (Schedule, Membership) are marked current while their section is on screen.
+      (function () {
+        if (location.pathname !== "/") return;
+        var links = [].slice.call(document.querySelectorAll('a.nav-link[href^="/#"], a.menu-link[href^="/#"]'));
+        var ids = links.map(function (a) { return a.getAttribute("href").slice(2); }).filter(function (v, i, arr) { return arr.indexOf(v) === i; });
+        var f = function () {
+          var cur = ""; ids.forEach(function (id) { var el = document.getElementById(id); if (!el) return; var r = el.getBoundingClientRect(); if (r.top < innerHeight * 0.4 && r.bottom > innerHeight * 0.4) cur = id; });
+          links.forEach(function (a) { if (a.getAttribute("href") === "/#" + cur) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+        };
+        f(); addEventListener("scroll", f, { passive: true });
+      })();
+      // Header CTA: outlined at the top of the page, solid black once the page scrolls.
+      (function () { var r = document.documentElement; var f = function () { r.toggleAttribute("data-scrolled", scrollY > 8); }; f(); addEventListener("scroll", f, { passive: true }); })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+---
+// Testimonials as a centred, snapping rail of large grey cards: name + years as a client | class, a small photo, the quote.
+// Text comes from the CMS (ContentItems "testimonials"); class, years and photo are filled by the page (placeholders until the CMS has them).
+export type Review = { name: string; years: number; cls: string; photo?: string; body: string };
+const { items, id } = Astro.props as { items: Review[]; id: string };
+---
+<div class="rv" data-rv id={id}>
+  <ul class="rv-track" data-rv-track>
+    {(items.length > 1 ? [0, 1, 2] : [1]).flatMap((copy) => items.map((r) => ({ r, copy }))).map(({ r, copy }) => (
+      <li class="rv-card" data-copy={copy} aria-hidden={copy !== 1 ? "true" : undefined} inert={copy !== 1}>
+        <div class="rv-head">
+          <div class="rv-who"><p class="rv-name">{r.name}</p><p class="rv-sub">{r.years} {r.years === 1 ? "year" : "years"} with us</p></div>
+          <div class="rv-cls"><p class="rv-name">Favourite class:</p><p class="rv-sub">{r.cls}</p></div>
+          {r.photo && <img class="rv-photo" src={r.photo} alt="" width="192" height="256" loading="lazy" decoding="async" />}
+        </div>
+        <blockquote class="rv-quote"><span class="rv-mark" aria-hidden="true">“</span><p>{r.body}</p></blockquote>
+      </li>
+    ))}
+  </ul>
+  {items.length > 1 && (
+    <div class="rv-nav">
+      <button type="button" data-rv-prev aria-label="Previous review"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+      <button type="button" data-rv-next aria-label="Next review"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </div>
+  )}
+</div>
+<script is:inline>
+  // Endless loop: the list is rendered three times; the view starts on the middle copy and, after each move, jumps
+  // silently by one copy's width whenever it drifts into the first or last copy, so there is always a review on both sides.
+  document.querySelectorAll("[data-rv]").forEach(function (root) {
+    if (root.dataset.rvOn) return; root.dataset.rvOn = "1";
+    var t = root.querySelector("[data-rv-track]"); if (!t) return;
+    var cards = [].slice.call(t.children), n = cards.length / 3; if (n < 2 || n % 1) return;
+    var centre = function (c) { return c.offsetLeft - (t.clientWidth - c.offsetWidth) / 2; };
+    var setW = function () { return cards[n].offsetLeft - cards[0].offsetLeft; };
+    var jump = function (x) { t.style.scrollSnapType = "none"; t.scrollLeft = x; t.offsetWidth; t.style.scrollSnapType = ""; };
+    var nearest = function () { var mid = t.scrollLeft + t.clientWidth / 2, cur = 0, best = 1e9;
+      cards.forEach(function (c, i) { var d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid); if (d < best) { best = d; cur = i; } }); return cur; };
+    var settle = function () { var i = nearest(); if (i < n) jump(t.scrollLeft + setW()); else if (i >= 2 * n) jump(t.scrollLeft - setW()); };
+    jump(centre(cards[n]));
+    addEventListener("resize", function () { jump(centre(cards[n + (nearest() % n)])); });
+    var timer; t.addEventListener("scroll", function () { clearTimeout(timer); timer = setTimeout(settle, 120); }, { passive: true });
+    // Before moving, shift into the middle copy so the target is never in an edge copy (no jump mid-animation).
+    function step(d) { var i = nearest(), k = (i % n) + n; if (k !== i) jump(centre(cards[k])); t.scrollTo({ left: centre(cards[k + d]), behavior: "smooth" }); }
+    var p = root.querySelector("[data-rv-prev]"), x = root.querySelector("[data-rv-next]");
+    p && p.addEventListener("click", function () { step(-1); });
+    x && x.addEventListener("click", function () { step(1); });
+  });
+</script>

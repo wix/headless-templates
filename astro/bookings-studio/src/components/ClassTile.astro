@@ -1,0 +1,23 @@
+---
+// A Home class tile (carousel): photo with a round icon badge, name, "Featuring <staff>", and a "Preview ... classes" line.
+// The whole tile is one link to the class's own page (/classes/<slug>): description and a calendar with every date.
+import type { ServiceDTO } from "../lib/services";
+interface Props { service: ServiceDTO; index?: number; }
+const { service, index = 0 } = Astro.props;
+const staff = service.staff.map((s) => s.name).filter(Boolean).join(", ");
+const ICONS = [
+  '<circle cx="12" cy="12" r="6.5" />',
+  '<path d="M12 5l7 7-7 7-7-7z" />',
+  '<rect x="6" y="6" width="12" height="12" rx="1.5" />',
+  '<path d="M12 5.5l7 12.5H5z" />',
+  '<circle cx="9.5" cy="12" r="4.5" /><circle cx="14.5" cy="12" r="4.5" />',
+];
+---
+<a href={`/classes/${encodeURIComponent(service.slug)}`} class="cls-tile no-underline">
+  <span class="cls-photo r-card">
+    {service.image && <img src={service.image} alt="" width="960" height="640" loading="lazy" decoding="async" />}
+    <span class="cls-badge" aria-hidden="true"><span class="cls-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={ICONS[index % ICONS.length]} /></span><span class="cls-lbl"><span>Learn More</span></span></span>
+  </span>
+  <span class="cls-name">{service.name}</span>
+  {staff && <span class="cls-sub">Featuring {staff}</span>}
+</a>

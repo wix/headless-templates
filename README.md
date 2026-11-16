@@ -73,6 +73,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Rentals</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/bookings-studio">Studio Schedule</a></td>
+      <td>A studio website with a weekly class timetable, online booking and membership plans using Astro and Wix Headless.</td>
+      <td></td>
+      <td>Wix Bookings, Wix Pricing Plans, Wix Forms, Wix CMS</td>
+    </tr>
+    <tr>
       <td colspan="4" align="center"><strong>Next.js</strong></td>
     </tr>
     <tr>

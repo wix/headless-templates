@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "bookings-studio",
+      "title": "Studio Schedule (Wix Bookings)",
+      "subtitle": "Class calendar, online booking and pricing plans",
+      "siteTemplateId": "79eb5d7b-1d65-4ead-83cc-a1a130bb2285",
+      "gitPath": "astro/bookings-studio",
+      "vibeCompatible": false
     }
   ]
 }
