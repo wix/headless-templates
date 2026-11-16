@@ -1,0 +1,21 @@
+---
+// One instructor: a square portrait, name, years of experience, a short bio and a tag per class they teach. The same card on Home and /team.
+import type { Member } from "../lib/team";
+interface Props { member: Member; }
+const { member } = Astro.props;
+---
+<article class="card team-card flex h-full flex-col">
+  <div class="aspect-square overflow-hidden bg-muted">
+    {member.photo && <img src={member.photo} alt="" width="800" height="800" loading="lazy" decoding="async" class="h-full w-full object-cover" />}
+  </div>
+  <div class="flex flex-1 flex-col p-5 lg:p-6">
+    <h3 class="text-h3">{member.name}</h3>
+    <p class="mt-1 text-sm text-muted-foreground">{member.years} {member.years === 1 ? "year" : "years"} of experience</p>
+    {member.bio && <p class="team-bio mt-6 text-muted-foreground">{member.bio}</p>}
+    {member.classes.length > 0 && (
+      <ul class="team-tags mt-auto" aria-label="Classes taught">
+        {member.classes.map((c) => <li class="up-tag">{c}</li>)}
+      </ul>
+    )}
+  </div>
+</article>

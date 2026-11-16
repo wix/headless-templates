@@ -1,0 +1,9 @@
+---
+// /book/done — where Book now lands (placeOrder resolved) and where hosted checkout returns (postFlowUrl). Figma draws no
+// page after Book now; this one says only what the visitor's own calls returned.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import Done from "../../components/schedule/Done";
+---
+<SiteLayout title="Booking" hideCta>
+  <div class="flow pb-24 pt-8"><Done client:load from={Astro.url.searchParams.get("from") ?? ""} /></div>
+</SiteLayout>

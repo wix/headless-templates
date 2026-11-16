@@ -1,0 +1,111 @@
+---
+// /about: centred intro, a bento of figures (classes every month read live from Bookings, class types, instructors),
+// social tiles and two photos, then two value rows and the whole team. Copy outside the CMS rows is placeholder.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import TeamCard from "../components/TeamCard.astro";
+import SocialIcon from "../components/SocialIcon.astro";
+import { getSections, getSocialLinks, getContentItems, type ContentItem } from "../lib/content";
+import { imgSrc } from "../lib/media";
+import { listServices, type ServiceDTO } from "../lib/services";
+import { getTeam } from "../lib/team";
+import { fetchClassSessions } from "../lib/schedule";
+import { browserZone } from "../lib/dates";
+let services: ServiceDTO[] = [];
+try { services = await listServices(); } catch (err) { console.error(err); /* guarded */ }
+const [sec, team, social, stats, values, ctas, photos] = await Promise.all([getSections(), getTeam(services).catch(() => []), getSocialLinks().catch(() => []), getContentItems("aboutStats"), getContentItems("aboutValues"), getContentItems("aboutCtas"), getContentItems("aboutPhotos")]);
+const s = sec.aboutPage;
+const t = sec.teamPage;
+const classes = services.filter((x) => x.type === "CLASS");
+// Classes every month: the sessions on the timetable over the next 30 days (live). Falls back to a round placeholder.
+let monthly = 0;
+try {
+  const day = (d: Date) => d.toISOString().slice(0, 10);
+  const now = new Date();
+  monthly = (await fetchClassSessions(classes, day(now), day(new Date(now.getTime() + 29 * 86400000)), browserZone())).length; // a count only: the zone moves just the edges of the 30-day window
+} catch (err) { console.error(err); /* guarded */ }
+const monthlyLabel = monthly > 0 ? `${monthly}` : "120+";
+// The five figure cards: CMS ContentItems "aboutStats" in order (title, body, value). An empty value on the first, second and
+// fourth card is counted live (classes this month, class types, instructors).
+const live = [monthlyLabel, String(classes.length || ""), "", String(team.length || ""), ""];
+const stat = (i: number): ContentItem & { num: string } => ({ ...(stats[i] ?? { _id: "", group: "", order: 0 }), num: (stats[i]?.value || live[i] || "").trim() });
+const intro = sec.aboutIntro;
+const lines = (t?: string) => (t ?? "").split("\n");
+const LABEL = { instagram: "Instagram", tiktok: "TikTok", facebook: "Facebook" } as const;
+---
+<SiteLayout title={s?.title ?? "About Us"}>
+  <section class="section on-plain ab2">
+    <div class="wrap">
+      <div class="ab2-intro">
+        {intro?.ctaLabel && <p class="ab2-pill">{intro.ctaLabel}</p>}
+        <h1 class="text-h1 ab2-title">{lines(intro?.title ?? s?.title ?? "About Us").map((l, i) => <>{i > 0 && <br />}{l}</>)}</h1>
+        <p class="ab2-lead">{s?.body ?? "A studio for every body and every level."}</p>
+      </div>
+
+      <h2 class="sr-only">The studio in numbers</h2>
+      <div class="ab2-bento">
+        <figure class="ab2-card ab2-photo" style="grid-area: photo">{s?.image && <img src={imgSrc(s.image, 1200, 700)} alt="" width="1200" height="700" loading="lazy" decoding="async" />}</figure>
+
+        {stats[0] && <article class="ab2-card ab2-dark" style="grid-area: month">
+          {stat(0).num && <p class="ab2-num">{stat(0).num}</p>}
+          <div><h3 class="ab2-h">{stats[0].title}</h3><p class="ab2-p">{stats[0].body}</p></div>
+        </article>}
+
+        {stats[1] && <article class="ab2-card" style="grid-area: types">
+          {stat(1).num && <p class="ab2-num ab2-num-sm">{stat(1).num}</p>}
+          <div><h3 class="ab2-h">{stats[1].title}</h3><p class="ab2-p">{stats[1].body}</p></div>
+        </article>}
+
+        {stats[2] && <article class="ab2-card" style="grid-area: level">
+          {stat(2).num && <p class="ab2-num ab2-num-sm">{stat(2).num}</p>}
+          <div><h3 class="ab2-h">{stats[2].title}</h3><p class="ab2-p">{stats[2].body}</p></div>
+        </article>}
+
+        <ul class="ab2-social" style="grid-area: social">
+          {social.slice(0, 3).map((l) => <li><a class="ab2-card ab2-sq" href={l.url} target="_blank" rel="noopener noreferrer" aria-label={`${LABEL[l.platform]} (opens in a new tab)`}><SocialIcon platform={l.platform} size={20} /></a></li>)}
+          <li><a class="ab2-card ab2-sq" href="/contact" aria-label="Contact us"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2" /><path d="M4 7l8 6 8-6" /></svg></a></li>
+        </ul>
+
+        {stats[3] && <article class="ab2-card ab2-tint" style="grid-area: team">
+          {stat(3).num && <p class="ab2-num">{stat(3).num}</p>}
+          <div><h3 class="ab2-h">{stats[3].title}</h3><p class="ab2-p">{stats[3].body}</p></div>
+        </article>}
+
+        {stats[4] && <article class="ab2-card" style="grid-area: studio">
+          {stat(4).num && <p class="ab2-num ab2-num-sm">{stat(4).num}</p>}
+          <div><h3 class="ab2-h">{stats[4].title}</h3><p class="ab2-p">{stats[4].body}</p></div>
+        </article>}
+
+        <figure class="ab2-card ab2-photo" style="grid-area: photo2">{photos[0]?.image && <img src={imgSrc(photos[0].image, 1600, 1000)} alt="" width="1600" height="1000" loading="lazy" decoding="async" />}</figure>
+      </div>
+
+      {values.map((v) => (
+        <div class="ab2-row">
+          <div>{v.subtitle && <p class="ab2-kicker">{v.subtitle}</p>}<h2 class="text-h2">{lines(v.title).map((l, i) => <>{i > 0 && <br />}{l}</>)}</h2></div>
+          <div class="ab2-text">{lines(v.body).filter(Boolean).map((p) => <p>{p}</p>)}</div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section id="team" class="section on-plain" aria-labelledby="team-title">
+    <div class="wrap">
+      <div class="text-center">
+        <h2 id="team-title" class="text-h2">{t?.title ?? "Our Team"}</h2>
+        {t?.body && <p class="mx-auto mt-4 max-w-[62ch] text-muted-foreground">{t.body}</p>}
+      </div>
+      {team.length > 0 ? (
+        <ul class="ab2-team">{team.slice(0, 9).map((m) => <li><TeamCard member={m} /></li>)}</ul>
+      ) : <p class="note mt-10" role="status">The team could not be loaded.</p>}
+    </div>
+  </section>
+  <section class="section on-plain ab2-cta-sec" aria-label="Get started">
+    <div class="wrap ab2-ctas">
+      {ctas.map((c) => (
+        <a class="ab2-cta" href={c.link || "/"}>
+          {c.image && <img src={imgSrc(c.image, 1600, 1000)} alt="" width="1600" height="1000" loading="lazy" decoding="async" />}
+          <span class="ab2-cta-body"><strong>{c.title}</strong>{c.body && <span>{c.body}</span>}{c.value && <span class="btn btn-secondary btn-sm ab2-cta-btn">{c.value}</span>}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</SiteLayout>

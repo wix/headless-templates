@@ -1,0 +1,22 @@
+---
+// /schedule/book — the Booking form. The class or course comes from the URL (?service=<slug>&start=<local>&tz=<zone>):
+// the session is re-read on the page (a slot is a claim, not a reservation), never taken from a stored id.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import BookingForm from "../../components/schedule/BookingForm";
+import { listServices, type ServiceDTO } from "../../lib/services";
+
+let services: ServiceDTO[] = [];
+try { services = await listServices(); } catch (err) { console.error(err); /* guarded */ }
+const svc = services.find((s) => s.slug === Astro.url.searchParams.get("service"));
+---
+<SiteLayout title="Booking form" hideCta barSpace>
+  <div class="flow pb-16 pt-8">
+    {svc ? <BookingForm client:load service={svc} start={Astro.url.searchParams.get("start") ?? ""} /> : (
+      <div>
+        <h1 class="mt-4 text-h2">Booking form</h1>
+        <p class="mt-6 max-w-[52ch] text-lg text-muted-foreground">There is no class or course selected. Choose one from the schedule.</p>
+        <a href="/#schedule" class="btn btn-primary mt-8">View schedule</a>
+      </div>
+    )}
+  </div>
+</SiteLayout>

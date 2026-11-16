@@ -1,0 +1,33 @@
+---
+// /contact: the business details (CMS row footer: one source for the footer and this page) and the Wix Forms contact form,
+// submitted as the visitor (island: schema-driven, no elevation).
+import SiteLayout from "../layouts/SiteLayout.astro";
+import ContactForm from "../components/schedule/ContactForm";
+import { getSections } from "../lib/content";
+const sec = await getSections();
+const s = sec.contactPage, f = sec.footer;
+const bits = (f?.bodySecondary ?? "").split("·").map((x) => x.trim()).filter(Boolean);
+---
+<SiteLayout title={s?.title ?? "Contact"}>
+  <section class="section on-plain">
+    <div class="wrap">
+      <h1 class="text-h2">{s?.title ?? "Contact"}</h1>
+      <div class="mt-10 grid gap-12 lg:grid-cols-2 lg:gap-x-4">
+        <div class="space-y-8">
+          {f?.body && <div><h2 class="text-lg font-medium">Address</h2><p class="mt-2 text-muted-foreground">{f.body}</p></div>}
+          {bits.length > 0 && (
+            <div><h2 class="text-lg font-medium">Contact details</h2>
+              <ul class="mt-2 text-muted-foreground">
+                {bits.map((b) => <li>{b.includes("@") ? <a class="inline-flex min-h-11 items-center underline underline-offset-4" href={`mailto:${b}`}>{b}</a> : <a class="inline-flex min-h-11 items-center underline underline-offset-4" href={`tel:${b.replace(/[^\d+]/g, "")}`}>{b}</a>}</li>)}
+              </ul>
+            </div>
+          )}
+          {f?.hours && <div><h2 class="text-lg font-medium">Opening hours</h2><p class="mt-2 whitespace-pre-line text-muted-foreground">{f.hours}</p></div>}
+        </div>
+        <div class="r-card bg-secondary p-6 sm:p-8 lg:p-10">
+          <ContactForm client:load />
+        </div>
+      </div>
+    </div>
+  </section>
+</SiteLayout>

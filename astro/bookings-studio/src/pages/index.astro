@@ -1,0 +1,279 @@
+---
+// Home = a marketing landing page, sections:
+// hero, Our Classes (tiles + the live "Upcoming Classes" strip), About, Team (read live from Bookings), "Why Us" (benefits), Membership band
+// (Pricing Plans, read live), Testimonials, the promotional band (the last section), footer. No separate closing call-to-action: the schedule
+// is reachable from the header, hero, classes, upcoming strip and the promo. Backgrounds alternate grey / plain (the promo is dark, the footer
+// grey); a card is white on grey and grey on plain. Copy: CMS (HomeSections rows, ContentItems groups); services,
+// staff and plans are read live.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import ClassTile from "../components/ClassTile.astro";
+import TeamCard from "../components/TeamCard.astro";
+import Timetable from "../components/schedule/Timetable";
+import { getSections, getContentItems, applyLevels, toReviews } from "../lib/content";
+import { listServices, type ServiceDTO } from "../lib/services";
+import { getTeam } from "../lib/team";
+import { getPlans } from "../lib/plans";
+import ReviewsRail from "../components/ReviewsRail.astro";
+import PlanCard from "../components/PlanCard.astro";
+import { imgSrc } from "../lib/media";
+import { BUSINESS_NAME, HOME_TILES, HOME_TEAM } from "../lib/site";
+
+let services: ServiceDTO[] = [];
+try { services = await listServices(); } catch (err) { console.error(err); /* guarded: a failed read hides the grid, not the page */ }
+const [sec, benefits, reviews, team, plans, gallery, featurePhotos] = await Promise.all([getSections(), getContentItems("features"), getContentItems("testimonials"), getTeam(services), getPlans(), getContentItems("gallery"), getContentItems("featurePhotos"), applyLevels(services)]);
+const { hero, classes: intro, about, membership, team: teamSec, features: benefitsSec, testimonials: revSec, promo } = sec;
+const tiles = services.slice(0, HOME_TILES);
+const classSvcs = services.filter((s) => s.type === "CLASS");
+const courseSvcs = services.filter((s) => s.type === "COURSE");
+// About gallery: CMS ContentItems group "gallery" (title = tab label, image = photo), in order.
+const galleryImages = gallery.filter((g) => g.image).map((g) => ({ src: imgSrc(g.image, 1600, 900), label: g.title ?? "" }));
+// Why Us photos: ContentItems group "featurePhotos" (1st tall, 2nd small).
+const [fpTall, fpSmall] = featurePhotos.map((f) => f.image);
+const upcoming = sec.upcoming;
+// The offer band: HomeSections row "promo" (title, body with {percent}, ctaLabel, value = percent, endDate = ISO end, image).
+const promoPct = promo?.value ?? "";
+const promoEnd = promo?.endDate ?? "";
+const promoText = (promo?.body ?? "").replaceAll("{percent}", promoPct);
+const featured = plans.length ? plans[Math.min(1, plans.length - 1)] : undefined; // plans are sorted cheapest first; the featured (Popular) one is the second
+const ft = sec.footer;
+const hoursLines = (ft?.hours ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+const mapHref = ft?.body ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ft.body)}` : "";
+const arrow = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
+---
+<SiteLayout title={BUSINESS_NAME}>
+  {hero && (
+    <section class="hero-fs" aria-labelledby="hero-title">
+      <div class="hero-bgs" aria-hidden="true">
+        {hero.image && <img src={imgSrc(hero.image, 2400, 1350)} alt="" width="2400" height="1350" data-on="true" fetchpriority="high" />}
+      </div>
+      <div class="wrap hero-center">
+        <h1 id="hero-title" class="text-display">{hero.title}</h1>
+        <p class="mt-4 max-w-[62ch] text-lg">{hero.body}</p>
+        <div class="hero-bar">
+          <p class="hero-bar-open" data-hours>{hoursLines.map((l) => <span hidden data-line={l} />)}<span class="hero-bar-h">Open Today</span>{hoursLines.length > 0 && <span class="hero-bar-muted" data-today-time>{hoursLines[0].replace(/^[^0-9]*/, "")}</span>}</p>
+          {ft?.body && <><span class="hero-bar-sep" aria-hidden="true"></span><a class="hero-bar-muted hero-bar-addr" href={mapHref} target="_blank" rel="noopener noreferrer" aria-label={`${ft.body} (opens in a new tab)`}>{ft.body}</a></>}
+          <a href="/#schedule" class="btn btn-primary btn-sm hero-bar-btn">Book now</a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {tiles.length > 0 && (
+    <section class="section on-plain classes-sec" aria-labelledby="classes-title">
+      <div class="wrap">
+        <h2 id="classes-title" class="text-h2 text-center">{intro?.title ?? "Our Classes"}</h2>
+      </div>
+      <div class="cls-carousel" data-carousel>
+          <div class="cls-track" data-track tabindex="-1">
+            {tiles.map((s, i) => <ClassTile service={s} index={i} />)}
+          </div>
+          <button type="button" class="cls-arrow cls-prev" data-prev aria-label="Previous classes"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="cls-arrow cls-next" data-next aria-label="Next classes"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="cls-dots" data-dots role="group" aria-label="Class slides">{tiles.map((s, i) => <button type="button" data-dot={i} aria-label={`Show ${s.name}`}></button>)}</div>
+        <div class="mt-8 flex justify-center"><a href="/#schedule" class="btn btn-secondary">{intro?.ctaLabel ?? "View full schedule"}</a></div>
+      </div>
+    </section>
+  )}
+
+  {about && galleryImages.length > 0 && (
+    <section class="section on-plain" aria-labelledby="about-title">
+      <div class="mx-auto flex max-w-[48rem] flex-col items-center px-(--gutter) text-center">
+        <h2 id="about-title" class="text-h2">{about.title}</h2>
+        <p class="mt-4 text-muted-foreground">{about.body}</p>
+        <a href="/about" class="btn btn-secondary mt-6">{about.ctaLabel ?? "Learn more"}</a>
+      </div>
+      <div class="wrap mt-10 lg:mt-14">
+        <div class="gal" data-gallery aria-roledescription="carousel" aria-label="Photo gallery">
+          <div class="gal-stage r-card">
+            {galleryImages.map((g, i) => <img src={g.src} alt="" width="1600" height="900" loading={i === 0 ? "eager" : "lazy"} decoding="async" data-slide={i} data-on={i === 0 ? "true" : undefined} />)}
+          </div>
+          <div class="gal-tabs" role="tablist" aria-label="Gallery">
+            {galleryImages.map((g, i) => <button type="button" role="tab" class="gal-tab" data-tab={i} aria-selected={i === 0 ? "true" : "false"}><span class="gal-line"><span class="gal-fill"></span></span><span class="gal-label">{g.label}</span></button>)}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {tiles.length > 0 && (
+    <section class="section on-plain" aria-label="Upcoming classes">
+        <div class="wrap">
+        <div class="text-center"><h2 class="text-h2">{upcoming?.title ?? "Upcoming Classes"}</h2>{upcoming?.body && <p class="mx-auto mt-2 max-w-[62ch] text-muted-foreground">{upcoming.body}</p>}</div>
+        <div class="mt-8" id="schedule"><!-- client:only on purpose: sessions are read and shown in the visitor's own time zone, which the server does not know. --><Timetable client:only="react" services={services} title={upcoming?.title ?? "Upcoming Classes"} hideTitle chips /></div>
+        </div>
+    </section>
+  )}
+
+  {team.length > 0 && teamSec && (
+    <section class="section on-plain" aria-labelledby="team-title">
+      <div class="wrap">
+        <h2 id="team-title" class="text-h2 text-center">{teamSec.title}</h2>
+        {teamSec.body && <p class="mx-auto mt-4 max-w-[62ch] text-center text-muted-foreground">{teamSec.body}</p>}
+        <!-- A 3-up row (HOME_TEAM): a rail with a peek on phones, three columns from 768. /team lists everyone. -->
+        <div class="rail mt-6 lg:mt-10 auto-cols-[78%] sm:auto-cols-[46%] md:mx-0 md:grid md:auto-cols-auto md:grid-flow-row md:grid-cols-3 md:overflow-visible md:px-0">
+          {team.slice(0, HOME_TEAM).map((m) => <TeamCard member={m} />)}
+        </div>
+        <div class="mt-8 flex justify-center lg:mt-10"><a href="/about#team" class="btn btn-secondary">{teamSec.ctaLabel ?? "View team"}</a></div>
+      </div>
+    </section>
+  )}
+
+  {benefits.length > 0 && benefitsSec && (
+    <section class="section on-plain" aria-labelledby="benefits-title">
+      <div class="wrap">
+        <h2 id="benefits-title" class="text-h2 text-center">{benefitsSec.title}</h2>
+        {benefitsSec.body && <p class="mx-auto mt-4 max-w-[62ch] text-center text-muted-foreground">{benefitsSec.body}</p>}
+        <!-- Bento grid: four benefit cards (ContentItems "features") and two photos (ContentItems "featurePhotos"). -->
+        <div class="bento">
+          {benefits.slice(0, 4).map((f, i) => (
+            <article class={`bento-card bento-${i + 1}`}>
+              <svg class="why-icon" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15.25" fill="none" stroke="currentColor" stroke-width="1.5" /><path d="m10 16.5 4 4 8-9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <div class="bento-text">
+                {f.title && <h3 class="bento-title">{f.title}</h3>}
+                <p class="bento-body">{f.body}</p>
+              </div>
+            </article>
+          ))}
+          <div class="bento-photo bento-photo-tall" aria-hidden="true">{fpTall && <img src={imgSrc(fpTall, 900, 1400)} alt="" width="900" height="1400" loading="lazy" decoding="async" />}</div>
+          <div class="bento-photo bento-photo-small" aria-hidden="true">{fpSmall && <img src={imgSrc(fpSmall, 900, 900)} alt="" width="900" height="900" loading="lazy" decoding="async" />}</div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {membership && plans.length > 0 && (
+    <section id="membership" class="section on-plain" aria-labelledby="membership-title">
+      <div class="wrap">
+        <div class="mx-auto flex max-w-[48rem] flex-col items-center text-center">
+          <h2 id="membership-title" class="text-h2">{membership.title}</h2>
+          {membership.body && <p class="mt-4 text-muted-foreground">{membership.body}</p>}
+        </div>
+        <div class="pc-grid">
+          {plans.slice(0, 3).map((p, i) => (
+            <PlanCard plan={p} popular={plans.length > 1 && p.id === featured?.id}>
+              <a href={`/membership/checkout?plan=${encodeURIComponent(p.id)}`} class={`btn w-full ${p.id === featured?.id ? "btn-primary" : "btn-secondary"}`} aria-label={`Get started: ${p.name}`}>Get started</a>
+            </PlanCard>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {reviews.length > 0 && revSec && (
+    <section class="section on-plain rv-sec" aria-labelledby="reviews-title">
+      <div class="wrap">
+        <h2 id="reviews-title" class="text-h2 text-center">{revSec.title}</h2>
+      </div>
+      <div class="mt-6 lg:mt-10"><ReviewsRail id="reviews-title-rail" items={toReviews(reviews, team.map((m) => m.photo))} /></div>
+    </section>
+  )}
+  {promo && promoEnd && (
+    <section class="section offer-sec" id="offer" aria-labelledby="offer-title" data-offer-end={promoEnd}>
+      {promo.image && <img class="offer-bg" src={imgSrc(promo.image, 2400, 1350)} alt="" width="2400" height="1350" loading="lazy" decoding="async" />}
+      <div class="wrap offer-wrap">
+        <div class="offer-card">
+          {promoPct && <div class="offer-badge"><span class="offer-badge-num">{promoPct}%</span></div>}
+          <h2 id="offer-title" class="offer-title">{promo.title}</h2>
+          {promoText && <p class="offer-text">{promoText}</p>}
+          <div class="offer-timer" role="timer" aria-label="Time left for the offer">
+            <div><span class="offer-num" data-unit="d">00</span><span class="offer-unit">days</span></div><i aria-hidden="true">:</i>
+            <div><span class="offer-num" data-unit="h">00</span><span class="offer-unit">hours</span></div><i aria-hidden="true">:</i>
+            <div><span class="offer-num" data-unit="m">00</span><span class="offer-unit">minutes</span></div><i aria-hidden="true">:</i>
+            <div><span class="offer-num" data-unit="s">00</span><span class="offer-unit">seconds</span></div>
+          </div>
+          <a href="/#membership" class="btn btn-primary offer-cta">{promo.ctaLabel ?? "Choose a plan"}</a>
+        </div>
+      </div>
+    </section>
+  )}
+  <script is:inline>
+    // Offer card: countdown to the end date in data-offer-end; when it has passed the card is removed.
+    (function () {
+      var sec = document.getElementById("offer"); if (!sec) return;
+      var end = Date.parse(sec.getAttribute("data-offer-end")); if (isNaN(end)) return;
+      var els = { d: sec.querySelector('[data-unit="d"]'), h: sec.querySelector('[data-unit="h"]'), m: sec.querySelector('[data-unit="m"]'), s: sec.querySelector('[data-unit="s"]') };
+      function pad(n) { return (n < 10 ? "0" : "") + n; }
+      function tick() {
+        var left = Math.floor((end - Date.now()) / 1000);
+        if (left <= 0) { sec.remove(); return false; }
+        els.d.textContent = pad(Math.floor(left / 86400)); els.h.textContent = pad(Math.floor(left / 3600) % 24);
+        els.m.textContent = pad(Math.floor(left / 60) % 60); els.s.textContent = pad(left % 60); return true;
+      }
+      if (tick()) { var id = setInterval(function () { if (!tick()) clearInterval(id); }, 1000); }
+    })();
+  </script>
+  <script is:inline>
+    // First screen, Hours: "Today" shows today's line of the opening hours; "See All Hours" opens the whole list.
+    (function () {
+      var root = document.querySelector("[data-hours]"); if (!root) return;
+      var DAYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+      function idx(t) { return DAYS.indexOf(t.slice(0, 3).toLowerCase()); }
+      var today = new Date().getDay(), found = null;
+      root.querySelectorAll("[data-line]").forEach(function (li) {
+        var m = li.getAttribute("data-line").match(/^([A-Za-z]+)(?:\s*[-\u2013]\s*([A-Za-z]+))?\s*(.*)$/); if (!m || found) return;
+        var a = idx(m[1]), b = m[2] ? idx(m[2]) : a; if (a < 0 || b < 0) return;
+        var hit = a <= b ? (today >= a && today <= b) : (today >= a || today <= b);
+        if (hit) found = m[3] || "Closed";
+      });
+      if (found) root.querySelector("[data-today-time]").textContent = found;
+      var btn = root.querySelector("[data-toggle]"); if (!btn) return;
+      btn.addEventListener("click", function () { var open = root.getAttribute("data-open") !== "true"; root.setAttribute("data-open", String(open)); btn.setAttribute("aria-expanded", String(open)); btn.querySelector("span").textContent = open ? "Hide Hours" : "See All Hours"; });
+    })();
+  </script>
+
+<script is:inline>
+  (function () {
+    document.querySelectorAll("[data-carousel]").forEach(function (root) {
+      var track = root.querySelector("[data-track]"), dots = [].slice.call(root.querySelectorAll("[data-dot]"));
+      var prev = root.querySelector("[data-prev]"), next = root.querySelector("[data-next]");
+      var tiles = [].slice.call(track.children);
+      function step() { return tiles.length > 1 ? tiles[1].offsetLeft - tiles[0].offsetLeft : track.clientWidth; }
+      // One stop per reachable scroll position: the last stop is the end of the track (the final tiles share a view), so dots
+      // beyond the stops are hidden and the active dot follows the scroll one stop at a time.
+      function maxLeft() { return Math.max(0, track.scrollWidth - track.clientWidth); }
+      function stops() { return Math.min(tiles.length, Math.ceil((maxLeft() - 2) / step()) + 1) || 1; }
+      function current() { var max = maxLeft(), n = stops(), x = track.scrollLeft; return x >= max - 2 ? n - 1 : Math.min(n - 1, Math.round(x / step())); }
+      function update() {
+        var max = maxLeft(), x = track.scrollLeft, n = stops(), i = current();
+        dots.forEach(function (d, k) { d.hidden = k >= n; d.setAttribute("aria-current", String(k === i)); });
+        prev.hidden = x <= 2; next.hidden = x >= max - 2;
+      }
+      function go(i) { track.scrollTo({ left: Math.max(0, Math.min(i * step(), maxLeft())), behavior: "smooth" }); }
+      prev.addEventListener("click", function () { go(current() - 1); });
+      next.addEventListener("click", function () { go(current() + 1); });
+      dots.forEach(function (d, k) { d.addEventListener("click", function () { go(k); }); });
+      track.addEventListener("scroll", function () { requestAnimationFrame(update); }, { passive: true });
+      window.addEventListener("resize", update);
+      update();
+    });
+  })();
+</script>
+
+<script is:inline>
+  (function () {
+    var root = document.querySelector("[data-gallery]"); if (!root) return;
+    var imgs = [].slice.call(root.querySelectorAll("[data-slide]")), tabs = [].slice.call(root.querySelectorAll("[data-tab]"));
+    var DURATION = 5000, cur = 0, timer = null, paused = false;
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function show(i) {
+      cur = (i + imgs.length) % imgs.length;
+      imgs.forEach(function (im, k) { if (k === cur) im.setAttribute("data-on", "true"); else im.removeAttribute("data-on"); });
+      tabs.forEach(function (t, k) {
+        t.setAttribute("aria-selected", String(k === cur));
+        var f = t.querySelector(".gal-fill"); f.style.transition = "none"; f.style.width = k < cur ? "100%" : "0";
+      });
+      var f = tabs[cur].querySelector(".gal-fill");
+      if (!reduce) { void f.offsetWidth; f.style.transition = "width " + DURATION + "ms linear"; f.style.width = "100%"; } else { f.style.width = "100%"; }
+      var tab = tabs[cur]; if (tab.scrollIntoView && tab.parentNode.scrollWidth > tab.parentNode.clientWidth) tab.parentNode.scrollTo({ left: tab.offsetLeft - 16, behavior: "smooth" });
+      clearTimeout(timer); if (!reduce && !paused) timer = setTimeout(function () { show(cur + 1); }, DURATION);
+    }
+    tabs.forEach(function (t, k) { t.addEventListener("click", function () { show(k); }); });
+    function hold() { paused = true; clearTimeout(timer); var f = tabs[cur].querySelector(".gal-fill"); var w = getComputedStyle(f).width; f.style.transition = "none"; f.style.width = w; }
+    function resume() { if (!paused) return; paused = false; show(cur); }
+    root.addEventListener("mouseenter", hold); root.addEventListener("mouseleave", resume);
+    root.addEventListener("focusin", hold); root.addEventListener("focusout", resume);
+    root.addEventListener("keydown", function (e) { if (e.key === "ArrowRight") { show(cur + 1); tabs[cur].focus(); } if (e.key === "ArrowLeft") { show(cur - 1); tabs[cur].focus(); } });
+    show(0);
+  })();
+</script>
+</SiteLayout>
