@@ -1,0 +1,119 @@
+---
+// Site chrome for every page: header (Service, About + the outlined Contact button), footer.
+//   hideCta   kept for the booking pages (no longer changes the header: the Contact button is valid everywhere).
+//   barSpace  the page renders a fixed action bar: reserve its height after the footer.
+import { getSections, getLegalPages } from "../lib/content";
+import { BUSINESS_NAME, NAV, CONTACT, BOOK_NOW } from "../lib/site";
+import "../styles/global.css";
+
+interface Props { title: string; description?: string; hideCta?: boolean; barSpace?: boolean; }
+const { title, description, hideCta = false, barSpace = false } = Astro.props;
+
+const [sections, legal] = await Promise.all([getSections(), getLegalPages()]);
+const f = sections.footer;
+const brand = f?.title || BUSINESS_NAME; // the wordmark and page titles come from the CMS (HomeSections: footer)
+// The footer's "123-456-7890 · info@mysite.com" line becomes a phone and an e-mail cell; the call to action is the intro call's title.
+const contacts = (f?.bodySecondary ?? "").split("·").map((t: string) => t.trim()).filter(Boolean)
+  .map((label: string) => ({ label, href: label.includes("@") ? `mailto:${label}` : `tel:${label.replace(/[^+\d]/g, "")}` }));
+const hoursLine = (f?.hours ?? "").split("\n").map((t: string) => t.trim()).filter(Boolean).join(" · ");
+const introLabel = sections.intro?.title ?? "Book an Intro Call";
+const pageTitle = title === BUSINESS_NAME || title === brand ? brand : `${title} | ${brand}`;
+const path = Astro.url.pathname;
+// A link to a page is current on that page; "Service" is current on /service; Home sections are tracked by the script below.
+const current = (href: string) => href === "/#service" ? path.startsWith("/service") : !href.includes("#") && (href === "/" ? path === "/" : path.startsWith(href));
+const linkCls = "nav-link inline-flex min-h-11 items-center px-3 text-sm font-medium";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" href="/favicon.svg" />
+  </head>
+  <body class="min-h-svh">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:bg-background focus:px-4 focus:py-3">Skip to content</a>
+
+    <header class="sticky top-0 z-[80] border-b border-border bg-background/90 backdrop-blur">
+      <div class="wrap relative flex h-(--header-h) items-center justify-between gap-4">
+        <a href="/" class="inline-flex min-h-11 items-center font-display text-xl font-bold tracking-tight text-foreground no-underline transition-opacity hover:opacity-55">{brand}</a>
+        {/* A tablet has room for a Book now in the middle of the header (a wide screen has the docked widget there); it leads to the widget. */}
+        {!hideCta && <a href="/#book" class="btn btn-primary btn-sm absolute left-1/2 hidden -translate-x-1/2 md:inline-flex lg:hidden">{BOOK_NOW}</a>}
+        <div class="flex items-center gap-2 md:gap-4">
+          <nav aria-label="Main" class="hidden items-center gap-1 md:flex">
+            {NAV.map((l) => <a href={l.href} aria-current={current(l.href) ? "page" : undefined} data-nav={l.href} class={linkCls}>{l.label}</a>)}
+            {/* On a tablet Contact is one of the menu links; on a wide screen it is the outlined button after the menu. */}
+            <a href={CONTACT.href} aria-current={current(CONTACT.href) ? "page" : undefined} class={`${linkCls} lg:hidden`}>{CONTACT.label}</a>
+          </nav>
+          <a href={CONTACT.href} aria-current={current(CONTACT.href) ? "page" : undefined} class="btn btn-outline btn-sm hidden lg:inline-flex">{CONTACT.label}</a>
+          <!-- Phone: the four links live in a menu (a native disclosure: no script needed to open it). -->
+          <details id="menu" class="md:hidden">
+            <summary class="inline-flex h-14 w-14 cursor-pointer list-none items-center justify-center rounded-full hover:bg-secondary [&::-webkit-details-marker]:hidden" aria-label="Menu">
+              <svg width="28" height="28" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+            </summary>
+            {/* Full width under the header: centred items set like the FAQ questions, with the same hairlines between them. */}
+            <nav aria-label="Menu" class="absolute inset-x-0 top-full z-40 border-b border-border bg-background shadow-[0_16px_32px_rgb(20_20_20/0.08)]">
+              {[...NAV, CONTACT].map((l) => <a href={l.href} aria-current={current(l.href) ? "page" : undefined} data-nav={l.href} class="menu-item">{l.label}</a>)}
+            </nav>
+          </details>
+        </div>
+      </div>
+    </header>
+    <script is:inline>
+      // Close the phone menu after a choice (an in-page link does not reload) and on Escape.
+      (function () {
+        var m = document.getElementById("menu");
+        if (!m) return;
+        m.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("nav a")) m.open = false; });
+        document.addEventListener("keydown", function (e) { if (e.key === "Escape" && m.open) { m.open = false; m.querySelector("summary").focus(); } });
+      })();
+    </script>
+
+    <script is:inline>
+      // On Home, mark Service or About as the current link while its section is the one on screen.
+      document.addEventListener("DOMContentLoaded", function () {
+        if (location.pathname !== "/") return;
+        var links = document.querySelectorAll("[data-nav^='/#']");
+        var about = document.getElementById("about");
+        if (!links.length || !about) return;
+        function mark() {
+          var key = about.getBoundingClientRect().top < innerHeight * 0.4 ? "/#about" : "/#service";
+          links.forEach(function (a) { if (a.getAttribute("data-nav") === key) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current"); });
+        }
+        addEventListener("scroll", mark, { passive: true }); addEventListener("resize", mark); mark();
+      });
+    </script>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="bg-black">
+      <div class="wrap flex flex-col items-center gap-4 py-8 text-sm text-[#8d8d92]">
+        {/* The opening hours sit above the panel. */}
+        {hoursLine && <p class="text-center">{hoursLine}</p>}
+        {/* One segmented panel: the address, the phone and e-mail, and the call to action, split by hairlines. */}
+        <nav aria-label="Contact details" class="foot-pill">
+          <ul>
+            {f?.body && <li><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.body)}`} target="_blank" rel="noopener noreferrer">{f.body}</a></li>}
+            {contacts.map((c) => <li><a href={c.href}>{c.label}</a></li>)}
+            <li><a href="/intro"><span class="foot-dot" aria-hidden="true"></span>{introLabel}</a></li>
+          </ul>
+        </nav>
+        {/* The small print on one line: the legal links and the credit. */}
+        <div class="flex flex-wrap items-center justify-center gap-x-6 text-xs">
+          {legal.length > 0 && (
+            <nav aria-label="Legal">
+              <ul class="flex flex-wrap justify-center gap-x-5">
+                {legal.map((p) => <li><a href={`/policies/${p.slug}`} class="inline-flex min-h-9 items-center text-white no-underline transition-opacity hover:opacity-60">{p.title}</a></li>)}
+              </ul>
+            </nav>
+          )}
+          {f?.credit && <p class="text-center">{f.credit}</p>}
+        </div>
+      </div>
+    </footer>
+    {barSpace && <div aria-hidden="true" class="h-(--bar-h)"></div>}
+  </body>
+</html>

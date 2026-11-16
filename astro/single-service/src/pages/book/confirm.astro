@@ -1,0 +1,16 @@
+---
+// /book/confirm: Confirm (Figma 3:382 with a single appointment). Client-only: it reads the visitor's chosen time.
+// Both "Book intro call" (Home) and "Book now" (service page) lead here; the appointment says which service it is.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ConfirmPage from "../../components/booking/ConfirmPage";
+import { listServices, type ServiceDTO } from "../../lib/services";
+
+let services: ServiceDTO[] = [];
+try { services = await listServices(); } catch (e) { console.error("services read failed", e); }
+const policies = services.map((s) => ({ name: s.name, lines: s.policy }));
+---
+<SiteLayout title="Confirm" hideCta barSpace>
+  <div class="bg-secondary"><div class="flow pb-24 pt-8">
+    <ConfirmPage client:only="react" policies={policies} />
+  </div></div>
+</SiteLayout>

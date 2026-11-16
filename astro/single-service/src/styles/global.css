@@ -1,0 +1,459 @@
+@import url('https://fonts.googleapis.com/css2?family=Wix+Madefor+Display:wght@500;600;700&family=Wix+Madefor+Text:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+/* ─── THE design system ─────────────────────────────────────────────────────────────────
+   Every colour, type size, radius, spacing tier and motion value on the site is decided
+   HERE, and every component reads these tokens through Tailwind utilities (bg-secondary,
+   text-muted-foreground, text-h2 …) or the .component classes below. Change a token,
+   everything follows. Nothing in a component repeats a value from this file.
+
+   Direction: a non-branded Wix Studio wireframe for a single-service booking site.
+   Greys only, ink as the single emphasis colour; the cloning user brings the brand.
+   Contrast (WCAG AA): foreground on background 18:1, muted-foreground on background 6.7:1
+   and on secondary 6.1:1, inverse-muted on inverse 7.9:1, destructive on white 6.1:1. */
+@theme {
+  /* ── colour ── */
+  --color-background: #ffffff;
+  --color-foreground: #161616;
+  --color-primary: #161616;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f2f2f2;            /* light band; quiet fills (cards, chips, slots) */
+  --color-secondary-foreground: #161616;
+  --color-muted: #eaeaea;                /* mid band; hover fill of quiet controls */
+  --color-muted-foreground: #5c5c5c;
+  --color-inverse: #161616;
+  --color-inverse-foreground: #ffffff;
+  --color-inverse-muted: #b3b3ae;
+  --color-border: #dbdbdb;               /* hairlines and form-field edges only */
+  --color-destructive: #b42318;
+
+  /* ── shape ── media and cards are square-edged; controls are pills (change --radius-control for
+     square buttons). Chips, slots and fields use --radius-chip, sheets and modals --radius-sheet. */
+  --radius-lg: 0px;
+  --radius-md: 0px;
+  --radius-sm: 0px;
+  --radius-control: 9999px;
+  --radius-chip: 0.75rem;
+  --radius-sheet: 1.25rem;
+
+  /* ── type ── */
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-display: 'Wix Madefor Text', Arial, Helvetica, sans-serif;
+  --text-xs: 0.875rem;                                   /* 14: meta (the floor for any text) */
+  --text-sm: 0.875rem;                                   /* 14: labels, chips */
+  --text-base: 0.9375rem;                                    /* 16: body, inputs (>=16 stops iOS zoom) */
+  --text-lg: 1.1875rem;                                  /* 19: large body */
+  --text-lead: clamp(1.375rem, 1.1rem + 1.1vw, 2rem);    /* 22→32 */
+  --text-h3: 1.25rem;    /* 20→24: card and tile titles */
+  --text-h2: clamp(1.625rem, 1.2rem + 1.6vw, 2.375rem);         /* 28→48: page and section titles */
+  --text-display: clamp(2.5rem, 2.036rem + 1.905vw, 3.75rem);   /* 40→60: page titles */
+  --text-hero: clamp(2.5rem, 1.5rem + 5vw, 5.5rem);              /* 40→88: the home hero title */
+
+  /* ── motion ── one easing, two durations (state 160ms, sheet 260ms), everywhere. */
+  --ease-site: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ── spacing tiers ── declared once; the section tier and gutter CHANGE at each breakpoint.
+     8   label → control            (gap-2)
+     16  control → control           (gap-4)
+     24  group → group               (gap-6)
+     40  last decision → next block  (gap-10 / mt-10)
+     section: 64 phone / 96 tablet / 128 desktop
+     gutter:  20 phone / 32 tablet / 48 desktop; content stops at 1440.
+   The booking flow is a narrow column (--flow-max, 720 as drawn in Figma) centred in the page.
+   --bar-h is the fixed action bar's footprint (Confirm); --time-list-h (below) bounds the calendars' time lists. */
+:root {
+  --section-y: 4rem;
+  --gutter: 1.25rem;
+  --header-h: 4rem;
+  --content-max: 90rem;
+  --flow-max: 45rem;
+  --bar-h: 4.5rem;
+}
+@media (min-width: 768px) { :root { --section-y: 6rem; --gutter: 2rem; } }
+@media (min-width: 1024px) { :root { --section-y: 8rem; --gutter: 3rem; --header-h: 4.5rem; } }
+
+@layer base {
+  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 1rem); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 500; line-height: 1.1; letter-spacing: -0.015em; text-wrap: balance; }
+  p { text-wrap: pretty; }
+  :focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 3px; }
+  .bg-inverse :focus-visible { outline-color: var(--color-inverse-foreground); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+  }
+}
+
+@layer components {
+  /* The page container: gutter on both sides, content capped at 1440. */
+  .wrap { width: 100%; max-width: calc(var(--content-max) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+  /* The booking column: the same gutter, content capped at the Figma 720. */
+  .flow { width: 100%; max-width: calc(var(--flow-max) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+  .section { padding-block: var(--section-y); }
+
+  /* The one button system. Primary = filled ink; secondary = quiet fill (no outline: a border is the loudest
+     mark in a greyscale page). 48px tall, above the 44px tap floor. .btn-sm is for in-card actions (44px). */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-height: 3rem; padding-inline: 1.5rem; border-radius: var(--radius-control);
+    font-size: var(--text-base); font-weight: 400; line-height: 1; white-space: nowrap; text-decoration: none;
+    transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site), box-shadow 160ms var(--ease-site), opacity 160ms var(--ease-site);
+  }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn-sm { min-height: 2.75rem; padding-inline: 1.25rem; font-size: var(--text-sm); }
+  .btn-primary { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .btn-primary:disabled { color: var(--color-muted-foreground); background: #e7e7e7; opacity: 1; }
+  .btn-secondary { background: var(--color-secondary); color: var(--color-foreground); }
+  /* A quiet button on a light-grey band would vanish into it: it takes the page white there. */
+  .bg-secondary .btn-secondary { background: var(--color-background); }
+  .btn-outline { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .btn-outline:hover:not(:disabled), .group:hover .btn-outline { background: var(--color-foreground); color: var(--color-background); }
+  .btn:hover:not(:disabled):not(.btn-outline) { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .btn:disabled, .btn[aria-disabled="true"] { cursor: not-allowed; }
+  .btn-secondary:disabled { opacity: 0.45; }
+  .bg-inverse .btn-primary { background: var(--color-inverse-foreground); color: var(--color-inverse); }
+  .bg-inverse .btn-primary:hover { background: transparent; color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+  /* A text action (Back, Edit, Remove, Show more): underlined, 44px target. */
+  .link-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; min-height: 2.75rem; min-width: 2.75rem; font-size: var(--text-sm); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+  .link-btn { transition: opacity 160ms var(--ease-site), text-underline-offset 160ms var(--ease-site); }
+  .link-btn:hover { opacity: 0.55; text-underline-offset: 0.2em; }
+  .hbtn { border-radius: 9999px; transition: box-shadow 160ms var(--ease-site); }
+  .hbtn:hover:not(:disabled), .hbtn[aria-pressed="true"], .hbtn[aria-expanded="true"] { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+
+  .prose-site { max-width: 68ch; }
+  .prose-site > * + * { margin-top: 1em; }
+  .prose-site h2 { font-size: var(--text-h3); margin-top: 2.25em; }
+  .prose-site h2 + * { margin-top: 0.75em; }
+  .prose-site ul { list-style: disc; padding-left: 1.25em; }
+  .prose-site li + li { margin-top: 0.4em; }
+  .prose-site a { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Horizontal rail (phone): snaps, peeks the next card, pulls the track to the viewport edge
+     while the first card stays on the page gutter. */
+  .rail {
+    display: grid; grid-auto-flow: column; gap: 1rem;
+    overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+    margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail > * { scroll-snap-align: start; }
+
+  /* ── Booking surface ─────────────────────────────────────────────────────────────────── */
+
+  /* Week strip: seven day buttons, a fixed footprint (never grows with slots). */
+  .day-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 0.25rem; min-height: 4.5rem; padding-block: 0.25rem;
+    font-size: var(--text-xs); font-weight: 500; color: var(--color-muted-foreground);
+  }
+  .day-btn .num {
+    display: flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; border-radius: 9999px;
+    background: var(--color-secondary); color: var(--color-foreground); font-size: var(--text-sm); font-weight: 600; font-variant-numeric: tabular-nums;
+    transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site);
+  }
+  .day-btn:hover:not(:disabled):not([aria-pressed="true"]) .num { background: var(--color-muted); }
+  .day-btn[aria-pressed="true"] .num { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .day-btn[aria-pressed="true"] { color: var(--color-foreground); }
+  .day-btn:disabled { cursor: not-allowed; }
+  .day-btn:disabled .num { background: transparent; color: var(--color-muted-foreground); opacity: 0.5; }
+
+  .slot {
+    min-height: 2.75rem; border-radius: var(--radius-chip); background: var(--color-secondary);
+    font-size: var(--text-sm); font-weight: 600; font-variant-numeric: tabular-nums;
+    transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site);
+  }
+  .slot:hover:not([aria-pressed="true"]):not(:disabled) { background: var(--color-muted); }
+  .slot[aria-pressed="true"] { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .slot:disabled { color: var(--color-muted-foreground); opacity: 0.5; cursor: not-allowed; text-decoration: line-through; }
+
+  /* Form fields: the only outlined controls on the site. 16px text so iOS never zooms. */
+  .field { display: block; width: 100%; min-height: 3rem; padding: 0.75rem 1.25rem; border: 1px solid var(--color-border); border-radius: 9999px; background: var(--color-background); font-size: var(--text-base); }
+  .field:hover { border-color: var(--color-muted-foreground); }
+  .field[aria-invalid="true"] { border-color: var(--color-destructive); }
+  textarea.field { min-height: 6.5rem; resize: vertical; border-radius: 1.25rem; }
+  .field-label { display: block; margin-bottom: 0.5rem; padding-inline: 0.25rem; font-size: var(--text-sm); font-weight: 500; }
+  .field-error { margin-top: 0.375rem; font-size: var(--text-sm); color: var(--color-destructive); }
+
+  /* The fixed action bar: total + Book now on Confirm, and the calendars' action while their own button is scrolled out of
+     view. Fixed to the foot of the viewport, so the primary action never scrolls away; Confirm reserves --bar-h. */
+  .action-bar {
+    position: fixed; inset-inline: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom)); z-index: 40; margin-inline: auto; max-width: 45rem;
+    padding: 0.5rem 0.5rem 0.5rem 0; border-radius: 9999px;
+    background: color-mix(in srgb, var(--color-background) 94%, transparent); backdrop-filter: blur(8px);
+    box-shadow: 0 8px 32px rgb(20 20 20 / 0.12), inset 0 0 0 1px var(--color-border);
+  }
+  .action-bar .flow { padding-inline: 1.5rem 0; }
+
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+}
+
+/* ── Calendar surfaces (Home intro card, service page inline calendar) ───────────────────────────────────────────────
+   Both calendars are a fixed footprint: a month grid or a 7-day strip, then a bounded time list that scrolls inside
+   (--time-list-h) however many times a day holds. The selected state is an ink fill; an unavailable day is muted and
+   has no dot; "available" is the dot under the number. */
+:root { --time-list-h: 14rem; --cal-card-w: 27.5rem; }
+@layer components {
+  .cal-card { background: var(--color-background); border: 1px solid var(--color-border); border-radius: var(--radius-sheet); padding: 1.25rem; box-shadow: 0 8px 32px rgb(20 20 20 / 0.06); }
+  /* On a phone the card runs edge to edge so the seven month-grid columns are >= 44px wide (a 360px screen inside a gutter and a
+     card's padding leaves 40px each); from 640px it is a card again. */
+  @media (max-width: 639.98px) { .cal-card { margin-inline: calc(-1 * var(--gutter)); border-inline: 0; border-radius: 0; padding: 1rem 0.75rem; box-shadow: none; } }
+  @media (min-width: 768px) { .cal-card { padding: 1.5rem; } }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-height: 2.75rem; }
+  .cal-nav { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; border-radius: 9999px; transition: background-color 160ms var(--ease-site); }
+  .cal-nav:hover:not(:disabled) { background: var(--color-secondary); }
+  .cal-nav:disabled { opacity: 0.35; cursor: not-allowed; }
+  .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: var(--text-xs); font-weight: 500; color: var(--color-muted-foreground); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .cal-day {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 2.75rem; width: 100%;
+    font-size: var(--text-sm); font-weight: 600; font-variant-numeric: tabular-nums; border-radius: var(--radius-control);
+    transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site);
+  }
+  .cal-day::after { content: ""; position: absolute; bottom: 0.3125rem; width: 0.25rem; height: 0.25rem; border-radius: 9999px; background: currentColor; opacity: 0; }
+  .cal-day:not(:disabled)::after { opacity: 1; }
+  .cal-day:hover:not(:disabled):not([aria-pressed="true"]) { background: var(--color-secondary); }
+  .cal-day[aria-pressed="true"] { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .cal-day:disabled { color: var(--color-muted-foreground); opacity: 0.45; font-weight: 400; cursor: not-allowed; }
+  /* The time list: bounded, scrolls inside; as many 96px+ columns as fit (3 in the Home card and on a phone), capped at 640px. */
+  .time-list { max-height: var(--time-list-h); overflow-y: auto; overscroll-behavior: contain; padding: 0.25rem; margin: -0.25rem; }
+  .time-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr)); gap: 0.5rem; max-width: 40rem; }
+  .time-grid .slot { width: 100%; padding-inline: 0.25rem; }
+  /* Section card used on Home (steps, testimonials): a quiet fill, no outline. */
+  .quiet-card { background: var(--color-secondary); padding: 1.5rem; }
+  /* FAQ accordion: native details, a hairline between rows. */
+  /* FAQ: the same ruled list as the About figures. On hover only the rule above the row turns black, and the plus turns a full circle. */
+  .faq { border-top: 1px solid var(--color-border); transition: border-color 360ms var(--ease-site); }
+  .faq:last-child { border-bottom: 1px solid var(--color-border); }
+  .faq:hover { border-top-color: var(--color-foreground); }
+  .faq summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 4.5rem; padding-block: 1.25rem; font-family: var(--font-display); font-size: var(--text-h3); font-weight: 500; line-height: 1.1; letter-spacing: -0.015em; cursor: pointer; list-style: none; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary .plus { --r: 0deg; display: grid; flex: none; place-items: center; width: 2.25rem; height: 2.25rem; transform: rotate(var(--r)); transition: transform 600ms var(--ease-site); }
+  .faq:hover .plus { --r: 360deg; }
+  .faq[open] .plus { --r: 45deg; }
+  .faq[open]:hover .plus { --r: 405deg; }
+}
+
+@layer components {
+  /* The 7-day strip: a snapping rail with a peek on a phone (every day a 44px target), the whole strip from 768px. */
+  .day-rail { display: flex; gap: 0.25rem; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding: 0.25rem; margin: -0.25rem; }
+  .day-rail::-webkit-scrollbar { display: none; }
+  .day-rail > li { flex: none; width: 3.25rem; scroll-snap-align: start; }
+  .day-rail .day-btn { width: 100%; }
+  @media (min-width: 768px) { .day-rail { overflow: visible; gap: 0; } .day-rail > li { width: auto; flex: 1; min-width: 2.75rem; } }
+}
+
+/* Photos: square-edged, cover-cropped; inside a .img-zoom frame they scale 1.03 on hover. */
+@layer components {
+  .img-zoom { overflow: hidden; }
+  .img-zoom img { transition: scale 160ms var(--ease-site); }
+  .img-zoom:hover img { scale: 1.03; }
+}
+
+/* ── Testimonials: dark carousel, square cards, the centred card is the active one. ── */
+@layer components {
+  .t-section { background: #000; color: #fff; }
+  /* A black sheet grows upward over the section above it as the page scrolls (--t-lift is set by the page script). */
+  .lift-sheet { position: relative; overflow-x: clip; }
+  .lift-sheet::before { content: ""; position: absolute; left: 0; right: 0; top: calc(-1 * var(--t-lift, 0px)); height: var(--t-lift, 0px); background: #000; pointer-events: none; }
+  .t-section :focus-visible { outline-color: #fff; }
+  .t-quote { font-family: var(--font-display); font-size: var(--text-display); font-weight: 500; line-height: 1.1; letter-spacing: -0.015em; }
+  .t-sub { max-width: 40rem; font-family: var(--font-display); font-size: var(--text-h3); font-weight: 500; letter-spacing: -0.015em; line-height: 1.1; color: #8d8d92; }
+  .t-avatar { object-fit: cover; display: inline-flex; flex: none; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: #2a2a2d; color: #d9d9dc; font-size: var(--text-sm); font-weight: 600; }
+  .t-track { display: flex; gap: 1.25rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-inline: calc(50% - min(13.5rem, 40vw)); }
+  .t-track::-webkit-scrollbar { display: none; }
+  .t-card { border-radius: var(--radius-sheet); flex: none; width: min(27rem, 80vw); min-height: 25.5rem; scroll-snap-align: center; display: flex; flex-direction: column; padding: 1.875rem; background: #0e0e0f; color: #8d8d92; transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site); }
+  .t-card[aria-current] { background: #18181a; color: #fff; }
+  .t-card-body { flex: 1; font-size: var(--text-base); line-height: 1.55; font-weight: 400; }
+  .t-card-by { display: flex; align-items: center; gap: 0.75rem; font-size: var(--text-base); font-weight: 500; }
+  .t-card-by .t-avatar { width: 3rem; height: 3rem; }
+  .t-arrow { display: inline-flex; align-items: center; justify-content: center; width: 3.5rem; height: 3.5rem; border-radius: 9999px; border: 1px solid #2f2f33; background: #0e0e0f; color: #fff; transition: border-color 160ms var(--ease-site), background-color 160ms var(--ease-site); }
+  .t-arrow:hover { border-color: #fff; background: transparent; }
+}
+
+@layer components {
+  .t-rating { display: flex; align-items: center; gap: 0.75rem; font-family: var(--font-display); font-size: var(--text-h2); font-weight: 500; line-height: 1.1; letter-spacing: -0.015em; }
+  .t-stars { display: inline-flex; gap: 0.25rem; color: #fff; }
+}
+@layer components { .t-stars svg, .t-stars svg path { fill: currentColor; } }
+
+/* Blur reveal for the big quote: each character fades from blur to focus as the page scrolls (styles set by the script in index.astro). */
+@layer components {
+  .t-quote .t-line { display: block; }
+  @media (max-width: 1023.98px) { .t-quote { text-wrap: balance; } .t-quote .t-line { display: inline; } .t-quote .t-line + .t-line::before { content: " "; } }
+  @media (min-width: 1024px) { .t-quote .t-line { white-space: nowrap; } }
+  .t-word { display: inline-block; white-space: nowrap; }
+  .t-ch { display: inline-block; }
+  .t-ch { will-change: opacity, filter, transform; }
+}
+
+/* ── Home booking widget (hero card): rounded sheet, centred heading, bordered calendar box, all of a day's times together. ── */
+@layer components {
+  .hw-top { text-align: center; }
+  /* Address plaque: on hover the map and the address slide right (clipped by the plaque) and "Show on Maps" slides in from the left. */
+  /* Address plaque: on hover it drops its fill for a 1px black outline, the map slides down out of its slot (clipped) and the
+     black Show on Maps button slides in from above. */
+  .hw-loc { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; height: 3.5rem; margin-top: 1.5rem; padding: 0 0.5rem 0 1.25rem; border-radius: 9999px; background: var(--color-secondary); box-shadow: inset 0 0 0 1px transparent; font-size: var(--text-base); transition: background-color 360ms var(--ease-site), box-shadow 360ms var(--ease-site); }
+  .hw-loc:hover, .hw-loc:focus-within { background-color: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .hw-addr { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hw-aside { position: relative; flex: none; width: 7.25rem; height: 2.5rem; overflow: hidden; border-radius: 9999px; }
+  .hw-map, .hw-maps-btn { position: absolute; transition: transform 360ms var(--ease-site), opacity 360ms var(--ease-site), background-color 160ms var(--ease-site), color 160ms var(--ease-site); }
+  .hw-map { right: 0; top: 0; border-radius: 9999px; }
+  .hw-maps-btn { inset: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; background: var(--color-primary); color: var(--color-primary-foreground); font-size: var(--text-sm); white-space: nowrap; opacity: 0; pointer-events: none; transform: translateY(-120%); }
+  .hw-loc:hover .hw-map, .hw-loc:focus-within .hw-map { transform: translateY(120%); opacity: 0; }
+  .hw-loc:hover .hw-maps-btn, .hw-loc:focus-within .hw-maps-btn { opacity: 1; pointer-events: auto; transform: none; }
+  @media (hover: none) { .hw-map { display: none; } .hw-maps-btn { opacity: 1; pointer-events: auto; transform: none; } }
+  .hw-cal { margin-top: 0.75rem; padding: 1.25rem 1rem 1rem; border-radius: var(--radius-sheet); background: var(--color-secondary); text-align: left; }
+  .hw-cal-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .hw-nav { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: transparent; transition: box-shadow 160ms var(--ease-site); }
+  .hw-nav:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .hw-nav:disabled { opacity: 0.35; cursor: not-allowed; }
+  .hw-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.25rem; margin-top: 1.25rem; }
+  .hw-day { position: relative; display: flex; width: 100%; flex-direction: column; align-items: center; gap: 0.5rem; padding: 0 0 0.75rem; color: var(--color-muted-foreground); font-size: var(--text-base); }
+  .hw-wd { font-weight: 500; }
+  .hw-num { display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 9999px; color: var(--color-foreground); transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site), box-shadow 160ms var(--ease-site); }
+  .hw-day::after { content: ""; position: absolute; bottom: 0; width: 0.25rem; height: 0.25rem; border-radius: 9999px; background: var(--color-foreground); }
+  .hw-day:disabled::after { display: none; }
+  .hw-day:hover:not(:disabled):not([aria-pressed="true"]) .hw-num { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .hw-day[aria-pressed="true"] .hw-num { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .hw-day:disabled { cursor: not-allowed; }
+  .hw-day:disabled .hw-num { color: var(--color-muted-foreground); opacity: 0.5; }
+  .hw-times { padding: 1rem 0 0; }
+  .hw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr)); gap: 0.5rem; max-height: 10.5rem; overflow-y: auto; overscroll-behavior: contain; padding: 1px; }
+  .hw-slot { width: 100%; min-height: 2.75rem; border: 1px solid var(--color-border); border-radius: 9999px; background: var(--color-background); font-size: var(--text-sm); font-variant-numeric: tabular-nums; cursor: pointer; transition: border-color 160ms var(--ease-site), background-color 160ms var(--ease-site); }
+  .hw-slot:hover { border-color: var(--color-foreground); }
+  .hw-slot[aria-pressed="true"] { border-color: var(--color-foreground); background: var(--color-secondary); }
+}
+
+/* The widget's summary bar: appears at the foot of the viewport once the widget has scrolled out of view. */
+@layer components {
+  /* The widget is a card that turns into the bottom bar on scroll (see HomeWidget.tsx): the slot holds its place, the shell travels. */
+  .hw-place { position: relative; width: 100%; }
+  main#main { position: relative; }
+  .hw-shell { position: absolute; left: 0; top: 0; z-index: 40; overflow: hidden; background: var(--color-background); text-align: left; border-radius: 1.25rem; }
+  /* Centred in the shell, so as the frame narrows it masks the content from both sides equally. */
+  .hw-full { position: absolute; left: 50%; top: 0; padding: 1.5rem; text-align: center; transform: translateX(-50%); }
+  .hw-barlayer { position: absolute; inset: 0; display: flex; align-items: center; opacity: 0; text-align: left; }
+  /* The docked pill: service name, and a slot that shows the time and price until hover swaps in "Book now". */
+  .hw-bar-in { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; width: 100%; padding: 0 0.5rem 0 1rem; }
+  .hw-bar-name { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-sm); font-weight: 500; }
+  .hw-bar-swap { position: relative; flex: none; width: 6.5rem; height: 1.5rem; overflow: hidden; border-radius: 9999px; background: var(--color-muted); }
+  .hw-bar-meta, .hw-bar-btn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 0.375rem; white-space: nowrap; transition: transform 360ms var(--ease-site), opacity 360ms var(--ease-site), background-color 160ms var(--ease-site), color 160ms var(--ease-site), box-shadow 160ms var(--ease-site); }
+  .hw-bar-meta { font-size: var(--text-sm); }
+  .hw-bar-btn { min-height: 0; padding: 0; font-size: var(--text-sm); transform: translateY(-110%); opacity: 0; }
+  .hw-shell:hover .hw-bar-meta, .hw-shell:focus-within .hw-bar-meta { transform: translateY(110%); opacity: 0; }
+  .hw-shell:hover .hw-bar-btn, .hw-shell:focus-within .hw-bar-btn { transform: none; opacity: 1; }
+  @media (hover: none) { .hw-bar-meta { display: none; } .hw-bar-btn { transform: none; opacity: 1; } }
+}
+
+/* One style for the section titles (Why Choose Us, About Us, What Our Clients Say): the testimonials title's size. */
+@layer components {
+  .section-title { text-align: center; font-family: var(--font-display); font-size: var(--text-h3); font-weight: 500; line-height: 1.1; letter-spacing: -0.015em; color: var(--color-muted-foreground); }
+  .t-section .section-title { color: #8d8d92; }
+}
+
+/* Home hero: the content starts over the photo (transparent for the photo's height) and is grey below it, so on scroll the grey slides up over the photo (the page script lifts its top edge via --lift). */
+@layer components {
+  .hero-content { background: linear-gradient(to bottom, transparent calc(var(--hero-h) - var(--lift, 0px)), var(--color-secondary) calc(var(--hero-h) - var(--lift, 0px))); }
+}
+
+/* The docked pill: a 1px black outline on hover (the inline shadow is set per frame by the scroll morph, hence !important). */
+@layer components {
+  .hw-shell[data-pill="1"] { transition: box-shadow 160ms var(--ease-site); }
+  .hw-shell[data-pill="1"]:hover, .hw-shell[data-pill="1"]:focus-within { box-shadow: inset 0 0 0 1px var(--color-foreground), 0 4px 16px rgb(20 20 20 / 0.06) !important; }
+}
+
+/* The intro-call card on Home, and the stand-alone booking card (/intro) that wears the booking widget's style. */
+@layer components {
+  /* The white plate is a layer behind the content: on hover it grows outward and the content moves out with it (the title to the top-left,
+     the grey row wider and lower), so the padding from the plate's edge stays the same. */
+  /* Grid rows: a spacer above the text, the text, a spacer between the text and the grey row, the grey row. The spacers split the free height
+     1 : 0.8, so the gap from the plate's top edge to the text is 25% bigger than the gap from the text to the grey row (the latter is 20% smaller). */
+  .intro-card { --grow: 0.625rem; --meta-w: min(100%, max(42%, 16rem)); display: grid; grid-template-rows: minmax(1.5rem, 1fr) auto minmax(1.2rem, 0.8fr) auto; position: relative; isolation: isolate; aspect-ratio: 1.585; padding: 0 1.5rem 1.5rem; }
+  .intro-card::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 1.5rem; background: var(--color-background); box-shadow: inset 0 0 0 1px transparent; transition: inset 360ms var(--ease-site), box-shadow 360ms var(--ease-site); }
+  .intro-card:hover::before, .intro-card:focus-visible::before { inset: calc(-1 * var(--grow)); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  /* The text sits dead centre of the plate (both ways), in a container 30% narrower; the grey row is pinned near the bottom edge. */
+  .intro-top { grid-row: 2; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .intro-top p { max-width: 70%; }
+  .intro-meta { grid-row: 4; align-self: end; justify-self: center; width: var(--meta-w); display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.75rem 0.75rem 1rem; border-radius: 9999px; background: var(--color-secondary); transition: width 360ms var(--ease-site), transform 360ms var(--ease-site); }
+  .intro-swap { position: relative; flex: none; width: 7rem; height: 2.75rem; overflow: hidden; border-radius: 9999px; background: var(--color-background); }
+  .intro-price, .intro-btn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: var(--text-sm); white-space: nowrap; transition: transform 360ms var(--ease-site), opacity 360ms var(--ease-site); }
+  .intro-btn { border-radius: 9999px; background: var(--color-primary); color: var(--color-primary-foreground); transform: translateY(-110%); opacity: 0; }
+  .intro-card:hover .intro-price, .intro-card:focus-visible .intro-price { transform: translateY(110%); opacity: 0; }
+  .intro-card:hover .intro-btn, .intro-card:focus-visible .intro-btn { transform: none; opacity: 1; }
+  @media (hover: none) { .intro-price { display: none; } .intro-btn { transform: none; opacity: 1; } }
+  .intro-card:hover .intro-meta, .intro-card:focus-visible .intro-meta { width: calc(var(--meta-w) + 2 * var(--grow)); transform: translateY(var(--grow)); }
+  .hw-card { width: 100%; max-width: 30rem; margin-inline: auto; padding: 1.5rem; border-radius: 1.25rem; background: var(--color-background); color: var(--color-foreground); text-align: center; }
+}
+
+/* Why Choose Us: white plates with the same corners the photos had; a check-in-a-circle icon on top, the text at the bottom. */
+@layer components {
+  .why-card { min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; aspect-ratio: 1; min-height: 15rem; padding: 1.5rem; border-radius: var(--radius-sheet); background: var(--color-background); }
+  @media (max-width: 639.98px) { .why-card { aspect-ratio: auto; min-height: 14rem; padding: 1.25rem; gap: 1.5rem; } }
+  .why-icon { display: block; flex: none; color: var(--color-foreground); }
+}
+
+/* Follow Us on Instagram: a ring of photos around a round button. --rot (set by the page script from the scroll position) turns the ring; each
+   tile turns back by the same angle so it stays upright. Sizes are fractions of the ring's width, so it scales with the block. */
+@layer components {
+  .ig-ring { --rot: 0deg; position: relative; aspect-ratio: 1; container-type: inline-size; }
+  .ig-tile { --a: calc(var(--rot) + var(--i) * 360deg / var(--n)); position: absolute; left: 50%; top: 50%; width: var(--ig-tile, 21.74cqw); height: var(--ig-tile, 21.74cqw); margin: calc(var(--ig-tile, 21.74cqw) / -2) 0 0 calc(var(--ig-tile, 21.74cqw) / -2); overflow: hidden; border-radius: var(--radius-chip); background: var(--color-muted); transform: rotate(var(--a)) translateY(calc(-1 * var(--ig-r, 31cqw))) rotate(calc(-1 * var(--a))); }
+  .ig-tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  /* The title and the round button, stacked in the middle of the ring. The button is as tall as the header's Contact button (btn-sm, 2.75rem). */
+  .ig-center { position: absolute; left: 50%; top: 50%; display: flex; flex-direction: column; align-items: center; gap: 1rem; transform: translate(-50%, -50%); text-align: center; }
+  .ig-button { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 9999px; background: rgb(22 22 22 / 0.2); color: var(--color-foreground); transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site); }
+  .ig-button:hover { background: var(--color-primary); color: var(--color-primary-foreground); }
+  @media (min-width: 1024px) { .ig-ring { width: 138%; margin-inline: -19%; } }
+  /* A phone: the ring is nearly as wide as the screen (12px to each side) and the photos sit on its very edge, so it is as big as it can be without the photos touching the sides. */
+  @media (max-width: 639.98px) { .ig-ring { width: calc(100% + 1rem); margin-inline: -0.5rem; --ig-tile: 22cqw; --ig-r: 39cqw; } }
+}
+
+/* Footer (black): a segmented dark-grey panel with white text (address | phone | e-mail | call to action) - a column as wide as the booking widget (30rem at most) on a phone and a tablet, a pill from 1024px. */
+@layer components {
+  .foot-pill { width: 100%; max-width: 30rem; } /* the booking widget's width (30rem) on a phone and a tablet */
+  .foot-pill ul { display: flex; flex-direction: column; overflow: hidden; border-radius: 1.75rem; background: #2a2a2d; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08); }
+  .foot-pill li + li { border-top: 1px solid rgb(255 255 255 / 0.16); }
+  .foot-pill a { display: flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 3.5rem; padding-inline: 1.5rem; color: #fff; text-align: center; text-decoration: none; transition: background-color 160ms var(--ease-site); }
+  .foot-pill a:hover { background: rgb(255 255 255 / 0.1); }
+  .foot-dot { width: 0.5rem; height: 0.5rem; border-radius: 9999px; background: #3f9d63; }
+  @media (min-width: 1024px) {
+    .foot-pill { max-width: max-content; }
+    .foot-pill ul { flex-direction: row; border-radius: 9999px; }
+    .foot-pill li + li { border-top: 0; border-left: 1px solid rgb(255 255 255 / 0.16); }
+  }
+}
+
+/* Confirm and Done: white rounded plates on the grey page, a grey rounded row for the appointment and a pill for the total. */
+@layer components {
+  .cf-card { padding: 1.5rem; border-radius: var(--radius-sheet); background: var(--color-background); }
+  @media (min-width: 768px) { .cf-card { padding: 2rem; } }
+  .cf-row { padding: 1.25rem 1.5rem; border-radius: 1.25rem; background: var(--color-secondary); }
+  .cf-total { padding: 0.875rem 1.5rem; border-radius: 9999px; background: var(--color-muted); }
+}
+
+/* The phone menu: full width, centred items set like the FAQ questions, ruled like the FAQ list. */
+@layer components {
+  .menu-item { display: flex; align-items: center; justify-content: center; min-height: 4.5rem; border-top: 1px solid var(--color-border); font-family: var(--font-display); font-size: var(--text-h3); font-weight: 500; line-height: 1.1; letter-spacing: -0.015em; color: var(--color-foreground); text-decoration: none; transition: border-color 360ms var(--ease-site); }
+  .menu-item:hover { border-top-color: var(--color-foreground); }
+  /* The page or section you are on: the menu link turns ink and is underlined; a press dims it further. */
+  .nav-link { color: var(--color-muted-foreground); text-decoration: underline 1.5px transparent; text-underline-offset: 0.5rem; transition: opacity 160ms var(--ease-site), color 160ms var(--ease-site), text-decoration-color 160ms var(--ease-site); }
+  .nav-link:hover { opacity: 0.55; }
+  .nav-link:active { opacity: 0.35; }
+  .nav-link[aria-current] { color: var(--color-foreground); font-weight: 600; text-decoration-color: var(--color-foreground); }
+  .menu-item[aria-current] { border-top-color: var(--color-foreground); font-weight: 700; }
+  .btn-outline[aria-current] { background: var(--color-foreground); color: var(--color-background); }
+}
+html, body { overflow-x: clip; }
