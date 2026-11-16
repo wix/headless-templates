@@ -1,0 +1,445 @@
+---
+// Home (Figma 53:485, reordered at the designer's request): the business (hero), the service with its price and next times,
+// How it works, About me, testimonials, the free intro call with its calendar, FAQ, a closing call to action, footer.
+// Copy comes from the CMS (HomeSections, HomeItems); the intro call and the service are read live from Bookings, so editing
+// them in the dashboard changes this page.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import Icons from "../components/home/Icons.astro";
+import HomeWidget from "../components/booking/HomeWidget";
+import SmallScreenBookingCard from "../components/booking/SmallScreenBookingCard";
+import { getSections, getItems } from "../lib/content";
+import { getServices, withBio, formatDuration, formatPrice, type ServiceDTO } from "../lib/services";
+import { imgSrc } from "../lib/media";
+import { BUSINESS_NAME, BOOK_NOW, BOOK_INTRO } from "../lib/site";
+
+let intro: ServiceDTO | undefined;
+let service: ServiceDTO | undefined;
+try {
+  const s = await getServices();
+  intro = s.intro;
+  service = s.service ? await withBio(s.service) : undefined;
+} catch (e) { console.error("services read failed", e); /* a failed read hides those sections, not the page */ }
+const [sec, items] = await Promise.all([getSections(), getItems()]);
+const provider = service?.staff[0] ?? intro?.staff[0];
+const { hero, about, how, service: svcSec, intro: introSec, testimonials, faq, cta, footer, instagram: igSec } = sec;
+
+const igWords = (igSec?.title ?? "").split(/\s+/).filter(Boolean);
+const igTitleLines = [igWords.slice(0, 2).join(" "), igWords.slice(2).join(" ")];
+const introHeading = introSec?.title ?? intro?.name ?? "";
+const introWords = introHeading.split(/\s+/).filter(Boolean);
+const ctaWords = (cta?.title ?? "").split(/\s+/).filter(Boolean);
+const aboutHeading = about?.body ?? about?.title ?? "";
+// The About heading is set in three lines, the middle one clearly the widest (about 25 / 50 / 25 % of the characters).
+const aboutLines: string[][] = [];
+{
+  const words = aboutHeading.split(/\s+/).filter(Boolean);
+  const total = words.join(" ").length, cuts = [0.25, 0.75];
+  let acc = 0, line: string[] = [];
+  for (const w of words) {
+    const cut = cuts[aboutLines.length];
+    if (cut !== undefined && line.length && acc + w.length / 2 > cut * total) { aboutLines.push(line); line = []; }
+    line.push(w); acc += w.length + 1;
+  }
+  aboutLines.push(line);
+}
+
+// The big quote is set in three lines, the middle one the longest (about 28 / 44 / 28 % of the characters).
+const quoteLines: string[] = [];
+let quoteIdx = 0;
+{
+  const words = `“${items.testimonial?.[0]?.body ?? ""}”`.split(/\s+/).filter(Boolean);
+  const total = words.join(" ").length;
+  const targets = [0.28, 0.72];
+  let acc = 0, line: string[] = [];
+  for (const w of words) {
+    const next = acc + w.length + (line.length ? 1 : 0);
+    const cut = targets[quoteLines.length];
+    if (cut !== undefined && line.length && next > cut * total + w.length / 2) { quoteLines.push(line.join(" ")); line = []; }
+    line.push(w); acc += w.length + 1;
+  }
+  quoteLines.push(line.join(" "));
+}
+---
+<SiteLayout title={BUSINESS_NAME} description={hero?.body}>
+  {/* One stage for the hero, Why Choose Us and About: the photo scrolls at half speed (script below) while the grey below it rises over it. */}
+  <div class="relative" style="--hero-h: calc(100svh - var(--header-h))">
+  {hero && (
+    <div class="relative z-0 h-(--hero-h) overflow-hidden" data-hero-photo>
+      {hero.image && <img src={imgSrc(hero.image, 2400, 1200)} alt="" width="2400" height="1200" fetchpriority="high" class="absolute inset-0 hidden h-full w-full object-cover lg:block" />}
+      {hero.imageMobile && <img src={imgSrc(hero.imageMobile, 1200, 1500)} alt="" width="1200" height="1500" class="absolute inset-0 h-full w-full object-cover lg:hidden" />}
+    </div>
+  )}
+  {hero && (
+    <section id="service" class="relative -mt-(--hero-h) min-h-(--hero-h)" aria-labelledby="hero-title">
+      <div class="hero-content relative">
+      <div class="wrap flex flex-col items-center pb-0 pt-12 text-center sm:pt-16 lg:pt-20">
+        <h1 id="hero-title" class="text-hero max-w-[20ch]">{hero.title}</h1>
+        <p class="mt-4 max-w-[48ch] text-sm text-muted-foreground">{hero.body}</p>
+        <div class="mt-6 flex flex-wrap justify-center gap-4">
+          <a href="#intro" class="btn btn-outline">{hero.ctaSecondaryLabel ?? "Book a free intro call"}</a>
+        </div>
+        {service && (
+          <div id="book" class="mt-20 w-full max-w-[30rem]">
+            <HomeWidget client:only="react" service={service} eyebrow={svcSec?.title}><div slot="fallback" class="h-[34rem] rounded-sheet bg-background" aria-hidden="true"></div></HomeWidget>
+          </div>
+        )}
+      </div>
+      </div>
+    </section>
+  )}
+
+  {how && items.step?.length > 0 && (
+    <section id="how" class="section relative bg-secondary pb-0 pt-[calc(var(--gutter)*2)] sm:pb-0 lg:pb-0" aria-labelledby="how-title">
+      <div class="wrap">
+        <h2 id="how-title" class="section-title">{how.title}</h2>
+        <ol class="mt-10 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+          {items.step.map((st) => (
+            <li class="why-card">
+              <span class="why-icon" aria-hidden="true"><Icons name="check-circle" size={40} /></span>
+              <div>
+                <h3 class="text-h3">{st.title}</h3>
+                <p class="mt-2 text-sm text-muted-foreground">{st.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  )}
+
+  {about && provider && (
+    <section id="about" class="section relative bg-secondary pt-24 sm:pt-30 lg:pt-42" aria-labelledby="about-title">
+      <div class="wrap">
+        <p class="section-title">{about.title}</p>
+        <h2 id="about-title" class="t-quote mx-auto mt-8 text-center" data-blur-reveal aria-label={aboutHeading}>
+          {aboutLines.map((ws) => (
+            <span class="t-line" aria-hidden="true">{ws.map((w, k) => <><span class="t-word">{[...w].map((ch) => <span class="t-ch">{ch}</span>)}</span>{k < ws.length - 1 && " "}</>)}</span>
+          ))}
+        </h2>
+        {/* The same four-column grid as the Why Choose Us photos: the two paragraphs sit under the 2nd and 3rd photo, the figures span both. */}
+        <div class="mt-16 grid grid-cols-1 items-start gap-x-4 gap-y-6 text-base text-muted-foreground sm:grid-cols-2 sm:gap-x-5 lg:grid-cols-4">
+          {provider.bio && <p class="lg:col-start-2">{provider.bio}</p>}
+          {about.bodySecondary && <p class="lg:col-start-3">{about.bodySecondary}</p>}
+          {items.stat?.length > 0 && (
+            <dl class="mt-12 sm:col-span-2 lg:col-span-2 lg:col-start-2 lg:mt-24">
+              {items.stat.map((st) => (
+                <div class="flex flex-row-reverse items-baseline justify-between gap-6 border-t border-border py-5 last:border-b">
+                  <dt class="text-sm text-muted-foreground">{st.body}</dt>
+                  <dd class="font-display text-h3 font-medium text-foreground">{st.title}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  </div>
+
+  {igSec && items.instagram?.length > 0 && (
+    <section id="instagram" class="section relative bg-secondary pt-0" aria-labelledby="ig-title">
+      <div class="wrap">
+        {/* A ring of photos that turns as the page scrolls (page script): 20% wider than the About figures on a wide screen. The title and the round
+            button sit in the middle of the ring. */}
+        {/* On a phone the title sits above the photos; from 640px it is in the middle of the ring. */}
+        <p class="section-title mb-6 sm:hidden" aria-hidden="true">{igSec.title}</p>
+        <div class="grid grid-cols-1 gap-x-4 sm:grid-cols-2 sm:gap-x-5 lg:grid-cols-4">
+          <div class="ig-ring sm:col-span-2 lg:col-start-2" data-ring style={`--n: ${items.instagram.length}`}>
+            {items.instagram.map((t, i) => (
+              <span class="ig-tile" style={`--i: ${i}`}>{t.image && <img src={imgSrc(t.image, 360, 360)} alt="" width="360" height="360" loading="lazy" decoding="async" />}</span>
+            ))}
+            <div class="ig-center">
+              <h2 id="ig-title" class="section-title max-sm:sr-only" aria-label={igSec.title}>
+                <span class="block" aria-hidden="true">{igTitleLines[0]}</span>
+                {igTitleLines[1] && <span class="block" aria-hidden="true">{igTitleLines[1]}</span>}
+              </h2>
+              <a class="ig-button" href={igSec.body || "https://www.instagram.com/"} target="_blank" rel="noopener noreferrer" aria-label="Open our Instagram"><Icons name="instagram" size={20} /></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {testimonials && items.testimonial?.length > 0 && (
+    <section id="testimonials" class="t-section lift-sheet section" data-lift-above="#instagram" aria-labelledby="t-title">
+      <div class="wrap text-center">
+        <h2 id="t-title" class="section-title t-sub mx-auto">{testimonials.title}</h2>
+        <blockquote class="t-quote mx-auto mt-8" data-blur-reveal aria-label={quoteLines.join(" ")}>
+          {quoteLines.map((l) => (
+            <span class="t-line" aria-hidden="true">{l.split(" ").map((w) => <span class="t-word">{[...w].map((ch) => <span class="t-ch" style={`--i:${quoteIdx++}`}>{ch}</span>)}</span>).flatMap((el, k, a) => (k < a.length - 1 ? [el, " "] : [el]))}</span>
+          ))}
+        </blockquote>
+        <div class="mx-auto mt-16 h-20 w-px bg-white/40" aria-hidden="true"></div>
+        {testimonials.body && (
+          <div class="mt-16 flex flex-col items-center gap-3">
+            <p class="t-rating"><span>{testimonials.body}</span><span class="t-stars" aria-hidden="true">{[0, 1, 2, 3, 4].map(() => <Icons name="star" size={18} />)}</span></p>
+            {testimonials.bodySecondary && <p class="text-sm text-white">{testimonials.bodySecondary}</p>}
+          </div>
+        )}
+      </div>
+      <div class="t-track mt-16" data-t-track>
+        {/* Three copies of the set, so the slider loops both ways; the script re-centres on the middle copy when scrolling stops. */}
+        {[0, 1, 2].flatMap((copy) => items.testimonial.map((t, i) => (
+          <article class="t-card" aria-current={copy === 1 && i === 0 ? "true" : undefined} aria-hidden={copy === 1 ? undefined : "true"}>
+            <blockquote class="t-card-body">{t.body}</blockquote>
+            <p class="t-card-by">{t.avatar ? <img src={imgSrc(t.avatar, 96, 96)} alt="" width="48" height="48" loading="lazy" class="t-avatar" /> : <span class="t-avatar" aria-hidden="true">{t.title.trim().charAt(0)}</span>}<span>{t.title}</span></p>
+          </article>
+        )))}
+      </div>
+      <div class="mt-12 flex justify-center gap-3">
+        <button type="button" class="t-arrow" data-t-prev aria-label="Previous review"><Icons name="arrow-left" size={18} /></button>
+        <button type="button" class="t-arrow" data-t-next aria-label="Next review"><Icons name="arrow-right" size={18} /></button>
+      </div>
+    </section>
+  )}
+
+  {intro && (
+    <section id="intro" class="section bg-secondary" aria-labelledby="intro-title">
+      <div class="wrap">
+        <h2 id="intro-title" class="t-quote text-center" data-blur-reveal aria-label={introHeading}>
+          {introWords.map((w, k) => <><span class="t-word" aria-hidden="true">{[...w].map((ch) => <span class="t-ch">{ch}</span>)}</span>{k < introWords.length - 1 && " "}</>)}
+        </h2>
+        {/* The intro call as a card; the booking form itself lives on its own page (/intro) and wears the booking widget's style. */}
+        {/* The same four-column grid as the FAQ below: the card is exactly as wide as the FAQ rules. */}
+        <div class="mt-16 grid grid-cols-1 gap-x-4 sm:grid-cols-2 sm:gap-x-5 lg:grid-cols-4">
+        <a href="/intro" class="intro-card group w-full text-left no-underline sm:col-span-2 lg:col-start-2">
+          <span class="intro-top">
+            <h3 class="text-h3">{intro.name}</h3>
+            {intro.description && <p class="mt-3 text-sm text-muted-foreground">{intro.description}</p>}
+          </span>
+          <span class="intro-meta">
+            <span class="grid h-11 w-8 flex-none place-items-center text-foreground"><Icons name="calendar" size={28} /></span>
+            <span class="min-w-0 flex-1">
+              <span class="block text-base font-medium">{formatDuration(intro.minutes)}</span>
+              <span class="block truncate text-sm text-muted-foreground">{intro.locationLabel}</span>
+            </span>
+            <span class="intro-swap">
+              <span class="intro-price">{formatPrice(intro.price)}</span>
+              <span class="intro-btn">Book now<Icons name="arrow-right" size={16} /></span>
+            </span>
+          </span>
+        </a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {faq && items.faq?.length > 0 && (
+    <section class="section bg-secondary" aria-labelledby="faq-title">
+      <div class="wrap">
+        <h2 id="faq-title" class="section-title">{faq.title}</h2>
+        {/* The same four-column grid as the photos and figures above: the list sits across the middle two columns. */}
+        <div class="mt-10 grid grid-cols-1 gap-x-4 sm:grid-cols-2 sm:gap-x-5 lg:grid-cols-4">
+          <div class="sm:col-span-2 lg:col-start-2">
+            {items.faq.map((q) => (
+              <details class="faq">
+                <summary>{q.title}<span class="plus"><Icons name="plus" size={18} /></span></summary>
+                <p class="pb-5 pr-12 text-base text-muted-foreground">{q.body}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {cta && (
+    <section id="contact" class="section lift-sheet bg-black text-white" data-lift-rate="0.6" data-lift-cap="0.4" aria-labelledby="cta-title">
+      <div class="wrap flex flex-col items-center text-center">
+        <h2 id="cta-title" class="t-quote" data-blur-hide aria-label={cta.title}>
+          {ctaWords.map((w, k) => <><span class="t-word" aria-hidden="true">{[...w].map((ch) => <span class="t-ch">{ch}</span>)}</span>{k < ctaWords.length - 1 && " "}</>)}
+        </h2>
+        {/* On a wide screen the booking widget travels from the header into this slot (see HomeWidget.tsx). */}
+        {/* On a tablet or a phone the widget does not travel here, so a second copy of it sits under the heading. */}
+        {service && (
+          <div class="mt-12 w-full lg:hidden">
+            <SmallScreenBookingCard client:only="react" service={service} eyebrow={svcSec?.title}><div slot="fallback" class="hw-card h-[34rem]" aria-hidden="true"></div></SmallScreenBookingCard>
+          </div>
+        )}
+        <div id="hw-slot-b" class="w-full max-w-[30rem] lg:mt-16"></div>
+      </div>
+    </section>
+  )}
+</SiteLayout>
+
+<script>
+  // Hero parallax: the photo travels at about half the page's speed, and the grey sheet below it rises a little faster than the
+  // page (its top edge lifts up to 160px), so the grey slides over the photo. Off for reduced motion.
+  // The parallax (the photo moving slower, the sheets rising) is for wide screens only; on a tablet or a phone everything scrolls normally.
+  const wide = matchMedia("(min-width: 1024px)");
+  const photo = document.querySelector<HTMLElement>("[data-hero-photo]");
+  if (photo && photo.parentElement && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const stage = photo.parentElement;
+    // How tall the photo is: the screen below the header, unless the whole booking widget fits on that screen; then the photo is taller,
+    // so that 80px of photo remain below the widget instead of the widget sitting on the photo's lower edge. A widget that does not
+    // fit still hangs over the photo's edge onto the grey, as before. (--hero-h is also read by the grey sheet in CSS.)
+    const GAP = 80;
+    const fitPhoto = () => {
+      const place = document.querySelector<HTMLElement>(".hw-place");
+      const header = document.querySelector("header");
+      if (!place || !header || place.getBoundingClientRect().height < 1) return; // the widget has not rendered yet: keep the default
+      const avail = innerHeight - header.getBoundingClientRect().height;
+      const bottom = place.getBoundingClientRect().bottom - stage.getBoundingClientRect().top;
+      // On a tablet or a phone the photo is never shorter than the screen and always ends below the widget with a gap (40px / 64px),
+      // however tall the widget is; there is no parallax there. On a wide screen the widget may hang over the photo's edge (see above).
+      const h = wide.matches ? (bottom <= avail ? Math.max(avail, bottom + GAP) : avail) : Math.max(avail, bottom + (innerWidth < 768 ? 40 : 64));
+      stage.style.setProperty("--hero-h", `${Math.round(h)}px`);
+    };
+    const heroContent = document.querySelector(".hero-content");
+    if (heroContent) new ResizeObserver(fitPhoto).observe(heroContent);
+    addEventListener("resize", fitPhoto);
+    fitPhoto();
+    let raf = 0;
+    const move = () => {
+      raf = 0;
+      if (!wide.matches) { photo.style.transform = ""; stage.style.setProperty("--lift", "0px"); return; }
+      const y = Math.max(0, scrollY);
+      photo.style.transform = `translate3d(0, ${y * 0.5}px, 0)`;
+      stage.style.setProperty("--lift", `${Math.min(y * 0.15, 160)}px`);
+    };
+    addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(move); }, { passive: true });
+    addEventListener("resize", () => { if (!raf) raf = requestAnimationFrame(move); });
+    move();
+  }
+
+  // Black sheets (.lift-sheet: testimonials, the closing block) rise over the section above them: the top edge lifts at `data-lift-rate` (default 0.15) x the
+  // distance the sheet has scrolled in, capped at `data-lift-cap` x the screen height (default: 80% of the padding below the section above).
+  // Off for reduced motion.
+  const sheets = [...document.querySelectorAll<HTMLElement>(".lift-sheet")];
+  if (sheets.length && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    let raf = 0;
+    const lift = () => {
+      raf = 0;
+      for (const sheet of sheets) {
+        if (!wide.matches) { sheet.style.setProperty("--t-lift", "0px"); continue; }
+        const sel = sheet.dataset.liftAbove;
+        const above = sel ? document.querySelector<HTMLElement>(sel) : (sheet.previousElementSibling as HTMLElement | null);
+        const rate = Number(sheet.dataset.liftRate) || 0.15;
+        const cap = sheet.dataset.liftCap ? innerHeight * Number(sheet.dataset.liftCap) : above ? parseFloat(getComputedStyle(above).paddingBottom) * 0.8 : 0;
+        const entered = Math.max(0, innerHeight - sheet.getBoundingClientRect().top);
+        sheet.style.setProperty("--t-lift", `${Math.min(cap, entered * rate)}px`);
+      }
+    };
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(lift); };
+    addEventListener("scroll", schedule, { passive: true });
+    addEventListener("resize", schedule);
+    lift();
+  }
+
+  // The Instagram ring turns once as it travels through the screen (0 as it enters at the bottom, a full turn as it leaves at the top);
+  // each tile counter-rotates in CSS so the photos stay upright. Off for reduced motion.
+  const rings = [...document.querySelectorAll<HTMLElement>("[data-ring]")];
+  if (rings.length && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    let raf = 0;
+    const spin = () => {
+      raf = 0;
+      for (const ring of rings) {
+        const r = ring.getBoundingClientRect();
+        const p = Math.min(1, Math.max(0, (innerHeight - r.top) / (innerHeight + r.height)));
+        ring.style.setProperty("--rot", `${p * 360}deg`);
+      }
+    };
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(spin); };
+    addEventListener("scroll", schedule, { passive: true });
+    addEventListener("resize", schedule);
+    spin();
+  }
+
+  // Blur reveal, scrubbed by scroll: an element's characters come into focus one by one as it travels up the viewport
+  // (progress 0 when its top is at 90% of the viewport height, 1 when its bottom reaches 45%); scrolling back undoes it.
+  // Used by the About heading and the testimonials quote.
+  const reveals = [...document.querySelectorAll<HTMLElement>("[data-blur-reveal]")];
+  if (reveals.length && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const spread = 12; // how many characters are mid-reveal at once
+    const clamp = (v: number) => Math.min(1, Math.max(0, v));
+    const items = reveals.map((el) => ({ el, chars: [...el.querySelectorAll<HTMLElement>(".t-ch")] }));
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const vh = innerHeight, start = vh * 0.9, end = vh * 0.45;
+      for (const { el, chars } of items) {
+        const r = el.getBoundingClientRect();
+        const head = clamp((start - r.top) / (start - end + r.height)) * (chars.length + spread);
+        for (let i = 0; i < chars.length; i++) {
+          const k = clamp((head - i) / spread);
+          const c = chars[i];
+          c.style.opacity = String(k);
+          c.style.filter = k >= 1 ? "none" : `blur(${(1 - k) * 10}px)`;
+          c.style.transform = k >= 1 ? "none" : `translateY(${(1 - k) * 0.2}em)`;
+        }
+      }
+    };
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(update); };
+    addEventListener("scroll", schedule, { passive: true });
+    addEventListener("resize", schedule);
+    update();
+  }
+
+  const track = document.querySelector<HTMLElement>("[data-t-track]");
+  if (track) {
+    const cards = [...track.querySelectorAll<HTMLElement>(".t-card")];
+    const n = cards.length / 3; // cards in one copy of the set
+    const mid = (c: HTMLElement) => c.offsetLeft + c.offsetWidth / 2;
+    const center = (c: HTMLElement) => mid(c) - track.clientWidth / 2;
+    const current = () => cards.findIndex((c) => c.hasAttribute("aria-current"));
+    const mark = () => {
+      const m = track.scrollLeft + track.clientWidth / 2;
+      let best = 0;
+      for (let i = 1; i < cards.length; i++) if (Math.abs(mid(cards[i]) - m) < Math.abs(mid(cards[best]) - m)) best = i;
+      cards.forEach((c, i) => c.toggleAttribute("aria-current", i === best));
+    };
+    // Loop: once scrolling stops, a card in the first or last copy is swapped for its twin in the middle copy (same look, no visible jump).
+    let idle = 0;
+    const recentre = () => {
+      const i = current();
+      if (i >= n && i < 2 * n) return;
+      const twin = cards[(i % n) + n];
+      track.style.scrollSnapType = "none";
+      track.scrollLeft = center(twin);
+      void track.offsetWidth;
+      track.style.scrollSnapType = "";
+      mark();
+    };
+    const go = (d: number) => {
+      const t = cards[Math.max(0, Math.min(cards.length - 1, current() + d))];
+      track.scrollTo({ left: center(t), behavior: "smooth" });
+    };
+    track.scrollLeft = center(cards[n]);
+    track.addEventListener("scroll", () => { requestAnimationFrame(mark); clearTimeout(idle); idle = window.setTimeout(recentre, 140); }, { passive: true });
+    document.querySelector("[data-t-prev]")?.addEventListener("click", () => go(-1));
+    document.querySelector("[data-t-next]")?.addEventListener("click", () => go(1));
+  }
+
+  // Blur hide (the reverse of the reveal): the closing heading stays fully visible until it reaches the middle of the screen; its
+  // characters then blur out one by one over the next 240px of scroll, so it is gone well before the booking card arrives from the
+  // header. Driven by the heading's own position, so it reverses on the way back. Only where the card travels here (a wide screen)
+  // and off for reduced motion.
+  const hideHeading = document.querySelector<HTMLElement>("[data-blur-hide]");
+  if (hideHeading && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const chars = [...hideHeading.querySelectorAll<HTMLElement>(".t-ch")];
+    const spread = 6, range = 240;
+    let raf = 0;
+    const hide = () => {
+      raf = 0;
+      const slotB = document.getElementById("hw-slot-b");
+      const travelling = !!slotB && slotB.getBoundingClientRect().height > 0;
+      const r = hideHeading.getBoundingClientRect();
+      const u = travelling ? Math.min(1, Math.max(0, (innerHeight / 2 - (r.top + r.height / 2)) / range)) : 0;
+      const head = u * (chars.length + spread);
+      for (let i = 0; i < chars.length; i++) {
+        const k = Math.min(1, Math.max(0, (head - i) / spread));
+        const c = chars[i];
+        c.style.opacity = String(1 - k);
+        c.style.filter = k <= 0 ? "none" : `blur(${k * 10}px)`;
+        c.style.transform = k <= 0 ? "none" : `translateY(${k * 0.2}em)`;
+      }
+    };
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(hide); };
+    addEventListener("scroll", schedule, { passive: true });
+    addEventListener("resize", schedule);
+    hide();
+  }
+</script>

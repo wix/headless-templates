@@ -73,6 +73,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Rentals</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/single-service">Single Service</a></td>
+      <td>A booking site for a solo provider with one service and a free intro call, using Astro and Wix Headless.</td>
+      <td></td>
+      <td>Wix Bookings, Wix Forms, Wix CMS</td>
+    </tr>
+    <tr>
       <td colspan="4" align="center"><strong>Next.js</strong></td>
     </tr>
     <tr>

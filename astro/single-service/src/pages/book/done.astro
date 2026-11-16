@@ -1,0 +1,8 @@
+---
+// /book/done: where Book now lands (placeOrder resolved) and where hosted checkout returns (postFlowUrl). Not drawn in Figma.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import Done from "../../components/booking/Done";
+---
+<SiteLayout title="Booking" hideCta>
+  <div class="bg-secondary"><div class="flow pb-24 pt-8"><Done client:only="react" /></div></div>
+</SiteLayout>

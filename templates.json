@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "single-service",
+      "title": "Single Service (Wix Bookings)",
+      "subtitle": "One service, an intro call and a live booking calendar",
+      "siteTemplateId": "17aecf0e-9d43-48f9-9d13-e9626debaa73",
+      "gitPath": "astro/single-service",
+      "vibeCompatible": false
     }
   ]
 }

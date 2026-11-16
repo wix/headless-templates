@@ -1,0 +1,84 @@
+---
+// /service (Figma 32:554, Variant B): hero (service name, promise, duration · location · price, Book now), About the service
+// beside the Provider card, Book a time with the inline calendar, a 3-image gallery, Policy. Read live from Bookings + CMS.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import Icons from "../components/home/Icons.astro";
+import BookingCard from "../components/booking/BookingCard";
+import { getSections, getItems } from "../lib/content";
+import { getServices, withBio, formatDuration, formatPrice, type ServiceDTO } from "../lib/services";
+import { BOOK_NOW } from "../lib/site";
+
+let service: ServiceDTO | undefined;
+try {
+  const s = await getServices();
+  service = s.service ? await withBio(s.service) : undefined;
+} catch (e) { console.error("service read failed", e); }
+const [sec, items] = await Promise.all([getSections(), getItems()]);
+const provider = service?.staff[0];
+const included = items.included ?? [];
+---
+<SiteLayout title={service?.name ?? "Service"} description={service?.tagLine}>
+  {!service && (
+    <section class="section"><div class="wrap">
+      <h1 class="text-h2">Service not found</h1>
+      <p class="mt-6 text-lg text-muted-foreground">There is no service to book yet.</p>
+      <a href="/" class="btn btn-primary mt-10">Back to Home</a>
+    </div></section>
+  )}
+
+  {service && (
+    <>
+      <section class="section pb-0" aria-labelledby="svc-title">
+        <div class="wrap flex flex-col items-center text-center">
+          <h1 id="svc-title" class="text-hero max-w-[20ch]">{service.name}</h1>
+          {service.tagLine && <p class="mt-4 max-w-[48ch] text-sm text-muted-foreground">{service.tagLine}</p>}
+          <p class="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-sm text-muted-foreground">
+            {provider && <span>with {provider.name}</span>}
+            <span class="inline-flex items-center gap-1.5"><Icons name="clock" />{formatDuration(service.minutes)}</span>
+            <span class="inline-flex items-center gap-1.5"><Icons name="pin" />{service.locationLabel}</span>
+            <span class="font-semibold text-foreground">{formatPrice(service.price)}</span>
+          </p>
+          <div class="mt-6"><a href="#book" class="btn btn-primary">{BOOK_NOW}</a></div>
+        </div>
+        {service.cover && (
+          <div class="wrap mt-10">
+            <img src={service.cover} alt="" width="2400" height="1200" fetchpriority="high" class="h-[22rem] w-full rounded-sheet object-cover sm:h-[28rem] lg:h-[34rem]" />
+          </div>
+        )}
+      </section>
+
+      <section class="section" aria-labelledby="about-title">
+        <div class="wrap grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-20">
+          <div class="max-w-[42rem]">
+            <h2 id="about-title" class="text-h2">{sec["service-about"]?.title ?? "About the service"}</h2>
+            {service.description && <p class="mt-6 text-lg text-muted-foreground">{service.description}</p>}
+            {included.length > 0 && (
+              <ul class="mt-8 flex flex-col gap-3">
+                {included.map((i) => <li class="flex items-center gap-3"><span class="shrink-0"><Icons name="check-circle" size={24} /></span>{i.title}</li>)}
+              </ul>
+            )}
+          </div>
+          {provider && (
+            <aside aria-label="Provider" class="quiet-card self-start rounded-sheet text-center">
+              {provider.photo && <img src={provider.photo} alt="" width="176" height="176" loading="lazy" class="mx-auto h-22 w-22 rounded-full object-cover" />}
+              <p class="mt-4 text-lg font-semibold">{provider.name}</p>
+              {sec.provider && <p class="mt-1 text-sm text-muted-foreground">{sec.provider.title} · {sec.provider.body}</p>}
+              {provider.bio && <p class="mt-4 text-sm text-muted-foreground">{provider.bio}</p>}
+            </aside>
+          )}
+        </div>
+      </section>
+
+      <section id="book" class="section bg-secondary pt-16" aria-labelledby="book-title">
+        <div class="wrap">
+          <h2 id="book-title" class="section-title">{sec["service-book"]?.title ?? "Book a time"}</h2>
+          <div class="mt-10">
+            <BookingCard client:only="react" service={service} from="service" fallbackHref="/service#book">
+              <div slot="fallback" class="hw-card h-[34rem]" aria-hidden="true"></div>
+            </BookingCard>
+          </div>
+        </div>
+      </section>
+    </>
+  )}
+</SiteLayout>

@@ -1,0 +1,29 @@
+---
+// /intro: the booking form for the free intro call, on a page of its own. It is the Home booking widget's card (same style, same behaviour);
+// picking a time and "Book now" lead to Confirm like every other booking.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import BookingCard from "../components/booking/BookingCard";
+import { getSections } from "../lib/content";
+import { getServices, type ServiceDTO } from "../lib/services";
+
+let intro: ServiceDTO | undefined;
+try { intro = (await getServices()).intro; } catch (e) { console.error("intro service read failed", e); }
+const sec = await getSections();
+const title = sec.intro?.title ?? "Book an Intro Call";
+---
+<SiteLayout title={title}>
+  <section class="section bg-secondary" aria-labelledby="intro-page-title">
+    <div class="wrap">
+      <h1 id="intro-page-title" class="section-title">{title}</h1>
+      {intro ? (
+        <div class="mt-10">
+          <BookingCard client:only="react" service={intro} from="home" fallbackHref="/intro">
+            <div slot="fallback" class="hw-card h-[34rem]" aria-hidden="true"></div>
+          </BookingCard>
+        </div>
+      ) : (
+        <p class="mt-10 text-center text-base text-muted-foreground">The intro call is not available right now.</p>
+      )}
+    </div>
+  </section>
+</SiteLayout>
