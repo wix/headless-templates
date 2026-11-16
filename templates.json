@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "product-launch",
+      "title": "Product Launch (Wix Stores)",
+      "subtitle": "Single-product launch page with checkout",
+      "siteTemplateId": "9c320339-6a4f-4728-9bb3-235d14d6e85d",
+      "gitPath": "astro/product-launch",
+      "vibeCompatible": false
     }
   ]
 }

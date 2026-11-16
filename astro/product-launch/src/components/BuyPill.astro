@@ -1,0 +1,105 @@
+---
+// Compact buy pill pinned to the bottom of the viewport from the first screen (photo, name,
+// price, Add to cart). Scrolling toward
+// the buy band (#buy, the second-to-last block) grows the pill into that block: the fixed
+// frame interpolates from the pill's rect to the band's live rect, the pill content fades out
+// and the band's own content fades in. At 100% the frame hides and the real band is on screen.
+// Without JS the pill stays hidden and the band is just a normal section.
+import Media from "./Media.astro";
+import BuyPillAdd from "./BuyPillAdd";
+interface Props { href: string; slug: string; name: string; price: string; image?: string | null }
+const { href, slug, name, price, image } = Astro.props;
+---
+<div id="buy-pill" hidden aria-hidden="false" class="group/pill pointer-events-none fixed left-0 top-0 z-30 [&:has([data-pill-link]:hover)>[data-pill-bg]]:scale-[1.1]" style="opacity:0">
+  <!-- the plate (fill, border, shadow) is its own layer so a hover can grow it without scaling the content -->
+  <span data-pill-bg aria-hidden="true" class="absolute inset-0 origin-bottom rounded-[12px] border border-border bg-background shadow-[0_8px_32px_rgb(0_0_0/0.14)] transition-[scale] duration-300 ease-out"></span>
+  <div data-pill-link class="pointer-events-auto absolute inset-x-0 bottom-0 flex h-[72px] items-center gap-3 p-3 text-foreground">
+    <a href={href} class="flex min-w-0 flex-1 items-center gap-3 text-foreground no-underline transition-[translate] duration-300 ease-out group-has-[[data-pill-link]:hover]/pill:translate-x-[calc(var(--pill-w,520px)*-0.05)] group-has-[[data-pill-link]:hover]/pill:-translate-y-[3.5px]" aria-label={`${name}, ${price}`}>
+      <span class="block h-12 w-12 shrink-0 overflow-hidden bg-secondary"><Media src={image} alt="" ratio={1} sizes="48px" /></span>
+      <span class="min-w-0 flex-1">
+        <span class="block truncate text-sm font-medium">{name}</span>
+        <span class="block text-sm text-muted-foreground">{price}</span>
+      </span>
+    </a>
+    <span class="shrink-0 transition-[translate] duration-300 ease-out group-has-[[data-pill-link]:hover]/pill:translate-x-[calc(var(--pill-w,520px)*0.05)] group-has-[[data-pill-link]:hover]/pill:-translate-y-[3.5px]"><BuyPillAdd client:load slug={slug} /></span>
+  </div>
+</div>
+
+<script>
+  const pill = document.getElementById("buy-pill") as HTMLElement | null;
+  const sec = document.getElementById("buy");
+  const content = sec?.querySelector<HTMLElement>("[data-buy-content]");
+  const link = pill?.querySelector<HTMLElement>("[data-pill-link]");
+  const plate = pill?.querySelector<HTMLElement>("[data-pill-bg]");
+  if (pill && sec && content && link && plate) {
+    pill.hidden = false;
+    content.style.transition = "opacity 220ms ease-out";
+    const parts = Array.from(content.children) as HTMLElement[];
+    parts.forEach((el) => { el.style.transition = "transform 260ms ease-out"; el.style.willChange = "transform"; });
+    link.style.transition = "opacity 160ms ease-out";
+    const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    const ease = (t: number) => t * t * (3 - 2 * t);
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const vh = window.innerHeight, vw = document.documentElement.clientWidth;
+      const gutter = vw >= 1024 ? 48 : vw >= 768 ? 32 : 20;
+      const r = sec.getBoundingClientRect();
+      const fh = Math.min(r.height, content.offsetHeight); // the pinned frame (the whole band on phones)
+      const pw = Math.min(520, vw - 2 * gutter), ph = 72, pl = (vw - pw) / 2, pt = vh - 16 - ph;
+      // 0 while the band is below the fold, 1 once it has risen 55% of a screen.
+      const p = clamp((vh - r.top) / (vh * 0.5));
+      const e = ease(p);
+      const done = p >= 1;
+      const ol = lerp(pl, r.left, e), ot = lerp(pt, r.top, e), ow = lerp(pw, r.width, e), oh = lerp(ph, fh, e);
+      pill.style.left = `${ol}px`;
+      pill.style.top = `${ot}px`;
+      pill.style.width = `${ow}px`;
+      pill.style.setProperty("--pill-w", `${ow}px`); // the hover nudges the content by 5% of this (half the plate's growth)
+      pill.style.height = `${oh}px`;
+      // The band's real content only shows inside the growing frame, never beside it.
+      // M keeps the content well inside the frame: while scrolling fast the clip (which scrolls with the
+      // band) trails the fixed frame by a few px, and without the margin an edge of text peeks out.
+      const M = 24;
+      sec.style.clipPath = done ? "none" : `inset(${Math.max(0, ot - r.top) + M}px ${Math.max(0, r.right - (ol + ow)) + M}px ${Math.max(0, r.top + r.height - (ot + oh)) + M}px ${Math.max(0, ol - r.left) + M}px round 12px)`;
+      // corners stay 12px; the border and shadow fade out as it grows, and at the end the frame
+      // dissolves into the band itself (same white, same place)
+      plate.style.borderColor = `rgb(219 219 219 / ${1 - e})`;
+      plate.style.boxShadow = `0 8px 32px rgb(0 0 0 / ${0.14 * (1 - e)})`;
+      pill.style.opacity = done ? "0" : String(1 - ease(clamp((p - 0.7) / 0.3)));
+      pill.style.visibility = done ? "hidden" : "visible";
+      link.style.opacity = String(1 - ease(clamp(p / 0.25)));
+      link.style.pointerEvents = p < 0.15 ? "auto" : "none";
+      const c = ease(clamp((p - 0.08) / 0.5));
+      content.style.opacity = String(c);
+      // The band's content rides up from below as the frame grows (photo first, text a beat later).
+      parts.forEach((el, i) => {
+        const k = ease(clamp((p - 0.08 - i * 0.05) / 0.5)); // every part is home well before p reaches 1
+        el.style.transform = k >= 1 ? "none" : `translateY(${(1 - k) * 96}px)`;
+      });
+      content.toggleAttribute("inert", c < 0.5);
+    };
+    // Photo scroll (desktop): the frame is pinned (sticky) for the section's extra height; that scroll
+    // slides the photo track up one photo per screen while the side columns stay put.
+    const track = sec.querySelector<HTMLElement>("[data-showcase-track]");
+    const win = sec.querySelector<HTMLElement>("[data-showcase-window]");
+    const wide = matchMedia("(min-width: 1024px)");
+    const slide = () => {
+      if (!track || !win) return;
+      if (!wide.matches) { track.style.transform = ""; return; }
+      const r = sec.getBoundingClientRect();
+      const hdr = parseFloat(getComputedStyle(content).top) || 0;
+      const dist = r.height - content.offsetHeight;
+      const t = dist > 0 ? clamp((hdr - r.top) / dist) : 0;
+      const n = track.children.length;
+      const step = win.offsetHeight + (parseFloat(getComputedStyle(track).rowGap) || 0); // one photo + the 10px gap
+      track.style.transform = `translate3d(0, ${-t * (n - 1) * step}px, 0)`;
+    };
+    const queue = () => { if (!raf) raf = requestAnimationFrame(() => { update(); slide(); }); };
+    addEventListener("scroll", queue, { passive: true });
+    addEventListener("resize", queue);
+    update();
+    slide();
+  }
+</script>

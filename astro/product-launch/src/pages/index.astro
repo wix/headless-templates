@@ -1,0 +1,261 @@
+---
+// Home: the launch landing page. Its one job is to send the visitor to the product page
+// (every CTA here is "Buy Now" → PRODUCT_URL); the Wix Stores purchase itself lives there.
+// Section order follows the template's sitemap: hero → statement → about →
+// features → technology → reviews carousel → closing CTA → buy band. All copy and imagery is
+// owner-editable in the CMS (HomeSections / Features / Testimonials); the buy band reads the
+// live product. A section whose CMS row is deleted simply disappears.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import Media from "../components/Media.astro";
+import Testimonials from "../components/Testimonials.astro";
+import FeatureIcon from "../components/FeatureIcon.astro";
+import BuyPill from "../components/BuyPill.astro";
+import BuyPanel from "../components/BuyPanel";
+import { getSections, getFeatures, getTestimonials } from "../lib/content";
+import { LAUNCH_PRODUCT_SLUG, PRODUCT_URL } from "../lib/site";
+import { fetchProductBySlug } from "../wix/storefront/catalog";
+import type { ProductDetail } from "../wix/storefront/types";
+
+let product: ProductDetail | null = null;
+try {
+  product = await fetchProductBySlug(LAUNCH_PRODUCT_SLUG);
+} catch (err) {
+  console.error("Launch product read failed", err); // the buy band hides; CTAs still link
+}
+const [s, features, testimonials] = await Promise.all([getSections(), getFeatures(), getTestimonials()]);
+const { hero, statement, about, features: feat, technology: tech, cta, buy } = s;
+---
+<SiteLayout description={hero?.body}>
+  <!-- HERO. Desktop (md+): 2:1 band, copy on the image's calm left half (the placeholder keeps
+       its weight right), capped to the viewport so the CTA is in the first screen. Phone: copy
+       first, then the 4:5 frame below it — copy over a phone-width product shot always lands on
+       the product. -->
+  {hero && (
+    <section data-hero class="relative isolate h-[calc(100svh-var(--header-h))] min-h-[32rem] overflow-hidden bg-secondary">
+      <!-- parallax: the inner layer (image + copy) is nudged down at half the scroll speed, so the
+           hero reads as moving slower than the block that follows it -->
+      <div data-hero-inner class="absolute inset-0 will-change-transform">
+        <div class="absolute inset-0 -z-10">
+          <Media src={hero.image} srcMobile={hero.imageMobile} ratio={0.5} ratioMobile={1.25} alt="" sizes="100vw" eager class="object-bottom md:object-center" />
+        </div>
+        <!-- copy vertically centred in the section, left-aligned from 768px, centred on phones -->
+        <div class="wrap flex h-full flex-col items-center justify-center text-center py-(--section-y) md:items-start md:text-left">
+          <div class="max-w-[38rem] md:max-w-[46%]">
+            <h1 class="text-display">{hero.title}</h1>
+            {hero.body && <p class="mx-auto mt-6 max-w-[40ch] md:mx-0">{hero.body}</p>}
+            <a href={PRODUCT_URL} class="btn btn-primary mt-8">{hero.ctaLabel || "Buy Now"}</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- STATEMENT: one centred lead paragraph on the mid band — the pause between hero and story. -->
+  {statement && (
+    <section class="relative z-10 bg-muted py-[calc(var(--section-y)*6.8)] md:py-[calc(var(--section-y)*4)]">
+      <div class="wrap text-center">
+        <p data-reveal class="mx-auto max-w-[34ch] font-display text-lead font-medium leading-snug md:max-w-[44ch]">{statement.body}</p>
+      </div>
+    </section>
+  )}
+
+  <!-- ABOUT: split — copy on the light band, 4:5 image full-bleed to the right edge. -->
+  {about && (
+    <section id="about" class="grid bg-background md:min-h-[calc((100svh-var(--header-h))*0.91)] md:grid-cols-2" aria-labelledby="about-title">
+      <div class="relative aspect-[4/5] md:order-2 md:aspect-auto">
+        <div class="absolute inset-0">
+          <Media src={about.image} alt="" ratio={1.25} sizes="(min-width: 768px) 50vw, 100vw" />
+        </div>
+      </div>
+      <!-- Left panel (sketch): headline top-left, the small picture centred in the column, body copy
+           bottom-left — title and body share the same left edge. All padding = the page gutter. -->
+      <div class="grid grid-rows-[auto_1fr_auto] gap-(--gutter) p-(--gutter)">
+        <h2 id="about-title" class="mx-auto max-w-[14ch] text-center text-h2 md:mx-0 md:text-left">{about.title}</h2>
+        <div class="flex items-center justify-center">
+          {(product?.gallery[2] ?? product?.imageUrl) && (
+            <div class="aspect-[3/4] w-[clamp(10rem,37%,18rem)] overflow-hidden">
+              <div data-zoom data-zoom-from="0.82" class="h-full w-full will-change-transform">
+                <Media src={product?.gallery[2] ?? product?.imageUrl} alt="" ratio={1.3333} sizes="288px" />
+              </div>
+            </div>
+          )}
+        </div>
+        {about.body ? <p class="mx-auto max-w-[52ch] text-center text-muted-foreground md:mx-0 md:text-left">{about.body}</p> : <span />}
+      </div>
+    </section>
+  )}
+
+  <!-- FEATURES: intro, then the items — a 4-up row on desktop, a snapping rail with a peek on
+       phones (one row whatever the count). -->
+  {feat && features.length > 0 && (
+    <section id="features" class="section bg-muted lg:pb-[calc(var(--section-y)+6rem)]" aria-labelledby="features-title">
+      <div class="wrap" data-features-inner>
+        <div class="grid gap-6 lg:grid-cols-12">
+          <div class="lg:col-span-5">
+            <h2 id="features-title" class="text-h2">{feat.title}</h2>
+          </div>
+        </div>
+        <ul class="mt-[7.8rem] grid grid-cols-2 gap-x-5 gap-y-10 md:gap-x-6 lg:mt-[13rem] lg:grid-cols-4" role="list">
+          {features.map((f, i) => (
+            <li class="flex flex-col">
+              <div class="text-foreground"><FeatureIcon index={i} /></div>
+              <h3 class="mt-6 text-h3">{f.title}</h3>
+              <p class="mt-6 text-muted-foreground">{f.body}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <!-- TECHNOLOGY: the dark band. Heading + CTA left, two body columns right, then a 16:9 image. -->
+  {tech && (
+    <section id="technology" class="section relative z-10 bg-inverse text-inverse-foreground lg:-mt-24" aria-labelledby="tech-title">
+      <div class="wrap">
+        <div class="grid gap-10 lg:grid-cols-12 lg:gap-6">
+          <div class="lg:col-span-5">
+            <h2 id="tech-title" class="text-h2">{tech.title}</h2>
+            <a href={PRODUCT_URL} class="btn btn-primary mt-10 hidden lg:inline-flex">{tech.ctaLabel || "Buy Now"}</a>
+          </div>
+          <div class="grid gap-6 text-inverse-muted sm:grid-cols-2 lg:col-span-6 lg:col-start-7">
+            {tech.body && <p>{tech.body}</p>}
+            {tech.bodySecondary && <p>{tech.bodySecondary}</p>}
+          </div>
+        </div>
+        <div class="mt-12 aspect-[16/9] overflow-hidden lg:mt-20">
+          <div data-zoom class="h-full w-full will-change-transform">
+          <Media src={tech.image} alt="" ratio={0.5625} sizes="(min-width: 1488px) 1440px, 100vw" />
+          </div>
+        </div>
+        <a href={PRODUCT_URL} class="btn btn-primary mt-10 w-full sm:w-auto lg:hidden">{tech.ctaLabel || "Buy Now"}</a>
+      </div>
+    </section>
+  )}
+
+  {testimonials.length > 0 && <Testimonials heading={s.reviews?.kicker} items={testimonials} />}
+
+  <!-- CLOSING CTA: display headline over the calm left of a wide frame, with the round buy
+       button — the reference's signature mark, kept because it's a shape, not a brand. -->
+  {cta && (
+    <section class="relative isolate z-10 overflow-hidden bg-secondary lg:-mt-24" aria-labelledby="cta-title">
+      <div class="absolute inset-0 -z-10">
+        <Media src={cta.image} srcMobile={cta.imageMobile} ratio={0.43} ratioMobile={1} alt="" sizes="100vw" />
+      </div>
+      <div class="wrap flex min-h-[max(100vw,30rem)] flex-col items-start gap-8 py-(--section-y) md:min-h-[max(42.85vw,28rem)]">
+        <h2 id="cta-title" class="max-w-[14ch] text-display">{cta.title}</h2>
+        <a href={PRODUCT_URL} class="btn btn-primary self-start">{cta.ctaLabel || "Buy Now"}</a>
+      </div>
+    </section>
+  )}
+
+  <!-- BUY SHOWCASE: the pill grows into this. Desktop: a tall section whose frame is pinned under the
+       header — text left and the purchase column right stay put while the product photos scroll
+       through the middle. Phones: a plain stacked block. Padding everywhere = the page gutter. -->
+  {buy && product && (
+    <section id="buy" class="relative bg-background lg:h-[calc(var(--n)*(100svh-var(--header-h)))]" style={`--n:${Math.max(1, product.gallery.length)}`} aria-labelledby="buy-title">
+      <div data-buy-content class="flex flex-col gap-(--gutter) p-(--gutter) lg:sticky lg:top-(--header-h) lg:grid lg:h-[calc(100svh-var(--header-h))] lg:grid-rows-[minmax(0,1fr)] lg:[&>*]:min-h-0 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-(--gutter)">
+        <!-- left: tagline on top, long description pinned to the bottom -->
+        <div class="order-1 flex flex-col gap-6">
+          <h2 id="buy-title" class="text-h2">{product.name}</h2>
+          {product.descriptionHtml && <div class="prose-site max-w-[44ch] text-muted-foreground" set:html={product.descriptionHtml} />}
+          <div class="mt-4">
+            {buy.title && <h3 class="text-base font-normal text-muted-foreground">{buy.title}</h3>}
+            <p class="mt-3 font-display text-h2 font-semibold leading-none">{product.fromPrice ? `From ${product.price}` : product.price !== product.maxPrice ? `${product.price} – ${product.maxPrice}` : product.price}</p>
+          </div>
+        </div>
+        <!-- middle: photo window; the track slides up with the scroll (desktop) / swipes (phone) -->
+        <div class="order-2 lg:h-full">
+          <div data-showcase-window class="flex aspect-[3/4] w-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] lg:h-full lg:w-auto lg:snap-none lg:overflow-hidden">
+            <div data-showcase-track class="flex h-full w-full shrink-0 lg:w-auto lg:flex-col lg:gap-[10px] lg:will-change-transform">
+              {product.gallery.map((url, i) => (
+                <a href={PRODUCT_URL} tabindex="-1" aria-hidden="true" class="block aspect-[3/4] h-full shrink-0 snap-center overflow-hidden bg-secondary max-lg:w-full">
+                  <Media src={url} alt="" ratio={1.3333} sizes="(min-width: 1024px) 40vw, 100vw" eager={i === 0} />
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+        <!-- right: name on top, purchase controls pinned to the bottom -->
+        <div class="order-3 flex flex-col gap-(--gutter)">
+          <BuyPanel client:load initial={product} productUrl={PRODUCT_URL} />
+        </div>
+      </div>
+    </section>
+  )}
+  {buy && product && <BuyPill href={PRODUCT_URL} slug={LAUNCH_PRODUCT_SLUG} name={product.name} price={product.fromPrice ? `From ${product.price}` : product.price !== product.maxPrice ? `${product.price} – ${product.maxPrice}` : product.price} image={product.imageUrl} />}
+</SiteLayout>
+
+<script>
+  // Hero parallax: inner layer drifts down at 0.5x the scroll, so the hero lags the next block.
+  // Statement: the lead paragraph is painted in word by word, left to right in reading order, as
+  // it scrolls through the screen. Words are inline (the paragraph still wraps as normal text).
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const hero = document.querySelector<HTMLElement>("[data-hero]");
+  const inner = hero?.querySelector<HTMLElement>("[data-hero-inner]");
+  const lead = document.querySelector<HTMLElement>("[data-reveal]");
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
+  const ease = (t: number) => t * t * (3 - 2 * t);
+  let words: HTMLElement[] = [];
+
+  if (lead && !still) {
+    const text = (lead.textContent ?? "").trim();
+    lead.textContent = "";
+    lead.setAttribute("aria-label", text);
+    words = text.split(/\s+/).map((w, i, all) => {
+      const el = document.createElement("span");
+      el.textContent = w;
+      el.setAttribute("aria-hidden", "true");
+      el.style.transition = "opacity 150ms ease-out";
+      lead.appendChild(el);
+      if (i < all.length - 1) lead.appendChild(document.createTextNode(" "));
+      return el;
+    });
+  }
+
+  // bands that lag the scroll while the next (z-10, pulled-up) band slides over them
+  const lagPairs: [HTMLElement, HTMLElement][] = [];
+  for (const [secSel, innerSel] of [["#features", "[data-features-inner]"], ["[data-reviews]", "[data-lag]"]] as const) {
+    const sec = document.querySelector<HTMLElement>(secSel), inner = sec?.querySelector<HTMLElement>(innerSel);
+    if (sec && inner) lagPairs.push([sec, inner]);
+  }
+  const zooms = [...document.querySelectorAll<HTMLElement>("[data-zoom]")];
+
+  const desktop = matchMedia("(min-width: 1024px)");
+
+  function frame() {
+    const y = window.scrollY;
+    const vh0 = window.innerHeight;
+    // Features lag the scroll (15%) once the band is in the upper part of the screen; the black band
+    // after it (z-10, pulled up over its padding) slides over it.
+    for (const [sec, inner] of lagPairs) {
+      const fr = sec.getBoundingClientRect();
+      const lag = Math.max(0, vh0 * 0.3 - fr.top) * 0.15;
+      inner.style.transform = desktop.matches && lag > 0 && fr.bottom > -200 ? `translate3d(0, ${lag}px, 0)` : "";
+    }
+    // Pictures marked data-zoom grow from a little smaller (data-zoom-from, default 0.88) to their full
+    // size while they scroll into view.
+    for (const zoom of zooms) {
+      const zr = zoom.parentElement!.getBoundingClientRect();
+      const from = parseFloat(zoom.dataset.zoomFrom ?? "0.88");
+      const k = ease(clamp((vh0 * 0.95 - zr.top) / (vh0 * 0.6)));
+      zoom.style.transform = `scale(${from + (1 - from) * k})`;
+    }
+    if (inner && hero) inner.style.transform = desktop.matches && y < hero.offsetHeight + 200 ? `translate3d(0, ${y * 0.5}px, 0)` : "";
+    if (lead && words.length) {
+      const r = lead.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // 0 when the paragraph's top reaches 85% of the screen, 1 when its bottom reaches 35%
+      const p = clamp((vh * 0.85 - r.top) / (vh * 0.5 + r.height));
+      const soft = 3; // words in the fading leading edge
+      const at = p * (words.length + soft) - soft;
+      words.forEach((w, i) => { w.style.opacity = String(0.12 + 0.88 * clamp((at - i) / soft + 1)); });
+    }
+  }
+
+  if (!still) {
+    frame();
+    let raf = 0;
+    addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; frame(); }); }, { passive: true });
+    addEventListener("resize", frame);
+  }
+</script>

@@ -1,0 +1,147 @@
+---
+// Site chrome for every page: header, footer, cart. Kept from the kit contract:
+//   - <slot name="seo-tags" /> in <head> (the product page's owner-editable SEO, incl. <title>)
+//   - the global.css import (Tailwind + the tokens every shipped component reads)
+//   - one <CartButton> in the header and one <CartDrawer> per page (client:only — browser state)
+// No category links: this site sells one product and has no categories by design (see
+// the template README). Header CTA = the site's one action, "Buy Now".
+import CartButton from "../components/storefront/CartButton";
+import CartDrawer from "../components/storefront/CartDrawer";
+import MobileNav from "../components/MobileNav";
+import NewsletterForm from "../components/NewsletterForm";
+import { getSections, getLegalPages, brandOf, navOf } from "../lib/content";
+import { NEWSLETTER_FORM_NAME, PRODUCT_URL } from "../lib/site";
+import { listForms } from "../wix/forms/forms";
+import "../styles/global.css";
+
+interface Props {
+  /** Page title; omit on the home page to show just the business name. */
+  title?: string;
+  description?: string;
+  /** The product page IS the buy surface — the header's Buy Now would point at itself there. */
+  hideHeaderCta?: boolean;
+  /** The page renders the phone buy bar (product page): reserve its height after the footer. */
+  buyBar?: boolean;
+}
+const { title, description, hideHeaderCta = false, buyBar = false } = Astro.props;
+
+const [sections, legal, newsletterFormId] = await Promise.all([
+  getSections(),
+  getLegalPages(),
+  listForms()
+    .then((forms) => forms.find((f) => f.name === NEWSLETTER_FORM_NAME)?.id ?? null)
+    .catch((err) => {
+      console.error("Newsletter form lookup failed", err);
+      return null;
+    }),
+]);
+const footer = sections.footer;
+const newsletter = sections.newsletter;
+const buyLabel = sections.hero?.ctaLabel || "Buy Now";
+const brand = brandOf(sections);
+const navLinks = navOf(sections);
+const pageTitle = title ? `${title} | ${brand}` : brand;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {!Astro.slots.has("seo-tags") && <title>{pageTitle}</title>}
+    {description && <meta name="description" content={description} />}
+    <slot name="seo-tags" />
+  </head>
+  <body class="min-h-svh">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:bg-background focus:px-4 focus:py-3">Skip to content</a>
+
+    <header class="sticky top-0 z-40 bg-background shadow-[0_1px_0_var(--color-border)]">
+      <div class="wrap grid h-(--header-h) grid-cols-[1fr_auto_1fr] items-center gap-4">
+        <div class="flex items-center">
+          <div class="lg:hidden"><MobileNav client:load links={navLinks} buyHref={hideHeaderCta ? "#purchase" : PRODUCT_URL} buyLabel={buyLabel} /></div>
+          <nav aria-label="Main" class="-ml-4 hidden items-center gap-1 lg:flex">
+            {navLinks.filter((l) => l.href !== PRODUCT_URL).map((l) => <a href={l.href} class="nav-link" data-nav>{l.label}</a>)}
+          </nav>
+        </div>
+        <a href="/" class="inline-flex items-center py-2.5 font-display text-base font-bold tracking-tight text-foreground no-underline transition-opacity hover:opacity-60">{brand}</a>
+        <div class="flex items-center justify-end gap-2">
+          {!hideHeaderCta && <a href={PRODUCT_URL} class="btn btn-primary hidden !min-h-0 h-[calc(var(--header-h)-20px)] !px-4 text-sm sm:inline-flex">{buyLabel}</a>}
+          <div class="-mr-[11px]"><CartButton client:only="react" /></div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="bg-secondary">
+      <div class="wrap section grid gap-16 lg:grid-cols-[minmax(0,1fr)_var(--photo-w)_minmax(0,1fr)] lg:gap-x-0">
+        <div>
+          <a href="/" class="inline-flex min-h-11 items-center font-display text-h3 font-bold tracking-tight text-foreground no-underline transition-opacity hover:opacity-60">{brand}</a>
+          {footer?.title && <p class="mt-6 max-w-[28ch] text-lead leading-snug">{footer.title}</p>}
+        </div>
+        {newsletter && newsletterFormId && (
+          <section class="lg:col-start-3" aria-labelledby="nl-title">
+            <h2 id="nl-title" class="text-h2">{newsletter.title}</h2>
+            {newsletter.body && <p class="mt-2 text-muted-foreground">{newsletter.body}</p>}
+            <div class="mt-6"><NewsletterForm client:load formId={newsletterFormId} /></div>
+          </section>
+        )}
+      </div>
+      <div class="wrap grid gap-10 pb-(--section-y) lg:grid-cols-[minmax(0,1fr)_var(--photo-w)_minmax(0,1fr)] lg:gap-x-0">
+        <div class="grid gap-10 sm:grid-cols-2 lg:pr-(--gutter)">
+        <nav aria-label="Footer">
+          <ul class="flex flex-col">
+            {navLinks.map((l) => <li><a href={l.href} data-nav class="inline-flex min-h-11 items-center text-foreground no-underline transition-opacity hover:opacity-60">{l.label}</a></li>)}
+          </ul>
+        </nav>
+        {legal.length > 0 && (
+          <nav aria-label="Legal">
+            <ul class="flex flex-col">
+              {legal.map((p) => <li><a href={`/policies/${p.slug}`} class="inline-flex min-h-11 items-center text-foreground no-underline transition-opacity hover:opacity-60">{p.title}</a></li>)}
+            </ul>
+          </nav>
+        )}
+        </div>
+        {footer && (
+          <address class="not-italic text-muted-foreground lg:col-start-3">
+            {footer.body && <p>{footer.body}</p>}
+            {footer.bodySecondary && <p class="mt-2">{footer.bodySecondary}</p>}
+          </address>
+        )}
+      </div>
+      {footer?.kicker && (
+        <div class="wrap border-t border-border py-6 text-xs text-muted-foreground">{footer.kicker}</div>
+      )}
+    </footer>
+    {buyBar && <div aria-hidden="true" class="h-[calc(4.5rem+env(safe-area-inset-bottom))] bg-secondary md:hidden"></div>}
+    <CartDrawer client:only="react" />
+    <script>
+      // Menu "current" state: the link for this page (product) or, on the home page, the section on screen
+      // gets aria-current — styled differently from hover and from the pressed (:active) state.
+      const update = () => {
+        const onHome = location.pathname === "/";
+        const probe = window.innerHeight * 0.35;
+        let section = "";
+        if (onHome) {
+          for (const id of ["about", "features", "technology"]) {
+            const r = document.getElementById(id)?.getBoundingClientRect();
+            if (r && r.top <= probe && r.bottom > probe) section = id;
+          }
+        }
+        document.querySelectorAll<HTMLAnchorElement>("a[data-nav]").forEach((a) => {
+          const u = new URL(a.getAttribute("href") ?? "", location.origin);
+          const on = u.hash ? onHome && u.hash === `#${section}` : u.pathname !== "/" && u.pathname === location.pathname;
+          if (on) a.setAttribute("aria-current", u.hash ? "location" : "page");
+          else a.removeAttribute("aria-current");
+        });
+      };
+      addEventListener("scroll", update, { passive: true });
+      addEventListener("resize", update);
+      addEventListener("hashchange", update);
+      new MutationObserver(update).observe(document.body, { childList: true }); // the phone menu mounts on open
+      update();
+    </script>
+  </body>
+</html>

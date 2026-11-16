@@ -1,0 +1,6 @@
+---
+// A one-product site has no catalog to browse: /shop (the URL shoppers and Wix's own
+// "Continue shopping" links reach for) goes straight to the product.
+import { PRODUCT_URL } from "../lib/site";
+return Astro.redirect(PRODUCT_URL, 302);
+---

@@ -1,0 +1,264 @@
+@import url('https://fonts.googleapis.com/css2?family=Wix+Madefor+Display:wght@500;600;700&family=Wix+Madefor+Text:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+/* ─── THE design system ─────────────────────────────────────────────────────────────────
+   Every colour, type size, radius, spacing tier and motion value on the site is decided
+   HERE — shipped components (cart drawer, option picker) and our own surfaces both read
+   these tokens through Tailwind utilities (bg-primary, text-muted-foreground, text-display,
+   rounded-control, py-(--section-y) …). Change a token, everything follows.
+
+   Direction: a non-branded product-launch wireframe. Greys only, ink as the single
+   emphasis colour; the cloning user brings the brand. Section rhythm comes from four
+   neutral BANDS (background → secondary → muted → inverse), the wireframe stand-in for a
+   brand's alternating colour fields. Contrast (WCAG): foreground/background 18:1,
+   muted-foreground on background 6.7:1 and on muted 5.3:1, inverse-muted on inverse 7.9:1. */
+@theme {
+  /* ── colour ── */
+  --color-background: #ffffff;
+  --color-foreground: #161616;
+  --color-primary: #161616;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f2f2f2;            /* light band, quiet control fills */
+  --color-secondary-foreground: #141414;
+  --color-muted: #f2f2f2;                /* same single grey as secondary: the site has one grey band colour */
+  --color-muted-foreground: #5c5c5c;
+  --color-inverse: #161616;              /* dark band (technology, footer base) */
+  --color-inverse-foreground: #f4f4f2;
+  --color-inverse-muted: #b3b3ae;
+  --color-border: #dbdbdb;               /* hairlines and form-field edges only */
+  --color-destructive: #b42318;          /* 6.1:1 on white */
+
+  /* ── shape ── wireframe media is square-edged; controls are pills (the reference's CTA
+     shape, and the one shape a cloning brand most often keeps or swaps wholesale). */
+  --radius-lg: 0px;
+  --radius-md: 0px;
+  --radius-sm: 0px;
+  --radius-control: 9999px;
+  --radius-field: 6px;                   /* inputs, header controls */
+
+  /* ── type ── display face for headings, text face for everything read. The scale has real
+     steps (no two within 4px), fluid only where a heading must hold a phone and a 1440 fold. */
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-display: 'Wix Madefor Text', Arial, Helvetica, sans-serif;
+  --text-xs: 0.875rem;                                  /* 14 — the smallest text on the site (accessibility minimum) */
+  --text-sm: 0.875rem;                                  /* 14 — labels, kickers */
+  --text-base: 0.9375rem;                                   /* 16 — body */
+  --text-lg: 1.125rem;                                  /* 19 — large body */
+  --text-lead: clamp(1.375rem, 1.1rem + 1.1vw, 2rem);   /* 22→32 — statement paragraphs, quotes */
+  --text-h3: 1.25rem;                                   /* 20 */
+  --text-h2: clamp(1.625rem, 1.2rem + 1.6vw, 2.375rem); /* 26→38 */
+  --text-display: clamp(2.5rem, 1.4rem + 4.4vw, 4.75rem); /* 40→76 — hero + closing CTA */
+
+  /* ── motion ── one easing, two durations, everywhere. */
+  --ease-site: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ── spacing tiers ── declared once; the section tier and gutter CHANGE at each breakpoint
+   so the vertical rhythm is tuned per width rather than one value stretched across all.
+     8   label → control            (gap-2)
+     16  control → control           (gap-4)
+     24  group → group               (gap-6)
+     40  last decision → next block  (gap-10 / mt-10)
+     section: 64 phone / 96 tablet / 128 desktop
+     gutter:  20 phone / 32 tablet / 48 desktop; content stops at 1440, wider adds gutter. */
+:root {
+  --section-y: var(--gutter);    /* block padding top/bottom = side padding */
+  --gutter: 1.25rem;
+  --header-h: 3.25rem;
+  --content-max: 90rem;
+  /* width of the product photo in the buy showcase (3:4 of the pinned frame's inner height) — the footer
+     columns line up to it */
+  --photo-w: calc((100svh - var(--header-h) - 2 * var(--gutter)) * 0.75);
+}
+@media (min-width: 768px) { :root { --gutter: 2rem; } }
+@media (min-width: 1024px) { :root { --gutter: 3rem; } }
+
+@layer base {
+  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 1rem); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; text-wrap: balance; }
+  h3 { line-height: 1.3; letter-spacing: -0.005em; }
+  p { text-wrap: pretty; }
+  :focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 3px; }
+  .bg-inverse :focus-visible { outline-color: var(--color-inverse-foreground); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+  }
+}
+
+@layer components {
+  /* The page container: the gutter on both sides, on every screen width. */
+  .wrap { width: 100%; margin-inline: auto; padding-inline: var(--gutter); }   /* no max-width: side padding stays the gutter (48px) on any screen */
+  .section { padding-block: var(--section-y); }
+
+  /* Kicker: the small label above a section heading. Carries information (CONTENT.md), never decoration. */
+  .kicker { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted-foreground); }
+
+  /* The one button system. Primary = filled ink; secondary = quiet fill (no outline — a border is
+     the loudest mark in a greyscale page). 48px tall: above the 44px tap floor with room to breathe. */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-height: 3rem; padding-inline: 1.5rem; border-radius: var(--radius-control);
+    font-size: var(--text-base); font-weight: 400; line-height: 1; white-space: nowrap; text-decoration: none;
+    transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site), opacity 160ms var(--ease-site);
+  }
+  .btn-primary { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary:disabled { opacity: 1; background: var(--color-muted); color: var(--color-muted-foreground); }
+  .btn-secondary { background: var(--color-secondary); color: var(--color-foreground); }
+  .bg-inverse .btn-primary { background: var(--color-inverse-foreground); color: var(--color-inverse); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+
+
+
+  /* ── header controls (reference: 52px bar, 32px-high items, 6px radius) ── */
+  .nav-link {
+    display: inline-flex; align-items: center; height: calc(var(--header-h) - 20px); padding-inline: 1rem;
+    border-radius: 9999px; font-size: var(--text-base); font-weight: 400; color: var(--color-foreground);
+    text-decoration: none; background: transparent; transition: background-color 160ms var(--ease-site);
+  }
+  .icon-btn {
+    position: relative; display: inline-grid; place-items: center; width: 2.75rem; height: 2.75rem; border: 0;
+    border-radius: 9999px; background: transparent; color: var(--color-foreground); cursor: pointer;
+    transition: background-color 160ms var(--ease-site);
+  }
+  .icon-btn svg { width: 22px; height: 22px; }
+  header .icon-btn { height: calc(var(--header-h) - 20px); border-radius: 9999px; }
+  .badge {
+    position: absolute; top: 2px; right: 2px; min-width: 18px; height: 18px; padding-inline: 5px; border-radius: 9999px;
+    background: var(--color-primary); color: var(--color-primary-foreground); font-size: 12px; font-weight: 600; line-height: 18px; text-align: center;
+  }
+
+  /* ── form field: default, hover, focus, invalid, disabled (reference .input) ── */
+  .input {
+    width: 100%; min-height: 3rem; padding-inline: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-field);
+    background: var(--color-background); color: var(--color-foreground); font-size: var(--text-base);
+    transition: border-color 160ms var(--ease-site);
+  }
+  .input::placeholder { color: #757575; opacity: 1; }
+  .input:hover { border-color: var(--color-muted-foreground); }
+  .input:focus, .input:focus-visible { outline: none; border-color: var(--color-foreground); box-shadow: none; }
+  .input[aria-invalid="true"] { border-color: var(--color-foreground); }
+  .input:disabled, .input[readonly] { opacity: 0.6; cursor: not-allowed; }
+  .field-label { font-size: var(--text-sm); font-weight: 500; }
+  .field-hint { font-size: var(--text-sm); color: var(--color-muted-foreground); }
+  .field-error { font-size: var(--text-sm); color: var(--color-foreground); }
+  .field-error::before { content: "— "; }
+  .check { display: flex; gap: 0.5rem; align-items: flex-start; min-height: 2.75rem; padding-block: 10px; cursor: pointer; font-size: var(--text-sm); }
+  .check input { width: 20px; height: 20px; margin: 0; flex: 0 0 auto; accent-color: var(--color-foreground); }
+  /* inline sign-up: label above, input and button on one aligned row, hint/error under the input */
+  .form-inline { display: grid; grid-auto-flow: row dense; grid-template-columns: 1fr auto; column-gap: 0.5rem; row-gap: 0.5rem; align-items: start; }
+  .form-inline > .field { display: contents; }
+  .form-inline .field-label { grid-column: 1; }
+  .form-inline .input { grid-column: 1; grid-row: 2; }
+  .form-inline .form-submit { grid-column: 2; grid-row: 2; }
+  .form-inline--nolabel .input, .form-inline--nolabel .form-submit { grid-row: 1; }
+  .form-inline .field-hint, .form-inline .field-error { grid-row: 3; }
+  .form-inline .field-hint, .form-inline .field-error { grid-column: 1 / -1; }
+  .form-done { padding: 1.5rem; background: var(--color-background); border-radius: 8px; font-weight: 500; }
+
+  /* ── overlay panels: bag (reference .scrim / .panel) ── */
+  .scrim { position: fixed; inset: 0; z-index: 50; background: rgb(22 22 22 / 0.42); opacity: 0; transition: opacity 260ms var(--ease-site); }
+  .scrim[data-open="true"] { opacity: 1; }
+  .panel {
+    position: fixed; z-index: 51; top: 0; right: 0; bottom: 0; width: min(440px, 100%); display: flex; flex-direction: column;
+    background: var(--color-background); color: var(--color-foreground); transform: translateX(100%);
+    transition: transform 260ms var(--ease-site); outline: none;
+  }
+  .panel[data-open="true"] { transform: none; }
+  .panel__head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: var(--header-h); padding: 0 0.5rem 0 var(--gutter); flex: 0 0 auto; }
+  .panel__title { font-family: var(--font-display); font-size: var(--text-h3); font-weight: 500; }
+  .panel__body { flex: 1 1 0%; overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--gutter) 1.5rem; }
+  .panel__foot { flex: 0 0 auto; display: grid; gap: 1rem; padding: 1.5rem var(--gutter) calc(1.5rem + env(safe-area-inset-bottom)); background: var(--color-background); box-shadow: 0 -1px 0 var(--color-border); }
+  @media (min-width: 768px) { .panel__head, .panel__body, .panel__foot { padding-inline: 2.5rem; } .panel__head { padding-right: 1rem; } }
+  .link { color: var(--color-foreground); text-decoration: underline 1px; text-underline-offset: 0.2em; background: none; border: 0; padding: 0; cursor: pointer; }
+  .link:hover { text-decoration-thickness: 2px; }
+  .cart-empty { display: grid; gap: 1rem; justify-items: start; padding-top: 1.5rem; }
+  .cart-lines { display: grid; gap: 1.5rem; padding-top: 0.5rem; }
+  .cart-lines[aria-busy="true"] { opacity: 0.7; transition: opacity 160ms var(--ease-site); }
+  .cart-line { display: grid; grid-template-columns: 80px 1fr; gap: 1rem; }
+  .cart-line__media { width: 80px; aspect-ratio: 3 / 4; background: var(--color-secondary); overflow: hidden; }
+  .cart-line__media img { width: 100%; height: 100%; object-fit: cover; }
+  .cart-line__info { display: grid; gap: 0.25rem; align-content: start; min-width: 0; }
+  .cart-line__top { display: flex; justify-content: space-between; gap: 1rem; }
+  .cart-line__name { font-weight: 500; overflow-wrap: anywhere; }
+  .cart-line__actions { display: flex; align-items: center; gap: 1.5rem; margin-top: 0.5rem; }
+  .cart-line__remove { padding-block: 10px; font-size: var(--text-sm); }
+  .cart-sum { display: flex; justify-content: space-between; gap: 1rem; font-weight: 500; }
+  .stepper { display: inline-flex; align-items: center; height: 2.75rem; border-radius: 9999px; background: var(--color-secondary); transition: box-shadow 160ms var(--ease-site); }
+  .stepper button { width: 2.75rem; height: 2.75rem; display: grid; place-items: center; border: 0; background: transparent; border-radius: 9999px; cursor: pointer; }
+  .stepper button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .stepper span { min-width: 28px; text-align: center; font-variant-numeric: tabular-nums; font-size: var(--text-sm); font-weight: 500; }
+
+  /* Rich text from the CMS / catalog (legal pages, product description, info sections). */
+  .prose-site { max-width: 68ch; }
+  .prose-site > * + * { margin-top: 1em; }
+  .prose-site h2 { font-size: var(--text-h3); margin-top: 2.25em; }
+  .prose-site h2 + * { margin-top: 0.75em; }
+  .prose-site ul { list-style: disc; padding-left: 1.25em; }
+  .prose-site li + li { margin-top: 0.4em; }
+  .prose-site a { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* PDP decision block: pinned under the header on md+ — but only on windows tall enough to show
+     all of it (≈620px of content + header); shorter windows get it static rather than a pinned
+     block whose buy button sits below the fold. */
+  @media (min-width: 768px) and (min-height: 760px) {
+    .pdp-sticky { position: sticky; top: calc(var(--header-h) + 1.5rem); }
+  }
+
+  /* Horizontal rail (phone): snaps, peeks the next card, and pulls the track out to the viewport
+     edge while the first card stays on the page gutter. */
+  .rail {
+    display: grid; grid-auto-flow: column; gap: 1rem;
+    overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+    margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail > * { scroll-snap-align: start; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+}
+
+/* Unlayered on purpose: must beat Tailwind utilities (bg-primary …) on the same elements. */
+/* Hover (every button on the site): fill drops out, ink text, 1px ink ring. Covers .btn and the
+   hand-built buttons/links in the storefront components (all rounded-control). */
+.btn:hover:not(:disabled),
+.icon-btn:hover:not(:disabled),
+.nav-link:hover,
+.stepper:hover,
+button.rounded-control:not(.btn-outline):hover:not(:disabled),
+a.rounded-control:not(.btn-outline):hover {
+  background-color: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground);
+}
+.bg-inverse .btn:hover:not(:disabled) { color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+.stepper:hover button:hover:not(:disabled) { background-color: transparent; }
+.bg-inverse .icon-btn:hover:not(:disabled) { color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+/* outlined round arrows (reviews): hover = filled ink, white icon */
+.review-arrow { transition: background-color 200ms var(--ease-site), color 200ms var(--ease-site), box-shadow 200ms var(--ease-site); }
+.review-arrow:hover:not(:disabled) { background-color: var(--color-foreground); color: var(--color-background); box-shadow: none; }
+
+/* Stroked buttons (outline) fill on hover; text buttons / links lose opacity (every button has a hover state). */
+.btn-outline { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site); }
+.btn-outline:hover:not(:disabled) { background-color: var(--color-foreground); color: var(--color-background); }
+.link, .prose-site a { transition: opacity 160ms var(--ease-site); }
+.link:hover:not(:disabled), .prose-site a:hover { opacity: 0.6; }
+
+/* Menu states: current = filled grey pill (links elsewhere: underlined); hover = ring (see above); pressed = filled ink. */
+.nav-link[aria-current] { background-color: var(--color-secondary); }
+.nav-link[aria-current]:hover { background-color: var(--color-secondary); }
+.nav-link:active, .nav-link[aria-current]:active { background-color: var(--color-foreground); color: var(--color-background); box-shadow: none; }
+a[data-nav]:not(.nav-link)[aria-current] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.3em; }
+a[data-nav]:not(.nav-link):active { opacity: 0.4; }

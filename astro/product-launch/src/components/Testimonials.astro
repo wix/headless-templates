@@ -1,0 +1,98 @@
+---
+// Reviews: one centred review at a time — five stars, the quote, the name — with outlined arrow
+// buttons at the sides and a dot per review underneath. The FIRST review's text is painted in word
+// by word as the section scrolls into view (like the statement block); the others show at once.
+// Text and names come from the CMS Testimonials collection (quote + body, name).
+import type { CmsItem } from "../wix/cms/types";
+
+interface Props { heading?: string; items: CmsItem[] }
+const { heading, items } = Astro.props;
+const text = (t: CmsItem) => [t.quote, t.body].filter(Boolean).join(" ");
+---
+<section class="relative bg-secondary pb-(--section-y) pt-(--section-y) lg:pb-[calc(var(--section-y)+6rem)]" aria-roledescription="carousel" aria-label={heading || "Reviews"} data-reviews>
+  <div data-lag>
+  <div class="relative mx-auto flex min-h-[60svh] items-center">
+    <button type="button" data-prev aria-label="Previous review" class="icon-btn review-arrow absolute left-(--gutter) top-1/2 z-10 -translate-y-1/2 border border-foreground max-md:top-auto max-md:-bottom-14 max-md:translate-y-0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m0 0 6-6m-6 6 6 6" /></svg>
+    </button>
+    <button type="button" data-next aria-label="Next review" class="icon-btn review-arrow absolute right-(--gutter) top-1/2 z-10 -translate-y-1/2 border border-foreground max-md:top-auto max-md:-bottom-14 max-md:translate-y-0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m0 0-6-6m6 6-6 6" /></svg>
+    </button>
+    <div class="wrap grid w-full">
+      {items.map((t, i) => (
+        <figure data-slide class="col-start-1 row-start-1 mx-auto flex max-w-[56rem] flex-col items-center max-md:px-0 md:px-[calc(var(--gutter)+3rem)] text-center" data-active={i === 0} aria-hidden={i === 0 ? "false" : "true"} aria-roledescription="slide" aria-label={`${i + 1} of ${items.length}`}>
+          <p class="text-lg tracking-[0.3em]" aria-label="5 out of 5 stars">★★★★★</p>
+          <blockquote class="mt-6">
+            <p data-quote={i === 0 ? "first" : undefined} class="font-display text-lead font-medium leading-snug">{text(t)}</p>
+          </blockquote>
+          <figcaption class="mt-8 text-sm">{t.name}</figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+  <div class="mt-8 flex justify-center gap-2" role="tablist" aria-label="Choose a review">
+    {items.map((_, i) => <button type="button" data-dot={i} role="tab" aria-label={`Review ${i + 1}`} aria-selected={i === 0} class="h-2 w-2 rounded-full bg-foreground/20 transition-colors hover:bg-foreground/50 aria-selected:bg-foreground"></button>)}
+  </div>
+  </div>
+</section>
+
+<style>
+  /* a gentle hand-off: the old review drifts 24px away and fades while the new one drifts in */
+  [data-slide] { transition: opacity 450ms ease, transform 450ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+  [data-slide][data-active="false"] { opacity: 0; transform: translateX(var(--from, 0px)); pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { [data-slide] { transition: none; } }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-reviews]").forEach((root) => {
+    const slides = [...root.querySelectorAll<HTMLElement>("[data-slide]")];
+    const dots = [...root.querySelectorAll<HTMLElement>("[data-dot]")];
+    let cur = 0;
+    const show = (n: number, dir: number) => {
+      const next = (n + slides.length) % slides.length;
+      if (next === cur) return;
+      const incoming = slides[next], outgoing = slides[cur];
+      // park the incoming slide on its entry side without animating, then let both transition
+      incoming.style.transition = "none";
+      incoming.style.setProperty("--from", `${dir * 24}px`);
+      void incoming.offsetWidth;
+      incoming.style.transition = "";
+      outgoing.style.setProperty("--from", `${dir * -24}px`);
+      cur = next;
+      slides.forEach((s, i) => { s.dataset.active = String(i === cur); s.setAttribute("aria-hidden", String(i !== cur)); });
+      dots.forEach((d, i) => d.setAttribute("aria-selected", String(i === cur)));
+    };
+    root.querySelector("[data-prev]")?.addEventListener("click", () => show(cur - 1, -1));
+    root.querySelector("[data-next]")?.addEventListener("click", () => show(cur + 1, 1));
+    dots.forEach((d, i) => d.addEventListener("click", () => show(i, i > cur ? 1 : -1)));
+
+    // First review: words painted in on scroll (not with reduced motion).
+    const q = root.querySelector<HTMLElement>("[data-quote='first']");
+    if (!q || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const full = (q.textContent ?? "").trim();
+    q.textContent = "";
+    q.setAttribute("aria-label", full);
+    const words = full.split(/\s+/).map((w, i, all) => {
+      const el = document.createElement("span");
+      el.textContent = w;
+      el.setAttribute("aria-hidden", "true");
+      el.style.transition = "opacity 150ms ease-out";
+      q.appendChild(el);
+      if (i < all.length - 1) q.appendChild(document.createTextNode(" "));
+      return el;
+    });
+    const clamp = (v: number) => Math.min(1, Math.max(0, v));
+    const frame = () => {
+      const r = q.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const p = clamp((vh * 0.85 - r.top) / (vh * 0.5 + r.height));
+      const soft = 3;
+      const at = p * (words.length + soft) - soft;
+      words.forEach((w, i) => { w.style.opacity = String(0.12 + 0.88 * clamp((at - i) / soft + 1)); });
+    };
+    let raf = 0;
+    addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; frame(); }); }, { passive: true });
+    addEventListener("resize", frame);
+    frame();
+  });
+</script>
