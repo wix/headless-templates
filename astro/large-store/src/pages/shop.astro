@@ -1,0 +1,33 @@
+---
+// All products — and search results (?q=, from the header form). The heading is deliberately short so a
+// full product card is in the first screen at 390 and on a short desktop window. Departments are one
+// chip row (a rail on phone), so every department is one tap from here.
+import ShopView from "../components/ShopView";
+import SubcategoryTiles from "../components/SubcategoryTiles.astro";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { getTree } from "../lib/taxonomy";
+import { getBanners, getSections } from "../lib/content";
+import { fetchProducts } from "../wix/storefront/catalog";
+import type { ProductSummary } from "../wix/storefront/types";
+
+const banners = getBanners(await getSections());
+const searching = Astro.url.searchParams.has("q");
+const tree = await getTree();
+let products: ProductSummary[] = [];
+try {
+  // With a query, let the island run it (skeletons, then results) rather than flash the unfiltered first page.
+  if (!searching) products = await fetchProducts({ limit: 24 });
+} catch (err) {
+  console.error("shop: catalog read failed", err);// Guarded: an unhandled SSR throw truncates the response mid-stream; the island renders its own error state.
+}
+---
+<SiteLayout title={searching ? "Search" : "All Products"} description="Browse every product.">
+  <div class="wrap pb-(--section-y) pt-6 lg:pt-10">
+    <h1 class="text-center text-h2">{searching ? "Search" : "All Products"}</h1>
+    <SubcategoryTiles class="mb-8 mt-5 lg:mb-10 lg:mt-6" label="Departments" tiles={[
+      { label: "All", href: "/shop", imageUrl: products[0]?.imageUrl || tree.departments[0]?.imageUrl, current: !searching },
+      ...tree.departments.map((d) => ({ label: d.name, href: `/category/${d.slug}`, imageUrl: d.imageUrl })),
+    ]} />
+    <ShopView client:load initialProducts={searching ? undefined : products} initialCategories={tree.departments} banners={banners.grid} />
+  </div>
+</SiteLayout>

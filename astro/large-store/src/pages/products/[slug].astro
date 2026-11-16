@@ -1,0 +1,60 @@
+---
+// A Wix ITEM PAGE: wixMetadata + <SEO.Tags> are what let the site owner edit this page's title /
+// description / OG in the dashboard and register the route in the sitemap. All three SEO pieces are
+// required. Below the island: "More from <category>" — a rail of the product's own main category.
+import ProductDetailView from "../../components/ProductDetailView";
+import { ProductRail } from "../../components/Rails";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { fetchProductBySlug, fetchProductsByCategory, searchCatalog } from "../../wix/storefront/catalog";
+import type { ProductSummary } from "../../wix/storefront/types";
+import { WIX_APPS } from "@wix/essentials";
+import { SEO } from "@wix/seo/components";
+import { loadSEOTagsServiceConfig } from "@wix/seo/services";
+import { seoTags } from "@wix/seo";
+
+export const wixMetadata = {
+  appDefId: WIX_APPS.checkoutAndOrders.id,
+  pageIdentifier: WIX_APPS.checkoutAndOrders.productPageMetadata.pageIdentifier,
+  identifiers: { slug: WIX_APPS.checkoutAndOrders.productPageMetadata.identifiers.handle },
+};
+
+const slug = Astro.params.slug!;
+// Behind Wix's proxy the request URL is the internal one — the public URL arrives on x-wix-forwarded-url.
+const forwardedUrl = Astro.request.headers.get("x-wix-forwarded-url");
+const pageUrl = forwardedUrl && URL.canParse(forwardedUrl) && /^https?:$/.test(new URL(forwardedUrl).protocol) ? forwardedUrl : Astro.url.href;
+
+let product = null;
+let seoTagsServiceConfig = null;
+try {
+  [product, seoTagsServiceConfig] = await Promise.all([
+    fetchProductBySlug(slug),
+    loadSEOTagsServiceConfig({ pageUrl, itemType: seoTags.ItemType.STORES_PRODUCT, itemData: { slug } }),
+  ]);
+} catch (err) {
+  console.error("product page: read failed", err);// Guarded: an unhandled SSR throw truncates the response mid-stream.
+}
+if (!product) return new Response(null, { status: 404 });
+
+// Related: the main category is the last breadcrumb. A product without one simply shows no rail.
+const main = product.breadcrumbs?.at(-1);
+let related: ProductSummary[] = [];
+if (main) {
+  try { related = (await fetchProductsByCategory(main.id, { limit: 9 })).filter((p) => p.id !== product!.id).slice(0, 8); } catch (err) { console.error("product page: read failed", err); /* no rail */ }
+}
+// Always at least four: top up from the rest of the catalog when the category is small.
+if (related.length < 4) {
+  try {
+    const more = (await searchCatalog({ limit: 12 })).products.filter((p) => p.id !== product!.id && !related.some((r) => r.id === p.id));
+    related = [...related, ...more].slice(0, Math.max(4, related.length));
+  } catch (err) { console.error("product page: read failed", err); /* keep what we have */ }
+}
+---
+<SiteLayout title={product.name} buyBar>
+  <SEO.Tags seoTagsServiceConfig={seoTagsServiceConfig} slot="seo-tags" />
+  <ProductDetailView client:load initial={product} />
+  {related.length > 0 && (
+    <section class="wrap pb-(--section-y) pt-[calc(var(--section-y)*1.5)]">
+      <ProductRail client:load four products={related} title="Related items" />
+    </section>
+  )}
+</SiteLayout>

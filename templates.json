@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "large-store",
+      "title": "Large Commerce Wireframe (Wix Stores)",
+      "subtitle": "Fashion-dense storefront: categories, search, quick add, free-shipping cart",
+      "siteTemplateId": "cf56b0b2-5092-4c51-b145-e0e03130bb75",
+      "gitPath": "astro/large-store",
+      "vibeCompatible": false
     }
   ]
 }

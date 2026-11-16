@@ -1,0 +1,28 @@
+---
+import WixForm from "../components/WixForm";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { getSections } from "../lib/content";
+import { findFormId } from "../lib/forms";
+
+const s = await getSections();
+const contactFormId = await findFormId("Contact");
+const intro = s.contact;
+const details = ["contact-address", "contact-details", "contact-hours"].map((k) => s[k]).filter(Boolean);
+---
+<SiteLayout title={intro?.title || "Contact"}>
+  <div class="wrap section grid gap-12 lg:grid-cols-12 lg:gap-16">
+    <div class="lg:col-span-5">
+      <h1 class="text-h2">{intro?.title || "Contact"}</h1>
+      {intro?.body && <p class="mt-4 text-muted-foreground">{intro.body}</p>}
+      <dl class="mt-8 grid gap-(--card-gap) sm:grid-cols-2 lg:grid-cols-1">
+        {details.map((d) => (
+          <div class="bg-secondary p-5 lg:p-6">
+            <dt class="kicker text-muted-foreground">{d!.title}</dt>
+            <dd class="mt-2 whitespace-pre-line">{d!.body}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+    <div class="lg:col-span-6 lg:col-start-7">{contactFormId && <WixForm client:load formId={contactFormId} idPrefix="ct" thanks="Thanks for submitting!" again="Send another message" />}</div>
+  </div>
+</SiteLayout>

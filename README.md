@@ -55,6 +55,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Stores</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/large-store">Large Commerce Wireframe (Wix Stores)</a></td>
+      <td>A dense, fashion-style storefront wireframe for large catalogs: mega menu, filters, quick add, search and a free-shipping cart, using Astro and Wix Headless.</td>
+      <td></td>
+      <td>Wix Stores, Wix CMS (Wix Data), Wix Forms</td>
+    </tr>
+    <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/astro/cms-catalog">CMS</a></td>
       <td>A catalog template backed by a Wix CMS (Wix Data) collection using Astro and Wix Headless.</td>
       <td></td>
