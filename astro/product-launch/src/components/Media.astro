@@ -1,0 +1,51 @@
+---
+// The one image element for CMS and catalog media: a responsive srcset cropped to the ratio the
+// layout uses (so a replaced image never changes the composition), and an honest empty frame in
+// the same footprint when the owner removed the image. `ratio` is height / width (0.5 = 2:1).
+import { imgSrc } from "../wix/media";
+
+interface Props {
+  src?: string | null;
+  alt: string;
+  ratio: number;
+  sizes: string;
+  class?: string;
+  eager?: boolean;
+  /** Art direction: a separate phone frame + its ratio, served below 768px via <picture>. */
+  srcMobile?: string | null;
+  ratioMobile?: number;
+}
+const { src, alt, ratio, sizes, class: cls = "", eager = false, srcMobile, ratioMobile = 1 } = Astro.props;
+// Up to 2400 so a full-bleed band is sharp on a 1440 retina screen; shipped imgAttrs stops at 960.
+const widths = [480, 768, 1080, 1440, 1920, 2400];
+const url = src ? imgSrc(src, 1080, Math.round(1080 * ratio)) : "";
+// imgSrc re-issues every Wix media form (wix:image://, file id, resolved URL) through the scaler.
+const set = (v: string, r: number) => widths.map((w) => `${imgSrc(v, w, Math.round(w * r))} ${w}w`).join(", ");
+const srcset = src ? set(src, ratio) : "";
+// With a phone frame, the <img> carries the phone set and a <source> the wide one, so each
+// device downloads exactly one image (two hidden <img>s would both download).
+const mobile = src && srcMobile ? { srcset: set(srcMobile, ratioMobile), src: imgSrc(srcMobile, 1080, Math.round(1080 * ratioMobile)) } : null;
+---
+{url && mobile ? (
+  <picture class="block h-full w-full">
+    <source media="(min-width: 768px)" srcset={srcset} sizes={sizes} />
+    <img src={mobile.src} srcset={mobile.srcset} sizes={sizes} alt="" width={1080} height={Math.round(1080 * ratioMobile)}
+      loading={eager ? "eager" : "lazy"} fetchpriority={eager ? "high" : undefined} decoding="async"
+      class:list={["block h-full w-full object-cover", cls]} />
+  </picture>
+) : url ? (
+  <img
+    src={url}
+    srcset={srcset}
+    sizes={sizes}
+    alt=""
+    width={1080}
+    height={Math.round(1080 * ratio)}
+    loading={eager ? "eager" : "lazy"}
+    fetchpriority={eager ? "high" : undefined}
+    decoding="async"
+    class:list={["block h-full w-full object-cover", cls]}
+  />
+) : (
+  <div class:list={["h-full w-full bg-muted", cls]} aria-hidden="true"></div>
+)}
