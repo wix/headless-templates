@@ -1,0 +1,24 @@
+---
+// The opening of a listing or site page (category, section, tag, author, About, Contact): one centred composition — an optional eyebrow and photo,
+// the big title, the description, the post count, then the tags as pills (the current one filled).
+import type { Tag } from "../lib/blog";
+interface Props { title: string; description?: string; count?: number; tags?: Tag[]; current?: string; eyebrow?: { label: string; href: string }; photo?: string }
+const { title, description, count, tags = [], current, eyebrow, photo } = Astro.props;
+---
+<section class="page-head">
+  <div class="wrap page-head__inner">
+    {photo && <img src={photo} alt="" width="160" height="160" class="page-head__photo" />}
+    {eyebrow && <a href={eyebrow.href} class="eyebrow">{eyebrow.label}</a>}
+    <h1 class="page-head__title">{title}</h1>
+    {description && <p class="page-head__desc">{description}</p>}
+    {count !== undefined && <p class="page-head__count">{count} {count === 1 ? "post" : "posts"}</p>}
+    {tags.length > 0 && (
+      <nav aria-label="Tags">
+        <ul class="page-head__tags">
+          {tags.map((t) => <li><a href={`/tag/${t.slug}`} class="chip" aria-current={t.id === current ? "true" : undefined}>{t.label}</a></li>)}
+        </ul>
+      </nav>
+    )}
+    <slot />
+  </div>
+</section>

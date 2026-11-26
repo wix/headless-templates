@@ -1,0 +1,824 @@
+@import url('https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+/* ─── THE design system ─────────────────────────────────────────────────────────────────
+   Every colour, type size, radius, spacing tier and motion value on the site is decided
+   HERE, and every component reads these tokens through Tailwind utilities (bg-secondary,
+   text-muted-foreground, text-h2 …) or the .component classes below. Change a token,
+   everything follows. Nothing in a component repeats a value from this file.
+
+   Direction: a non-branded Wix Studio wireframe for a blog or magazine. Greys only, ink as
+   the single emphasis colour; the cloning user brings the brand. The reference template is red;
+   the wireframe keeps its structure and drops its palette.
+   Contrast (WCAG AA): foreground on background 18:1, muted-foreground on background 6.7:1 and
+   on secondary 6.1:1, inverse-muted on inverse 7.9:1, destructive on white 6.1:1. */
+@theme {
+  /* ── colour ── matched to the reference wireframe sites: ink #161616 on white, quiet greys. */
+  --color-background: #ffffff;
+  --color-foreground: #161616;
+  --color-primary: #161616;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f2f2f2;
+  --color-secondary-foreground: #161616;
+  --color-muted: #eaeaea;
+  --color-muted-foreground: #5c5c5c;
+  --color-inverse: #161616;
+  --color-inverse-foreground: #ffffff;
+  --color-inverse-muted: #b3b3ae;
+  --color-border: #dbdbdb;
+  --color-destructive: #b42318;
+
+  /* ── shape ── media square-edged; controls are pills; fields 6px. */
+  --radius-lg: 0px;
+  --radius-md: 0px;
+  --radius-sm: 0px;
+  --radius-control: 9999px;
+  --radius-field: 6px;
+  --radius-chip: 6px;
+  --radius-sheet: 12px;
+
+  /* ── type ── body Arial, headings Wix Madefor Text 500 with tight tracking. */
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-display: 'Wix Madefor Text', Arial, Helvetica, sans-serif;
+  --text-xs: 0.875rem;
+  --text-xs--line-height: calc(1 / 0.75);
+  --text-sm: 0.875rem;
+  --text-sm--line-height: calc(1.25 / 0.875);
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: calc(1.75 / 1.125);
+  --text-xl: 1.25rem;
+  --text-lead: clamp(1.375rem, 1.1rem + 1.1vw, 2rem);
+  --text-h3: 1.25rem;
+  --text-h3--line-height: 1.3;
+  --text-h2: clamp(1.625rem, 1.2rem + 1.6vw, 2.375rem);
+  --text-h2--line-height: 1.1;
+  --text-display: clamp(2.5rem, 1.4rem + 4.4vw, 4.75rem);
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.025em;
+
+  /* ── motion ── */
+  --ease-site: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ── spacing ── one step between elements: --space (fluid, 30px at 1440) for image → text, label → title → subtitle, item → item,
+   card → card, column → column, and the page gutter on every width. Small control-internal gaps (8–16px) stay inside controls;
+   sections keep their own tier: 60 phone / 78 tablet / 102 desktop. Content runs full width inside the gutter.
+   --article-max is the reading column. */
+:root {
+  /* --space: THE gap between elements (image → text, label → title → subtitle, item → item, column → column) and the page's
+     side padding. Fluid: 30px on a 1440 screen, scaling with the viewport — 20px on phones and tablets up to 768,
+     ~38px at 1920, capped at 48px on very large screens. */
+  --space: clamp(1.25rem, 0.5rem + 1.5625vw, 3rem);
+  --section-y: 3.75rem;
+  --gutter: var(--space);
+  --header-h: 3.25rem;
+  --bar-h: 2.75rem;
+  --article-max: 46rem;
+}
+@media (min-width: 768px) { :root { --section-y: 4.875rem; } }
+@media (min-width: 1024px) { :root { --section-y: 6.375rem; --header-h: 3.25rem; } }
+
+@layer base {
+  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 1rem); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 500; line-height: 1.1; letter-spacing: -0.015em; text-wrap: balance; }
+  p { text-wrap: pretty; }
+  img { max-width: 100%; }
+  :focus-visible { outline: 1px solid var(--color-foreground); outline-offset: 3px; }
+  button:focus:not(:focus-visible), a:focus:not(:focus-visible), select:focus { outline: none; }
+  input::placeholder, textarea::placeholder { color: var(--color-muted-foreground); opacity: 1; }
+  .bg-inverse :focus-visible { outline-color: var(--color-inverse-foreground); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+  }
+}
+
+@layer components {
+  /* The page container: full width, the same --space at both edges as between elements (no centred cap, so a wide screen gets
+     no empty margins). */
+  .wrap { width: 100%; margin-inline: auto; padding-inline: var(--gutter); }
+  /* The reading column: the same gutter, content capped at --article-max. */
+  .article { width: 100%; max-width: calc(var(--article-max) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+  .section { padding-block: var(--section-y); }
+
+  /* Buttons — pills. Filled ink at rest; on hover the fill drops away and a 1px ink ring remains. Outline buttons invert:
+     they fill with ink on hover. 48px tall, regular weight; a 1px press. */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-align: center;
+    min-height: 3rem; padding-inline: 1.5rem; border-radius: var(--radius-control);
+    font-size: var(--text-base); font-weight: 400; line-height: 1; white-space: nowrap; text-decoration: none;
+    transition: background-color .2s var(--ease-site), color .2s var(--ease-site), box-shadow .2s var(--ease-site), transform .3s var(--ease-site), opacity .3s var(--ease-site);
+  }
+  .btn-sm { min-height: 2.5rem; padding-inline: 1.25rem; font-size: var(--text-base); }
+  .btn-primary { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .btn-secondary, .btn-outline { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .btn:hover:not(:disabled):not([aria-disabled="true"]) { background-color: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .btn-secondary:hover:not(:disabled):not([aria-disabled="true"]), .btn-outline:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--color-foreground); color: var(--color-background); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary:disabled { opacity: 1; background: #e7e7e7; color: var(--color-muted-foreground); }
+  .bg-inverse .btn-primary { background: var(--color-inverse-foreground); color: var(--color-inverse); }
+  .bg-inverse .btn:hover:not(:disabled) { background-color: transparent; color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+  /* A text action (See all, Back, Show more): underlined, dims on hover. */
+  .link-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; min-height: 2.75rem; min-width: 2.75rem; font-size: var(--text-sm); font-weight: 400; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; transition: opacity .18s var(--ease-site); }
+  .link-btn:hover { opacity: 0.55; }
+  /* Round icon buttons (search, menu, socials): no edge at rest, an ink ring on hover. */
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; flex: none;
+    border-radius: 9999px; background: transparent; color: var(--color-foreground);
+    transition: box-shadow .16s var(--ease-site), opacity .16s var(--ease-site);
+  }
+  .icon-btn:hover:not(:disabled), .icon-btn[aria-expanded="true"] { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .icon-btn:disabled, .icon-btn[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
+  /* Social icons: an ink ring on hover (a white ring on the dark strip). */
+  .social-link { width: 2.75rem; height: 2.75rem; transition: box-shadow .16s var(--ease-site); }
+  .social-link:hover { box-shadow: inset 0 0 0 1px currentColor; }
+  /* In the top bar the icons are smaller (32px), so their hover ring clears the bar's edges; a little space between them. */
+  .topbar .social-link { width: 2rem; height: 2rem; }
+  .topbar .social-link svg { width: 1rem; height: 1rem; }
+  .topbar nav[aria-label="Social media"] ul { gap: .375rem; }
+
+
+  /* Static copy (About, legal pages). */
+  .prose-site { max-width: 68ch; }
+  .prose-site > * + * { margin-top: 1em; }
+  .prose-site h2 { font-size: var(--text-h3); margin-top: 2.25em; }
+  .prose-site h2 + * { margin-top: 0.75em; }
+  .prose-site ul { list-style: disc; padding-left: 1.25em; }
+  .prose-site li + li { margin-top: 0.4em; }
+  .prose-site a { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Horizontal rail (phone and tablet): snaps, peeks the next item, pulls the track to the viewport edge while the
+     first item stays on the page gutter. Used by the Highlights strip and the category pills. */
+  .rail {
+    display: grid; grid-auto-flow: column; grid-auto-columns: max-content; gap: 1rem;
+    overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+    margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail > * { scroll-snap-align: start; }
+
+  /* ── Blog ────────────────────────────────────────────────────────────────────────────────────────────── */
+  /* A section's title: the heading on a hairline, its action (See all) at the far end. No label above it. */
+  .sect-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space); padding-bottom: 0; margin-bottom: var(--space); }
+  .sect-head h2 { font-size: var(--text-h2); }
+
+  /* Media frame: every cover is 16:9; a post with no cover shows the quiet frame (no broken <img>). */
+  .media { position: relative; display: block; overflow: hidden; background: var(--color-muted); aspect-ratio: 16 / 9; }
+  .media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 400ms var(--ease-site); }
+  /* News card hover: the card fills with the light grey and its picture draws in a little (the grey shows around it). Cards whose
+     text sits on the picture (lead, feature, Must Read) keep the picture as it is. */
+  /* The picture draws in by the same fixed amount on every side and on every card size (a scale would leave a wider band on big
+     cards and unequal bands on non-square ones): the edges clip inward by --hover-inset, letting the grey fill show around it. */
+  :root { --hover-inset: calc(var(--space) * 0.4); }
+  .media { clip-path: inset(0); transition: clip-path .45s var(--ease-site); }
+  :is(.story, .story-h, .story-tall, .numbered > li, article.card:not(.lead):not(.feature)) { transition: background-color .3s var(--ease-site); }
+  @media (hover: hover) and (pointer: fine) {
+    /* The lead joins in only once its text is on screen ([data-hover-ready], set by Home's script); before that its picture stays
+       still under the pointer — it is still one link to the post. */
+    :is(.story, .story-h, .story-tall[data-hover-ready], .numbered > li, article.card:not(.lead):not(.feature):not(.story-tall)):hover { background-color: var(--card-hover, var(--color-secondary)); }
+    /* On the dark band the fill is a dark grey and every text on the hovered card turns white. */
+    .series { --card-hover: #2b2b2b; }
+    .series .card:hover :is(.eyebrow, .story-meta, .read-time, .card-title, .card-title a) { color: var(--color-inverse-foreground); }
+    /* The grey fill replaces the hairlines: a hovered item hides the line above it and the one below it. */
+    :is(.numbered, .stream, .series__list) > li { transition: border-color .3s var(--ease-site); }
+    :is(.numbered, .stream, .series__list) > li:hover, :is(.numbered, .stream, .series__list) > li:hover + li { border-top-color: transparent; }
+    /* Search and archive lists draw their lines under each row (divide-y): the same rule, the line below and the one above. */
+    .divide-y > li:has(.card:hover), .divide-y > li:has(+ li .card:hover) { border-bottom-color: transparent; }
+    :is(.story, .story-h, .story-tall[data-hover-ready], article.card:not(.lead):not(.feature):not(.story-tall)):hover .media { clip-path: inset(var(--hover-inset)); }
+  }
+  /* Inner room so the text never touches the grey fill's edge: --space at the sides and the foot of a card's text. */
+  .story, .story-tall, article.card:not(.lead):not(.feature):not(.story-h):not(.mega__card):not(.upd) { padding-bottom: var(--space); }
+  .story__body, .card-body { padding-inline: var(--space); }
+  .story-h, article.card.grid { padding-right: var(--space); }
+  /* Cover-beside-text cards: the text column keeps the picture's hover inset above and below, so on hover the fill frames the
+     text exactly as it frames the picture. */
+  .story-h > :not(.media) { padding-block: var(--hover-inset); }
+  .numbered > li { padding-inline: var(--space); }
+  .media[data-ratio="1"] { aspect-ratio: 1; }
+  .media[data-ratio="4/3"] { aspect-ratio: 4 / 3; }
+  .media[data-ratio="4/5"] { aspect-ratio: 4 / 5; }
+
+  /* Category label on a card: a quiet pill that is a link of its own (44px reachable through the card's padding is not
+     needed: it sits inside meta, and the whole card is the tap target on a phone). */
+  .pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 9999px; background: var(--color-secondary); font-size: 0.875rem; font-weight: 400; line-height: 1.4; letter-spacing: 0; text-transform: none; color: var(--color-foreground); text-decoration: none; transition: background-color .16s var(--ease-site), color .16s var(--ease-site), box-shadow .16s var(--ease-site); }
+  .pill:hover { background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .media .pill:hover, .lead .pill:hover, .feature .pill:hover { background: var(--color-foreground); color: var(--color-background); box-shadow: none; }
+  .media .pill { position: absolute; left: 0.75rem; top: 0.75rem; background: var(--color-background); }
+
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; font-size: var(--text-xs); color: var(--color-muted-foreground); }
+  .meta > * + *::before { content: "·"; margin-right: 0.5rem; }
+  .card-title { font-family: var(--font-display); font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; text-wrap: balance; overflow-wrap: anywhere; }
+  /* Title underline: drawn, not switched — a 1px line grows left to right under every line of the title (box-decoration-break
+     clones it per line) when the card is hovered or focused, quickly (.3s). */
+  .card-title a, .ul {
+    color: inherit; text-decoration: none;
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone; padding-bottom: .08em;
+    transition: background-size .3s var(--ease-site);
+  }
+  .card:hover .card-title a, .card:focus-within .card-title a, .card-title a:hover,
+  a:hover .ul, a:focus-visible .ul { background-size: 100% 1px; }
+  /* Split titles (the header script wraps each rendered line in .ul-line): the line, not the whole title, draws the underline, and
+     each lower line starts a beat later (.06s) and draws a little slower (+.07s), so the stroke runs down the title. */
+  [data-lines] { background: none; padding-bottom: 0; }
+  .ul-line {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; padding-bottom: .08em;
+    transition: background-size calc(.28s + var(--i, 0) * .07s) var(--ease-site) calc(var(--i, 0) * .06s);
+  }
+  .card:hover .card-title a .ul-line, .card:focus-within .card-title a .ul-line, .card-title a:hover .ul-line,
+  a:hover .ul .ul-line, a:focus-visible .ul .ul-line { background-size: 100% 1px; }
+  /* The title link stretches over the whole card, so a card is one tap target; the category pill stays above it. */
+  .card { position: relative; }
+  .card .card-title a::after { content: ""; position: absolute; inset: 0; }
+  .card .pill, .card .meta a { position: relative; z-index: 1; }
+  .card .media .pill { position: absolute; }
+  .clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* The lead story: the cover with the title over a scrim. The scrim keeps white text above 7:1 on the lightest placeholder. */
+  .lead { position: relative; display: block; overflow: hidden; background: var(--color-muted); color: var(--color-foreground); }
+  /* The card owns the ratio and the cover fills it, so when the grid stretches the card to the height of the Latest News column
+     the cover crops further instead of leaving a dark band. */
+  .lead { aspect-ratio: 4 / 3; }
+  .lead .media { position: absolute; inset: 0; aspect-ratio: auto; height: 100%; }
+  @media (min-width: 768px) { .lead { aspect-ratio: 16 / 10; } }
+  .lead .scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgb(255 255 255 / 0.55) 0%, rgb(255 255 255 / 0) 55%); }
+  .lead .body { position: absolute; inset-inline: 0; bottom: 0; padding: var(--space); }
+  .lead .meta { color: var(--color-muted-foreground); }
+  .lead .pill { background: var(--color-background); color: var(--color-foreground); }
+
+  /* Must Read: one wide dark panel down the page. Phone: cover on top, text below. Desktop: cover 3/5 beside the text 2/5, the cover
+     filling the panel's height (it crops rather than leaving a band when the text runs longer). */
+  .feature { position: relative; display: grid; overflow: hidden; background: var(--color-secondary); color: var(--color-foreground); }
+  .feature .body { display: flex; flex-direction: column; justify-content: center; padding: var(--space); }
+  .feature .meta { color: var(--color-muted-foreground); }
+  .feature .pill { background: var(--color-background); color: var(--color-foreground); }
+    @media (min-width: 1024px) {
+    .feature { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); min-height: 26rem; }
+    .feature .media { aspect-ratio: auto; }
+    .feature .media img { position: absolute; inset: 0; }
+  }
+
+  /* Highlights: circular covers on a rail. */
+  .hl { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; width: 7.5rem; text-align: center; text-decoration: none; color: var(--color-foreground); }
+  .hl .media { width: 6.5rem; height: 6.5rem; aspect-ratio: 1; border-radius: 9999px; }
+  .hl span { font-size: var(--text-xs); font-weight: 500; line-height: 1.3; }
+  .hl:hover span { text-decoration: underline; text-underline-offset: 3px; }
+  @media (min-width: 768px) { .hl { width: 8.5rem; } .hl .media { width: 7.5rem; height: 7.5rem; } }
+
+  /* Tag chip: a quiet pill with the post count, 44px tall tap target. */
+  .chip { display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2.25rem; padding: 0 1rem; border-radius: 9999px; background: var(--color-secondary); font-size: var(--text-sm); font-weight: 500; white-space: nowrap; text-decoration: none; color: var(--color-foreground); transition: background-color .16s var(--ease-site), color .16s var(--ease-site), box-shadow .16s var(--ease-site); }
+  .chip:hover { background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .chip[aria-current="true"] { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .chip small { font-size: var(--text-xs); color: var(--color-muted-foreground); }
+  .chip[aria-current="true"] small { color: var(--color-inverse-muted); }
+
+  /* Forms. */
+  .field { display: block; width: 100%; min-height: 3.5rem; padding: 0.75rem 1rem; border: 1px solid var(--color-inverse-muted); border-radius: 0; background: var(--color-background); color: var(--color-foreground); font-size: var(--text-base); transition: border-color .16s var(--ease-site); }
+  .field:hover, .field:focus, .field:focus-visible { border-color: var(--color-foreground); outline: none; }
+  .field[aria-invalid="true"] { border-color: var(--color-destructive); }
+  textarea.field { min-height: 6.5rem; resize: vertical; }
+  .field-label { display: block; margin-bottom: 0.5rem; font-size: var(--text-sm); font-weight: 500; }
+  .field-error { margin-top: 0.375rem; font-size: var(--text-sm); color: var(--color-destructive); }
+  .check { display: flex; align-items: flex-start; gap: 0.75rem; min-height: 2.75rem; font-size: var(--text-sm); }
+  /* Consent checkbox: a round outline (ink on light, white on dark); checked, a filled dot sits inside the ring. */
+  .check input { appearance: none; -webkit-appearance: none; flex: none; display: grid; place-content: center; width: 1.25rem; height: 1.25rem; margin: 0.125rem 0 0; border: 1px solid var(--color-foreground); border-radius: 50%; background: transparent; cursor: pointer; transition: border-color .16s var(--ease-site); }
+  .check input::before { content: ""; width: .625rem; height: .625rem; border-radius: 50%; background: var(--color-foreground); transform: scale(0); transition: transform .16s var(--ease-site); }
+  .check input:checked::before { transform: scale(1); }
+  .check input:focus-visible { outline: 1px solid var(--color-foreground); outline-offset: 3px; }
+  .check input[aria-invalid="true"] { border-color: var(--color-destructive); }
+  .bg-inverse .check input { border-color: var(--color-inverse-foreground); }
+  .bg-inverse .check input::before { background: var(--color-inverse-foreground); }
+  .bg-inverse .check input:focus-visible { outline-color: var(--color-inverse-foreground); }
+  .note { padding: 0.75rem 1rem; border-left: 3px solid var(--color-border); background: var(--color-secondary); font-size: var(--text-sm); color: var(--color-muted-foreground); }
+  .note strong { color: var(--color-foreground); }
+  .note a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+  .bg-inverse .field { background: var(--color-inverse); border-color: var(--color-inverse-muted); color: var(--color-inverse-foreground); }
+  .bg-inverse .field:hover, .bg-inverse .field:focus { border-color: var(--color-inverse-foreground); }
+  .bg-inverse .note { background: rgb(255 255 255 / 0.08); color: var(--color-inverse-muted); border-color: var(--color-inverse-muted); }
+  .bg-inverse .note strong { color: var(--color-inverse-foreground); }
+  .bg-inverse .field-error { color: #ffb4a8; }
+
+  /* Phone and tablet menu and the search panel: a panel under the sticky header, full width, the page behind stays put. */
+  .panel { position: absolute; inset-inline: 0; top: 100%; background: var(--color-background); border-bottom: 1px solid var(--color-border); box-shadow: 0 16px 32px rgb(20 20 20 / 0.08); max-height: calc(100svh - var(--header-h)); overflow-y: auto; }
+  .panel[hidden] { display: none; }
+  .panel li:last-child a { border-bottom: 0; }
+  /* Header nav: pills — an ink ring on hover, a quiet fill and bold label for the current page, a darker fill when pressed. */
+  .nav-link { display: inline-flex; align-items: center; min-height: 2.25rem; padding-inline: 0.75rem; border-radius: var(--radius-control); font-size: var(--text-base); font-weight: 400; color: var(--color-foreground); text-decoration: none; white-space: nowrap; transition: background-color .16s var(--ease-site), color .16s var(--ease-site), box-shadow .16s var(--ease-site); }
+  .nav-link:hover, .more[open] > summary.nav-link { box-shadow: inset 0 0 0 1px var(--color-foreground); background-color: transparent; }
+  .nav-link[aria-current="page"] { background-color: var(--color-secondary); font-weight: 600; }
+  .nav-link:active { background-color: var(--color-border); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  /* "More": a native <details> so it works by keyboard and without JS. */
+  .more > summary { list-style: none; cursor: pointer; }
+  .more > summary::-webkit-details-marker { display: none; }
+  .more[open] > summary { color: var(--color-foreground); }
+  .more-list { position: absolute; right: 0; top: 100%; min-width: 14rem; padding: 0.5rem; background: var(--color-background); border: 1px solid var(--color-border); border-radius: var(--radius-sheet); box-shadow: 0 16px 32px rgb(20 20 20 / 0.08); z-index: 40; }
+  .more-list a { display: flex; align-items: center; min-height: 2.75rem; padding-inline: 0.75rem; border-radius: 9999px; font-size: var(--text-base); color: var(--color-foreground); text-decoration: none; transition: box-shadow .16s var(--ease-site); }
+  .more-list a:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+
+  /* Section dropdown (desktop): a section link plus a chevron button that opens its categories. Open by click or keyboard
+     ([data-open]); on a pointer device hover shows it too, as an extra, never the only way. */
+  .dd-btn { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 2.75rem; color: var(--color-muted-foreground); border-radius: 9999px; }
+  .dd-btn { transition: box-shadow .16s var(--ease-site); }
+  .dd-btn:hover, .dd-item[data-open] .dd-btn { color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .dd-item[data-open] .dd-btn svg { transform: rotate(180deg); }
+  .dd-list { display: none; }
+  .dd-item[data-open] > .dd-list { display: block; }
+  @media (hover: hover) and (pointer: fine) { .dd-item:hover > .dd-list { display: block; } }
+  .more-list a[aria-current="page"] { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+
+  /* The site-wide subscribe card sits a section tier below the page; when the page already ends on section padding the tier is not doubled. */
+  .sub-site { padding-top: var(--section-y); }
+  .section + .sub-site, [class~="pb-(--section-y)"] + .sub-site { padding-top: 0; }
+
+  /* Search: results highlight the matched words. */
+  mark { background: var(--color-muted); color: inherit; padding: 0 0.125em; }
+  .suggest { background: var(--color-background); }
+  .suggest a { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: 0.75rem; align-items: center; min-height: 3.5rem; padding: 0.5rem 0; text-decoration: none; color: var(--color-foreground); border-bottom: 1px solid var(--color-border); }
+  .suggest a:last-child { border-bottom: 0; }
+  .suggest a:hover strong, .suggest a[aria-selected="true"] strong { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Pagination. */
+  .pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem; }
+  .pager a, .pager span.gap { display: inline-flex; align-items: center; justify-content: center; min-width: 2.75rem; min-height: 2.75rem; padding-inline: 0.75rem; border-radius: 9999px; font-size: var(--text-sm); font-weight: 400; text-decoration: none; color: var(--color-foreground); transition: box-shadow .16s var(--ease-site); }
+  .pager a:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .pager a[aria-current="page"] { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .pager a[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
+
+  /* ── Home: magazine front page ─────────────────────────────────────────────────────────────────────────── */
+  /* Read time: a hover detail. Hidden on phones and tablets; on a desktop with a pointer it fades in while the pointer is over the
+     story (or keyboard focus is inside it). Its space is held in advance, so the hover shifts nothing. */
+  .read-time { display: none; }
+  @media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+    /* Its line and its --space are always reserved, so nothing moves; the words rise into view from under a mask (the read-time box
+       clips, the inner text slides up from below it). */
+    .read-time { display: revert; overflow: hidden; }
+    span.read-time { display: inline-flex; vertical-align: bottom; }
+    .read-time > span { display: inline-block; transform: translateY(100%); opacity: 0; transition: transform .45s var(--ease-site), opacity .3s var(--ease-site); }
+    .card:hover .read-time > span, .card:focus-within .read-time > span, .rt-host:hover .read-time > span { transform: none; opacity: 1; }
+  }
+  /* A column of text: every element one --space below the one before. */
+  .stack > * + * { margin-top: var(--space); }
+
+  /* Top bar: the news ticker drifts right to left, slowly; it pauses under the pointer or keyboard focus, and stands still (scrollable)
+     for reduced motion. Two copies of the list make the loop seamless; the second is hidden from assistive tech. */
+  .ticker { overflow: hidden; -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent); mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent); }
+  .ticker__track { display: flex; width: max-content; animation: ticker 90s linear infinite; }
+  .ticker:hover .ticker__track, .ticker:focus-within .ticker__track { animation-play-state: paused; }
+  .ticker__list { display: flex; flex: none; }
+  .ticker__list li { display: flex; align-items: center; white-space: nowrap; }
+  .ticker__list li::after { content: ""; width: .25rem; height: .25rem; margin-inline: calc(var(--space) / 2); border-radius: 50%; background: var(--color-inverse-muted); }
+  .ticker__list a { display: inline-flex; align-items: center; min-height: var(--bar-h); color: var(--color-inverse-muted); text-decoration: none; transition: color .16s var(--ease-site); }
+  .ticker__list a:hover, .ticker__list a:focus-visible { color: var(--color-inverse-foreground); text-decoration: underline; text-underline-offset: .2em; }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .ticker { overflow-x: auto; scrollbar-width: none; } .ticker__track { animation: none; } .ticker__list[aria-hidden] { display: none; } }
+  /* Exchange rates: code muted, value bright, tabular figures so the numbers don't jitter. */
+  .rates { gap: var(--space); }
+  .rates > div { display: flex; gap: .375rem; }
+  .rates dt { color: var(--color-inverse-muted); }
+  .rates dd { font-variant-numeric: tabular-nums; }
+
+  /* Category label above a title: small, sentence case, quiet grey. A link of its own above the card's stretched title link. */
+  .eyebrow { display: inline-block; font-size: 0.875rem; line-height: 1.4; letter-spacing: 0; text-transform: none; color: var(--color-muted-foreground); text-decoration: none; transition: color .16s var(--ease-site); }
+  a.eyebrow:hover { color: var(--color-foreground); text-decoration: underline; text-underline-offset: .2em; }
+  .card .eyebrow { position: relative; z-index: 1; }
+  /* As a block of its own (not an inline box on a body-height line) the label adds no extra leading, so the gap under it is --space. */
+  .stack > .eyebrow { display: block; width: fit-content; }
+  :is(.story__body, .story-tall__body, .banner__body, .wide__card) > .eyebrow { margin-inline: auto; }
+  /* A block's heading: small title on the left, "Read more" on the right. */
+  .block-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space); margin-bottom: var(--space); }
+  .block-title { font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 400; letter-spacing: 0; text-transform: none; line-height: 1.4; }
+  /* In a category section the heading is the category's name: display face, section-title size, sentence case. */
+  .block-head { justify-content: center; text-align: center; }
+  .block-head .block-title { font-family: var(--font-display); font-size: clamp(2rem, 1.3rem + 2.6vw, 3.75rem); font-weight: 500; line-height: 1.05; letter-spacing: -0.02em; text-transform: none; }
+  /* A section's way on: the outline pill (ink ring, fills with ink on hover), centred under the section. */
+  .block-foot { display: flex; justify-content: center; margin-top: var(--space); }
+  .series .btn-outline { color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+  .series .btn-outline:hover:not(:disabled) { background-color: var(--color-inverse-foreground); color: var(--color-inverse); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+  .series .block-head .block-title { color: var(--color-inverse-foreground); }
+  .block-more { display: inline-flex; align-items: center; min-height: 2.75rem; font-size: var(--text-sm); letter-spacing: 0; text-transform: none; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .3em; transition: opacity .18s var(--ease-site); }
+  .block-more:hover { opacity: .55; }
+
+  /* Story card: cover 3:2, then everything centred. */
+  .story .media, .story-h .media { aspect-ratio: 3 / 2; }
+  .story__body { margin-top: var(--space); text-align: center; }
+  .story__title { font-size: 1.375rem; line-height: 1.2; }
+  .story-meta { color: var(--color-muted-foreground); }
+  .story-h { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: var(--space); align-items: start; }
+  @media (min-width: 768px) { .story-h { grid-template-columns: 12rem minmax(0, 1fr); } }
+  /* The lead: a 3:4 cover on every width, the story centred under it (below the first screen on desktop, by design). */
+  .story-tall { position: relative; }
+  .story-tall .media { aspect-ratio: 3 / 2; }
+
+  /* The page title band: one large uppercase line, centred, a hairline under it; --space above and below. */
+  .masthead { border-bottom: 1px solid var(--color-border); transition: padding .55s var(--ease-site); }
+  /* Opening: the band starts tall with a small cover frame over the title (.is-intro), and eases to rest when the class goes. */
+  .masthead__pics { display: grid; grid-template-rows: 0fr; justify-content: center; transition: grid-template-rows .55s var(--ease-site), margin .55s var(--ease-site); }
+  .masthead__pics > div { min-height: 0; overflow: hidden; }
+  .masthead__frame { position: relative; width: clamp(7rem, 11.5vw, 12rem); aspect-ratio: 3 / 2; background: var(--color-muted); clip-path: inset(50% 50%); transition: clip-path .45s var(--ease-site); }
+  .masthead__frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; visibility: hidden; }
+  .masthead__frame img[data-on] { visibility: visible; }
+  .masthead.is-intro { padding-block: calc(var(--space) * 2) calc(var(--space) * 3); }
+  .masthead.is-intro .masthead__pics { grid-template-rows: 1fr; margin-top: var(--space); }
+  .masthead.is-intro .masthead__frame { clip-path: inset(0); }
+  /* Enter (.is-enter, one frame long): the frame starts shut at its centre, the title sits below its own mask, and everything after the
+     band waits lower and transparent; removing the class lets them open, rise and glide in. */
+  .masthead__title { overflow: hidden; }
+  .masthead__line { display: inline-block; transition: transform .65s var(--ease-site); }
+  .masthead ~ * { transition: transform .75s var(--ease-site) .1s, opacity .6s var(--ease-site) .1s; }
+  .masthead.is-enter .masthead__frame { clip-path: inset(50% 50%); }
+  .masthead.is-enter .masthead__line { transform: translateY(105%); }
+  .masthead.is-enter ~ * { transform: translateY(4rem); opacity: 0; transition: none; }
+  .masthead__title { padding-block: var(--space); text-align: center; font-size: var(--text-display); font-weight: 500; line-height: 1; letter-spacing: -0.02em; text-transform: none; text-wrap: balance; }
+
+  /* Top stories: one column on a phone (lead, picks, stream); 1:2:1 from desktop, the lead and the picks staying in view. */
+  .top { padding-top: var(--space); padding-bottom: var(--section-y); }
+  .top__grid { display: grid; gap: var(--space); }
+  .top__lead { order: -2; }
+  .top__picks { order: -1; }
+  @media (min-width: 1024px) {
+    .top__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
+    .top__lead, .top__picks { order: 0; align-self: stretch; }
+    .sticky-col { position: sticky; top: calc(var(--header-h) + var(--space)); }
+    /* Pinned by its foot when taller than the screen: its bottom stops one --space above the viewport's bottom edge. */
+    .sticky-lead { top: min(calc(var(--header-h) + var(--space)), calc(100svh - var(--lead-h, 0px) - var(--space))); }
+  }
+  .stream { display: grid; gap: var(--space); }
+  @media (min-width: 640px) and (max-width: 1023px) { .stream { grid-template-columns: 1fr 1fr; } }
+  .stream > li + li { padding-top: var(--space); border-top: 1px solid var(--color-border); }
+  @media (min-width: 640px) and (max-width: 1023px) { .stream > li + li { padding-top: 0; border-top: 0; } }
+  .numbered { margin-top: var(--space); }
+  .numbered > li { position: relative; padding: var(--space) 0; text-align: center; border-top: 1px solid var(--color-border); }
+  .numbered > li > .eyebrow { margin-inline: auto; }
+  .numbered__title { font-size: 1.25rem; line-height: 1.25; }
+
+  /* Banner: a full-width image with centred copy; the image is the reference wireframes' pastel field. */
+  .banner { position: relative; display: grid; place-items: center; min-height: clamp(26rem, 50vw, 45rem); overflow: hidden; background: var(--color-muted); text-align: center; }
+  .banner__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .banner__body { position: relative; max-width: 44rem; padding: var(--space) var(--gutter); }
+
+  /* Category blocks: 1:2:1 (small, large, small) and four in a row. */
+  .block + .block { padding-top: 0; }
+  .split, .row4 { display: grid; gap: var(--space); }
+  @media (min-width: 768px) { .row4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .split { grid-template-columns: repeat(2, minmax(0, 1fr)); } .split__main { grid-column: 1 / -1; order: -1; } }
+  @media (min-width: 1024px) {
+    .row4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .split { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
+    .split__main { grid-column: auto; order: 0; }
+  }
+
+  /* Must Read: full-width cover, the story on a compact white card centred on it. */
+  .wide { position: relative; overflow: hidden; background: var(--color-muted); }
+  .wide__wrap { position: relative; display: flex; align-items: center; justify-content: center; min-height: clamp(26rem, 50vw, 45rem); padding-block: var(--space); }
+  .wide__card { width: 100%; max-width: 24rem; padding: var(--space); background: var(--color-background); text-align: center; }
+  .wide__card .eyebrow { margin-inline: auto; }
+  /* Halves: two posts side by side, each a Must Read card centred on its own cover; one --space between them and at the page's
+     sides. Stacked on a phone. */
+  .halves { display: grid; gap: var(--space); padding-inline: var(--gutter); }
+  @media (min-width: 768px) { .halves { grid-template-columns: 1fr 1fr; } }
+  .half { position: relative; display: flex; align-items: center; justify-content: center; min-height: clamp(26rem, 50vw, 45rem); padding: var(--space); overflow: hidden; background: var(--color-muted); }
+  .wide__title { font-size: 1.5rem; line-height: 1.2; }
+
+  /* Sign-up: compact and centred. */
+  .signup { padding-block: var(--section-y); border-bottom: 1px solid var(--color-border); }
+  .signup__wrap { text-align: center; }
+
+  /* Series: a dark band — a large story beside a list of three. */
+  .series { color: var(--color-inverse-foreground); }
+  .series .eyebrow, .series .story-meta, .series .block-title { color: var(--color-inverse-muted); }
+  .series a.eyebrow:hover { color: var(--color-inverse-foreground); }
+  .series .media { background: rgb(255 255 255 / .08); }
+  .series__grid { display: grid; gap: var(--space); }
+  /* Half a step either side of the hairline: one --space between two cards in all (30px tighter than the stream). */
+  .series__list { display: grid; gap: calc(var(--space) / 2); }
+  .series__list > li + li { padding-top: calc(var(--space) / 2); border-top: 1px solid rgb(255 255 255 / .16); }
+  @media (min-width: 1024px) { .series__grid { grid-template-columns: minmax(0, 1.43fr) minmax(0, 1fr); align-items: start; } }
+
+
+  /* ── Header category previews ── hovering (or tabbing to) a category in the bar opens a panel the full width of the screen under
+     the header with that category's newest posts as small previews. The item fills the header's height, so the pointer never
+     leaves it on the way down to the panel; it opens after a short pause (sweeping across the bar does not flash panels) and
+     closes at once. Desktop bar only (the bar itself is hidden below 1280). */
+  /* Bar items keep 3px between their pills, so two outlined at once (an open panel and a hovered item) never touch. */
+  nav[aria-label="Sections"] { gap: 3px; }
+  .mega { display: flex; align-items: center; }
+  nav[aria-label="Sections"] > .more, nav[aria-label="Sections"] > .dd-item { display: flex; align-items: center; }
+  nav[aria-label="Sections"] > .more > summary { align-self: center; }
+  .mega__panel {
+    position: absolute; inset-inline: 0; top: 100%; z-index: 35; background: var(--color-background);
+    border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); box-shadow: 0 24px 48px rgb(22 22 22 / .08);
+    padding-block: var(--space); opacity: 0; visibility: hidden; transform: translateY(-.5rem);
+    transition: opacity .2s var(--ease-site), transform .2s var(--ease-site), visibility 0s linear .2s;
+  }
+  .mega:hover > .mega__panel, .mega:focus-within > .mega__panel {
+    opacity: 1; visibility: visible; transform: none;
+    transition: opacity .25s var(--ease-site) .12s, transform .25s var(--ease-site) .12s, visibility 0s linear .12s;
+  }
+  .mega:hover > .nav-link, .mega:focus-within > .nav-link { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .mega__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space); margin-bottom: calc(var(--space) / 2); }
+  .mega__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: calc(var(--space) / 2) var(--space); }
+  /* Compact previews: a small 3:2 thumbnail beside the date and title, four to a row, two rows (eight posts). */
+  .mega__card { display: grid; grid-template-columns: 6rem minmax(0, 1fr); gap: calc(var(--space) / 2); align-items: center; padding: calc(var(--space) / 4); }
+  .mega__card .media { aspect-ratio: 3 / 2; }
+  .mega__text > * + * { margin-top: .25rem; }
+
+  /* All Categories panel: full width under the header, every category as a tile (picture, name, short description). On hover or
+     focus the description gives way to the category's two newest posts in the same cell (stacked in one grid area), so nothing
+     shifts. */
+  .allcats { position: absolute; inset-inline: 0; top: 100%; z-index: 35; padding-block: var(--space); background: var(--color-background); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); box-shadow: 0 24px 48px rgb(22 22 22 / .08); max-height: calc(100svh - var(--header-h)); overflow-y: auto; }
+  .allcats[hidden] { display: none; }
+  .allcats__grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space); }
+  .catcard { display: flex; flex-direction: column; gap: calc(var(--space) / 3); }
+  .catcard__link { display: block; color: var(--color-foreground); text-decoration: none; }
+  .catcard__link .media { aspect-ratio: 3 / 2; }
+  .catcard__name { margin-top: calc(var(--space) / 3); font-family: var(--font-display); font-size: var(--text-lg); font-weight: 500; }
+  /* Below the name, set apart by half a step and a hairline: the description, which on hover fades out while "Latest Posts" and the
+     two newest posts fade and rise in, one after the other (the two share one grid cell, so the card never changes height). */
+  .catcard__swap { display: grid; margin-top: calc(var(--space) / 2); padding-top: calc(var(--space) / 2); border-top: 1px solid var(--color-border); }
+  .catcard__swap > * { grid-area: 1 / 1; }
+  .catcard__desc { transition: opacity .25s var(--ease-site); }
+  .catcard__posts { position: relative; z-index: 1; visibility: hidden; transition: visibility 0s linear .35s; }
+  .catcard:hover .catcard__desc, .catcard:focus-within .catcard__desc { pointer-events: none; }
+  .catcard__posts > *, .catcard__posts li { opacity: 0; transform: translateY(.5rem); transition: opacity .3s var(--ease-site), transform .35s var(--ease-site); }
+  .catcard__posts ul { margin-top: calc(var(--space) / 3); opacity: 1; transform: none; }
+  .catcard__posts li + li { margin-top: calc(var(--space) / 3); }
+  .catcard__posts a { display: grid; gap: .125rem; color: var(--color-foreground); text-decoration: none; }
+  .catcard:hover .catcard__desc, .catcard:focus-within .catcard__desc { opacity: 0; }
+  .catcard:hover .catcard__posts, .catcard:focus-within .catcard__posts { visibility: visible; transition-delay: 0s; }
+  .catcard:hover .catcard__posts > p, .catcard:focus-within .catcard__posts > p { opacity: 1; transform: none; transition-delay: .05s; }
+  .catcard:hover .catcard__posts li, .catcard:focus-within .catcard__posts li { opacity: 1; transform: none; }
+  .catcard:hover .catcard__posts li:nth-child(1), .catcard:focus-within .catcard__posts li:nth-child(1) { transition-delay: .12s; }
+  .catcard:hover .catcard__posts li:nth-child(2), .catcard:focus-within .catcard__posts li:nth-child(2) { transition-delay: .19s; }
+  #allcats-btn[aria-expanded="true"] { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+
+  /* The dimmer under every popup: 40% black over the page, under the sticky header (z 30) and its panels. It catches the pointer while
+     shown, so a click beside a search or menu panel closes it (the header script listens for clicks outside) instead of following
+     a link underneath; for hover previews, moving onto it is leaving the category, which closes them. */
+  .dimmer { position: fixed; inset: 0; z-index: 25; background: rgb(0 0 0 / .4); opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .2s var(--ease-site), visibility 0s linear .2s; }
+  body:has(.mega:hover > .mega__panel, .mega:focus-within > .mega__panel, details.more[open], [data-dd][data-open], #allcats-panel:not([hidden]), #search-panel:not([hidden]), #menu-panel:not([hidden])) .dimmer {
+    opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .25s var(--ease-site) .12s, visibility 0s linear .12s; }
+
+  /* Recent Updates band: quiet fill; the intro (title styled like the Must Read title above it, a line, "View all") in the first
+     quarter, then six posts as the header panels' compact previews, three to a row. One column on a phone, two on a tablet. */
+  .updates { background: var(--color-secondary); padding-block: var(--space); --card-hover: var(--color-muted); }
+  .updates__grid { display: grid; gap: calc(var(--space) / 2) var(--space); }
+  @media (min-width: 768px) { .updates__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .updates__intro { grid-column: 1 / -1; } }
+  @media (min-width: 1280px) { .updates__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } .updates__intro { grid-column: 1; grid-row: 1 / span 2; padding-right: var(--space); } }
+  .updates__intro > p { max-width: 36ch; font-size: var(--text-lg); line-height: 1.4; }
+  .updates .mega__card { margin-top: calc(var(--space) / -4); }
+
+  /* About sheet: the picture on one half, a ruled spec sheet on the other (rows on top, the sign-up at the foot between rules). */
+  .sheet { display: grid; gap: var(--space); }
+  @media (min-width: 1024px) { .sheet { grid-template-columns: 1fr 1fr; align-items: stretch; } }
+  .sheet__media { aspect-ratio: 4 / 5; }
+  .sheet__body { display: flex; flex-direction: column; justify-content: space-between; gap: var(--section-y); }
+  .sheet__rows { border-top: 1px solid var(--color-foreground); }
+  .sheet__rows > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--space); padding-block: calc(var(--space) / 3); border-bottom: 1px solid var(--color-foreground); font-size: var(--text-sm); }
+  .sheet__rows dt { color: var(--color-muted-foreground); }
+  /* The sheet's heading matches the category section headings (display face, the same fluid size). */
+  .sheet__title { margin-bottom: var(--space); font-family: var(--font-display); font-size: clamp(2rem, 1.3rem + 2.6vw, 3.75rem); font-weight: 500; line-height: 1.05; letter-spacing: -0.02em; }
+  .sheet__links { display: flex; flex-wrap: wrap; gap: .25rem 1rem; }
+  .sheet__links a { color: var(--color-foreground); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; transition: opacity .18s var(--ease-site); }
+  .sheet__links a:hover { opacity: .55; }
+  .sheet__text { margin-top: var(--space); max-width: 52ch; font-size: var(--text-base); }
+  .sheet__foot { display: grid; gap: var(--space); padding-block: var(--space); border-top: 1px solid var(--color-foreground); border-bottom: 1px solid var(--color-foreground); }
+  @media (min-width: 768px) { .sheet__foot { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); } }
+  .sheet__foot-head > * + * { margin-top: calc(var(--space) / 3); }
+  .sheet__label { font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; letter-spacing: 0; }
+  /* On black: white text and white rules; quiet text in the inverse grey; the outline button, the field and the checkbox follow. */
+  .sheet-band { color: var(--color-inverse-foreground); padding-block: var(--space); margin-bottom: var(--space); }
+  .sheet-band :is(.sheet__rows, .sheet__rows > div, .sheet__foot) { border-color: rgb(255 255 255 / .16); }
+  .sheet-band :is(.sheet__rows dt, .text-muted-foreground) { color: var(--color-inverse-muted); }
+  .sheet-band .sheet__links a { color: var(--color-inverse-foreground); }
+  .sheet-band .btn-outline { color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+  .sheet-band .btn-outline:hover:not(:disabled) { background-color: var(--color-inverse-foreground); color: var(--color-inverse); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+  .sheet-band .field::placeholder { color: var(--color-inverse-muted); }
+
+  /* Subscribe field: full width, square corners, the button inside it on the right (inset by a third of the field's padding). */
+  .sub-field { position: relative; }
+  .sub-field .field { padding-right: 10rem; }
+  .sub-field .btn { position: absolute; top: .625rem; bottom: .625rem; right: .625rem; min-height: 0; padding-inline: 1.125rem; }
+  .sub-field .btn:active:not(:disabled) { transform: none; }
+
+  /* ── Footer ── the name in a band of its own, then three columns split by full-height hairlines, then a bottom row in the
+     same columns with its text at the foot. */
+  .ft { border-top: 1px solid var(--color-border); font-size: var(--text-base); }
+  .ft__brand { display: grid; place-items: center; min-height: clamp(16rem, 32vw, 34rem); padding: var(--space) var(--gutter); text-align: center; }
+  .ft__brand a { font-size: clamp(2.5rem, 1rem + 5vw, 6rem); line-height: 1; }
+  .ft__grid { display: grid; border-top: 1px solid var(--color-border); }
+  @media (min-width: 768px) { .ft__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .ft__col { padding: var(--space) var(--gutter); }
+  .ft__col + .ft__col { border-top: 1px solid var(--color-border); }
+  @media (min-width: 768px) { .ft__col + .ft__col { border-top: 0; border-left: 1px solid var(--color-border); } .ft__col { min-height: 16rem; } }
+  .ft__head { margin-bottom: var(--space); font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; letter-spacing: 0; color: var(--color-muted-foreground); }
+  .ft__list li + li { margin-top: .25rem; }
+  .ft a { color: var(--color-foreground); text-decoration: none; transition: opacity .18s var(--ease-site); }
+  .ft__list a:hover, .ft__legal a:hover { opacity: .55; }
+  .ft__hours { display: grid; grid-template-columns: max-content 1fr; gap: 0 var(--space); margin-top: var(--space); }
+  /* Bottom row: compact, the same --space above and below, the three items on one centre line. */
+  .ft__grid--foot .ft__col { display: flex; align-items: center; min-height: 0; padding-block: calc(var(--space) / 2); }
+  .ft__legal { display: flex; flex-wrap: wrap; align-items: center; }
+  .ft__legal li + li::before { content: "|"; margin-inline: .75rem; color: var(--color-foreground); }
+
+  /* ── Post page ── the opening screen: two halves, the story on black beside the cover; one screen tall (below the bar and header) on
+     desktop; on a phone the cover (4:3) comes first. */
+  /* The cover keeps its landscape 3:2 at every width (never cropped to the half's shape): the band is black and the cover sits centred
+     in its half; the text half is at least as tall as the cover. */
+  .post-hero { display: grid; }
+  /* The cover sets the row's height (3:2 of its half) and fills it edge to edge — no black above or below it; the text centres beside it. */
+  @media (min-width: 1024px) { .post-hero { grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: stretch; } }
+  .post-hero__media { order: -1; aspect-ratio: 3 / 2; }
+  .post-hero__media img { width: 100%; height: 100%; object-fit: cover; }
+  @media (min-width: 1024px) {
+    .post-hero__media { order: 0; height: 100%; }
+    .post-hero__text { padding-block: var(--space); }
+  }
+  .post-hero__text { display: flex; align-items: center; justify-content: center; padding: var(--section-y) var(--gutter); color: var(--color-inverse-foreground); text-align: center; }
+  .post-hero__inner { max-width: 36rem; }
+  .post-hero__text .eyebrow { color: var(--color-inverse-muted); }
+  .post-hero__text a.eyebrow:hover { color: var(--color-inverse-foreground); }
+  .post-hero__title { font-size: clamp(2.25rem, 1.3rem + 3vw, 4.25rem); line-height: 1.05; letter-spacing: -0.02em; }
+  @media (min-width: 1024px) { .post-hero__title { font-size: clamp(2rem, 0.6rem + 2.6vw, 3.75rem); } }
+  .post-hero__lead { font-size: var(--text-lg); color: var(--color-inverse-muted); }
+  .post-hero__meta { display: flex; flex-wrap: wrap; justify-content: center; gap: .25rem .75rem; font-size: var(--text-sm); color: var(--color-inverse-muted); }
+  .post-hero__meta > * + *::before { content: "·"; margin-right: .75rem; }
+  .post-hero__meta a { color: var(--color-inverse-foreground); text-decoration: none; }
+  .post-hero__meta a:hover { text-decoration: underline; text-underline-offset: .2em; }
+
+  /* Reading bar: fixed over the site header once the opening screen is gone — title left, share right, progress along its foot. */
+  .artbar { position: fixed; inset-inline: 0; top: 0; z-index: 45; background: var(--color-background); border-bottom: 1px solid var(--color-border);
+    transform: translateY(-101%); transition: transform .35s var(--ease-site); }
+  .artbar--on { transform: none; }
+  .artbar__row { display: flex; align-items: center; justify-content: space-between; gap: var(--space); height: var(--header-h); }
+  .artbar__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-display); font-size: var(--text-base); font-weight: 500; }
+  .artbar__share { display: flex; flex: none; align-items: center; gap: 3px; }
+  /* Same size and glyphs as the social icons in the top bar: 32px round targets, 16px marks, centred, 3px apart. */
+  .artbar__share .social-link { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 9999px; color: var(--color-foreground); }
+  .artbar__share .social-link svg { width: 1rem; height: 1rem; }
+  .artbar__share .social-link.is-done { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .artbar__track { position: absolute; inset-inline: 0; bottom: -1px; height: 2px; }
+  .artbar__fill { height: 100%; background: var(--color-foreground); transform: scaleX(0); transform-origin: left; }
+
+  /* Article body: Ricos renders into .ricos-content with hashed class names and its own light-theme colours and sizes, so the
+     overrides below are !important and select by element. Colour, type and spacing are pinned to the tokens; the viewer is a
+     React island, which is why these live here (global) and not in the page's scoped style. */
+  .ricos-content { font-size: var(--text-lg); line-height: 1.7; }
+  .ricos-content * { color: var(--color-foreground) !important; font-family: var(--font-sans) !important; }
+  .ricos-content p, .ricos-content li { font-size: var(--text-lg) !important; line-height: 1.7 !important; }
+  .ricos-content p, .ricos-content ul, .ricos-content ol, .ricos-content blockquote { margin-top: 1.25em !important; margin-bottom: 0 !important; }
+  .ricos-content ul, .ricos-content ol { padding-left: 1.5em; }
+  .ricos-content h1, .ricos-content h2, .ricos-content h3, .ricos-content h4 { font-family: var(--font-display) !important; font-weight: 500 !important; line-height: 1.2 !important; letter-spacing: -0.015em; margin: 2em 0 0 !important; }
+  .ricos-content h2 { font-size: var(--text-lead) !important; }
+  .ricos-content h3, .ricos-content h4 { font-size: var(--text-h3) !important; }
+  .ricos-content blockquote { margin-inline: 0 !important; padding: 0.25rem 0 0.25rem 1.5rem !important; border-left: 3px solid var(--color-foreground) !important; }
+  .ricos-content blockquote p { margin-top: 0 !important; font-family: var(--font-display) !important; font-size: var(--text-h3) !important; line-height: 1.4 !important; }
+  .ricos-content a { text-decoration: underline; text-underline-offset: 3px; }
+}
+
+/* Listing page opening (category, section, tag, author): one centred composition, big display title, tags as pills. */
+@layer components {
+  .page-head { padding-block: var(--section-y) 0; }
+  .page-head__inner { display: flex; flex-direction: column; align-items: center; gap: var(--space); text-align: center; }
+  .page-head__inner > .eyebrow { margin-bottom: calc(var(--space) * -0.5); }
+  .page-head__photo { width: 8rem; height: 8rem; border-radius: 9999px; object-fit: cover; }
+  .page-head__title { font-family: var(--font-display); font-size: var(--text-display); line-height: 1; letter-spacing: -0.03em; max-width: 18ch; text-wrap: balance; }
+  .page-head__desc { width: 100%; max-width: 52ch; font-size: var(--text-lg); color: var(--color-muted-foreground); text-wrap: pretty; }
+  .page-head__count { font-size: var(--text-sm); color: var(--color-muted-foreground); margin-top: calc(var(--space) * -0.5); }
+  .page-head__tags { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
+}
+
+#subscribe { scroll-margin-top: calc(var(--header-h) + var(--space)); }
+
+/* Every field is the Home subscribe field: square, 3.5rem tall, a grey hairline that turns ink on hover and focus (white on black). */
+@layer components {
+  .field::placeholder { color: var(--color-muted-foreground); }
+  .sub-field .btn-primary { padding-inline: 1.125rem; }
+
+  /* Site pages (About, Contact): under the centred head, one centred column. */
+  .page-body { padding-top: var(--space); }
+  .page-body__inner { display: flex; flex-direction: column; align-items: center; gap: var(--space); text-align: center; }
+  .page-body__lead { max-width: 52ch; font-size: var(--text-lg); color: var(--color-muted-foreground); text-wrap: pretty; }
+  .page-body__lead > * + *, .page-body__text > * + * { margin-top: 1em; }
+  .page-body__media { width: 100%; aspect-ratio: 2 / 1; }
+  .page-body__text { max-width: 60ch; text-wrap: pretty; }
+  .team__card { display: flex; flex-direction: column; align-items: center; gap: calc(var(--space) / 2); text-align: center; }
+  .team__card .media { width: 100%; aspect-ratio: 4 / 5; margin-bottom: calc(var(--space) / 2); }
+  .contact-info { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space) calc(var(--space) * 3); }
+  .contact-info h2 { margin-bottom: calc(var(--space) / 3); }
+  .contact-info p, .contact-info ul { line-height: 1.7; }
+  .contact-form { width: 100%; max-width: 48rem; text-align: left; }
+  .contact-form button[type="submit"] { width: 100%; }
+}
+
+/* Search popup: the field, a label (Popular Posts / N results), then the Home story cards four-up. */
+@layer components {
+  .search__wrap { display: flex; flex-direction: column; gap: var(--space); padding-block: var(--space); }
+  .search__label { display: block; text-align: center; }
+  .search__grid > li[hidden] { display: none; }
+}
+
+/* Search: no button (results follow the typing), no native clear cross; the header's magnifier turns into a cross while open. */
+@layer components {
+  .search-field input[type="search"]::-webkit-search-cancel-button,
+  .search-field input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+  #search-btn .search-btn__close { display: none; }
+  #search-btn[aria-expanded="true"] .search-btn__open { display: none; }
+  #search-btn[aria-expanded="true"] .search-btn__close { display: block; }
+}
+
+/* Before typing the popup holds one row of popular posts (4 / 2 / 1 by width), so the dimmed page stays in view below it. */
+@layer components {
+  .search__grid.is-pop > li:nth-child(n+2) { display: none; }
+  @media (min-width: 768px) { .search__grid.is-pop > li:nth-child(2) { display: revert; } }
+  @media (min-width: 1280px) { .search__grid.is-pop > li:nth-child(3), .search__grid.is-pop > li:nth-child(4) { display: revert; } }
+}
+@layer components {
+  .search__grid .story__title { font-size: var(--text-lg); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .search__grid .story .media { aspect-ratio: 16 / 9; }
+}
+/* Our Team: as many columns as members (up to four), so the row always spans the page between the gutters. */
+@media (min-width: 1280px) { .row4.team { grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); } }
+@media (min-width: 1024px) and (max-width: 1279px) { .row4.team { grid-template-columns: repeat(min(var(--n, 4), 3), minmax(0, 1fr)); } }
+/* About's longer text: left-aligned, two columns from tablet up, across the page. */
+.page-body__text { width: 100%; max-width: none; text-align: left; }
+@media (min-width: 768px) { .page-body__text { column-count: 2; column-gap: calc(var(--space) * 2); } .page-body__text > p { break-inside: avoid; } }
+.page-body__text > p:first-child { margin-top: 0; }
+
+/* Final pass. Text links (contact details, ticker, bylines, breadcrumbs, the reading bar's title) dim on hover like the text
+   buttons; the round checkbox and every field show an ink edge on hover; legal pages read as one left-aligned column. */
+@layer components {
+  :is(.contact-info a, .ticker a, .post-hero__meta a, .prose-site a, .rates a, .artbar__title a, .catcard__posts a, .mega__card a, nav[aria-label="Breadcrumb"] a) { transition: opacity .16s var(--ease-site); }
+  :is(.contact-info a, .ticker a, .post-hero__meta a, .prose-site a, nav[aria-label="Breadcrumb"] a):hover { opacity: .55; }
+  .check input:hover { box-shadow: 0 0 0 1px currentColor; }
+  .page-body__prose { width: 100%; max-width: 46rem; text-align: left; }
+}
+
+/* Quiet text on black stays readable (4.5:1+): the muted grey becomes the inverse grey inside any dark band. Unlayered, so it wins over the utility. */
+.bg-inverse .text-muted-foreground { color: var(--color-inverse-muted); }
+
+/* News blocks: a hairline above each block's H2 title, inset by the page gutter like the content. The previous block's bottom
+   padding sits above it; between the line and the title, the same --space as the page's side padding. */
+section:has(> .wrap > .block-head):not(.bg-inverse) { position: relative; margin-top: var(--section-y); padding-top: var(--space); }
+section:has(> .wrap > .block-head):not(.bg-inverse)::before { content: ""; position: absolute; top: 0; inset-inline: var(--gutter); height: 1px; background: var(--color-border); }
+:has(+ section:not(.bg-inverse) > .wrap > .block-head):not(.updates) { padding-bottom: 0; margin-bottom: 0; }
+
+/* Contact: three times the usual gap between the details and the form (the column gap is --space; this adds two more). */
+.contact-info + .contact-form { margin-top: calc(var(--space) * 2); }
+
+/* Recent Updates, phone and tablet: three times the row gap (space/2) between the intro and the posts. */
+@media (max-width: 1279px) { .updates__intro { margin-bottom: var(--space); } }
+/* Contact details: left-aligned on the form's own grid — Address over the first column, the contact details over the second. */
+.contact-info { display: grid; width: 100%; max-width: 48rem; gap: var(--space) 1rem; text-align: left; justify-content: stretch; }
+@media (min-width: 640px) { .contact-info { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Footer bottom row on phone and tablet (below 1024): one column — social, then the legal pages as a plain left-aligned list
+   (no "|" bars), then the copyright last. From 1024 the three columns return: copyright, social, legal. */
+@media (max-width: 1023px) {
+  .ft__grid.ft__grid--foot { grid-template-columns: none; }
+  .ft__grid--foot .ft__col { border: 0; min-height: 0; padding-block: var(--space); align-items: flex-start; }
+  .ft__grid--foot .ft__col:first-child { order: 3; }
+  .ft__grid--foot .ft__col:not(:nth-child(2)) { border-top: 1px solid var(--color-border); }
+  .ft__legal { display: block; }
+  .ft__legal li + li { margin-top: .25rem; }
+  .ft__legal li + li::before { content: none; }
+}
+
+/* Phone and tablet menu: the current page is marked by an underline, not a heavier weight. */
+#menu-panel a[aria-current="page"] { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .3em; }
+
+/* Home, phone: half as much again between the About button and the sign-up's top rule. */
+@media (max-width: 767px) { .sheet__body { gap: calc(var(--section-y) * 1.5); } }
+
+/* Phone and tablet menu links: they dim on hover and while pressed, so a tap reads apart from the underlined current page. */
+#menu-panel a { transition: opacity .16s var(--ease-site); }
+#menu-panel a:not(.btn):hover, #menu-panel a:not(.btn):active { opacity: .55; }
+
+/* The ticker's Pause/Play button: a 32px round icon like the top bar's social icons, a white ring on hover and focus. While paused
+   the track stands still; with reduced motion there is no motion to pause, so the button is hidden. */
+.ticker-toggle { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 2rem; height: 2rem; margin-inline: calc(var(--space) / -2) calc(var(--space) / -2); border-radius: 9999px; color: var(--color-inverse-foreground); transition: box-shadow .16s var(--ease-site); }
+.ticker-toggle:hover, .ticker-toggle:focus-visible { box-shadow: inset 0 0 0 1px currentColor; outline: none; }
+.ticker-toggle__play, .ticker-toggle[aria-pressed="true"] .ticker-toggle__pause { display: none; }
+.ticker-toggle[aria-pressed="true"] .ticker-toggle__play { display: block; }
+.topbar[data-paused] .ticker__track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .ticker-toggle { display: none; } }
+
+/* Wix hosting banner, after its Close button is moved out of the link (see SiteLayout): the button sits over the link's right end,
+   exactly where it was, and the link keeps room for it. */
+#wixheadless-banner-container { position: fixed; }
+#wixheadless-banner-container > #wixheadless-banner { padding-right: 40px; }
+#wixheadless-banner-container > #wixheadless-banner-close { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }

@@ -1,0 +1,63 @@
+---
+// The reading bar: once the post's opening screen has scrolled away it slides down over the site header — the post title on the left,
+// share buttons on the right, and along its foot a hairline that fills as the reader moves through the body (the reading progress).
+// Share is plain links (Facebook, X, LinkedIn, e-mail) plus Copy link; no third-party script. Desktop and phone alike.
+import SocialIcon from "./SocialIcon.astro";
+interface Props { url: string; title: string }
+const { url, title } = Astro.props;
+const u = encodeURIComponent(url), t = encodeURIComponent(title);
+const share = [
+  { platform: "facebook", label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${u}` },
+  { platform: "x", label: "X", href: `https://x.com/intent/post?url=${u}&text=${t}` },
+  { platform: "linkedin", label: "LinkedIn", href: `https://www.linkedin.com/sharing/share-offsite/?url=${u}` },
+] as const;
+---
+<div class="artbar" data-artbar aria-hidden="true">
+  <div class="wrap artbar__row">
+    <p class="artbar__title">{title}</p>
+    <div class="artbar__share">
+      {share.map((s) => (
+        <a href={s.href} target="_blank" rel="noopener noreferrer" class="social-link" tabindex="-1" aria-label={`Share on ${s.label} (opens in a new tab)`}><SocialIcon platform={s.platform} size={16} /></a>
+      ))}
+      <a href={`mailto:?subject=${t}&body=${u}`} class="social-link" tabindex="-1" aria-label="Share by email">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1" /><path d="m3 6 9 7 9-7" /></svg>
+      </a>
+      <button type="button" class="social-link" tabindex="-1" data-artbar-copy data-url={url} aria-label="Copy link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" /><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" /></svg>
+      </button>
+    </div>
+  </div>
+  <div class="artbar__track"><div class="artbar__fill" data-artbar-fill></div></div>
+</div>
+<script is:inline>
+  // Runs once the page is parsed: the hero and the body it watches come after the bar in the markup.
+  document.addEventListener("DOMContentLoaded", function () {
+    var bar = document.querySelector("[data-artbar]"), fill = document.querySelector("[data-artbar-fill]");
+    var hero = document.querySelector("[data-post-hero]"), body = document.querySelector("[data-post-body]");
+    if (!bar || !hero || !body) return;
+    var focusables = bar.querySelectorAll("a, button");
+    function show(on) {
+      bar.classList.toggle("artbar--on", on); bar.setAttribute("aria-hidden", String(!on));
+      focusables.forEach(function (el) { on ? el.removeAttribute("tabindex") : el.setAttribute("tabindex", "-1"); });
+    }
+    // Shown once the opening screen is gone, hidden again back at the top.
+    new IntersectionObserver(function (e) { show(!e[0].isIntersecting); }, { rootMargin: "-60px 0px 0px 0px" }).observe(hero);
+    // Progress through the body: 0 when its top reaches the bar, 1 when its end reaches the bottom of the screen.
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var r = body.getBoundingClientRect(), total = r.height - window.innerHeight + 60;
+      var p = total > 0 ? Math.min(1, Math.max(0, (60 - r.top) / total)) : 1;
+      fill.style.transform = "scaleX(" + p + ")";
+    }
+    window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    window.addEventListener("resize", update); update();
+    var copy = bar.querySelector("[data-artbar-copy]");
+    copy.addEventListener("click", function () {
+      var url = copy.getAttribute("data-url");
+      var done = function () { copy.setAttribute("aria-label", "Link copied"); copy.classList.add("is-done"); setTimeout(function () { copy.setAttribute("aria-label", "Copy link"); copy.classList.remove("is-done"); }, 1600); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { window.prompt("Copy this link", url); });
+      else window.prompt("Copy this link", url);
+    });
+  });
+</script>

@@ -1,0 +1,48 @@
+---
+// The home page's story card, in the variants its blocks use:
+//   sm   cover 3:2 on top, then category, title, subtitle and read time, centred (stream column, four-up rows, side cards)
+//   lg   the same at the large size (the middle card of a 1:2:1 block, the series lead)
+//   h    cover left, text left-aligned (the series list)
+//   tall the lead: a 3:2 cover (as every other card) with the text under it, centred (the middle column at the top of Home)
+// The title link stretches over the card (one tap target); the category stays a link of its own above it.
+import { img, type Card, type Cat } from "../lib/blog";
+interface Props { post: Card; cats: Record<string, Cat>; variant?: "sm" | "lg" | "h" | "tall"; prefer?: string[]; eager?: boolean; excerpt?: boolean; level?: 0 | 2 | 3 }
+const { post, cats, variant = "sm", prefer, eager = false, excerpt = true, level = 3 } = Astro.props;
+const cat = cats[post.categoryIds.find((id) => prefer?.includes(id)) ?? post.categoryIds[0]];
+const href = `/post/${post.slug}`;
+// Twice the largest rendered size (retina), cut from the 3000px square cover in the container's own orientation.
+const size = variant === "tall" ? [1800, 1200] : variant === "lg" ? [1800, 1200] : variant === "h" ? [480, 320] : [960, 640];
+const src = img(post.cover, size[0], size[1]);
+const H = level === 0 ? "p" : level === 2 ? "h2" : "h3";
+const load = eager ? "eager" : "lazy";
+---
+{variant === "tall" ? (
+  <article class="story-tall card">
+    <div class="media">{src && <img src={src} alt="" width={size[0]} height={size[1]} loading={load} fetchpriority={eager ? "high" : undefined} />}</div>
+    <div class="story-tall__body story__body stack">
+      {cat && <a href={`/category/${cat.slug}`} class="eyebrow">{cat.label}</a>}
+      <H class="card-title text-h2"><a href={href}>{post.title}</a></H>
+      {excerpt && post.excerpt && <p class="clamp-3 mx-auto max-w-[40ch] text-sm">{post.excerpt}</p>}
+      <p class="read-time text-xs text-muted-foreground"><span>{post.minutes} minute read</span></p>
+    </div>
+  </article>
+) : variant === "h" ? (
+  <article class="story-h card">
+    <div class="media">{src && <img src={src} alt="" width={size[0]} height={size[1]} loading={load} />}</div>
+    <div class="stack min-w-0">
+      {cat && <a href={`/category/${cat.slug}`} class="eyebrow">{cat.label}</a>}
+      <H class="card-title clamp-3 text-h3"><a href={href}>{post.title}</a></H>
+      <p class="read-time text-xs story-meta"><span>{post.minutes} minute read</span></p>
+    </div>
+  </article>
+) : (
+  <article class:list={["story card", variant === "lg" && "story--lg"]}>
+    <div class="media">{src && <img src={src} alt="" width={size[0]} height={size[1]} loading={load} />}</div>
+    <div class="story__body stack">
+      {cat && <a href={`/category/${cat.slug}`} class="eyebrow">{cat.label}</a>}
+      <H class:list={["card-title", variant === "lg" ? "text-lead" : "story__title"]}><a href={href}>{post.title}</a></H>
+      {excerpt && post.excerpt && <p class="clamp-3 mx-auto max-w-[48ch] text-sm story-meta">{post.excerpt}</p>}
+      <p class="read-time text-xs story-meta"><span>{post.minutes} minute read</span></p>
+    </div>
+  </article>
+)}

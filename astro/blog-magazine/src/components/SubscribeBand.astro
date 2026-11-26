@@ -1,0 +1,27 @@
+---
+// The subscribe call to action: the blog's main CTA, but not a hero. A compact card in the quiet fill, contained in the page
+// width, with the heading at card-title size and the email field and button on one line. It sits after the content it follows
+// (below the category sections on Home, after the posts elsewhere); the header's Subscribe button is the persistent entry.
+// One block, reused on Home, category and tag pages, posts, About and the Subscribe page; its copy lives in the CMS
+// (SiteContent: subscribe) and its form is the dashboard's Newsletter form.
+import SubscribeForm from "./SubscribeForm";
+import { getCopy, getFormId } from "../lib/content";
+interface Props { id?: string; heading?: 1 | 2 }
+const { id = "sub", heading = 2 } = Astro.props;
+const [copy, formId] = await Promise.all([getCopy(), getFormId("Newsletter")]);
+const s = copy.subscribe;
+const H = heading === 1 ? "h1" : "h2";
+---
+{s && (
+  <section aria-labelledby={`${id}-h`} class="pb-(--section-y)">
+    <div class="wrap">
+      <div class="grid gap-(--space) bg-secondary p-6 md:p-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center lg:gap-(--space) lg:p-10">
+        <div>
+          <H id={`${id}-h`} class:list={[heading === 1 ? "text-h2" : "text-h3"]}>{s.title}</H>
+          {s.body && <p class="mt-(--space) max-w-[52ch] text-sm text-muted-foreground">{s.body}</p>}
+        </div>
+        <div><SubscribeForm client:load formId={formId} consent={s.bodySecondary ?? "Yes, subscribe me to the newsletter."} cta={s.ctaLabel ?? "Subscribe"} id={id} /></div>
+      </div>
+    </div>
+  </section>
+)}

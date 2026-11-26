@@ -1,0 +1,28 @@
+---
+// A tag: the posts carrying it, newest first, 12 a page. The popular tags sit above as chips. Tags have no Wix SEO item type,
+// so this page sets its own <title>.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import PostListing from "../../components/PostListing.astro";
+import PageHead from "../../components/PageHead.astro";
+import { getChrome } from "../../lib/chrome";
+import { listPosts, getTags } from "../../lib/blog";
+import { PAGE_SIZE } from "../../lib/site";
+
+const slug = Astro.params.slug!;
+const [{ catMap }, tags] = await Promise.all([getChrome(), getTags()]);
+const tag = tags.find((t) => t.slug === slug);
+if (!tag) return Astro.rewrite("/404");
+
+const wanted = Math.max(1, Math.floor(Number(Astro.url.searchParams.get("page"))) || 1);
+const res = await listPosts({ tagId: tag.id, skip: (wanted - 1) * PAGE_SIZE, limit: PAGE_SIZE });
+const pages = Math.max(1, Math.ceil(res.total / PAGE_SIZE));
+if (wanted > pages) return Astro.redirect(pages > 1 ? `/tag/${slug}?page=${pages}` : `/tag/${slug}`);
+
+const href = (n: number) => (n <= 1 ? `/tag/${slug}` : `/tag/${slug}?page=${n}`);
+---
+<SiteLayout title={tag.label}>
+  <PageHead title={tag.label} count={res.total} tags={tags.slice(0, 12)} current={tag.id} />
+  <section class="section" aria-label={`Posts tagged ${tag.label}`}>
+    <div class="wrap"><PostListing heading={`Posts tagged ${tag.label}`} posts={res.items} cats={catMap} page={wanted} pages={pages} href={href} /></div>
+  </section>
+</SiteLayout>

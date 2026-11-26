@@ -1,0 +1,120 @@
+---
+// A post: category, title, subtitle, byline, cover, the Ricos body with a sign-up inside it, tags, share, author, then the ways onward:
+// more from the same category, the latest posts beside every category and the popular tags, then the site-wide subscribe card.
+// Most readers land here from search or social and never see Home, so this page has to offer the sign-up and the next read itself.
+// An item page: it registers its route and renders the SEO tags the owner edits in the dashboard (lib/seo.ts).
+// The URL is /post/<slug>, the shape Wix itself builds for a Blog post (post.url).
+import { WIX_APPS } from "@wix/essentials";
+import { SEO } from "@wix/seo/components";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import HomeStory from "../../components/HomeStory.astro";
+import ArticleBar from "../../components/ArticleBar.astro";
+import InlineSubscribe from "../../components/InlineSubscribe.astro";
+import RicosViewer from "@wix/astro-ricos";
+import { renameKeysFromSDKRequestToRESTRequest as toRest } from "@wix/sdk-runtime/rename-all-nested-keys";
+import { getChrome } from "../../lib/chrome";
+import { getPostBySlug, getTags, getAuthors, listPosts, toCard, img, fmtDate } from "../../lib/blog";
+import { itemSeo, pageUrlOf } from "../../lib/seo";
+
+export const wixMetadata = {
+  appDefId: WIX_APPS.blogs.id,
+  pageIdentifier: WIX_APPS.blogs.postPageMetadata.pageIdentifier,
+  identifiers: { slug: WIX_APPS.blogs.postPageMetadata.identifiers.slug },
+};
+
+const slug = Astro.params.slug!;
+const [{ catMap, cats: allCats, sections }, post, tags, seo, newest] = await Promise.all([getChrome(), getPostBySlug(slug), getTags(), itemSeo(Astro.request, Astro.url, "BLOG_POST", slug), listPosts({ limit: 9 })]);
+if (!post) return Astro.rewrite("/404");
+
+const card = toCard(post);
+const cats = card.categoryIds.map((id) => catMap[id]).filter(Boolean);
+const postTags = card.tagIds.map((id) => tags.find((t) => t.id === id)).filter(Boolean) as typeof tags;
+const author = (await getAuthors([card.authorId]))[card.authorId] ?? { id: "", name: "", photo: "" };
+const authorHref = author.slug ? `/author/${author.slug}` : undefined;
+const more = cats[0] ? (await listPosts({ categoryId: cats[0].id, limit: 5 })).items.filter((p) => p.id !== card.id).slice(0, 4) : [];
+const cover = img(card.cover, 2400, 1600);
+const pageUrl = pageUrlOf(Astro.request, Astro.url);
+const initial = (author.name || "A").trim().charAt(0).toUpperCase();
+// Onward: the latest posts that are not this one and not already in "More from".
+const shown = new Set([card.id, ...more.map((p) => p.id)]);
+const latest = newest.items.filter((p) => !shown.has(p.id)).slice(0, 4);
+// The body is split once to place the sign-up inside it: after the first paragraph at or past the middle, never before the
+// third block; a post under five blocks keeps only the card at the end of the page.
+const nodes: any[] = post.richContent?.nodes ?? [];
+let cut = -1;
+if (nodes.length >= 5) {
+  cut = Math.max(3, Math.ceil(nodes.length / 2));
+  while (cut < nodes.length && nodes[cut - 1]?.type !== "PARAGRAPH") cut++;
+  if (cut >= nodes.length) cut = -1;
+}
+const part = (a: number, b?: number) => ({ ...post.richContent, nodes: nodes.slice(a, b) });
+---
+<SiteLayout>
+  {seo && <SEO.Tags seoTagsServiceConfig={seo} slot="seo-tags" />}
+  <ArticleBar url={pageUrl} title={card.title} />
+  <article>
+    {/* Opening screen: two halves — the story on black (category, title, subtitle, byline) and the cover filling the other half.
+        On a phone the cover comes first and the black panel follows. */}
+    <header class="post-hero bg-inverse" data-post-hero>
+      <div class="post-hero__text bg-inverse">
+        <div class="stack post-hero__inner">
+          {cats.length > 0 && (
+            <ul class="flex flex-wrap justify-center gap-x-4">{cats.map((c) => <li><a href={`/category/${c.slug}`} class="eyebrow">{c.label}</a></li>)}</ul>
+          )}
+          <h1 class="post-hero__title">{card.title}</h1>
+          {card.excerpt && <p class="post-hero__lead">{card.excerpt}</p>}
+          <p class="post-hero__meta">{author.name && (authorHref ? <a href={authorHref}>{author.name}</a> : <span>{author.name}</span>)}<span>{fmtDate(card.date)}</span><span>{card.minutes} minute read</span></p>
+        </div>
+      </div>
+      <div class="post-hero__media media">{cover && <img src={cover} alt="" width="2400" height="1600" fetchpriority="high" />}</div>
+    </header>
+
+    <div class="article mt-(--section-y)" data-post-body>
+      {cut > 0 ? (
+        <>
+          <div class="ricos-content"><RicosViewer content={toRest(part(0, cut))} /></div>
+          <InlineSubscribe />
+          <div class="ricos-content"><RicosViewer content={toRest(part(cut))} /></div>
+        </>
+      ) : <div class="ricos-content"><RicosViewer content={toRest(post.richContent)} /></div>}
+
+      {postTags.length > 0 && (
+        <ul class="mt-(--space) flex flex-wrap gap-2 border-t border-border pt-8" aria-label="Tags">
+          {postTags.map((t) => <li><a href={`/tag/${t.slug}`} class="chip">{t.label}</a></li>)}
+        </ul>
+      )}
+      {author.name && (
+        <div class="mt-(--space) flex items-start gap-4 bg-secondary p-5">
+          {author.photo ? <img src={author.photo} alt="" width="56" height="56" class="h-14 w-14 flex-none rounded-full object-cover" /> : <span class="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-muted text-lg font-semibold" aria-hidden="true">{initial}</span>}
+          <div>
+            <p><span class="text-sm text-muted-foreground">Written by</span><br /><strong class="font-display text-lg">{author.name}</strong></p>
+            {author.bio && <p class="mt-(--space) text-sm text-muted-foreground">{author.bio}</p>}
+            {authorHref && <a href={authorHref} class="link-btn -ml-0 justify-start">More by {author.name}</a>}
+          </div>
+        </div>
+      )}
+    </div>
+  </article>
+
+  {more.length > 0 && cats[0] && (
+    <section class="section" aria-labelledby="more-h">
+      <div class="wrap">
+        <header class="block-head"><h2 id="more-h" class="block-title">More from {cats[0].label}</h2></header>
+        <ul class="row4">{more.map((p) => <li><HomeStory post={p} cats={catMap} prefer={[cats[0].id]} /></li>)}</ul>
+        <div class="block-foot"><a href={`/category/${cats[0].slug}`} class="btn btn-outline">Read more<span class="sr-only"> in {cats[0].label}</span></a></div>
+      </div>
+    </section>
+  )}
+
+  {latest.length > 0 && (
+    <section class="pb-(--section-y)" aria-labelledby="latest-h">
+      <div class="wrap">
+        <header class="block-head"><h2 id="latest-h" class="block-title">Latest Posts</h2></header>
+        <ul class="row4">{latest.map((p) => <li><HomeStory post={p} cats={catMap} /></li>)}</ul>
+        {tags.length > 0 && (
+          <nav aria-label="Popular tags" class="block-foot"><ul class="page-head__tags">{tags.slice(0, 10).map((t) => <li><a href={`/tag/${t.slug}`} class="chip">{t.label}</a></li>)}</ul></nav>
+        )}
+      </div>
+    </section>
+  )}
+</SiteLayout>

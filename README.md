@@ -67,6 +67,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Events</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/blog-magazine">Magazine</a></td>
+      <td>An editorial, magazine-style blog with category sections, instant search, a reading bar and a newsletter sign-up, using Astro and Wix Headless.</td>
+      <td><a href="https://business-name-8-itayka0-0f07.wix-site-host.com">Demo</a></td>
+      <td>Wix Blog, Wix Forms, Wix CMS (Wix Data), Wix Members</td>
+    </tr>
+    <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/astro/rentals">Rentals</a></td>
       <td>A template for reserving rental spaces by the hour or day using Astro and Wix Headless.</td>
       <td></td>

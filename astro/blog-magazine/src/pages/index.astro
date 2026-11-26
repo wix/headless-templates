@@ -1,0 +1,262 @@
+---
+// Home, laid out as a long-form magazine front page (top to bottom):
+//   0  The page title: one large line, centred, on a hairline (CMS: SiteContent `home`); it opens with the newest covers
+//      flipping above it, then the band settles.
+//   1  Top stories, three columns 1:2:1 — a stream of the newest posts (left), the lead story as a 3:4 portrait with its text under it
+//      (middle; it scrolls until its text is in view, then stays while the stream scrolls on), and Editor's Picks as a list that stays in view (right).
+//   2  Must Read: a full-width cover with the story on a compact card centred on it; then Recent Updates, a band of three more posts.
+//   3  Category blocks in alternating forms: 1:2:1 (small, large, small), four in a row, 1:2:1 again.
+//   4  About + sign-up as one spec sheet: picture left; About copy in ruled rows on top, the newsletter form at the foot.
+//   6  Two halves of one category (each a card over its post's cover), four in a row, then a dark series block.
+// Lead story and Editor's Picks come from the Featured flag (newest featured leads, the next five are the picks, the seventh is
+// Must Read); every block shows only what the blog holds and hides itself when it is empty.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import HomeStory from "../components/HomeStory.astro";
+import SubscribeForm from "../components/SubscribeForm";
+import { getChrome } from "../lib/chrome";
+import { listPosts, img, fmtDate, type Card } from "../lib/blog";
+import { getFormId } from "../lib/content";
+import { SITE_NAME_FALLBACK } from "../lib/site";
+
+const { cats, catMap, copy, social } = await getChrome();
+const [featured, newest, formId, more] = await Promise.all([listPosts({ featured: true, limit: 7 }), listPosts({ limit: 9 }), getFormId("Newsletter"), listPosts({ skip: 8, limit: 6 })]);
+// Recent Updates: the six newest posts after those the top stream already shows.
+const updates = more.items;
+const lead = featured.items[0] ?? newest.items[0];
+const picks = featured.items.filter((p) => p.id !== lead?.id).slice(0, 5);
+const stream = newest.items.filter((p) => p.id !== lead?.id).slice(0, 7);
+const mustRead = featured.items.filter((p) => p.id !== lead?.id)[5] ?? newest.items[8];
+
+// Six category blocks, each in its own form. Fewer categories simply drop the later forms.
+const forms = ["split", "row", "split", "banner", "row", "series"] as const;
+const need = { split: 3, row: 4, banner: 2, series: 4 } as const;
+const blocks = await Promise.all(cats.slice(0, forms.length).map(async (c, i) => ({ cat: c, form: forms[i], items: (await listPosts({ categoryId: c.id, limit: need[forms[i]] })).items })));
+const live = blocks.filter((b) => b.items.length > 0);
+const byForm = (i: number) => live[i];
+
+const site = copy.site?.title ?? SITE_NAME_FALLBACK;
+const about = copy.welcome;
+const sub = copy.subscribe;
+// The About sheet: two rows — how long the publication has been going (SiteContent `welcome`, field bodySecondary) and the social
+// profiles as text links (CMS > Social Links, the same rows as the top bar and the footer).
+const SOCIAL_LABEL: Record<string, string> = { facebook: "Facebook", x: "X", instagram: "Instagram", youtube: "YouTube", tiktok: "TikTok", pinterest: "Pinterest", linkedin: "LinkedIn", threads: "Threads", whatsapp: "WhatsApp" };
+// The page title over the first screen: SiteContent row `home` (title), editable in the CMS; the site name stands in without it.
+const headline = copy.home?.title || site;
+const bannerOf = (p?: Card) => (p ? img(p.cover, 3000, 1500) : "");
+// The opening's pictures: the six newest covers (the blog, read live), small 3:2 thumbnails.
+const introPics = newest.items.slice(0, 6).map((p) => img(p.cover, 480, 320)).filter(Boolean);
+---
+<SiteLayout subscribe={false}>
+  {/* The page title band, with its opening: above the title a small frame flips through the six newest covers (hard cuts, no fade),
+      then the frame closes in on its centre like a mask while the band eases down to its resting height. On every load of Home;
+      skipped for reduced motion (and without JS the band simply rests). The covers are the blog's newest posts, read live. */}
+  <header class="masthead" data-masthead>
+    <div class="wrap">
+      {introPics.length > 0 && (
+        <div class="masthead__pics" aria-hidden="true"><div><div class="masthead__frame">
+          {introPics.map((src, i) => <img src={src} alt="" width="480" height="320" loading="eager" fetchpriority={i === 0 ? "high" : "low"} data-on={i === 0 ? "" : undefined} />)}
+        </div></div></div>
+      )}
+      <h1 class="masthead__title"><span class="masthead__line">{headline}</span></h1>
+    </div>
+  </header>
+  <script is:inline>
+    (function () {
+      var m = document.querySelector("[data-masthead]"), f = m && m.querySelector(".masthead__frame");
+      // Skipped when the page opens at an anchor (the Subscribe button lands on #subscribe): the moving band would shift it.
+      if (!f || location.hash || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      // 1 enter: the frame opens from its centre and the title rises out of its mask while the page below glides up;
+      // 2 flip: the six newest covers cut one after another; 3 settle: the frame closes in, the band eases to rest.
+      m.classList.add("is-intro", "is-enter");
+      var imgs = [].slice.call(f.querySelectorAll("img")), i = 0, STEP = 130;
+      function next() {
+        if (i + 1 >= imgs.length) { setTimeout(function () { m.classList.remove("is-intro"); }, STEP); return; }
+        imgs[i].removeAttribute("data-on"); i += 1; imgs[i].setAttribute("data-on", ""); setTimeout(next, STEP);
+      }
+      requestAnimationFrame(function () { requestAnimationFrame(function () { m.classList.remove("is-enter"); setTimeout(next, 550); }); });
+    })();
+  </script>
+
+  {lead && (
+    <section class="top" aria-labelledby="top-h">
+      <h2 id="top-h" class="sr-only">Top Stories</h2>
+      <div class="wrap top__grid">
+        <div class="top__stream" aria-label="Latest">
+          <ul class="stream">{stream.map((p) => <li><HomeStory post={p} cats={catMap} /></li>)}</ul>
+        </div>
+        <div class="top__lead"><div class="sticky-col sticky-lead" data-sticky-lead><HomeStory post={lead} cats={catMap} variant="tall" level={2} eager /></div></div>
+        {picks.length > 0 && (
+          <div class="top__picks">
+            <div class="sticky-col">
+              <h2 class="block-title text-center">Editor's Picks</h2>
+              <ol class="numbered">
+                {picks.map((p) => {
+                  const c = catMap[p.categoryIds[0]];
+                  return (
+                    <li class="card stack">
+                      {c && <a href={`/category/${c.slug}`} class="eyebrow">{c.label}</a>}
+                      <h3 class="card-title numbered__title"><a href={`/post/${p.slug}`}>{p.title}</a></h3>
+                      <p class="read-time text-xs text-muted-foreground"><span>{p.minutes} minute read</span></p>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  {mustRead && (
+    <section class="wide" aria-labelledby="must-h">
+      {bannerOf(mustRead) && <img class="banner__img" src={bannerOf(mustRead)} alt="" width="2400" height="1200" loading="lazy" />}
+      <div class="wrap wide__wrap">
+        <article class="wide__card card stack">
+          <p class="eyebrow">Must Read</p>
+          <h2 id="must-h" class="card-title wide__title"><a href={`/post/${mustRead.slug}`}>{mustRead.title}</a></h2>
+          {mustRead.excerpt && <p class="clamp-2 text-sm text-muted-foreground">{mustRead.excerpt}</p>}
+          <p class="read-time text-xs text-muted-foreground"><span>{mustRead.minutes} minute read</span></p>
+        </article>
+      </div>
+    </section>
+  )}
+
+  {updates.length > 0 && (
+    <section class="updates" aria-labelledby="updates-h">
+      {/* Recent Updates: one band — its title, a line about it and "View all" in the first column, then six posts as the header
+          panels' previews (small thumbnail, date, title), three to a row. The posts continue where the top stream stops. */}
+      <div class="wrap updates__grid">
+        <div class="updates__intro stack">
+          <h2 id="updates-h" class="card-title wide__title">{copy.updates?.title ?? "Recent Updates"}</h2>
+          {copy.updates?.body && <p>{copy.updates.body}</p>}
+        </div>
+        {updates.map((p) => {
+          // The same preview as the header's category panels: a small 3:2 thumbnail beside the date and title.
+          const src = img(p.cover, 240, 160);
+          return (
+            <div class="upd">
+              <article class="mega__card card">
+                <div class="media">{src && <img src={src} alt="" width="240" height="160" loading="lazy" />}</div>
+                <div class="mega__text">
+                  <p class="text-xs text-muted-foreground">{fmtDate(p.date)}</p>
+                  <h3 class="card-title clamp-2 text-sm"><a href={`/post/${p.slug}`}>{p.title}</a></h3>
+                </div>
+              </article>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  )}
+
+  {[0, 1, 2].map((i) => {
+    const b = byForm(i);
+    if (!b) return null;
+    const href = `/category/${b.cat.slug}`;
+    return (
+      <section class="section block" aria-labelledby={`blk-${i}`}>
+        <div class="wrap">
+          <header class="block-head"><h2 id={`blk-${i}`} class="block-title">{b.cat.label}</h2></header>
+          {b.form === "split" ? (
+            <ul class="split">
+              {b.items.map((p, j) => <li class:list={[j === 1 && "split__main"]}><HomeStory post={p} cats={catMap} prefer={[b.cat.id]} variant={b.items.length > 1 && j === 1 ? "lg" : "sm"} /></li>)}
+            </ul>
+          ) : (
+            <ul class="row4">{b.items.map((p) => <li><HomeStory post={p} cats={catMap} prefer={[b.cat.id]} /></li>)}</ul>
+          )}
+          <div class="block-foot"><a href={href} class="btn btn-outline">Read more<span class="sr-only"> in {b.cat.label}</span></a></div>
+        </div>
+      </section>
+    );
+  })}
+
+  {(about || sub) && (
+    <section class="section bg-inverse sheet-band" aria-labelledby="about-h">
+      {/* About + subscribe as one spec sheet: the picture on the left half; on the right, the About copy as ruled rows on top
+          and the newsletter sign-up between rules at the foot. */}
+      <div class="wrap sheet">
+        <div class="sheet__media media">{(copy.about?.image || about?.image) && <img src={copy.about?.image || about?.image} alt="" width="1500" height="1875" loading="lazy" />}</div>
+        <div class="sheet__body">
+          <div>
+            <h2 id="about-h" class="sheet__title">{about?.title ?? "About Us"}</h2>
+            <dl class="sheet__rows">
+              {about?.bodySecondary && <div><dt>Publishing</dt><dd>{about.bodySecondary}</dd></div>}
+              {social.length > 0 && (
+                <div><dt>Follow us</dt><dd><ul class="sheet__links">{social.map((l) => <li><a href={l.url} target="_blank" rel="noopener noreferrer">{SOCIAL_LABEL[l.platform] ?? l.platform}<span class="sr-only"> (opens in a new tab)</span></a></li>)}</ul></dd></div>
+              )}
+            </dl>
+            {about?.body && <p class="sheet__text">{about.body}</p>}
+            <a href="/about" class="btn btn-outline btn-sm mt-(--space)">{about?.ctaLabel ?? "About Us"}</a>
+          </div>
+          {sub && (
+            <div class="sheet__foot" id="subscribe" aria-labelledby="signup-h">
+              <div class="sheet__foot-head">
+                <h3 id="signup-h" class="sheet__label">{sub.title}</h3>
+                {sub.body && <p class="text-sm text-muted-foreground">{sub.body}</p>}
+              </div>
+              <SubscribeForm client:load formId={formId} consent={sub.bodySecondary ?? "Yes, subscribe me to the newsletter."} cta={sub.ctaLabel ?? "Subscribe"} id="home-sub" />
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {byForm(3) && (() => {
+    // Two halves: the category's two newest posts, each on a card over its own cover.
+    const b = byForm(3)!;
+    return (
+      <section class="halves" aria-label={b.cat.label}>
+        {b.items.slice(0, 2).map((p) => {
+          const bg = img(p.cover, 1500, 1500);
+          return (
+            <div class="half">
+              {bg && <img class="banner__img" src={bg} alt="" width="1500" height="1500" loading="lazy" />}
+              <article class="wide__card card stack">
+                <a href={`/category/${b.cat.slug}`} class="eyebrow">{b.cat.label}</a>
+                <h2 class="card-title wide__title"><a href={`/post/${p.slug}`}>{p.title}</a></h2>
+                {p.excerpt && <p class="clamp-2 text-sm text-muted-foreground">{p.excerpt}</p>}
+                <p class="read-time text-xs text-muted-foreground"><span>{p.minutes} minute read</span></p>
+              </article>
+            </div>
+          );
+        })}
+      </section>
+    );
+  })()}
+
+  {byForm(4) && (
+    <section class="section block" aria-labelledby="blk-4">
+      <div class="wrap">
+        <header class="block-head"><h2 id="blk-4" class="block-title">{byForm(4)!.cat.label}</h2></header>
+        <ul class="row4">{byForm(4)!.items.map((p) => <li><HomeStory post={p} cats={catMap} prefer={[byForm(4)!.cat.id]} /></li>)}</ul>
+        <div class="block-foot"><a href={`/category/${byForm(4)!.cat.slug}`} class="btn btn-outline">Read more<span class="sr-only"> in {byForm(4)!.cat.label}</span></a></div>
+      </div>
+    </section>
+  )}
+
+  {byForm(5) && (
+    <section class="series bg-inverse" aria-labelledby="blk-5">
+      <div class="wrap section">
+        <header class="block-head"><h2 id="blk-5" class="block-title">{byForm(5)!.cat.label}</h2></header>
+        <div class="series__grid">
+          <HomeStory post={byForm(5)!.items[0]} cats={catMap} prefer={[byForm(5)!.cat.id]} variant="lg" excerpt={false} />
+          {byForm(5)!.items.length > 1 && <ul class="series__list">{byForm(5)!.items.slice(1).map((p) => <li><HomeStory post={p} cats={catMap} prefer={[byForm(5)!.cat.id]} variant="h" /></li>)}</ul>}
+        </div>
+        <div class="block-foot"><a href={`/category/${byForm(5)!.cat.slug}`} class="btn btn-outline">Read more<span class="sr-only"> in {byForm(5)!.cat.label}</span></a></div>
+      </div>
+    </section>
+  )}
+
+  <script>
+    // The lead is taller than the screen, so it pins by its foot: CSS reads its height from --lead-h and sets the sticky top so
+    // the card scrolls until its text is in view, then stays while the stream scrolls on.
+    const el = document.querySelector<HTMLElement>("[data-sticky-lead]");
+    if (el) new ResizeObserver(() => el.style.setProperty("--lead-h", `${el.offsetHeight}px`)).observe(el);
+    // The lead's hover (grey fill, picture drawing in) waits until its text has scrolled into view; the whole card stays a link.
+    const card = el?.querySelector<HTMLElement>(".story-tall");
+    const body = card?.querySelector<HTMLElement>(".story__body");
+    if (card && body) new IntersectionObserver(([e]) => card.toggleAttribute("data-hover-ready", e.isIntersecting), { threshold: 0.5 }).observe(body);
+  </script>
+</SiteLayout>
