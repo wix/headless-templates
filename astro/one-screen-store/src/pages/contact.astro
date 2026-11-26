@@ -1,0 +1,13 @@
+---
+// Contact: a page of its own in the store's chrome (header, About / Reviews side panels): the business details (CMS) beside
+// a Wix Form rendered from its live schema, submitted by the visitor (StoreApp, page="contact").
+import StoreApp from "../components/store/StoreApp";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { BUSINESS_NAME } from "../lib/site";
+import { loadStore } from "../lib/store-data";
+
+const data = await loadStore();
+---
+<SiteLayout title={data.contact.title} products={data.items}>
+  <StoreApp client:load data={data} businessName={BUSINESS_NAME} initialUrl={Astro.url.href} page="contact" />
+</SiteLayout>

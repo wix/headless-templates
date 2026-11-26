@@ -1,0 +1,18 @@
+---
+// FAQ: in the store's own header and footer (StoreApp, page="content"). Accordion rows (FaqList, the product page's animated info sections). Rows come from the Faqs CMS collection; a row's optional link leads to the page that answers it.
+import FaqList from "../components/store/FaqList";
+import StoreApp from "../components/store/StoreApp";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { getFaqs, getSections } from "../lib/content";
+import { BUSINESS_NAME } from "../lib/site";
+import { loadStore } from "../lib/store-data";
+
+const [s, faqs, data] = await Promise.all([getSections(), getFaqs(), loadStore()]);
+const title = s.faq?.title ?? "FAQ";
+---
+<SiteLayout title={title} products={data.items}>
+  <StoreApp client:load data={data} businessName={BUSINESS_NAME} initialUrl={Astro.url.href} page="content" pinFooter>
+    <h1 class="text-[clamp(2rem,1.2rem+2.6vw,3.25rem)] leading-[1.1] tracking-[-0.025em]">{title}</h1>
+    <FaqList client:load faqs={faqs.map((f) => ({ question: f.question, answer: f.answer, linkHref: f.linkHref ?? undefined, linkLabel: f.linkLabel ?? undefined }))} />
+  </StoreApp>
+</SiteLayout>

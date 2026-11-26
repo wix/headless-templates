@@ -1,0 +1,21 @@
+---
+// Legal pages (Terms, Privacy, Shipping, Refund, Accessibility) from the LegalPages CMS collection, in the store's own
+// header and footer (StoreApp, page="content"). The owner edits them in the dashboard; an unknown slug is a 404.
+import StoreApp from "../../components/store/StoreApp";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { getLegalPage } from "../../lib/content";
+import { BUSINESS_NAME } from "../../lib/site";
+import { loadStore } from "../../lib/store-data";
+
+const page = await getLegalPage(Astro.params.slug!);
+if (!page) return new Response(null, { status: 404 });
+const data = await loadStore();
+---
+<SiteLayout title={String(page.title)} products={data.items}>
+  <StoreApp client:load data={data} businessName={BUSINESS_NAME} initialUrl={Astro.url.href} page="content">
+    <article>
+      <h1 class="text-[clamp(2rem,1.2rem+2.6vw,3.25rem)] leading-[1.1] tracking-[-0.025em]" style="max-width: 20ch">{page.title}</h1>
+      <div class="prose-site mt-(--gutter)" set:html={String(page.body ?? "")} />
+    </article>
+  </StoreApp>
+</SiteLayout>

@@ -1,0 +1,13 @@
+---
+// Shop is the same one-screen catalog as Home.
+import StoreApp from "../components/store/StoreApp";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { getSections } from "../lib/content";
+import { BUSINESS_NAME } from "../lib/site";
+import { loadStore } from "../lib/store-data";
+
+const [data, s] = await Promise.all([loadStore(), getSections()]);
+---
+<SiteLayout title={s.shop?.title ?? "Shop"} products={data.items}>
+  <StoreApp client:load data={data} businessName={BUSINESS_NAME} initialUrl={Astro.url.href} />
+</SiteLayout>

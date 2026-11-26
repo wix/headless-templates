@@ -1,0 +1,347 @@
+@import url('https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:wght@400;500&display=swap');
+@import 'tailwindcss';
+
+/* ─── THE design system ─────────────────────────────────────────────────────────────────
+   Every colour, type size, radius, spacing tier and motion value on the site is decided HERE.
+   The shipped components (cart drawer, option picker, quick add) and our own surfaces both read
+   these tokens through Tailwind utilities (bg-secondary, text-muted-foreground, rounded-control,
+   py-(--section-y) …) or the .component classes below. Change a token and everything follows;
+   there is no second theme file.
+
+   Direction: the designer's neutral grey Wix Studio wireframe (same family as the Bookings
+   wireframes): greys only, ink as the single emphasis colour; the cloning user brings the brand.
+   Surfaces separate by quiet fills (background → secondary → muted), not by outlines.
+   Contrast (WCAG AA): foreground on background 18:1, muted-foreground on background 6.7:1 and on
+   secondary 6.1:1, inverse-muted on inverse 7.9:1, destructive on white 6.1:1. */
+@theme {
+  /* ── colour ── */
+  --color-background: #ffffff;
+  --color-foreground: #161616;
+  --color-primary: #161616;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f2f2f2;            /* the grey band; quiet fills (cards on a plain band, steppers, notes) */
+  --color-secondary-foreground: #161616;
+  --color-muted: #eaeaea;                /* image fields, skeletons, hover fill of quiet controls */
+  --color-muted-foreground: #5c5c5c;
+  --color-inverse: #161616;
+  --color-inverse-foreground: #ffffff;
+  --color-inverse-muted: #b3b3b3;
+  --color-border: #dbdbdb;               /* hairlines and form-field edges only */
+  --color-destructive: #b42318;
+
+  /* ── shape ── media and cards are square-edged; controls are pills (change --radius-control for
+     square buttons). Fields and notes take --radius-md; ribbons --radius-sm. */
+  --radius-lg: 0px;
+  --radius-md: 6px;                       /* fields, notes, chips */
+  --radius-card: 0.75rem;                 /* photo frames and cards: 12px, as on the reference sites */
+  --radius-stage: 1.25rem;                /* the open product: its photos and the dark panel share one 20px corner */
+  --radius-sm: 0.25rem;
+  --radius-control: 9999px;
+
+  /* ── type ── real steps (no two within 4px); fluid only where a heading must hold a phone and a 1440 fold. */
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-display: 'Wix Madefor Text', Arial, Helvetica, sans-serif;
+  --font-weight-semibold: 500;           /* labels and prices stay light, like the reference sites */
+  --text-xs: 0.875rem;                                   /* 14: the smallest text on the site (meta, labels, legal) */
+  --text-sm: 0.875rem;                                   /* 14: labels, card text */
+  --text-base: 0.9375rem;                                /* 15: body (inputs stay 16 below, which stops iOS zoom) */
+  --text-lg: 1.125rem;                                   /* 18: large body, price */
+  --text-h3: 1.25rem;                                    /* 20: card and block titles */
+  --text-h2: clamp(1.625rem, 1.2rem + 1.6vw, 2.375rem);  /* 26→38: section and page titles */
+  --text-display: clamp(2.5rem, 1.4rem + 4.4vw, 4.75rem); /* 40→76: the home title only */
+
+  /* ── motion ── one easing, two durations (state 160ms, panel 260ms), everywhere. */
+  --ease-site: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-push: cubic-bezier(0.32, 0.72, 0, 1);   /* side panels: a long, soft glide */
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ── spacing tiers ── declared once; the section tier and the gutter CHANGE at each breakpoint so
+   rhythm is tuned per width rather than one value stretched.
+     8   label → control                (gap-2)
+     16  control → control, card → card (gap-4)
+     24  group → group                  (gap-6)
+     40  last decision → next block     (gap-10)
+     section: 56 phone / 72 tablet / 88 desktop
+     gutter:  20 phone / 32 tablet / 48 desktop; content stops at 1440, wider adds gutter. */
+:root {
+  --panel-w: 22rem;                 /* the open tile's dark panel */
+  --drawer-w: min(26rem, 88vw);     /* About / Reviews side panels */
+  --grid-gap: 0.5rem;                /* catalog tiles, Grid and Strip alike */
+  --catalog-top: var(--gutter); /* title block → first row of tiles: the same as the page sides (and the space above the title) */
+  --store-header: var(--header-h); /* the store header: one compact row at every width */
+  --section-y: 3.5rem;
+  --gutter: calc(var(--grid-gap) * 3); /* page side padding: 3 × the gap between cards (24 / 36 px) */
+  --header-h: 2.75rem;                /* compact header: 44px at every width */
+  --footer-h: 2.75rem;                /* the fixed footer bar at the foot of the screen: 44px */
+  --content-max: 90rem;
+}
+@media (min-width: 768px) { :root { --section-y: 4.5rem;  } }
+@media (min-width: 1024px) { :root { --section-y: 5.5rem; --grid-gap: 0.75rem; } }
+
+@layer base {
+  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 1rem); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 500; line-height: 1.1; letter-spacing: -0.015em; text-wrap: balance; }
+  h1 { letter-spacing: -0.025em; }
+  h3 { line-height: 1.3; letter-spacing: -0.005em; }
+  input, select, textarea { font-size: 1rem; }
+  p { text-wrap: pretty; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 3px; }
+  .bg-inverse :focus-visible { outline-color: var(--color-inverse-foreground); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+  }
+}
+
+@layer components {
+  /* The page container: gutter on both sides, content capped at 1440. */
+  /* The page container: full width at every screen size, the same gutter on both sides (3 × the card gap). No cap. */
+  .wrap { width: 100%; padding-inline: var(--gutter); }
+  .section { padding-block: var(--section-y); }
+
+  /* The one button system. Primary = filled ink; secondary = quiet fill (no outline: a border is the loudest mark
+     on a greyscale page). 48px tall, above the 44px tap floor. */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-height: 3rem; padding-inline: 1.5rem; border-radius: var(--radius-control); border: 0;
+    font-size: var(--text-base); font-weight: 400; line-height: 1; white-space: nowrap; text-decoration: none;
+    transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site), box-shadow 160ms var(--ease-site), opacity 160ms var(--ease-site);
+  }
+  .btn-primary { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .btn-primary:hover:not(:disabled) { background: #3a3a3a; }
+  /* Secondary = outline pill (a 1px inset ink ring, so it never shifts the layout), as on the reference sites. */
+  .btn-secondary, .btn-outline { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .btn-secondary:hover:not(:disabled), .btn-outline:hover:not(:disabled) { background: var(--color-foreground); color: var(--color-background); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn-sm { min-height: 34px; padding-inline: 1rem; font-size: var(--text-sm); }
+  .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary:disabled, .btn-primary[aria-disabled="true"] { opacity: 1; background: #e7e7e7; color: var(--color-muted-foreground); }
+  /* A text action (View All, Read the Shipping Policy): underlined, 44px target. */
+  .link-btn { display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2.75rem; font-size: var(--text-sm); font-weight: 400; text-decoration: underline; text-underline-offset: 4px; transition: opacity 160ms var(--ease-site); }
+  .link-btn:hover { opacity: 0.6; }
+  /* Text buttons (logo, accordions, steppers, "Remove", "Have a promo code?"): the label fades on hover */
+  .text-btn { transition: opacity 160ms var(--ease-site); }
+  /* quantity steppers: the − / + fill with the page colour on hover, a light round chip inside the grey pill */
+  .step-btn { transition: background-color 160ms var(--ease-site); }
+  .step-btn:hover:not(:disabled) { background-color: var(--color-background); }
+  .text-btn:hover:not(:disabled) { opacity: 0.6; }
+
+  /* ── hovers, as on the reference sites ──
+     filled button → outline; outline button → filled; icon buttons and header links → a 1px ink ring;
+     size pills → filled; swatches → a quiet ring; footer links and card names → fade to 60%. */
+  .btn-primary:hover:not(:disabled):not([aria-disabled="true"]) { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .bg-inverse .btn:hover:not(:disabled) { background: transparent; color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+  .icon-btn, .nav-link { border-radius: var(--radius-control); transition: box-shadow 160ms var(--ease-site), background-color 160ms var(--ease-site), opacity 160ms var(--ease-site); }
+  .icon-btn:hover:not(:disabled), header .nav-link:hover { background-color: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  footer .nav-link:hover { opacity: 0.6; }
+  .pill { transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site), border-color 160ms var(--ease-site); }
+  .pill:hover:not(:disabled):not(:has(:disabled)) { background: var(--color-foreground); color: var(--color-background); border-color: var(--color-foreground); }
+  .swatch:hover:not(:disabled):not(:has(:disabled)) { box-shadow: inset 0 0 0 1px var(--color-muted-foreground); }
+  .group:hover .card-name { opacity: 0.6; }
+
+  /* Product ribbon: one shared style for every ribbon a product carries. A quiet fill, no outline. */
+  .ribbon {
+    display: inline-flex; align-items: center; min-height: 1.5rem; padding-inline: 0.5rem; border-radius: var(--radius-sm);
+    background: var(--color-background); color: var(--color-foreground); font-size: var(--text-xs); font-weight: 400; line-height: 1;
+  }
+
+  /* Rich text from the CMS / catalog (legal pages, product description, info sections). */
+  .prose-site { max-width: 68ch; }
+  .prose-site > * + * { margin-top: 1em; }
+  .prose-site h2 { font-size: var(--text-h3); margin-top: 2.25em; }
+  .prose-site h2 + * { margin-top: 0.75em; }
+  .prose-site ul { list-style: disc; padding-left: 1.25em; }
+  .prose-site li + li { margin-top: 0.4em; }
+  .prose-site a { text-decoration: underline; text-underline-offset: 3px; }
+
+
+  /* PDP decision column: pinned under the header on desktop, but only on windows tall enough to show all of it;
+     shorter windows get it static rather than a pinned block whose buy button sits below the fold. */
+  @media (min-width: 1024px) and (min-height: 760px) {
+    .pdp-sticky { position: sticky; top: calc(var(--header-h) + 1.5rem); }
+  }
+
+  /* Horizontal rail: snaps, peeks the next item, and pulls the track out to the viewport edge while the first item
+     stays on the page gutter. --rail-item is the item width at each breakpoint, so how many are in view is decided
+     in one place. On desktop a rail whose items fit (four colourways) is just a row; past that it scrolls. */
+  .rail {
+    display: grid; grid-auto-flow: column; grid-auto-columns: var(--rail-item, 56%); gap: 1rem;
+    overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+    margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail > * { scroll-snap-align: start; min-width: 0; }
+  /* ~1.8 cards in view on a phone, 2.6 on a tablet, exactly four from 1024 (no peek needed: nothing hides). */
+  .rail-cards { --rail-item: 56%; }
+  .rail-quotes { --rail-item: 78%; }
+  @media (min-width: 768px) { .rail-cards { --rail-item: 38%; } .rail-quotes { --rail-item: 46%; } }
+  @media (min-width: 1024px) {
+    .rail { gap: 1.5rem; margin-inline: 0; padding-inline: 0; scroll-padding-inline: 0; }
+    .rail-cards { --rail-item: calc((100% - 4.5rem) / 4); }
+    .rail-quotes { --rail-item: calc((100% - 3rem) / 3); }
+  }
+
+  /* The product grid (Shop): a PAGED grid with a fixed column count, so one product is one card at card width (never
+     stretched across the page) and N products add rows a page at a time ("Load more"). */
+  .product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 1rem; }
+  @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem 1.5rem; } }
+  @media (min-width: 1024px) { .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+  /* Section bands alternate plain / grey, counted back from the footer (grey), so the last section is plain.
+     Cards inside a band take the other tone, so they stay visible without an outline. */
+  .band-grey { background: var(--color-secondary); }
+  .card { border-radius: var(--radius-card); }
+  .on-grey .card { background: var(--color-background); }
+  .on-plain .card { background: var(--color-secondary); }
+
+  /* ── the one-screen store ── */
+  /* Dark scope: every token flips, so shipped controls (OptionPicker, pills, buttons) read right on the dark panel. */
+  .theme-inverse {
+    --color-background: #161616; --color-foreground: #ffffff;
+    --color-primary: #ffffff; --color-primary-foreground: #161616;
+    --color-secondary: #242424; --color-secondary-foreground: #ffffff;
+    --color-muted: #2e2e2e; --color-muted-foreground: #a8a8a8;
+    --color-border: #3a3a3a;
+  }
+  .theme-inverse .btn-primary:hover:not(:disabled):not([aria-disabled="true"]) { background: transparent; color: #fff; box-shadow: inset 0 0 0 1px #fff; }
+  .theme-inverse .btn-primary:disabled, .theme-inverse .btn-primary[aria-disabled="true"] { background: #2e2e2e; color: #a8a8a8; }
+
+  /* About / Reviews: the panel glides in from the right while the whole site is pushed left by the same distance and dims.
+     One long, soft curve for all three (panel, push, dim), so they move as one piece. GPU transforms only, no layout per frame. */
+  .store-shell { transition: transform 560ms var(--ease-push); }
+  .store-shell.is-pushed, .cart-open .store-shell { transform: translate3d(calc(-1 * var(--drawer-w)), 0, 0); }
+  .drawer { transform: translate3d(100%, 0, 0); visibility: hidden; transition: transform 560ms var(--ease-push), visibility 0s linear 560ms; }
+  .drawer.is-open { transform: none; visibility: visible; transition: transform 560ms var(--ease-push), visibility 0s; }
+  .dim { transition: opacity 560ms var(--ease-push); }
+  .scroll-locked { overflow: hidden; } /* the html element only: the window stays the scroller, so sticky parts (the strip) keep their place */
+  html { scrollbar-gutter: stable; } /* locking the scroll never shifts the page sideways */
+
+  .view-bar { transition: opacity 260ms var(--ease-site); }
+  .view-btn { transition: color 160ms var(--ease-site), background-color 160ms var(--ease-site); }
+  .view-tip { opacity: 0; transform: translate(-50%, 4px); transition: opacity 160ms var(--ease-site), transform 160ms var(--ease-site); }
+  .view-btn:focus-visible .view-tip, .view-tip.view-tip-on { opacity: 1; transform: translate(-50%, 0); }
+  @media (hover: hover) and (min-width: 1024px) { .view-btn:hover .view-tip { opacity: 1; transform: translate(-50%, 0); } }
+
+  .strip { scroll-snap-type: x proximity; scroll-padding-inline: var(--gutter); scrollbar-width: none; overscroll-behavior-x: contain; }
+  .strip::-webkit-scrollbar { display: none; }
+  .tile-photo { transition: transform 600ms var(--ease-site); }
+  .tile:hover .tile-photo { transform: scale(1.03); }
+  .tile-photo-alt { opacity: 0; transition: opacity 360ms var(--ease-site), transform 600ms var(--ease-site); }
+  .tile:hover .tile-photo-alt, .tile:focus-visible .tile-photo-alt { opacity: 1; }
+  .tile:has(.tile-caption:hover) .tile-photo-alt, .tile:has(.swatch-dot:focus-visible) .tile-photo-alt { opacity: 0; }
+  /* keyboard: the caption (and its colour dots) shows while anything in the tile has focus */
+  .tile:focus-within .tile-caption { opacity: 1; transform: none; }
+  /* a tile's colour dots: hover lifts the dot a little; the tile's photo eases across when one is picked */
+  .swatch-dot-fill { transition: transform 200ms var(--ease-site), box-shadow 200ms var(--ease-site); }
+  .swatch-dot[role="radio"]:hover .swatch-dot-fill, .swatch-dot[role="radio"]:focus-visible .swatch-dot-fill { transform: scale(1.35); }
+  .swatch-dot[role="radio"]:focus-visible { outline: none; }
+  .swatch-dot[role="radio"]:focus-visible .swatch-dot-fill { outline: 2px solid var(--color-foreground); outline-offset: 2px; }
+  /* the caption appears over the top of the photo on hover, in Grid and in Strip */
+  /* (the caption sits at the top of the tile; it drops in from just above, and the ribbon it covers fades out) */
+  .tile-ribbon { transition: opacity 200ms var(--ease-site); }
+  .tile:hover .tile-ribbon, .tile:focus-visible .tile-ribbon { opacity: 0; }
+  .tile-caption { opacity: 0; transform: translate3d(0, -6px, 0); transition: opacity 200ms var(--ease-site), transform 260ms var(--ease-site); }
+  .tile:hover .tile-caption, .tile:focus-visible .tile-caption { opacity: 1; transform: none; }
+
+  /* Strip = the grid's first row continued: one tile is exactly one grid column wide (2 / 3 / 4 columns). */
+  .strip-wrap { container-type: size; }
+  /* Strip cards: as tall as the room under the title, never wider than the container (a short, wide window). */
+  .strip-item { aspect-ratio: 3 / 4; max-width: calc(100cqw - 2 * var(--grid-gap)); }
+  @media (hover: none) { .strip-item { aspect-ratio: auto; width: calc((100cqh - 3rem) * 0.75); } }
+
+  /* Opening a tile: the other tiles slide away from it and fade, the title and footer fade; the clicked tile hides
+     while its photo flies (Stage.tsx). Closing removes .is-open and everything glides back. */
+  .catalog .tile { transform-origin: 0 0; transition: transform 640ms var(--ease-push), opacity 420ms var(--ease-site); }
+  .catalog.is-open .tile { transform: translate3d(var(--leave-x, 0px), var(--leave-y, 0px), 0); opacity: 0; pointer-events: none; }
+  .catalog .tile[data-active] { opacity: 0; transition: none; }
+  .catalog .fade-on-open { transition: opacity 420ms var(--ease-site); }
+  .catalog.is-open .fade-on-open { opacity: 0; pointer-events: none; }
+
+  /* The open view: the photo flies in (FLIP, inline styles); a stage without a source tile (a direct link) fades in.
+     The dark panel slides in a beat later and its three parts rise one after another; thumbnails rise with them. */
+  .stage--fade { animation: rise-in 360ms var(--ease-site); }
+  .stage-panel { animation: panel-in 560ms var(--ease-push) 140ms both; }
+  .stage-panel > * { animation: rise-in 520ms var(--ease-push) both; }
+  .stage-panel > :nth-child(1) { animation-delay: 240ms; }
+  .stage-panel > :nth-child(2) { animation-delay: 310ms; }
+  .stage-panel > :nth-child(3) { animation-delay: 380ms; }
+  .stage-thumbs { animation: rise-in 520ms var(--ease-push) 300ms both; }
+  .stage-close { animation: rise-in 480ms var(--ease-push) 260ms both; }
+  /* Header buttons (About, Reviews, Contact): 32px pills inside the 44px bar; on hover the pill turns black, the label white */
+  .hdr-btn { transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site); }
+  /* the current page reads as an outlined pill; hover (and an open panel) fills it, so current and hovered never look the same */
+  .hdr-btn[aria-current="page"] { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .hdr-btn:hover, .hdr-btn[aria-expanded="true"] { background-color: var(--color-foreground); color: var(--color-background); }
+  /* Close (product page and side panels alike): a grey circle; on hover the fill goes (the ring stays) and the cross turns a quarter */
+  .close-btn svg { transition: transform 360ms var(--ease-push); }
+  .close-btn:hover svg, .close-btn:focus-visible svg { transform: rotate(90deg); }
+  /* info sections: the text's row grows from 0 to its height, fading and settling in */
+  .info-body { grid-template-rows: 0fr; transition: grid-template-rows 420ms var(--ease-push); }
+  .info-body.is-open { grid-template-rows: 1fr; }
+  .info-text { opacity: 0; transform: translate3d(0, -6px, 0); transition: opacity 260ms var(--ease-site), transform 420ms var(--ease-push); }
+  .info-body.is-open .info-text { opacity: 1; transform: none; transition-delay: 80ms; }
+  /* Desktop photo feed: one photo per screen (as tall as it can be under Close, never wider than its column), snapped. */
+  /* The open product (desktop): everything sits one gutter in from the header, the right edge and the bottom, like the
+     page's sides. The photo is as tall as that leaves and never wider than its column minus room for Close on the left. */
+  .stage-gallery { --shot-h: min(calc(100svh - var(--store-header) - 2 * var(--gutter)), calc((100vw - var(--panel-w) - 2 * var(--gutter) - 2 * (var(--gutter) + 3.5rem)) * 4 / 3)); }
+  /* the feed: a rounded mask exactly one photo wide; clip-path keeps the corners rounded in every browser while photos scroll under it */
+  .stage-track { scroll-padding-inline: var(--gutter); overscroll-behavior-x: contain; }
+  /* phone + tablet product photos: as tall as the screen allows while the name, price, options and Add to cart still fit
+     below them in the first screen (--buy-room), never wider than 86% of the screen */
+  :root { --buy-room: 25rem; }
+  @media (min-width: 768px) { :root { --buy-room: 20rem; } }
+  .stage-slide { height: min(calc(100svh - var(--store-header) - var(--buy-room)), calc(86vw * 4 / 3)); }
+  /* phone + tablet strip: a plain row you swipe sideways, snapping tile by tile */
+  .strip-swipe { overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); overscroll-behavior-x: contain; scrollbar-width: none; }
+  .strip-swipe::-webkit-scrollbar { display: none; }
+  .strip-swipe .strip-item { scroll-snap-align: start; }
+  .stage { --radius-card: var(--radius-stage); }
+  .stage-feed { left: calc(50% - var(--shot-h) * 0.375); width: calc(var(--shot-h) * 0.75); overscroll-behavior: contain; clip-path: inset(0 round var(--radius-card)); }
+  .stage-expand-over { top: calc(var(--gutter) + 0.625rem); left: calc(50% + var(--shot-h) * 0.375 - 0.625rem - 2.5rem); }
+  .stage-expand { animation: rise-in 480ms var(--ease-push) 260ms both; }
+  .stage.is-closing .stage-expand { opacity: 0; transition: opacity 160ms; }
+  .lightbox--fade { animation: lightbox-in 220ms var(--ease-site) both; }
+  @keyframes lightbox-in { from { opacity: 0; } }
+  .stage-thumbs-over { top: calc(var(--gutter) + 0.625rem); left: calc(50% - var(--shot-h) * 0.375 + 0.625rem); }
+  .stage.is-closing .stage-panel, .stage.is-closing .stage-thumbs, .stage.is-closing .stage-close, .stage.is-closing .stage-panel > * {
+    animation: none; opacity: 0; transform: translate3d(0, 0, 0); transition: opacity 240ms var(--ease-site);
+  }
+  .stage.is-closing .stage-panel { transform: translate3d(24px, 0, 0); transition: opacity 240ms var(--ease-site), transform 360ms var(--ease-push); }
+  /* phone + tablet: the rail's other photos fade while the shown one shrinks into its tile; the panel (under the photos
+     there) drops a little as it fades, instead of sliding sideways */
+  .stage.is-closing .stage-slide { opacity: 0; transition: opacity 240ms var(--ease-site); }
+  @media (max-width: 1023px) { .stage.is-closing .stage-panel { transform: translate3d(0, 24px, 0); } }
+  .stage--fade.is-closing { opacity: 0; transition: opacity 280ms var(--ease-site); }
+  @keyframes panel-in { from { opacity: 0; transform: translate3d(32px, 0, 0); } to { opacity: 1; transform: none; } }
+  @keyframes rise-in { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { opacity: 1; transform: none; } }
+}
+
+/* Form field hover/focus — unlayered so it wins over the border-border utility. */
+input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea { transition: border-color 160ms var(--ease-site), box-shadow 160ms var(--ease-site); }
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not(:disabled):not([readonly]):hover, select:not(:disabled):hover, textarea:not(:disabled):not([readonly]):hover { border-color: var(--color-foreground); }
+input:not([type=checkbox]):not([type=radio]):not([type=range]):focus-visible, select:focus-visible, textarea:focus-visible { border-color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); outline: none; }
+/* Text fields' default border: #8C8C8C is 3.4:1 against the white field and page (WCAG non-text contrast ≥ 3:1);
+   hover / focus turn it to the text colour (above), an invalid field keeps its red. */
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not([aria-invalid="true"]), select:not([aria-invalid="true"]), textarea:not([aria-invalid="true"]) { border-color: #8c8c8c; }
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not(:disabled):not([readonly]):hover, select:not(:disabled):hover, textarea:not(:disabled):not([readonly]):hover,
+input:not([type=checkbox]):not([type=radio]):not([type=range]):focus-visible, select:focus-visible, textarea:focus-visible { border-color: var(--color-foreground); }
+
+/* Grid / Strip hover — unlayered so it wins over the bg-foreground / text-background utilities: the chosen (filled) one
+   turns outlined, the other gains an outline, so hover is a visible change on both. */
+.view-btn { transition: color 160ms var(--ease-site), background-color 160ms var(--ease-site), box-shadow 160ms var(--ease-site); }
+@media (hover: hover) {
+  .view-btn:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); color: var(--color-foreground); }
+  .view-btn[aria-pressed="true"]:hover { background-color: transparent; }
+}

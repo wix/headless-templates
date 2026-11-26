@@ -1,0 +1,13 @@
+---
+// Gift Card: the store with the gift card tile open (it is one of the catalog's tiles). Live: a visitor adds a preset
+// amount to the same bag and hosted checkout as every product (wix/storefront/gift-card.ts records the probe and its limits).
+import StoreApp from "../components/store/StoreApp";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { BUSINESS_NAME } from "../lib/site";
+import { loadStore } from "../lib/store-data";
+
+const data = await loadStore();
+---
+<SiteLayout title={data.giftTitle} products={data.items}>
+  <StoreApp client:load data={data} businessName={BUSINESS_NAME} initialUrl={Astro.url.href} />
+</SiteLayout>

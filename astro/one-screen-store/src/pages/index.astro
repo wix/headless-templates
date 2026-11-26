@@ -1,0 +1,14 @@
+---
+// Home is the store itself: the catalog (Grid or Strip) and nothing else. A tile opens in place; About and Reviews are
+// side panels (StoreApp). /shop, /gift-card and /products/[slug] render the same app with their tile open or not.
+import StoreApp from "../components/store/StoreApp";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { getSections } from "../lib/content";
+import { BUSINESS_NAME } from "../lib/site";
+import { loadStore } from "../lib/store-data";
+
+const [data, s] = await Promise.all([loadStore(), getSections()]);
+---
+<SiteLayout title={BUSINESS_NAME} description={s["home-intro"]?.body} products={data.items}>
+  <StoreApp client:load data={data} businessName={BUSINESS_NAME} initialUrl={Astro.url.href} />
+</SiteLayout>

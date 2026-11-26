@@ -1,0 +1,51 @@
+---
+// Site chrome for every page: <head>, the skip link, and the bag. Every page renders the one-screen store (StoreApp),
+// which draws its own header (wordmark, About, Reviews, Contact, cart) and footer.
+// Kept from the kit contract:
+//   - <slot name="seo-tags" /> in <head> (item pages' owner-editable SEO, incl. <title>)
+//   - the global.css import (Tailwind + the tokens every component reads)
+//   - one <CartDrawer> per page (client:only: the cart is browser state, not primary content)
+import CartDrawer from "../components/storefront/CartDrawer";
+import { getSections } from "../lib/content";
+import { BUSINESS_NAME } from "../lib/site";
+import type { StoreItem } from "../lib/store-data";
+import { imgSrc } from "../wix/media";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** The catalog tiles (loadStore().items): the cart suggests these. */
+  products?: StoreItem[];
+}
+const { title, description, products = [] } = Astro.props;
+
+const sections = await getSections();
+// the cart's "You may also like" slider: one preview per product (its first tile; colour tiles share a slug), no gift card
+const seen = new Set<string>();
+const suggestions = products
+  .filter((it) => it.kind === "product" && it.slug && !seen.has(it.slug) && seen.add(it.slug))
+  .map((it) => ({ slug: it.slug!, name: it.name, price: it.price, imageUrl: it.imageUrl ? imgSrc(it.imageUrl, 224, 300) : "" }));
+const businessName = sections["business-name"]?.title || BUSINESS_NAME;
+const pageTitle = title === BUSINESS_NAME || title === businessName ? businessName : `${title} | ${businessName}`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {!Astro.slots.has("seo-tags") && <title>{pageTitle}</title>}
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" href="/favicon.svg" />
+    <slot name="seo-tags" />
+  </head>
+  <body class="min-h-svh">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:bg-background focus:px-4 focus:py-3">Skip to content</a>
+
+
+    <slot />
+
+    <CartDrawer client:only="react" suggestions={suggestions} />
+  </body>
+</html>
+
