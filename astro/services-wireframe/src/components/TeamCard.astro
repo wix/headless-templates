@@ -1,0 +1,15 @@
+---
+// A team card: 4:5 portrait, name (the link stretches over the card), job title, a three-line bio.
+import { imgSrc, type Member } from "../lib/cms";
+interface Props { member: Member }
+const { member: m } = Astro.props;
+const src = imgSrc(m.image, 640, 800);
+---
+<article class="card flex h-full flex-col gap-4">
+  <div class="media" data-ratio="4/5">{src && <img src={src} alt="" width="640" height="800" loading="lazy" />}</div>
+  <div class="flex flex-1 flex-col gap-1">
+    <h3 class="card-title text-h3"><a href={`/team/${m.slug}`}>{m.name}</a></h3>
+    {m.jobTitle && <p class="meta"><span>{m.jobTitle}</span></p>}
+    {m.shortBio && <p class="clamp-3 mt-1 text-muted-foreground">{m.shortBio}</p>}
+  </div>
+</article>

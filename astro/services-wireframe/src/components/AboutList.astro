@@ -1,0 +1,33 @@
+---
+// A descriptive text block (About The Service, About, About This Location): a centered title, then topics, each a title (optional)
+// and its paragraph (or several paragraphs as one long topic), split by hairlines. The texts rise in as they scroll into view (CSS: .abt-in).
+interface Props { id?: string; title: string; items: { title?: string; body?: string; paragraphs?: string[] }[] }
+const { id, title, items } = Astro.props;
+const rows = items.filter((t) => t.title || t.body || t.paragraphs?.length);
+---
+{rows.length > 0 && (
+  <section id={id} class="section">
+    <div class="wrap">
+      <h2 class="text-center text-h2">{title}</h2>
+      <ol class="abt-list mt-10">
+        {rows.map((t) => (
+          <li class="abt-item">
+            {t.title && <h3 class="abt-in text-h3 font-display font-medium">{t.title}</h3>}
+            {t.body && <p class:list={["abt-in text-muted-foreground", t.title && "mt-2"]}>{t.body}</p>}
+            {t.paragraphs && <div class:list={["abt-long space-y-4", t.title && "mt-2"]}>{t.paragraphs.map((p) => <p class="abt-in text-lg text-muted-foreground">{p}</p>)}</div>}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+)}
+
+<script>
+  // Browsers without scroll-driven animations: the texts rise in once, as they enter the viewport.
+  if (!CSS.supports("animation-timeline: view()") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const els = document.querySelectorAll<HTMLElement>(".abt-in");
+    els.forEach((el) => el.classList.add("abt-wait"));
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.remove("abt-wait"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -10% 0px" });
+    els.forEach((el) => io.observe(el));
+  }
+</script>

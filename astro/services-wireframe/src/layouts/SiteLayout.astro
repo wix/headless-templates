@@ -1,0 +1,420 @@
+---
+// Site chrome for every page: the header (wordmark, Services, Team, About, FAQ, and the one action, Contact), the footer, and the
+// closing call to action above the footer on every page but Contact. Everything the owner edits is read live from the CMS.
+//   closing  the closing "Contact Us" band above the footer, on by default (off on /contact, where the page is the form).
+//   title    ONLY for pages Wix does not resolve SEO tags for (service and team detail pages, legal pages, 404). Main pages get their
+//            <title> and description injected by Wix (dashboard > SEO), so a fallback here would duplicate them.
+import { getChrome } from "../lib/chrome";
+import { NAV, SITE_NAME_FALLBACK } from "../lib/site";
+import SocialBar from "../components/SocialBar.astro";
+import ClosingBand from "../components/ClosingBand.astro";
+import CityPicker from "../components/CityPicker.astro";
+import { getCategories, getLocations, citiesOf, categoryHref, telHref, addressLines } from "../lib/cms";
+import { getCurrentCity } from "../lib/city";
+import "../styles/global.css";
+
+/** motion={false}: no entrance or typing animations on this page (legal pages). */
+interface Props { title?: string; closing?: boolean; motion?: boolean }
+const { title, closing = true, motion = true } = Astro.props;
+
+const [{ copy, social, legal }, cats, locations] = await Promise.all([getChrome(), getCategories(), getLocations()]);
+const care = copy.footerCare;
+// The footer Contact card lists every city with its locations' addresses and the city's phone.
+const cities = citiesOf(locations);
+const currentCity = await getCurrentCity(Astro);
+const cityIdx = Math.max(0, cities.findIndex((c) => c.city === currentCity));
+const site = copy.site?.title ?? SITE_NAME_FALLBACK;
+const f = copy.footer;
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
+const inCategory = path.startsWith("/services/category/");
+const bits = (f?.bodySecondary ?? "").split("·").map((x) => x.trim()).filter(Boolean);
+const mail = bits.find((b) => b.includes("@"));
+const mainPhone = bits.find((b) => !b.includes("@"));
+---
+<!doctype html>
+<html lang="en" data-motion={motion ? undefined : "off"}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {title && <title>{`${title} | ${site}`}</title>}
+    <link rel="icon" href="/favicon.svg" />
+    <slot name="seo-tags" />
+    <script is:inline>
+      // First-screen typing (see the script at the end of the page): hide those texts until they are split, so they never flash in full.
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches && document.documentElement.dataset.motion !== "off") {
+        document.documentElement.classList.add("tw-pre");
+        setTimeout(function () { document.documentElement.classList.remove("tw-pre"); }, 3000);
+      }
+    </script>
+  </head>
+  <body class="min-h-svh">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:bg-background focus:px-4 focus:py-3">Skip to content</a>
+
+    <header id="site-header" class="site-header sticky top-0 z-30 bg-background/95 backdrop-blur">
+      <div class="wrap relative flex h-(--header-h) items-center justify-between gap-4">
+        <div class="flex min-w-0 items-center gap-2 lg:gap-4">
+          <a href="/" class="inline-flex min-h-11 shrink-0 items-center font-display text-lg font-bold tracking-tight text-foreground no-underline transition-opacity hover:opacity-60">{site}</a>
+          <nav aria-label="Main" class="ml-2 hidden min-w-0 items-center lg:flex">
+            {NAV.map((n) => (
+              <>
+                <a href={n.href} aria-current={isCurrent(n.href) && !inCategory ? "page" : undefined} class="nav-link">{n.label}</a>
+                {n.href === "/services" && cats.length > 0 && (
+                  <div class="dd" data-dd>
+                    <button type="button" class="nav-link dd-trigger" aria-expanded="false" aria-controls="dd-cats" aria-current={inCategory ? "page" : undefined}>
+                      Categories
+                      <svg class="dd-chev" width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M1.5 3.5 5 7l3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    </button>
+                    <div id="dd-cats" class="dd-panel">
+                      <ul>
+                        {cats.map((c) => <li><a href={categoryHref(c)} aria-current={path === categoryHref(c) ? "page" : undefined}>{c.title}</a></li>)}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </>
+            ))}
+          </nav>
+        </div>
+        <div class="flex shrink-0 items-center gap-2">
+          <CityPicker />
+          <a href="/contact" class="btn btn-primary btn-header hidden sm:inline-flex" aria-current={isCurrent("/contact") ? "page" : undefined}>Contact</a>
+          <button type="button" id="menu-btn" class="icon-btn h-9 w-9 lg:hidden" aria-expanded="false" aria-controls="menu-panel" aria-label="Menu">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path id="menu-open" d="M2 5h14M2 9h14M2 13h14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /><path id="menu-close" class="hidden" d="M3 3l12 12M15 3L3 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /></svg>
+          </button>
+        </div>
+      </div>
+      <div id="menu-panel" class="panel lg:hidden" hidden>
+        <nav aria-label="Menu" class="wrap py-2">
+          <ul>
+            {NAV.map((n) => (
+              <>
+                <li><a href={n.href} aria-current={isCurrent(n.href) ? "page" : undefined} class="menu-link flex min-h-12 items-center border-b border-border text-lg text-foreground no-underline"><span>{n.label}</span></a></li>
+                {n.href === "/services" && cats.length > 0 && (
+                  <li class="border-b border-border py-2">
+                    <p class="px-4 py-2 text-sm text-muted-foreground">Categories</p>
+                    <ul>{cats.map((c) => <li><a href={categoryHref(c)} aria-current={path === categoryHref(c) ? "page" : undefined} class="menu-link flex min-h-11 items-center pl-4 text-base text-foreground no-underline"><span>{c.title}</span></a></li>)}</ul>
+                  </li>
+                )}
+              </>
+            ))}
+          </ul>
+          <a href="/contact" class="btn btn-primary my-4 w-full">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      {closing && <ClosingBand />}
+      <div class={`wrap pb-4 md:pb-6 ${closing ? "" : "pt-(--gutter) lg:pt-6"}`}>
+        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <section class="ft-card" aria-labelledby="ft-company">
+            <h2 id="ft-company" class="ft-title">Site's Map</h2>
+            <ul class="ft-links">
+              <li><a href="/about">About Us</a></li>
+              <li><a href="/team">Our Team</a></li>
+              <li><a href="/locations">Locations</a></li>
+              <li><a href="/contact">Contact</a></li>
+            </ul>
+            <SocialBar links={social} size="header" class="ft-social mt-auto pt-5" />
+          </section>
+
+
+          <section class="ft-card" aria-labelledby="ft-services">
+            <h2 id="ft-services" class="ft-title">Services</h2>
+            <ul class="ft-links">
+              {cats.map((c) => <li><a href={categoryHref(c)}>{c.title}</a></li>)}
+              <li><a href="/services">All Services</a></li>
+            </ul>
+          </section>
+
+          <section class="ft-card sm:col-span-2" aria-labelledby="ft-contact" data-ft-tabs>
+            <h2 id="ft-contact" class="ft-title">{care?.title ?? "Contact"}</h2>
+            <div role="tablist" aria-label="Cities" class="ft-tablist">
+              {cities.map((c, i) => <button type="button" role="tab" id={`ft-tab-${i}`} aria-controls={`ft-panel-${i}`} aria-selected={i === cityIdx ? "true" : "false"} tabindex={i === cityIdx ? 0 : -1} data-city={c.city} class="ft-tab">{c.city}</button>)}
+            </div>
+            <div class="grid gap-x-8 gap-y-5 pt-4 sm:grid-cols-3">
+              <div class="text-sm">
+                {cities.map((c, i) => (
+                  <div role="tabpanel" id={`ft-panel-${i}`} aria-labelledby={`ft-tab-${i}`} hidden={i !== cityIdx}>
+                    <ul class="ft-links">
+                      {c.locations.map((l) => <li><a href={`/locations/${l.slug}`} class="ft-addr">{addressLines(l.address)[0] ?? l.title}</a></li>)}
+                      {c.locations.find((l) => l.phone) && <li><a href={telHref(c.locations.find((l) => l.phone)!.phone)}>{c.locations.find((l) => l.phone)!.phone}</a></li>}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              <ul class="ft-links">
+                {mainPhone && <li><a href={telHref(mainPhone)}><span class="block text-xs text-muted-foreground">Main line</span>{mainPhone}</a></li>}
+                {mail && <li class="mt-2"><a href={`mailto:${mail}`}><span class="block text-xs text-muted-foreground">Email</span>{mail}</a></li>}
+              </ul>
+              {f?.hours && <div class="text-sm"><p class="text-xs text-muted-foreground">Opening hours</p><p class="mt-1 whitespace-pre-line">{f.hours}</p></div>}
+            </div>
+            <div class="mt-auto pt-5"><a href="/contact" class="btn btn-primary">{care?.ctaLabel ?? "Drop Us a Line"}</a></div>
+          </section>
+        </div>
+
+        <div class="flex flex-col gap-2 px-1 pt-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+          {f?.credit && <p>{f.credit}</p>}
+          {legal.length > 0 && (
+            <nav aria-label="Legal" class="ft-legal"><ul class="-ml-3 flex flex-wrap md:-mr-3 md:ml-0">{legal.map((p) => <li><a href={`/policies/${p.slug}`} class="inline-flex min-h-11 items-center px-3 text-foreground">{p.title}</a></li>)}</ul></nav>
+          )}
+        </div>
+      </div>
+    </footer>
+
+
+    <script is:inline>
+      // The phone menu: a disclosure. Escape, a tap outside or a link closes it; the button keeps aria-expanded in step.
+      (function () {
+        var mb = document.getElementById("menu-btn"), mp = document.getElementById("menu-panel");
+        function set(open) {
+          mp.hidden = !open; mb.setAttribute("aria-expanded", String(open)); mb.setAttribute("aria-label", open ? "Close menu" : "Menu");
+          document.getElementById("menu-open").classList.toggle("hidden", open); document.getElementById("menu-close").classList.toggle("hidden", !open);
+        }
+        mb.addEventListener("click", function () { set(mp.hidden); });
+        document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !mp.hidden) { set(false); mb.focus(); } });
+        document.addEventListener("click", function (e) { if (!mp.hidden && !mp.contains(e.target) && !mb.contains(e.target)) set(false); });
+        window.matchMedia("(min-width: 1024px)").addEventListener("change", function (m) { if (m.matches) set(false); });
+        // A list's sort select submits its form on change (the form still works without JS: it has a Search button).
+        // Categories dropdown: opens on hover (CSS, fine pointers) and on click / Enter (touch, keyboard); Escape or a click outside closes it.
+        document.querySelectorAll("[data-dd]").forEach(function (dd) {
+          var b = dd.querySelector(".dd-trigger");
+          function set(open) { dd.toggleAttribute("data-open", open); b.setAttribute("aria-expanded", String(open)); }
+          b.addEventListener("click", function () { set(!dd.hasAttribute("data-open")); });
+          dd.addEventListener("mouseenter", function () { b.setAttribute("aria-expanded", "true"); });
+          dd.addEventListener("mouseleave", function () { if (!dd.hasAttribute("data-open")) b.setAttribute("aria-expanded", "false"); });
+          document.addEventListener("click", function (e) { if (!dd.contains(e.target)) set(false); });
+          dd.addEventListener("keydown", function (e) { if (e.key === "Escape") { set(false); b.focus(); } });
+          dd.addEventListener("focusout", function (e) { if (!dd.contains(e.relatedTarget)) set(false); });
+        });
+        // Footer contact tabs: one per city; arrows move between them; opens on the city chosen in the header picker.
+        var tabs = [].slice.call(document.querySelectorAll("[data-ft-tabs] [role=tab]"));
+        function pick(t, focus) {
+          tabs.forEach(function (x) { var on = x === t; x.setAttribute("aria-selected", String(on)); x.tabIndex = on ? 0 : -1; document.getElementById(x.getAttribute("aria-controls")).hidden = !on; });
+          if (focus) t.focus();
+        }
+        tabs.forEach(function (t, i) {
+          t.addEventListener("click", function () { pick(t); });
+          t.addEventListener("keydown", function (e) {
+            if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); pick(tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length], true); }
+          });
+        });
+        // Header hairline: only once the page has scrolled.
+        var hdr = document.getElementById("site-header");
+        // While the Home bento is pinned flush under the header (window.__pinUntil = its collapse distance) nothing has slid under
+        // the header yet, so the line waits until the page scrolls past that point; elsewhere it shows from the first pixel.
+        function hdrLine() { hdr.toggleAttribute("data-scrolled", window.scrollY > (window.__pinUntil || 0) + 0.5); }
+        window.addEventListener("scroll", hdrLine, { passive: true }); hdrLine();
+        // Scroll entrance (scrubbed by the scroll): containers and photos rise, grow and fade in as they come up from the bottom of the
+        // screen, exactly as far as the page has scrolled, and go back if you scroll back. CSS scroll-driven animation where the
+        // browser has it (class .sr); elsewhere the same curve is set here every frame. The Home first screen has its own motion.
+        (function () {
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.motion === "off") return;
+          var SEL = ".card, .award, .ab-plate, .about-value, .faqx-item, .ft-card, .media";
+          var els = [].slice.call(document.querySelectorAll(SEL)).filter(function (el) {
+            if (el.closest("[data-bento-stage], header, .city-panel, dialog")) return false;
+            // In the About + Team grid only the first row moves, so the 8px gaps between its plates never open up mid-entrance.
+            if (el.matches(".ab-wide-photo, .ab-person, .ct-form")) return false;   // the contact form plate stays put
+            // Phones and tablets: the footer plates stay still, and so do the tiles of a swipe rail (the rail must not scroll vertically).
+            if (!window.matchMedia("(min-width: 1024px)").matches && el.matches(".ft-card")) return false;
+            if (el.closest(".rail") && !window.matchMedia("(min-width: 640px)").matches) return false;
+            return !(el.parentElement && el.parentElement.closest(SEL));   // a photo inside a card arrives with its card
+          });
+          els.forEach(function (el) { el.classList.add("sr"); });
+          if (CSS.supports("animation-timeline: view()")) return;
+          // Fallback: progress = how far the element's top has risen from the screen bottom, over a quarter of the screen.
+          var raf = 0;
+          function step() {
+            raf = 0;
+            var vh = window.innerHeight, span = vh * 0.28;
+            els.forEach(function (el) {
+              var t = Math.min(1, Math.max(0, (vh - el.getBoundingClientRect().top) / span));
+              var e = 1 - Math.pow(1 - t, 3);
+              el.style.opacity = String(e); el.style.translate = "0 " + (64 * (1 - e)).toFixed(1) + "px"; el.style.scale = String(0.94 + 0.06 * e);
+            });
+          }
+          window.addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(step); }, { passive: true });
+          window.addEventListener("resize", function () { if (!raf) raf = requestAnimationFrame(step); });
+          step();
+        })();
+        // No one-word last lines: in every paragraph the last two words are tied with a no-break space (text-wrap: pretty does
+        // the same where supported; this covers Safari and Firefox).
+        function noOrphans(root) {
+          (root || document).querySelectorAll("main p, footer p").forEach(function (p) {
+            if (p.hasAttribute("data-no-orphan")) return;
+            p.setAttribute("data-no-orphan", "");
+            var walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT), last = null, n;
+            while ((n = walker.nextNode())) if (n.textContent.trim()) last = n;
+            if (!last || last.parentElement.closest(".ls, .sr-only")) return;
+            var t = last.textContent, m = t.match(/^([\s\S]*\S)\s+(\S+\s*)$/);
+            if (m && t.trim().split(/\s+/).length > 1) last.textContent = m[1] + "\u00a0" + m[2];
+          });
+        }
+        noOrphans();
+        window.addEventListener("load", function () { noOrphans(); });
+        // First screen: on page load its texts type themselves in, letter after letter (each letter pops in, like a typewriter), all
+        // texts at the same time and, within a text, all its lines at once with a short step between them; a figure ("15+", "2,480", "$120") counts up from zero meanwhile. The letters keep their place from the start, so
+        // nothing reflows; when a text is done it goes back to plain text. Links, buttons and fields are left as they are.
+        (function () {
+          var html = document.documentElement;
+          if (!html.classList.contains("tw-pre")) return;
+          var scope = document.querySelector("main > section");
+          var SKIP = "a, button, form, label, .ls, .ls-title, .sr-only, [role=status]";
+          var els = scope ? [].slice.call(scope.querySelectorAll("h1, h2, h3, p, dt, dd")).filter(function (el) {
+            return !el.closest(SKIP) && el.textContent.trim() && !el.querySelector("h1, h2, h3, p, dt, dd");
+          }) : [];
+          var NUM = /^([^\d]*?)(\d[\d,]*(?:\.\d+)?)([^\d]*)$/;
+          var t = 150;
+          els.forEach(function (el) {
+            var txt = el.textContent.trim(), m = txt.match(NUM);
+            if (m && txt.length < 16 && !el.children.length) { countUp(el, m, t); return; }
+            var nodes = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), n;
+            while ((n = w.nextNode())) if (n.textContent.length && !n.parentElement.closest(SKIP)) nodes.push(n);
+            var total = nodes.reduce(function (k, x) { return k + x.textContent.length; }, 0);
+            var chars = [], wraps = [];
+            nodes.forEach(function (node) {
+              var wrap = document.createElement("span"); wrap.className = "tw-w";
+              Array.from(node.textContent).forEach(function (ch) {
+                var c = document.createElement("span"); c.className = "tw-c"; c.textContent = ch; wrap.appendChild(c); chars.push(c);
+              });
+              node.parentNode.replaceChild(wrap, node); wraps.push(wrap);
+            });
+            // Lines type side by side: every line starts almost together, each a short beat after the one above.
+            var lines = [], top = null;
+            chars.forEach(function (c) {
+              var y = Math.round(c.getBoundingClientRect().top);
+              if (top === null || Math.abs(y - top) > 4) { lines.push([]); top = y; }
+              lines[lines.length - 1].push(c);
+            });
+            var longest = lines.reduce(function (k, l) { return Math.max(k, l.length); }, 1), per = Math.min(38, 850 / longest), LINE = 110;
+            lines.forEach(function (l, li) { l.forEach(function (c, ci) { c.style.animationDelay = Math.round(t + li * LINE + ci * per) + "ms"; }); });
+            var end = t + (lines.length - 1) * LINE + longest * per + 300;
+            setTimeout(function () { wraps.forEach(function (x) { if (x.parentNode) x.parentNode.replaceChild(document.createTextNode(x.textContent), x); }); }, end);
+          });
+          html.classList.remove("tw-pre");
+          // Figures further down ([data-count]) count up the same way when they come into view.
+          var later = [].slice.call(document.querySelectorAll("[data-count]")).filter(function (el) { return !scope || !scope.contains(el); });
+          if (later.length && "IntersectionObserver" in window) {
+            var io = new IntersectionObserver(function (es) {
+              es.forEach(function (e) {
+                if (!e.isIntersecting) return;
+                io.unobserve(e.target);
+                if (e.target.__m) countUp(e.target, e.target.__m, 0);
+              });
+            }, { threshold: 0.6 });
+            later.forEach(function (el) {
+              var mm = el.textContent.trim().match(NUM);
+              if (!mm) return;
+              el.__m = mm; el.textContent = mm[1] + "0" + mm[3];   // wait at zero until seen
+              io.observe(el);
+            });
+          }
+          function countUp(el, m, delay) {
+            var raw = m[2], target = parseFloat(raw.replace(/,/g, "")), dec = (raw.split(".")[1] || "").length, comma = raw.indexOf(",") > -1;
+            var fmt = function (v) { var s = v.toFixed(dec); if (comma) { var p = s.split("."); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ","); s = p.join("."); } return m[1] + s + m[3]; };
+            el.style.fontVariantNumeric = "tabular-nums"; el.textContent = fmt(0);
+            setTimeout(function () {
+              var t0 = performance.now(), D = 1000;
+              (function step(now) {
+                var k = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - k, 3);
+                if (k < 1) { el.textContent = fmt(target * e); requestAnimationFrame(step); }
+                else { el.textContent = m[1] + raw + m[3]; el.style.fontVariantNumeric = ""; }
+              })(t0);
+            }, delay);
+          }
+        })();
+        // Letter swap on buttons (hover): each letter slides up and an identical one rises from below, one after another.
+        // The text is split into letters for the eye only; screen readers get the plain text.
+        function letterSwap(root) {
+          // Buttons swap on their own hover; titles (cards, awards, Featured rows) swap when their whole card is hovered.
+          (root || document).querySelectorAll(".btn, .link-btn, .card-title a, .ls-title").forEach(function (btn) {
+            if (btn.hasAttribute("data-ls") || btn.hasAttribute("data-desc-toggle")) return;
+            btn.setAttribute("data-ls", "");
+            [].slice.call(btn.childNodes).forEach(function (node) {
+              if (node.nodeType !== 3 || !node.textContent.trim()) return;
+              var text = node.textContent.replace(/\s+/g, " ");
+              var lead = /^\s/.test(text), trail = /\s$/.test(text); text = text.trim();
+              var wrap = document.createElement("span"); wrap.className = "ls";
+              var sr = document.createElement("span"); sr.className = "sr-only"; sr.textContent = text;
+              var vis = document.createElement("span"); vis.className = "ls-vis"; vis.setAttribute("aria-hidden", "true");
+              // Words stay whole (a long title wraps between words); the letter index runs across the whole text for the stagger.
+              var i = 0;
+              text.split(" ").forEach(function (word, w) {
+                if (w > 0) vis.appendChild(document.createTextNode(" "));
+                var wd = document.createElement("span"); wd.className = "ls-w";
+                word.split("").forEach(function (ch) {
+                  var l = document.createElement("span"); l.className = "ls-l"; l.style.setProperty("--i", i++);
+                  var a = document.createElement("span"); a.className = "ls-a"; a.textContent = ch;
+                  var b = document.createElement("span"); b.className = "ls-b"; b.textContent = ch;
+                  l.appendChild(a); l.appendChild(b); wd.appendChild(l);
+                });
+                vis.appendChild(wd);
+                i++;
+              });
+              // Total letters, so the stagger spreads over the same time whatever the length.
+              vis.style.setProperty("--n", Math.max(1, i - 2));
+              wrap.appendChild(sr); wrap.appendChild(vis);
+              if (lead) btn.insertBefore(document.createTextNode(" "), node);
+              btn.replaceChild(wrap, node);
+              if (trail) wrap.after(document.createTextNode(" "));
+            });
+          });
+        }
+        letterSwap();
+        window.addEventListener("load", function () { letterSwap(); });   // buttons inside islands (the contact form) render later
+        document.querySelectorAll("[data-autosubmit]").forEach(function (el) { el.addEventListener("change", function () { el.form.submit(); }); });
+        // Every single select gets the site's dropdown (the header Categories panel): a button that shows the choice and opens a list
+        // of options. The native select stays in place, hidden, so the form and its change handlers work as before.
+        document.querySelectorAll("main select:not([multiple]), footer select:not([multiple])").forEach(function (sel, k) {
+          if (sel.closest(".dsel")) return;
+          var box = document.createElement("div"); box.className = "dsel";
+          var btn = document.createElement("button"); btn.type = "button"; btn.className = sel.className + " dsel-btn";
+          btn.id = (sel.id || "dsel-" + k) + "-btn"; btn.setAttribute("aria-haspopup", "listbox"); btn.setAttribute("aria-expanded", "false");
+          var panel = document.createElement("div"); panel.className = "dsel-panel";
+          var ul = document.createElement("ul"); ul.setAttribute("role", "listbox"); ul.id = btn.id + "-list"; btn.setAttribute("aria-controls", ul.id);
+          var lab = sel.id && document.querySelector('label[for="' + sel.id + '"]');
+          if (lab) { lab.setAttribute("for", btn.id); ul.setAttribute("aria-label", lab.textContent.trim()); }
+          sel.parentNode.insertBefore(box, sel); box.appendChild(sel); box.appendChild(btn); panel.appendChild(ul); box.appendChild(panel);
+          if (sel.classList.contains("field")) box.style.display = "block";
+          var opts = [].slice.call(sel.options).map(function (o, i) {
+            var li = document.createElement("li"), b = document.createElement("button");
+            b.type = "button"; b.className = "dsel-opt"; b.setAttribute("role", "option"); b.textContent = o.textContent; b.tabIndex = -1;
+            b.addEventListener("click", function () { pick(i); });
+            li.appendChild(b); ul.appendChild(li); return b;
+          });
+          function sync() {
+            btn.textContent = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : "";
+            opts.forEach(function (b, i) { b.setAttribute("aria-selected", String(i === sel.selectedIndex)); });
+          }
+          function open(v) {
+            box.toggleAttribute("data-open", v); btn.setAttribute("aria-expanded", String(v));
+            if (v) (opts[sel.selectedIndex] || opts[0]).focus();
+          }
+          function pick(i) {
+            var changed = i !== sel.selectedIndex; sel.selectedIndex = i; sync(); open(false); btn.focus();
+            if (changed) sel.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+          btn.addEventListener("click", function () { open(!box.hasAttribute("data-open")); });
+          btn.addEventListener("keydown", function (e) { if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); open(true); } });
+          ul.addEventListener("keydown", function (e) {
+            var i = opts.indexOf(document.activeElement);
+            if (e.key === "ArrowDown") { e.preventDefault(); opts[Math.min(opts.length - 1, i + 1)].focus(); }
+            else if (e.key === "ArrowUp") { e.preventDefault(); opts[Math.max(0, i - 1)].focus(); }
+            else if (e.key === "Home") { e.preventDefault(); opts[0].focus(); }
+            else if (e.key === "End") { e.preventDefault(); opts[opts.length - 1].focus(); }
+            else if (e.key === "Escape") { e.preventDefault(); open(false); btn.focus(); }
+            else if (e.key === "Tab") open(false);
+          });
+          document.addEventListener("click", function (e) { if (!box.contains(e.target)) open(false); });
+          sel.addEventListener("change", sync);
+          sync();
+        });
+      })();
+    </script>
+  </body>
+</html>

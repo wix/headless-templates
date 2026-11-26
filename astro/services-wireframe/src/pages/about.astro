@@ -1,0 +1,116 @@
+---
+// /about: a photo plate; a grey plate with the title, the intro and a card per value; the story (hairline list); the team (title,
+// subtitle, three people, a link to all); the numbers; the testimonials as sticky stacked cards. The closing band is the layout's.
+// Copy: SiteContent rows aboutPage (title, story, photo), about (intro), team; Benefits as the values.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import TeamCard from "../components/TeamCard.astro";
+import AboutList from "../components/AboutList.astro";
+import { getChrome } from "../lib/chrome";
+import { getStats, getTestimonials, getBenefits } from "../lib/content";
+import { getMembers, getServices, getLocations, imgSrc, paragraphs } from "../lib/cms";
+
+const [{ copy }, stats, testimonials, values, members, services, locations] = await Promise.all([getChrome(), getStats(), getTestimonials(), getBenefits(), getMembers(), getServices(), getLocations()]);
+const refId = (v: unknown) => (v && typeof v === "object" ? String((v as any)._id ?? "") : String(v ?? ""));
+// Each review's facts: the service the client booked and the location, as links.
+const facts = (x: { service?: unknown; location?: unknown }) => {
+  const sv = services.find((r) => r._id === refId(x.service)), lc = locations.find((r) => r._id === refId(x.location));
+  return [sv && { label: "Service", title: sv.title, href: `/services/${sv.slug}` }, lc && { label: "Location", title: lc.title, href: `/locations/${lc.slug}` }]
+    .filter(Boolean) as { label: string; title: string; href: string }[];
+};
+const a = copy.aboutPage ?? copy.about;
+const h = copy.about;
+const img = imgSrc(a?.image ?? h?.image, 2400, 1000);
+const story = [a?.body, ...paragraphs(a?.bodySecondary)].filter(Boolean) as string[];
+const team = members.slice(0, 3);
+const intro = h?.body ?? a?.body;
+const t = copy.team;
+---
+<SiteLayout title="About">
+  <section class="pt-(--gutter)">
+    <div class="wrap">
+      <div class="about-hero">
+        {img && <img src={img} alt="" width="2400" height="1000" fetchpriority="high" />}
+      </div>
+      <div class="about-plate mt-2">
+        <h1 class="text-display">{a?.title ?? "About Us"}</h1>
+        {intro && <p class="mt-6 max-w-[60ch] text-lg text-muted-foreground">{intro}</p>}
+        {values.length > 0 && (
+          <h2 class="sr-only">{h?.item2Title ?? "Our Values"}</h2>
+          <ul class="about-values mt-10">
+            {values.map((v) => (
+              <li class="about-value">
+                <svg class="block" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10.25" /><path d="M7.75 12.25l2.75 2.75 5.75-6" /></svg>
+                <h3 class="mt-auto pt-10 text-h3 font-display font-medium">{v.title}</h3>
+                <p class="mt-2 text-muted-foreground">{v.body}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <AboutList title={h?.item1Title ?? "Our Story"} items={[{ paragraphs: story }]} />
+
+  {team.length > 0 && (
+    <section class="pb-(--section-y)">
+      <div class="wrap">
+        <h2 class="text-h2">{t?.title ?? "Our Team"}</h2>
+        {t?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{t.body}</p>}
+        <ul class="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{team.map((m) => <li><TeamCard member={m} /></li>)}</ul>
+        <div class="mt-10 flex justify-center"><a href="/team" class="btn btn-outline">{t?.ctaLabel ?? "See All Team Members"}</a></div>
+      </div>
+    </section>
+  )}
+
+  {stats.length > 0 && (
+    <section class="section">
+      <div class="wrap">
+        <h2 class="text-h2">{copy.stats?.title ?? "In Numbers"}</h2>
+        {copy.stats?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{copy.stats.body}</p>}
+        <dl class="cat-stats stats-grid mt-10">
+          {stats.slice(0, 3).map((s) => <div><dt>{s.label}</dt><dd data-count>{s.value}</dd></div>)}
+        </dl>
+      </div>
+    </section>
+  )}
+  {testimonials.length > 0 && (
+    <section class="pt-(--section-y) pb-(--gutter)">
+      <div class="wrap">
+        <h2 class="text-h2">{copy.testimonials?.title ?? "Testimonials"}</h2>
+        {/* Sticky stacked cards: each one shrinks a touch and fades as the next slides over it. */}
+        <ul class="stack mt-10" data-stack style={`--n:${testimonials.length}`}>
+          {testimonials.map((x, i) => (
+            <li class="stack__card rev__card" style={`--i:${i}`}>
+              <blockquote class="rev__quote">{x.quote}</blockquote>
+              <dl class="rev__facts">
+                <div><dt>Client's Name</dt><dd>{x.name}</dd></div>
+                {facts(x).map((f) => <div><dt>{f.label}</dt><dd><a href={f.href}>{f.title}</a></dd></div>)}
+              </dl>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+</SiteLayout>
+
+<script>
+  // Stacked testimonials: a card's depth is how far the cards after it have slid over it (0 → 1 each); CSS scales and fades by it.
+  document.querySelectorAll<HTMLElement>("[data-stack]").forEach((list) => {
+    const cards = [...list.children] as HTMLElement[];
+    let raf = 0;
+    const step = () => {
+      raf = 0;
+      const live = cards.map((c) => ({ top: c.getBoundingClientRect().top, h: c.offsetHeight }));
+      cards.forEach((c, i) => {
+        let d = 0;
+        for (let j = i + 1; j < cards.length; j++) d += Math.min(1, Math.max(0, 1 - (live[j].top - live[i].top) / Math.max(1, live[i].h)));
+        c.style.setProperty("--depth", d.toFixed(4));
+      });
+    };
+    addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(step); }, { passive: true });
+    addEventListener("resize", () => { if (!raf) raf = requestAnimationFrame(step); });
+    step();
+  });
+</script>

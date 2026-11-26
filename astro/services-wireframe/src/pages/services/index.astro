@@ -1,0 +1,71 @@
+---
+// /services: the list. The URL is the state: ?q= (search), ?category= (slug), ?sort=, ?page=. A plain GET form, so it works without JS
+// and a filtered page is shareable. Category chips are links; the sort select submits on change.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ServiceCard from "../../components/ServiceCard.astro";
+import Pagination from "../../components/Pagination.astro";
+import { getChrome } from "../../lib/chrome";
+import { getCityServices } from "../../lib/city";
+import { getCategories, queryServices, categoryHref, SORTS, type SortKey } from "../../lib/cms";
+
+const { copy } = await getChrome();
+const [{ services }, cats] = await Promise.all([getCityServices(Astro), getCategories()]);
+const sp = Astro.url.searchParams;
+const q = (sp.get("q") ?? "").trim().slice(0, 80);
+const cat = cats.find((c) => c.slug === sp.get("category"));
+const sort = (SORTS.some((s) => s.key === sp.get("sort")) ? sp.get("sort") : "recommended") as SortKey;
+const r = queryServices(services, { q, category: cat?._id, sort, page: Number(sp.get("page")) || 1 });
+const href = (o: { q?: string; category?: string; sort?: string; page?: number }) => {
+  const u = new URLSearchParams();
+  const v = { q, category: cat?.slug, sort: sort === "recommended" ? undefined : sort, ...o };
+  for (const [k, val] of Object.entries(v)) if (val) u.set(k, String(val));
+  const s = u.toString();
+  return `/services${s ? `?${s}` : ""}`;
+};
+const filtered = !!(q || cat);
+const c = copy.services;
+---
+<SiteLayout>
+  <section class="pt-(--gutter) pb-(--section-y)">
+    <div class="wrap">
+      <div class="list-head list-head--center">
+      <h1 class="text-h2">{c?.title ?? "Our Services"}</h1>
+      {c?.body && <p class="mx-auto mt-4 max-w-[60ch] text-lg text-muted-foreground">{c.body}</p>}
+
+      <form id="svc-form" method="get" action="/services" role="search" class="mx-auto mt-10 w-full md:w-1/2">
+        {cat && <input type="hidden" name="category" value={cat.slug} />}
+        <div class="relative">
+          <label for="svc-q" class="sr-only">Search services</label>
+          <input id="svc-q" name="q" type="search" value={q} class="field pr-14" placeholder="Search services" enterkeyhint="search" />
+          <button type="submit" aria-label="Search" class="absolute right-1 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-foreground transition-shadow hover:shadow-[inset_0_0_0_1px_var(--color-foreground)]">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.25" stroke="currentColor" stroke-width="1.75" /><path d="M12 12l4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /></svg>
+          </button>
+        </div>
+      </form>
+
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-2">
+        <nav aria-label="Categories">
+          <ul class="flex flex-wrap justify-center gap-2">
+            <li><a class="chip" href={href({ category: undefined, page: undefined })} aria-current={!cat ? "true" : undefined}>All</a></li>
+            {cats.map((x) => <li><a class="chip" href={href({ category: x.slug, page: undefined })} aria-current={cat?._id === x._id ? "true" : undefined}>{x.title}</a></li>)}
+          </ul>
+        </nav>
+        <label for="svc-sort" class="sr-only">Sort by</label>
+        <select id="svc-sort" name="sort" form="svc-form" class="select-pill" data-autosubmit>
+          {SORTS.map((s) => <option value={s.key} selected={s.key === sort}>Sort: {s.label}</option>)}
+        </select>
+      </div>
+
+      <p class="mt-8 text-sm text-muted-foreground" role="status">{r.total} {r.total === 1 ? "service" : "services"}{filtered && <> · <a class="underline underline-offset-4" href="/services">Clear filters</a></>}{cat && <> · <a class="underline underline-offset-4" href={categoryHref(cat)}>About {cat.title}</a></>}</p>
+      </div>
+
+      <h2 class="sr-only">All services</h2>
+      {r.rows.length > 0 ? (
+        <ul class="mt-(--gutter) grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{r.rows.map((s) => <li><ServiceCard service={s} categories={cats} /></li>)}</ul>
+      ) : (
+        <div class="note mt-6"><strong>No services match.</strong> Try another word or <a class="underline underline-offset-4" href="/services">clear the filters</a>.</div>
+      )}
+      <div class="mt-12"><Pagination page={r.page} pages={r.pages} href={(n) => href({ page: n > 1 ? n : undefined })} /></div>
+    </div>
+  </section>
+</SiteLayout>

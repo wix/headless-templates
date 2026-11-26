@@ -1,0 +1,29 @@
+---
+// The first screen of a detail page (category, service, team member, location): breadcrumb, then a grey plate with the title, one
+// short paragraph, the actions and, at the bottom, up to three figures over hairlines; a square photo on the right (desktop).
+// Slots: "crumbs" (breadcrumb links), "sub" (a line under the title), default (extra notes under the paragraph), "actions" (buttons).
+interface Props { title: string; desc?: string; stats?: { label: string; value: string }[]; cover?: string }
+const { title, desc, stats = [], cover } = Astro.props;
+---
+<section class="pt-6 pb-(--gutter) md:pt-8">
+  <div class="wrap">
+    <nav aria-label="Breadcrumb" class="meta"><slot name="crumbs" /></nav>
+    <div class="cat-hero mt-6">
+      <div class="cat-hero__body">
+        <div class="flex flex-col gap-3">
+          <h1 class="text-display">{title}</h1>
+          <slot name="sub" />
+        </div>
+        {desc && <p class="cat-desc">{desc}</p>}
+        <slot />
+        <div class="flex flex-wrap gap-3"><slot name="actions" /></div>
+        {stats.length > 0 && (
+          <dl class="cat-stats mt-auto">
+            {stats.slice(0, 3).map((s) => <div><dt>{s.label}</dt><dd>{s.value}</dd></div>)}
+          </dl>
+        )}
+      </div>
+      {cover && <div class="cat-hero__media media hidden lg:block"><img src={cover} alt="" width="1200" height="1200" fetchpriority="high" /></div>}
+    </div>
+  </div>
+</section>

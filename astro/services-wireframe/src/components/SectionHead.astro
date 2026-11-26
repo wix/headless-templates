@@ -1,0 +1,10 @@
+---
+// A section's title on a hairline, with its action (See all) at the far end. The heading carries the section; no label above it.
+interface Props { title: string; href?: string; action?: string; level?: 2 | 3; id?: string }
+const { title, href, action = "See all", level = 2, id } = Astro.props;
+const Tag = level === 2 ? "h2" : "h3";
+---
+<div class="sect-head">
+  <Tag id={id}>{title}</Tag>
+  {href && <a href={href} class="link-btn shrink-0">{action}</a>}
+</div>

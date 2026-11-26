@@ -1,0 +1,27 @@
+---
+// The social bar: Facebook, X, Instagram and YouTube ship as sample rows (the reference template's four); TikTok, Pinterest, LinkedIn,
+// Threads and WhatsApp have icons ready for the owner's own networks. Icon links with 44px targets that open
+// in a new tab. The URLs are content (CMS > Social Links), not code. A failed read or an empty collection hides the bar.
+import SocialIcon from "./SocialIcon.astro";
+import type { SocialLink } from "../lib/content";
+interface Props { links: SocialLink[]; class?: string; size?: "default" | "header" }
+const { links, class: cls = "", size = "default" } = Astro.props;
+// Header size: 36px round targets, the height of the header's menu links and Contact button, with the same ring hover.
+const linkCls = size === "header"
+  ? "social-hd"
+  : "inline-flex h-11 w-11 items-center justify-center text-foreground no-underline transition-opacity hover:opacity-60";
+const LABEL = { facebook: "Facebook", x: "X", instagram: "Instagram", youtube: "YouTube", tiktok: "TikTok", pinterest: "Pinterest", linkedin: "LinkedIn", threads: "Threads", whatsapp: "WhatsApp" } as const;
+---
+{links.length > 0 && (
+  <nav aria-label="Social media" class={cls}>
+    <ul class={size === "header" ? "flex gap-1" : "flex"}>
+      {links.map((l) => (
+        <li>
+          <a href={l.url} target="_blank" rel="noopener noreferrer" aria-label={`${LABEL[l.platform]} (opens in a new tab)`} class={linkCls}>
+            <SocialIcon platform={l.platform} />
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}

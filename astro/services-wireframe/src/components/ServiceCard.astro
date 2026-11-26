@@ -1,0 +1,20 @@
+---
+// A service card: 4:3 image, category pill, title (the link stretches over the card), duration and price, a two-line description.
+import { imgSrc, categoryHref, type Service, type Category } from "../lib/cms";
+import { money } from "../lib/site";
+interface Props { service: Service; categories?: Category[] }
+const { service: s, categories = [] } = Astro.props;
+const cat = categories.find((c) => c._id === s.category);
+const src = imgSrc(s.image, 800, 600);
+---
+<article class="card flex h-full flex-col gap-4">
+  <div class="media-wrap">
+    <div class="media" data-ratio="4/3">{src && <img src={src} alt="" width="800" height="600" loading="lazy" />}</div>
+    {cat && <span class="pill-clip"><a href={categoryHref(cat)} class="pill">{cat.title}</a></span>}
+  </div>
+  <div class="flex flex-1 flex-col gap-2">
+    <h3 class="card-title text-h3"><a href={`/services/${s.slug}`}>{s.title}</a></h3>
+    <p class="meta"><span>{s.duration}</span><span>{money(s.price)}</span></p>
+    {s.shortDescription && <p class="clamp-2 text-muted-foreground">{s.shortDescription}</p>}
+  </div>
+</article>

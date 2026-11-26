@@ -1,0 +1,60 @@
+---
+// /team: the list, with search and sort. The URL is the state (?q=, ?sort=, ?page=); a plain GET form.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import TeamCard from "../../components/TeamCard.astro";
+import Pagination from "../../components/Pagination.astro";
+import { getChrome } from "../../lib/chrome";
+import { getMembers, queryMembers, TEAM_SORTS, type SortKey } from "../../lib/cms";
+
+const { copy } = await getChrome();
+const members = await getMembers();
+const sp = Astro.url.searchParams;
+const q = (sp.get("q") ?? "").trim().slice(0, 80);
+const sort = (TEAM_SORTS.some((s) => s.key === sp.get("sort")) ? sp.get("sort") : "recommended") as SortKey;
+const r = queryMembers(members, { q, sort, page: Number(sp.get("page")) || 1 });
+const href = (o: { page?: number }) => {
+  const u = new URLSearchParams();
+  const v = { q, sort: sort === "recommended" ? undefined : sort, ...o };
+  for (const [k, val] of Object.entries(v)) if (val) u.set(k, String(val));
+  const s = u.toString();
+  return `/team${s ? `?${s}` : ""}`;
+};
+const c = copy.team;
+---
+<SiteLayout>
+  <section class="pt-(--gutter) pb-(--section-y)">
+    <div class="wrap">
+      <div class="list-head list-head--center">
+      <h1 class="text-h2">{c?.title ?? "Our Team"}</h1>
+      {c?.body && <p class="mx-auto mt-4 max-w-[60ch] text-lg text-muted-foreground">{c.body}</p>}
+
+      <form id="team-form" method="get" action="/team" role="search" class="mx-auto mt-10 w-full md:w-1/2">
+        <div class="relative">
+          <label for="team-q" class="sr-only">Search the team</label>
+          <input id="team-q" name="q" type="search" value={q} class="field pr-14" placeholder="Search the team" enterkeyhint="search" />
+          <button type="submit" aria-label="Search" class="absolute right-1 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-foreground transition-shadow hover:shadow-[inset_0_0_0_1px_var(--color-foreground)]">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.25" stroke="currentColor" stroke-width="1.75" /><path d="M12 12l4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /></svg>
+          </button>
+        </div>
+      </form>
+
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-2">
+        <label for="team-sort" class="sr-only">Sort by</label>
+        <select id="team-sort" name="sort" form="team-form" class="select-pill" data-autosubmit>
+          {TEAM_SORTS.map((s) => <option value={s.key} selected={s.key === sort}>Sort: {s.label}</option>)}
+        </select>
+      </div>
+
+      <p class="mt-8 text-sm text-muted-foreground" role="status">{r.total} {r.total === 1 ? "team member" : "team members"}{q && <> · <a class="underline underline-offset-4" href="/team">Clear search</a></>}</p>
+      </div>
+
+      <h2 class="sr-only">All team members</h2>
+      {r.rows.length > 0 ? (
+        <ul class="mt-(--gutter) grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{r.rows.map((m) => <li><TeamCard member={m} /></li>)}</ul>
+      ) : (
+        <div class="note mt-6"><strong>No team members match.</strong> Try another word or <a class="underline underline-offset-4" href="/team">clear the search</a>.</div>
+      )}
+      <div class="mt-12"><Pagination page={r.page} pages={r.pages} href={(n) => href({ page: n > 1 ? n : undefined })} /></div>
+    </div>
+  </section>
+</SiteLayout>

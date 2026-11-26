@@ -1,0 +1,17 @@
+---
+// The closing call to action, at the top of the black footer: one heading, one line, and the Contact button under them on the left.
+// Top padding equals the side gutter; the room that saves goes under the button, before the footer cards.
+// Copy is the CMS row `closing`. Colours come from the footer (it re-maps the palette to light-on-ink).
+import { getChrome } from "../lib/chrome";
+const { copy } = await getChrome();
+const c = copy.closing;
+---
+{c && (
+  <div class="wrap pt-(--gutter) pb-[calc(var(--section-y)+3rem-var(--gutter))] md:pb-[calc(var(--section-y)+4rem-var(--gutter))]">
+    <div class="flex max-w-[52ch] flex-col items-start">
+      <h2 class="text-h2">{c.title}</h2>
+      {c.body && <p class="mt-4 text-lg text-muted-foreground">{c.body}</p>}
+      <a href="/contact" class="btn btn-primary mt-8">{c.ctaLabel ?? "Contact Us"}</a>
+    </div>
+  </div>
+)}

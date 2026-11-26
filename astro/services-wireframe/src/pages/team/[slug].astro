@@ -1,0 +1,62 @@
+---
+// A team member: the detail first screen (name, job title, short bio, Contact, figures: services, categories, locations), About, the services they cover (the other side of the link), the
+// No Wix SEO item type exists for CMS pages, so the page passes its own <title>.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ServiceCard from "../../components/ServiceCard.astro";
+import DetailHero from "../../components/DetailHero.astro";
+import SectionBar from "../../components/SectionBar.astro";
+import AboutList from "../../components/AboutList.astro";
+import LocationCard from "../../components/LocationCard.astro";
+import { getMembers, getCategories, bySlug, related, imgSrc, paragraphs, type Service, type Location } from "../../lib/cms";
+
+const [members, cats] = await Promise.all([getMembers(), getCategories()]);
+const m = bySlug(members, Astro.params.slug!);
+if (!m) return Astro.rewrite("/404");
+const [services, locs] = await Promise.all([related<Service>("TeamMembers", m._id, "services"), related<Location>("TeamMembers", m._id, "locations")]);
+const src = imgSrc(m.image, 1200, 1200);
+const catCount = new Set(services.map((x) => x.category).filter(Boolean)).size;
+const stats = [
+  services.length > 0 && { label: services.length > 1 ? "Services" : "Service", value: String(services.length) },
+  catCount > 0 && { label: catCount > 1 ? "Categories" : "Category", value: String(catCount) },
+  locs.length > 0 && { label: locs.length > 1 ? "Locations" : "Location", value: String(locs.length) },
+].filter(Boolean) as { label: string; value: string }[];
+const sections = [
+  paragraphs(m.about).length > 0 && { id: "about", label: "About" },
+  services.length > 0 && { id: "services", label: "Services" },
+  locs.length > 0 && { id: "locations", label: "Locations" },
+].filter(Boolean) as { id: string; label: string }[];
+---
+<SiteLayout title={m.name}>
+  <DetailHero title={m.name} desc={m.shortBio} stats={stats} cover={src}>
+    <Fragment slot="crumbs"><a href="/">Home</a><a href="/team">Team</a><span aria-current="page">{m.name}</span></Fragment>
+    {m.jobTitle && <p slot="sub" class="font-display text-h3 text-muted-foreground">{m.jobTitle}</p>}
+    <Fragment slot="actions">
+      <a href="/contact" class="btn btn-primary">Contact</a>
+      {services.length > 0 && <a href="#services" class="btn btn-outline">See Services</a>}
+    </Fragment>
+  </DetailHero>
+
+  <SectionBar sections={sections} />
+
+  <AboutList id="about" title="About" items={[{ paragraphs: paragraphs(m.about) }]} />
+
+  {services.length > 0 && (
+    <section id="services" class="section bg-secondary">
+      <div class="wrap">
+        <h2 class="text-h2">Related Services</h2>
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{services.map((s) => <li><ServiceCard service={s} categories={cats} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  {locs.length > 0 && (
+    <section id="locations" class="section">
+      <div class="wrap">
+        <h2 class="text-h2">Locations</h2>
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{locs.map((x) => <li><LocationCard location={x} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+
+</SiteLayout>

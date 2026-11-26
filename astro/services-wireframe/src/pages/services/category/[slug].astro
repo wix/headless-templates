@@ -1,0 +1,86 @@
+---
+// A category page: the first screen carries the category's figures (three value / label pairs), its description (folded after
+// a single short paragraph), the actions and, under them, the figures; then a section bar (Services, Team, FAQ), the category's services,
+// the team members who run them, and the category's questions. Everything is read from the CMS (ServiceCategories, Services,
+// the Services → teamMembers link, Faq rows whose `category` points here).
+import SiteLayout from "../../../layouts/SiteLayout.astro";
+import ServiceCard from "../../../components/ServiceCard.astro";
+import TeamCard from "../../../components/TeamCard.astro";
+import FaqAccordion from "../../../components/FaqAccordion.astro";
+import SectionBar from "../../../components/SectionBar.astro";
+import AboutList from "../../../components/AboutList.astro";
+import { getCategories, bySlug, related, imgSrc, paragraphs, categoryStats, type Member } from "../../../lib/cms";
+import { getCategoryFaq, getAbout, getCopy } from "../../../lib/content";
+import { getCityServices } from "../../../lib/city";
+
+const [{ services }, cats] = await Promise.all([getCityServices(Astro), getCategories()]);
+const c = bySlug(cats, Astro.params.slug!);
+if (!c) return Astro.rewrite("/404");
+const list = services.filter((s) => s.category === c._id);
+const [teams, faq, about, copy] = await Promise.all([Promise.all(list.map((s) => related<Member>("Services", s._id, "teamMembers"))), getCategoryFaq(c._id, Astro.url.pathname), getAbout({ category: c._id }), getCopy()]);
+const seen = new Set<string>();
+const team = teams.flat().filter((m) => !seen.has(m._id) && seen.add(m._id)).sort((a, b) => a.order - b.order);
+const stats = categoryStats(c);
+const desc = paragraphs(c.description);
+const cover = imgSrc(list[0]?.image, 1200, 1200);
+const sections = [
+  list.length > 0 && { id: "services", label: "Services" },
+  about.length > 0 && { id: "about", label: "About" },
+  team.length > 0 && { id: "team", label: "Team" },
+  faq.length > 0 && { id: "faq", label: "FAQ" },
+].filter(Boolean) as { id: string; label: string }[];
+---
+<SiteLayout title={c.title}>
+  <section class="pt-6 pb-(--gutter) md:pt-8">
+    <div class="wrap">
+      <nav aria-label="Breadcrumb" class="meta"><a href="/">Home</a><a href="/services">Services</a><span aria-current="page">{c.title}</span></nav>
+
+      <div class="cat-hero mt-6">
+        <div class="cat-hero__body">
+          <h1 class="text-display">{c.title}</h1>
+          {desc.length > 0 && <p class="cat-desc">{desc[0]}</p>}
+          <div class="flex flex-wrap gap-3">
+            <a href={`/contact?service=${encodeURIComponent(c.title)}`} class="btn btn-primary">Book a Consultation</a>
+            {list.length > 0 && <a href="#services" class="btn btn-outline">See Services</a>}
+          </div>
+          {stats.length > 0 && (
+            <dl class="cat-stats mt-auto">
+              {stats.map((s) => <div><dt>{s.label}</dt><dd>{s.value}</dd></div>)}
+            </dl>
+          )}
+        </div>
+        {cover && <div class="cat-hero__media media hidden lg:block"><img src={cover} alt="" width="1200" height="1200" fetchpriority="high" /></div>}
+      </div>
+    </div>
+  </section>
+
+  <SectionBar sections={sections} />
+
+  {list.length > 0 && (
+    <section id="services" class="section">
+      <div class="wrap">
+        <h2 class="text-h2">Services</h2>
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{list.map((s) => <li><ServiceCard service={s} categories={cats} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  <AboutList id="about" title="About The Service" items={about} />
+
+  {team.length > 0 && (
+    <section id="team" class="section bg-secondary">
+      <div class="wrap">
+        <h2 class="text-h2">Team</h2>
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{team.slice(0, 6).map((m) => <li><TeamCard member={m} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  {faq.length > 0 && (
+    <section id="faq" class="section">
+      <div class="wrap"><FaqAccordion items={faq} title={copy.faq?.title ?? "Frequently Asked Questions"} contactImage={imgSrc(copy.faq?.image, 640, 480)} /></div>
+    </section>
+  )}
+
+</SiteLayout>
+
