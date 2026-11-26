@@ -1,0 +1,30 @@
+---
+// /contact: the business details (CMS row footer: one source for the footer and this page) and the Wix Forms contact form,
+// submitted as the visitor (island: schema-driven, no elevation).
+import SiteLayout from "../layouts/SiteLayout.astro";
+import ContactForm from "../components/ContactForm";
+import PageHead from "../components/PageHead.astro";
+import { getCopy, getContactForm } from "../lib/content";
+const [sec, form] = await Promise.all([getCopy(), getContactForm()]);
+const s = sec.contact, f = sec.footer;
+const addr = (f?.body ?? "").split("\n").filter(Boolean);
+const bits = (f?.bodySecondary ?? "").split("·").map((x) => x.trim()).filter(Boolean);
+---
+<SiteLayout>
+  <PageHead title={s?.title ?? "Contact"} description={s?.body} />
+  <section class="section page-body">
+    <div class="wrap page-body__inner">
+      {(addr.length > 0 || bits.length > 0) && (
+        <div class="contact-info">
+          {addr.length > 0 && <div><h2 class="eyebrow">Address</h2><p>{addr.map((l) => <span class="block">{l}</span>)}</p></div>}
+          {bits.length > 0 && (
+            <div><h2 class="eyebrow">Contact details</h2>
+              <ul>{bits.map((b) => <li><a class="ul" href={b.includes("@") ? `mailto:${b}` : `tel:${b.replace(/[^\d+]/g, "")}`}>{b}</a></li>)}</ul>
+            </div>
+          )}
+        </div>
+      )}
+      <div class="contact-form">{form ? <ContactForm client:load formId={form.formId} fields={form.fields} /> : <p class="note" role="status">The form could not be loaded. Use the details on this page to get in touch.</p>}</div>
+    </div>
+  </section>
+</SiteLayout>

@@ -1,0 +1,393 @@
+---
+// Site chrome for every page: the latest-story strip with the social bar, the header (sections, search, Subscribe), the
+// footer. The header's one action is Subscribe. Navigation is two levels (lib/chrome.ts): each section opens its categories;
+// categories in no section follow the sections; with no sections at all, the categories are the nav. Everything is read live,
+// so a new section or category appears without a deploy. Up to four items sit in the bar, the rest in "More" (it never wraps).
+//   hideSubscribe  the page hides the header's Subscribe (the Subscribe page itself: the button would point at itself).
+//   subscribe      the subscribe card above the footer, on by default: most readers land on a post or a category page from search
+//                  or social, never on Home, so every page carries the sign-up once. Off only where the page is the sign-up (/subscribe).
+//   title          ONLY for pages Wix does not resolve SEO tags for (tag and legal pages). Main pages get their <title> and description
+//                  injected by Wix (dashboard > SEO), and item pages (post, category) fill the `seo-tags` slot, so a fallback here would duplicate them.
+import { getChrome } from "../lib/chrome";
+import { PAGES, SITE_NAME_FALLBACK } from "../lib/site";
+import SocialBar from "../components/SocialBar.astro";
+import HomeStory from "../components/HomeStory.astro";
+import SubscribeBand from "../components/SubscribeBand.astro";
+import { getRates } from "../lib/rates";
+import { img, fmtDate } from "../lib/blog";
+import "../styles/global.css";
+
+interface Props { title?: string; hideSubscribe?: boolean; subscribe?: boolean }
+const { title, hideSubscribe = false, subscribe = true } = Astro.props;
+
+const [{ cats, catMap, sections, loose, sectionOf, copy, social, legal, ticker, catPosts, popular, searchable }, rates] = await Promise.all([getChrome(), getRates()]);
+const site = copy.site?.title ?? SITE_NAME_FALLBACK;
+const f = copy.footer;
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
+type Item = { label: string; href: string; children: { label: string; href: string }[] };
+const items: Item[] = [
+  ...sections.map((s) => ({ label: s.title, href: `/section/${s.slug}`, children: s.cats.map((c) => ({ label: c.label, href: `/category/${c.slug}` })) })),
+  ...(sections.length ? loose : cats).map((c) => ({ label: c.label, href: `/category/${c.slug}`, children: [] })),
+];
+const HEADER_MAX = 4; // the bar shares the width with the centred logo: four items; "All Categories" opens the full list
+const inNav = items.slice(0, HEADER_MAX);
+// The current item: this section or category page, or a category page of this section.
+const catSlug = path.match(/^\/category\/([^/]+)/)?.[1];
+const curSection = catSlug ? sectionOf[cats.find((c) => c.slug === catSlug)?.id ?? ""] : undefined;
+const isItem = (it: Item) => isCurrent(it.href) || (!!curSection && it.href === `/section/${curSection.slug}`);
+const addr = (f?.body ?? "").split("\n").filter(Boolean);
+// Search popup: the popular posts first (in view order), then every other post; the script shows the popular ones until the
+// visitor types, then every post whose text holds all the typed words.
+const popRank = Object.fromEntries(popular.map((id, i) => [id, i]));
+const searchList = [...searchable].sort((a, b) => (popRank[a.id] ?? 99) - (popRank[b.id] ?? 99));
+const bits = (f?.bodySecondary ?? "").split("·").map((x) => x.trim()).filter(Boolean);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {title && <title>{`${title} | ${site}`}</title>}
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={`${site} feed`} href="/rss.xml" />
+    <slot name="seo-tags" />
+    <slot name="head" />
+  </head>
+  <body class="min-h-svh">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:bg-background focus:px-4 focus:py-3">Skip to content</a>
+
+    <!-- The top bar: a slow news ticker of the newest posts, the day's EUR and GBP rates in USD, and the social bar (from tablet).
+         The ticker pauses on hover and focus, and stands still for visitors who ask for reduced motion. -->
+    <div class="topbar bg-inverse text-sm text-inverse-foreground">
+      <div class="wrap flex min-h-(--bar-h) items-center gap-(--space)">
+        <strong class="hidden shrink-0 font-normal sm:block">Latest</strong>
+        {ticker.length > 0 ? (
+          <div class="ticker min-w-0 flex-1" aria-label="Latest posts">
+            <div class="ticker__track">
+              {[0, 1].map((copyN) => (
+                <ul class="ticker__list" aria-hidden={copyN === 1 ? "true" : undefined}>
+                  {ticker.map((p) => <li><a href={`/post/${p.slug}`} tabindex={copyN === 1 ? -1 : undefined}>{p.title}</a></li>)}
+                </ul>
+              ))}
+            </div>
+          </div>
+        ) : <span class="flex-1"></span>}
+        {rates.length > 0 && (
+          <dl class="rates flex shrink-0" aria-label={`Exchange rates in US dollars, ${rates[0].date}`} title={`Official rate in USD, ${rates[0].date}`}>
+            {rates.map((r) => <div><dt>{r.code}</dt><dd>${r.rate.toFixed(2)}</dd></div>)}
+          </dl>
+        )}
+        <SocialBar links={social} class="hidden shrink-0 lg:block" />
+      </div>
+    </div>
+
+    <header class="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+      <div class="wrap relative flex h-(--header-h) items-center justify-between gap-4 xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+        <nav aria-label="Sections" class="xl:col-start-1 xl:row-start-1 hidden min-w-0 items-stretch justify-start self-stretch -ml-3 xl:flex">
+          {inNav.map((it, i) => it.children.length ? (
+            <div class="dd-item relative flex items-center" data-dd>
+              <a href={it.href} aria-current={isItem(it) ? "page" : undefined} class="nav-link pr-1">{it.label}</a>
+              <button type="button" class="dd-btn" aria-expanded="false" aria-controls={`dd-${i}`} aria-label={`${it.label}: categories`}>
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              </button>
+              <div id={`dd-${i}`} class="more-list dd-list left-0 right-auto">
+                <a href={it.href} class="font-semibold">All {it.label}</a>
+                {it.children.map((c) => <a href={c.href} aria-current={isCurrent(c.href) ? "page" : undefined}>{c.label}</a>)}
+              </div>
+            </div>
+          ) : (() => {
+            // A category: its link, and on hover (or keyboard focus) a full-width panel of its newest posts as small previews.
+            const cat = cats.find((c) => it.href === `/category/${c.slug}`);
+            const posts = cat ? catPosts[cat.id] ?? [] : [];
+            return (
+              <div class="mega" data-mega>
+                <a href={it.href} aria-current={isItem(it) ? "page" : undefined} class="nav-link">{it.label}</a>
+                {posts.length > 0 && (
+                  <div class="mega__panel" role="region" aria-label={`Latest in ${it.label}`}>
+                    <div class="wrap">
+                      <div class="mega__head"><p class="block-title">Latest in {it.label}</p><a href={it.href} class="btn btn-outline btn-sm">All posts</a></div>
+                      <ul class="mega__grid">
+                        {posts.map((p) => {
+                          const src = img(p.cover, 240, 160);
+                          return (
+                            <li>
+                              <article class="mega__card card">
+                                <div class="media">{src && <img src={src} alt="" width="240" height="160" loading="lazy" />}</div>
+                                <div class="mega__text">
+                                  <p class="text-xs text-muted-foreground">{fmtDate(p.date)}</p>
+                                  <p class="card-title clamp-2 text-sm"><a href={`/post/${p.slug}`}>{p.title}</a></p>
+                                </div>
+                              </article>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()
+          )}
+          {cats.length > 0 && (
+            <div class="flex items-center">
+              <button type="button" id="allcats-btn" class="nav-link" aria-expanded="false" aria-controls="allcats-panel">All Categories</button>
+            </div>
+          )}
+        </nav>
+        <a href="/" class="brand inline-flex min-h-11 min-w-0 items-center whitespace-nowrap font-display text-lg sm:text-xl font-bold tracking-tight text-foreground no-underline xl:col-start-2 xl:row-start-1 xl:justify-self-center">{site}</a>
+        <div class="-mr-2 flex shrink-0 items-center gap-1 sm:mr-0 sm:gap-2 xl:col-start-3 xl:row-start-1 xl:justify-self-end">
+          <button type="button" id="search-btn" class="icon-btn" aria-expanded="false" aria-controls="search-panel" aria-label="Search">
+            <svg class="search-btn__open" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.25" stroke="currentColor" stroke-width="1.75" /><path d="M12 12l4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /></svg><svg class="search-btn__close" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 3l12 12M15 3L3 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /></svg>
+          </button>
+          {!hideSubscribe && <a href="/#subscribe" class="btn btn-primary btn-sm hidden xl:inline-flex">Subscribe</a>}
+          <button type="button" id="menu-btn" class="icon-btn xl:hidden" aria-expanded="false" aria-controls="menu-panel" aria-label="Menu">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path id="menu-open" d="M2 5h14M2 9h14M2 13h14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /><path id="menu-close" class="hidden" d="M3 3l12 12M15 3L3 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search: lives only in this panel under the header (no search page). Results appear as you type; Enter runs it at once. -->
+      <div id="search-panel" class="panel" hidden>
+        <div class="wrap search__wrap">
+          <form role="search" class="search-field" id="search-form">
+            <label for="search-q" class="sr-only">Search</label>
+            <input id="search-q" name="q" type="search" class="field" placeholder="Search" autocomplete="off" enterkeyhint="search" />
+          </form>
+          <p id="search-label" class="eyebrow search__label" aria-live="polite">Popular Posts</p>
+          <ul class="row4 search__grid" id="search-grid">
+            {searchList.map((p) => <li data-s={p.hay} data-t={p.title.toLowerCase()} data-pop={popRank[p.id] !== undefined ? "" : undefined} hidden={popRank[p.id] === undefined}><HomeStory post={p} cats={catMap} excerpt={false} level={0} /></li>)}
+          </ul>
+        </div>
+      </div>
+
+      <!-- All Categories (desktop bar): a full-width panel of every category — its picture (the newest post's cover), name and short
+           description. Hovering or focusing a category swaps its description for its two newest posts, in the same space, so nothing
+           moves. Opens on click; Escape, a click outside or the dimmer closes it. -->
+      <div id="allcats-panel" class="allcats" hidden>
+        <div class="wrap">
+          <div class="mega__head"><p class="block-title">All Categories</p></div>
+          <ul class="allcats__grid">
+            {cats.map((c) => {
+              const posts = catPosts[c.id] ?? [];
+              const pic = posts[0] ? img(posts[0].cover, 640, 427) : "";
+              return (
+                <li class="catcard">
+                  <a href={`/category/${c.slug}`} class="catcard__link">
+                    <div class="media">{pic && <img src={pic} alt="" width="640" height="427" loading="lazy" />}</div>
+                    <p class="catcard__name"><span class="ul">{c.label}</span></p>
+                  </a>
+                  <div class="catcard__swap">
+                    <p class="catcard__desc text-sm text-muted-foreground">{c.description}</p>
+                    {posts.length > 0 && (
+                      <div class="catcard__posts">
+                        <p class="eyebrow">Latest Posts</p>
+                        <ul aria-label={`Latest posts in ${c.label}`}>
+                          {posts.slice(0, 2).map((p) => (
+                            <li><a href={`/post/${p.slug}`}><span class="text-xs text-muted-foreground">{fmtDate(p.date)}</span><span class="clamp-2 text-sm"><span class="ul">{p.title}</span></span></a></li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
+
+      <!-- Phone and tablet (<1280): categories and pages in a menu panel. -->
+      <div id="menu-panel" class="panel xl:hidden" hidden>
+        <nav aria-label="Menu" class="wrap py-2">
+          <ul>
+            {items.map((it) => (
+              <li class="border-b border-border">
+                <a href={it.href} aria-current={isItem(it) ? "page" : undefined} class="flex min-h-12 items-center text-lg font-medium text-foreground no-underline">{it.label}</a>
+                {it.children.length > 0 && (
+                  <ul class="-mt-1 mb-2 flex flex-wrap gap-x-1">
+                    {it.children.map((c) => <li><a href={c.href} aria-current={isCurrent(c.href) ? "page" : undefined} class="inline-flex min-h-11 items-center px-2 text-sm text-muted-foreground no-underline first:-ml-2 aria-[current=page]:text-foreground">{c.label}</a></li>)}
+                  </ul>
+                )}
+              </li>
+            ))}
+            {PAGES.map((p) => <li><a href={p.href} aria-current={isCurrent(p.href) ? "page" : undefined} class="flex min-h-12 items-center border-b border-border text-base text-muted-foreground no-underline aria-[current=page]:text-foreground">{p.label}</a></li>)}
+          </ul>
+          {!hideSubscribe && <a href="/#subscribe" class="btn btn-primary my-4 w-full">Subscribe</a>}
+        </nav>
+      </div>
+    </header>
+
+    <!-- The dimmer: 40% black over the page (under the header) while any popup is open — category previews, More, a section
+         list, search or the menu. Driven by CSS (:has), so it follows hover, keyboard focus and the panels' own toggles. -->
+    <div class="dimmer" aria-hidden="true"></div>
+
+    <main id="main">
+      <slot />
+      {subscribe && <div class="sub-site"><SubscribeBand id="sub-site" /></div>}
+    </main>
+
+    <!-- Footer: the site name large and centred in its own band, then three columns split by hairlines (pages, sections, contact),
+         then a bottom row in the same three columns (copyright, social, legal). Every value is CMS copy (SiteContent: footer). -->
+    <footer class="ft">
+      <div class="ft__brand"><a href="/" class="font-display font-bold tracking-tight text-foreground no-underline">{f?.title ?? site}</a></div>
+      <div class="ft__grid">
+        <nav aria-label="Pages" class="ft__col">
+          <h2 class="ft__head">Pages</h2>
+          <ul class="ft__list">
+            <li><a href="/">Home</a></li>
+            {PAGES.map((p) => <li><a href={p.href}>{p.label}</a></li>)}
+          </ul>
+        </nav>
+        <nav aria-label="Sections footer" class="ft__col">
+          <h2 class="ft__head">{sections.length ? "Sections" : "Categories"}</h2>
+          <ul class="ft__list">{items.map((it) => <li><a href={it.href}>{it.label}</a></li>)}</ul>
+        </nav>
+        <div class="ft__col">
+          <h2 class="ft__head">Contact</h2>
+          <address class="not-italic">
+            {addr.length > 0 && <p>{addr.map((l, i) => <>{i > 0 && <br />}{l}</>)}</p>}
+            {bits.length > 0 && <ul class="ft__list mt-(--space)">{bits.map((b) => <li><a href={b.includes("@") ? `mailto:${b}` : `tel:${b.replace(/[^\d+]/g, "")}`}>{b}</a></li>)}</ul>}
+          </address>
+        </div>
+      </div>
+      <div class="ft__grid ft__grid--foot">
+        <div class="ft__col">{f?.credit ? <p>{f.credit}</p> : <p>© 2035 by {site}. Built with Wix Headless</p>}</div>
+        <div class="ft__col">{social.length > 0 && <SocialBar links={social} class="-ml-3" />}</div>
+        <div class="ft__col">
+          {legal.length > 0 && (
+            <nav aria-label="Legal"><ul class="ft__legal">{legal.map((p) => <li><a href={`/policies/${p.slug}`}>{p.title}</a></li>)}</ul></nav>
+          )}
+        </div>
+      </div>
+    </footer>
+
+    <script is:inline>
+      // Header panels (menu, search): disclosures. Only one is open at a time; Escape, a tap outside or a link closes it, and the
+      // buttons keep aria-expanded in step. The search panel filters every post in the page as the visitor types (no request).
+      (function () {
+        var mb = document.getElementById("menu-btn"), mp = document.getElementById("menu-panel");
+        var sb = document.getElementById("search-btn"), sp = document.getElementById("search-panel");
+        var q = document.getElementById("search-q"), grid = document.getElementById("search-grid"), label = document.getElementById("search-label");
+        var cards = [].slice.call(grid.children);
+        function setMenu(open) {
+          mp.hidden = !open; mb.setAttribute("aria-expanded", String(open)); mb.setAttribute("aria-label", open ? "Close menu" : "Menu");
+          document.getElementById("menu-open").classList.toggle("hidden", open); document.getElementById("menu-close").classList.toggle("hidden", !open);
+        }
+        function setSearch(open) {
+          sp.hidden = !open; sb.setAttribute("aria-expanded", String(open)); sb.setAttribute("aria-label", open ? "Close search" : "Search");
+          if (open) { q.focus(); filter(); }
+        }
+        mb.addEventListener("click", function () { var open = mp.hidden; if (open) setSearch(false); setMenu(open); });
+        sb.addEventListener("click", function () { var open = sp.hidden; if (open) setMenu(false); setSearch(open); });
+        document.addEventListener("keydown", function (e) {
+          if (e.key !== "Escape") return;
+          if (!mp.hidden) { setMenu(false); mb.focus(); } else if (!sp.hidden) { setSearch(false); sb.focus(); }
+        });
+        document.addEventListener("click", function (e) {
+          var inside = function (el, b) { return el.contains(e.target) || b.contains(e.target); };
+          if (!mp.hidden && !inside(mp, mb)) setMenu(false);
+          if (!sp.hidden && !inside(sp, sb)) setSearch(false);
+        });
+        window.matchMedia("(min-width: 1280px)").addEventListener("change", function (m) { if (m.matches) setMenu(false); });
+
+        // Section dropdowns: the chevron button opens the section's categories (by click, tap or keyboard); hover also shows them on a
+        // pointer device (CSS). One open at a time; Escape or a click outside closes and returns focus to the button.
+        var dds = [].slice.call(document.querySelectorAll("[data-dd]"));
+        function closeDd(except) { dds.forEach(function (d) { if (d !== except) { d.removeAttribute("data-open"); d.querySelector(".dd-btn").setAttribute("aria-expanded", "false"); } }); }
+        dds.forEach(function (d) {
+          var b = d.querySelector(".dd-btn");
+          b.addEventListener("click", function (e) { e.stopPropagation(); var open = !d.hasAttribute("data-open"); closeDd(d); if (open) d.setAttribute("data-open", ""); else d.removeAttribute("data-open"); b.setAttribute("aria-expanded", String(open)); });
+        });
+        document.addEventListener("click", function (e) { if (!e.target.closest || !e.target.closest("[data-dd]")) closeDd(null); });
+        // All Categories: a click-to-open panel; one open panel at a time with search and the menu.
+        var ab = document.getElementById("allcats-btn"), ap = document.getElementById("allcats-panel");
+        function setCats(open) { if (!ab || !ap) return; ap.hidden = !open; ab.setAttribute("aria-expanded", String(open)); }
+        if (ab && ap) {
+          ab.addEventListener("click", function (e) { e.stopPropagation(); var open = ap.hidden; if (open) { setMenu(false); setSearch(false); } setCats(open); });
+          document.addEventListener("click", function (e) { if (!ap.hidden && !ap.contains(e.target) && e.target !== ab) setCats(false); });
+          document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !ap.hidden) { setCats(false); ab.focus(); } });
+        }
+        // Title underlines, line by line: each plain-text title is split into its rendered lines (one span per line, numbered in
+        // --i), so CSS can start each lower line a little later and draw it a little slower. Re-split when the width changes and when
+        // a hidden panel opens (a display:none panel has no lines to measure).
+        function splitLines(el) {
+          if (!el.dataset.text) { if (el.children.length) return; el.dataset.text = el.textContent; }
+          var text = el.dataset.text;
+          el.textContent = "";
+          var parts = text.split(/(\s+)/).filter(Boolean).map(function (w) { var s = document.createElement("span"); s.textContent = w; el.appendChild(s); return s; });
+          if (!el.getClientRects().length) { el.textContent = text; return; }
+          var lines = [], cur = null, top = null;
+          parts.forEach(function (s) {
+            if (/^\s+$/.test(s.textContent)) { if (cur) cur.push(s.textContent); return; }
+            var t = s.offsetTop;
+            if (t !== top) { top = t; cur = []; lines.push(cur); }
+            cur.push(s.textContent);
+          });
+          el.textContent = "";
+          lines.forEach(function (ws, i) {
+            var l = document.createElement("span"); l.className = "ul-line"; l.style.setProperty("--i", i); l.textContent = ws.join("").replace(/\s+$/, "");
+            el.appendChild(l); if (i < lines.length - 1) el.appendChild(document.createTextNode(" "));
+          });
+          el.setAttribute("data-lines", lines.length);
+        }
+        function splitAll(root) { (root || document).querySelectorAll(".card-title a, .ul").forEach(splitLines); }
+        window.__splitTitles = splitAll;
+        splitAll();
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { splitAll(); });
+        var rt, lastW = window.innerWidth;
+        window.addEventListener("resize", function () { if (window.innerWidth === lastW) return; lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(function () { splitAll(); }, 150); });
+        if (ab) ab.addEventListener("click", function () { if (!ap.hidden) splitAll(ap); });
+
+        // A click on the dimmer closes "More" (search and the menu already close on any click outside them).
+        var dim = document.querySelector(".dimmer");
+        if (dim) dim.addEventListener("click", function () { document.querySelectorAll("details.more[open]").forEach(function (d) { d.open = false; }); });
+        // Category previews: Escape closes the open one and leaves focus on its link's neighbour (blur takes :focus-within away).
+        document.addEventListener("keydown", function (e) { if (e.key !== "Escape") return; var m = document.activeElement && document.activeElement.closest && document.activeElement.closest("[data-mega]"); if (m) { m.querySelector(".nav-link").blur(); document.activeElement.blur && document.activeElement.blur(); } });
+        document.addEventListener("keydown", function (e) { if (e.key !== "Escape") return; var o = document.querySelector("[data-dd][data-open]"); if (o) { closeDd(null); o.querySelector(".dd-btn").focus(); } });
+
+        // Instant search over every post (no request): all typed words must appear; title hits first, then the popular order.
+        function filter() {
+          var ws = q.value.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean), n = 0;
+          cards.forEach(function (li) {
+            var show = ws.length ? ws.every(function (w) { return li.dataset.s.indexOf(w) !== -1; }) : li.hasAttribute("data-pop");
+            li.hidden = !show; if (show) n++;
+            li.style.order = ws.length && ws.some(function (w) { return li.dataset.t.indexOf(w) !== -1; }) ? "-1" : "";
+          });
+          grid.classList.toggle("is-pop", !ws.length);
+          label.textContent = !ws.length ? "Popular Posts" : n ? n + (n === 1 ? " result" : " results") + " for \u201c" + q.value.trim() + "\u201d" : "No posts match \u201c" + q.value.trim() + "\u201d";
+          if (window.__splitTitles) window.__splitTitles();
+        }
+        q.addEventListener("input", filter);
+        document.getElementById("search-form").addEventListener("submit", function (e) { e.preventDefault(); filter(); });
+      })();
+    </script>
+    <script is:inline>
+      // Subscribe buttons: land on the sign-up form on Home, whatever the device. On Home a click scrolls there directly (the menu
+      // closes first); arriving from another page, the jump is repeated once the page has settled (fonts, images, the form), and
+      // the email field takes focus without moving the page again.
+      (function () {
+        function go(smooth) {
+          var t = document.getElementById("subscribe"); if (!t) return;
+          t.scrollIntoView({ behavior: smooth ? "smooth" : "instant", block: "start" });
+        }
+        function focusField() { var t = document.getElementById("subscribe"), i = t && t.querySelector("input[type=email]"); if (i) i.focus({ preventScroll: true }); }
+        document.addEventListener("click", function (e) {
+          var a = e.target.closest && e.target.closest('a[href="/#subscribe"], a[href="#subscribe"]');
+          if (!a || !document.getElementById("subscribe")) return;
+          e.preventDefault();
+          var mp = document.getElementById("menu-panel"); if (mp && !mp.hidden) document.getElementById("menu-btn").click();
+          history.replaceState(null, "", "#subscribe");
+          go(true); setTimeout(focusField, 600);
+        });
+        if (location.hash === "#subscribe") {
+          go(false);
+          var again = function () { go(false); };
+          window.addEventListener("load", function () { again(); setTimeout(function () { again(); focusField(); }, 400); });
+          if (document.fonts && document.fonts.ready) document.fonts.ready.then(again);
+        }
+      })();
+    </script>
+  </body>
+</html>

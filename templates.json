@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "blog-magazine",
+      "title": "Magazine (Wix Blog)",
+      "subtitle": "Editorial blog with category sections, search and newsletter",
+      "siteTemplateId": "1e8e1b54-5fa0-46ce-ad77-77bba95c4fb1",
+      "gitPath": "astro/blog-magazine",
+      "vibeCompatible": false
     }
   ]
 }

@@ -1,0 +1,17 @@
+---
+// Legal pages (Privacy Policy, Terms & Conditions, Accessibility Statement): the Wix Studio legal dummy text, held in the
+// LegalPages CMS collection so the owner edits it there. No Wix SEO item type, so the page sets its own <title>.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import PageHead from "../../components/PageHead.astro";
+import { getLegalPage } from "../../lib/content";
+const page = await getLegalPage(Astro.params.slug!);
+if (!page) return Astro.rewrite("/404");
+---
+<SiteLayout title={page.title}>
+  <PageHead title={page.title} />
+  <section class="section page-body">
+    <div class="wrap page-body__inner">
+      <div class="prose-site page-body__prose" set:html={page.body} />
+    </div>
+  </section>
+</SiteLayout>

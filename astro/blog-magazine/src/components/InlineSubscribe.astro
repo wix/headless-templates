@@ -1,0 +1,18 @@
+---
+// The sign-up inside a post: the same Newsletter form as the site-wide card, compact, in the reading column, about halfway
+// through the post. Leading sites put it inside the article (the Guardian about halfway, Forbes near the end) because most
+// readers arrive on a post and never see Home. A skip link lets keyboard and screen-reader users jump past it.
+import SubscribeForm from "./SubscribeForm";
+import { getCopy, getFormId } from "../lib/content";
+const [copy, formId] = await Promise.all([getCopy(), getFormId("Newsletter")]);
+const s = copy.subscribe;
+---
+{s && (
+  <aside aria-labelledby="sub-inline-h" class="relative my-10 border-y border-border py-6">
+    <a href="#after-sub-inline" class="sr-only focus:not-sr-only focus:absolute focus:right-0 focus:top-2 focus:bg-background focus:px-3 focus:py-2 focus:text-sm">Skip newsletter sign-up</a>
+    <p id="sub-inline-h" class="font-display text-lg font-semibold">{s.title}</p>
+    {s.body && <p class="mt-1 text-sm text-muted-foreground">{s.body}</p>}
+    <div class="mt-(--space)"><SubscribeForm client:load formId={formId} consent={s.bodySecondary ?? "Yes, subscribe me to the newsletter."} cta={s.ctaLabel ?? "Subscribe"} id="sub-inline" /></div>
+  </aside>
+)}
+<span id="after-sub-inline" tabindex="-1"></span>

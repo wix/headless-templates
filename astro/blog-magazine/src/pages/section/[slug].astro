@@ -1,0 +1,29 @@
+---
+// A section (a CMS row grouping Blog categories): its name and description, its categories as chips (one tap into a category),
+// then every post filed in any of them, newest first, 12 a page. A section has no Wix SEO item type, so the page sets its own <title>.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import PostListing from "../../components/PostListing.astro";
+import PageHead from "../../components/PageHead.astro";
+import { getChrome } from "../../lib/chrome";
+import { listPosts, tagsOfPosts } from "../../lib/blog";
+import { PAGE_SIZE } from "../../lib/site";
+
+const slug = Astro.params.slug!;
+const { sections, catMap } = await getChrome();
+const sec = sections.find((s) => s.slug === slug);
+if (!sec) return Astro.rewrite("/404");
+
+const ids = sec.cats.map((c) => c.id);
+const wanted = Math.max(1, Math.floor(Number(Astro.url.searchParams.get("page"))) || 1);
+const res = await listPosts({ categoryIds: ids, skip: (wanted - 1) * PAGE_SIZE, limit: PAGE_SIZE });
+const pages = Math.max(1, Math.ceil(res.total / PAGE_SIZE));
+if (wanted > pages) return Astro.redirect(pages > 1 ? `/section/${slug}?page=${pages}` : `/section/${slug}`);
+const headTags = await tagsOfPosts((await listPosts({ categoryIds: ids, limit: 50 })).items);
+const href = (n: number) => (n <= 1 ? `/section/${slug}` : `/section/${slug}?page=${n}`);
+---
+<SiteLayout title={sec.title}>
+  <PageHead title={sec.title} description={sec.description} count={res.total} tags={headTags} />
+  <section class="section" aria-label={`Posts in ${sec.title}`}>
+    <div class="wrap"><PostListing heading={`Posts in ${sec.title}`} posts={res.items} cats={catMap} page={wanted} pages={pages} href={href} prefer={ids} /></div>
+  </section>
+</SiteLayout>

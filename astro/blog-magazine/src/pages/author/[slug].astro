@@ -1,0 +1,31 @@
+---
+// An author: the team row whose `slug` this is (photo, name, bio; CMS Team Members) and every post credited to its member,
+// newest first, 12 a page. A team row with no memberId has no author page. No Wix SEO item type, so the page sets its own <title>.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import PostListing from "../../components/PostListing.astro";
+import PageHead from "../../components/PageHead.astro";
+import { getChrome } from "../../lib/chrome";
+import { listPosts, getAuthor, tagsOfPosts } from "../../lib/blog";
+import { getTeamCached } from "../../lib/content";
+import { PAGE_SIZE } from "../../lib/site";
+
+const slug = Astro.params.slug!;
+const [{ catMap }, team] = await Promise.all([getChrome(), getTeamCached()]);
+const row = team.find((t) => t.slug === slug && t.memberId);
+if (!row) return Astro.rewrite("/404");
+const member = await getAuthor(row.memberId!);
+const name = member.name || row.name;
+
+const wanted = Math.max(1, Math.floor(Number(Astro.url.searchParams.get("page"))) || 1);
+const res = await listPosts({ memberId: row.memberId, skip: (wanted - 1) * PAGE_SIZE, limit: PAGE_SIZE });
+const pages = Math.max(1, Math.ceil(res.total / PAGE_SIZE));
+if (wanted > pages) return Astro.redirect(pages > 1 ? `/author/${slug}?page=${pages}` : `/author/${slug}`);
+const headTags = await tagsOfPosts((await listPosts({ memberId: row.memberId, limit: 50 })).items);
+const href = (n: number) => (n <= 1 ? `/author/${slug}` : `/author/${slug}?page=${n}`);
+---
+<SiteLayout title={name}>
+  <PageHead title={name} description={row.bio} count={res.total} photo={row.image} tags={headTags} />
+  <section class="section" aria-label={`Posts by ${name}`}>
+    <div class="wrap"><PostListing heading={`Posts by ${name}`} posts={res.items} cats={catMap} page={wanted} pages={pages} href={href} /></div>
+  </section>
+</SiteLayout>

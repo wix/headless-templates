@@ -1,0 +1,44 @@
+---
+// A category: a breadcrumb to its section, its name and description, the categories of the same section as a rail of chips (one tap
+// to switch; all categories when the site has no sections), the posts newest first, 12 a page.
+// An item page: it registers its route and renders the SEO tags the owner edits in the dashboard (lib/seo.ts).
+import { WIX_APPS } from "@wix/essentials";
+import { SEO } from "@wix/seo/components";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import PostListing from "../../components/PostListing.astro";
+import PageHead from "../../components/PageHead.astro";
+import { getChrome } from "../../lib/chrome";
+import { listPosts, tagsOfPosts } from "../../lib/blog";
+import { itemSeo } from "../../lib/seo";
+import { PAGE_SIZE } from "../../lib/site";
+
+export const wixMetadata = {
+  appDefId: WIX_APPS.blogs.id,
+  pageIdentifier: WIX_APPS.blogs.categoryPageMetadata.pageIdentifier,
+  identifiers: { slug: WIX_APPS.blogs.categoryPageMetadata.identifiers.slug },
+};
+
+const slug = Astro.params.slug!;
+const { cats, catMap, sectionOf } = await getChrome();
+const cat = cats.find((c) => c.slug === slug);
+if (!cat) return Astro.rewrite("/404");
+const sec = sectionOf[cat.id];
+const siblings = sec ? sec.cats : cats;
+
+const wanted = Math.max(1, Math.floor(Number(Astro.url.searchParams.get("page"))) || 1);
+const [first, seo] = await Promise.all([
+  listPosts({ categoryId: cat.id, skip: (wanted - 1) * PAGE_SIZE, limit: PAGE_SIZE }),
+  itemSeo(Astro.request, Astro.url, "BLOG_CATEGORY", slug),
+]);
+const pages = Math.max(1, Math.ceil(first.total / PAGE_SIZE));
+if (wanted > pages) return Astro.redirect(pages > 1 ? `/category/${slug}?page=${pages}` : `/category/${slug}`);
+const headTags = await tagsOfPosts((await listPosts({ categoryId: cat.id, limit: 50 })).items);
+const href = (n: number) => (n <= 1 ? `/category/${slug}` : `/category/${slug}?page=${n}`);
+---
+<SiteLayout>
+  {seo && <SEO.Tags seoTagsServiceConfig={seo} slot="seo-tags" />}
+  <PageHead title={cat.label} description={cat.description} count={first.total} tags={headTags} eyebrow={sec ? { label: sec.title, href: `/section/${sec.slug}` } : undefined} />
+  <section class="section" aria-label={`Posts in ${cat.label}`}>
+    <div class="wrap"><PostListing heading={`Posts in ${cat.label}`} posts={first.items} cats={catMap} page={wanted} pages={pages} href={href} prefer={[cat.id]} /></div>
+  </section>
+</SiteLayout>

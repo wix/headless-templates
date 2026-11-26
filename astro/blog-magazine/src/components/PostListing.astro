@@ -1,0 +1,21 @@
+---
+// A page of posts as a grid (category, tag, section and author pages), under its own h2 (visually hidden: the page's h1 already
+// names the list on screen, but the outline must not jump from h1 to the cards' h3): the Home story cards in the same four-up row as Home (row4), numbered pages below.
+// An out-of-range page never renders empty: the page route sends the visitor to the last page before it gets here.
+import HomeStory from "./HomeStory.astro";
+import Pagination from "./Pagination.astro";
+import type { Card, Cat } from "../lib/blog";
+interface Props { heading: string; posts: Card[]; cats: Record<string, Cat>; page: number; pages: number; href: (n: number) => string; prefer?: string[] }
+const { heading, posts, cats, page, pages, href, prefer } = Astro.props;
+---
+<h2 class="sr-only">{heading}</h2>
+{posts.length > 0 ? (
+  <>
+    <ul class="row4 row4--list">
+      {posts.map((p) => <li><HomeStory post={p} cats={cats} prefer={prefer} /></li>)}
+    </ul>
+    <div class="mt-(--space)"><Pagination page={page} pages={pages} href={href} /></div>
+  </>
+) : (
+  <p class="note" role="status"><strong>No posts yet.</strong></p>
+)}

@@ -1,0 +1,24 @@
+---
+// Not found: a way back (search, home, the latest posts). Served for an unknown post, category or tag as well.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import HomeStory from "../components/HomeStory.astro";
+import PageHead from "../components/PageHead.astro";
+import { getChrome } from "../lib/chrome";
+import { listPosts } from "../lib/blog";
+Astro.response.status = 404;
+const { catMap } = await getChrome();
+const latest = (await listPosts({ limit: 4 })).items;
+---
+<SiteLayout title="Page not found">
+  <PageHead title="Page not found" description="The page you are looking for does not exist. Search the posts or start from the home page.">
+    <div class="flex flex-wrap justify-center gap-3"><button type="button" class="btn btn-primary" onclick="document.getElementById('search-btn').click()">Search</button><a href="/" class="btn btn-outline">Home</a></div>
+  </PageHead>
+  {latest.length > 0 && (
+    <section class="section" aria-labelledby="latest-h">
+      <div class="wrap">
+        <header class="block-head"><h2 id="latest-h" class="block-title">Latest Posts</h2></header>
+        <ul class="row4">{latest.map((p) => <li><HomeStory post={p} cats={catMap} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+</SiteLayout>

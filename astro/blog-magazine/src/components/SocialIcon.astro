@@ -1,0 +1,52 @@
+---
+// The social glyphs, drawn inline (no icon font, no extra request). 24px grid, currentColor, so colour and hover come from the link.
+// Simple drawings on purpose: a wireframe, replaced by the owner's brand marks.
+import type { Platform } from "../lib/content";
+interface Props { platform: Platform; size?: number }
+const { platform, size = 20 } = Astro.props;
+---
+{platform === "facebook" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M14.5 21v-8h2.7l.4-3.2h-3.1V7.8c0-.9.3-1.5 1.6-1.5h1.6V3.4c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1v2.4H8.6V13h2.7v8z" />
+  </svg>
+)}
+{platform === "x" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+    <path d="M4.5 4.5l15 15M19.5 4.5l-15 15" />
+  </svg>
+)}
+{platform === "instagram" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+    <rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" stroke="none" />
+  </svg>
+)}
+{platform === "youtube" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true">
+    <rect x="2.5" y="5.5" width="19" height="13" rx="4" /><path d="M10 9.2v5.6l5-2.8z" fill="currentColor" />
+  </svg>
+)}
+{platform === "tiktok" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M14 3.5v11a3.5 3.5 0 1 1-3.5-3.5" /><path d="M14 3.5c.3 2.6 2 4.2 4.5 4.4" />
+  </svg>
+)}
+{platform === "pinterest" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="8.5" /><path d="M11 9.5c.4-1.5 3.8-1.6 3.8.9 0 2-1.3 3.4-2.8 3.4-.9 0-1.4-.6-1.3-1.3M11.4 11.5 9.5 20" />
+  </svg>
+)}
+{platform === "linkedin" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+    <rect x="3.5" y="3.5" width="17" height="17" rx="3" /><path d="M8 10.5V16M8 7.8v.1M11.5 16v-5.5M11.5 13c0-1.5 1-2.5 2.3-2.5S16 11.3 16 13v3" />
+  </svg>
+)}
+{platform === "threads" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+    <path d="M16.5 8.5C15.6 6.4 13.9 5 11.6 5 8 5 5.5 7.8 5.5 12s2.5 7 6.1 7c3 0 5.4-1.8 5.4-4.4 0-2.3-1.9-3.6-4.4-3.6-2 0-3.3 1-3.3 2.4 0 1.2 1 2 2.4 2 2.4 0 3.3-2.1 3.1-5" />
+  </svg>
+)}
+{platform === "whatsapp" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true">
+    <path d="M4.5 19.5l1.2-3.6A7.5 7.5 0 1 1 8.4 18.6z" /><path d="M9.5 9c.2 2.4 2.3 4.6 4.8 5l1-1.1-1.5-.8-.7.6c-.9-.4-1.6-1.1-2-2l.6-.7-.8-1.5z" fill="currentColor" stroke="none" />
+  </svg>
+)}

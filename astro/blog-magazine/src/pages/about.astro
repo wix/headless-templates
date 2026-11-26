@@ -1,0 +1,36 @@
+---
+// /about: the story (CMS SiteContent: about), the team (CMS TeamMembers) and the subscribe band.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import PageHead from "../components/PageHead.astro";
+import { getCopy, getTeam } from "../lib/content";
+const [sec, team] = await Promise.all([getCopy(), getTeam()]);
+const s = sec.about;
+const paras = (t?: string) => (t ?? "").split("\n\n").filter(Boolean);
+---
+<SiteLayout>
+  <PageHead title={s?.title ?? "About Us"} />
+  <section class="section page-body">
+    <div class="wrap page-body__inner">
+      {paras(s?.body).length > 0 && <div class="page-body__lead">{paras(s?.body).map((t) => <p>{t}</p>)}</div>}
+      {s?.image && <div class="media page-body__media"><img src={s.image} alt="" width="2400" height="1200" /></div>}
+      {paras(s?.bodySecondary).length > 0 && <div class="page-body__text">{paras(s?.bodySecondary).map((t) => <p>{t}</p>)}</div>}
+    </div>
+  </section>
+  {team.length > 0 && (
+    <section class="pb-(--section-y)" aria-labelledby="team-h">
+      <div class="wrap">
+        <header class="block-head"><h2 id="team-h" class="block-title">Our Team</h2></header>
+        <ul class="row4 team" style={`--n:${Math.min(team.length, 4)}`}>
+          {team.map((m) => (
+            <li class="team__card">
+              {m.image && <div class="media"><img src={m.image} alt="" width="800" height="1000" loading="lazy" /></div>}
+              <h3 class="card-title story__title">{m.name}</h3>
+              {m.bio && <p class="text-sm text-muted-foreground">{m.bio}</p>}
+              {m.memberId && m.slug && <a href={`/author/${m.slug}`} class="btn btn-outline btn-sm">Posts by {m.name}</a>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+</SiteLayout>
