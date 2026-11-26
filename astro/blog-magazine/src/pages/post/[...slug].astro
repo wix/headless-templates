@@ -101,7 +101,7 @@ const part = (a: number, b?: number) => ({ ...post.richContent, nodes: nodes.sli
       <div class="wrap">
         <header class="block-head"><h2 id="more-h" class="block-title">More from {cats[0].label}</h2></header>
         <ul class="row4">{more.map((p) => <li><HomeStory post={p} cats={catMap} prefer={[cats[0].id]} /></li>)}</ul>
-        <div class="block-foot"><a href={`/category/${cats[0].slug}`} class="btn btn-outline">Read more</a></div>
+        <div class="block-foot"><a href={`/category/${cats[0].slug}`} class="btn btn-outline">Read more<span class="sr-only"> in {cats[0].label}</span></a></div>
       </div>
     </section>
   )}

@@ -807,3 +807,18 @@ section:has(> .wrap > .block-head):not(.bg-inverse)::before { content: ""; posit
 /* Phone and tablet menu links: they dim on hover and while pressed, so a tap reads apart from the underlined current page. */
 #menu-panel a { transition: opacity .16s var(--ease-site); }
 #menu-panel a:not(.btn):hover, #menu-panel a:not(.btn):active { opacity: .55; }
+
+/* The ticker's Pause/Play button: a 32px round icon like the top bar's social icons, a white ring on hover and focus. While paused
+   the track stands still; with reduced motion there is no motion to pause, so the button is hidden. */
+.ticker-toggle { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 2rem; height: 2rem; margin-inline: calc(var(--space) / -2) calc(var(--space) / -2); border-radius: 9999px; color: var(--color-inverse-foreground); transition: box-shadow .16s var(--ease-site); }
+.ticker-toggle:hover, .ticker-toggle:focus-visible { box-shadow: inset 0 0 0 1px currentColor; outline: none; }
+.ticker-toggle__play, .ticker-toggle[aria-pressed="true"] .ticker-toggle__pause { display: none; }
+.ticker-toggle[aria-pressed="true"] .ticker-toggle__play { display: block; }
+.topbar[data-paused] .ticker__track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .ticker-toggle { display: none; } }
+
+/* Wix hosting banner, after its Close button is moved out of the link (see SiteLayout): the button sits over the link's right end,
+   exactly where it was, and the link keeps room for it. */
+#wixheadless-banner-container { position: fixed; }
+#wixheadless-banner-container > #wixheadless-banner { padding-right: 40px; }
+#wixheadless-banner-container > #wixheadless-banner-close { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }

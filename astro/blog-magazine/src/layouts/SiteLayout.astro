@@ -58,11 +58,17 @@ const bits = (f?.bodySecondary ?? "").split("·").map((x) => x.trim()).filter(Bo
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:bg-background focus:px-4 focus:py-3">Skip to content</a>
 
     <!-- The top bar: a slow news ticker of the newest posts, the day's EUR and GBP rates in USD, and the social bar (from tablet).
-         The ticker pauses on hover and focus, and stands still for visitors who ask for reduced motion. -->
+         The ticker pauses on hover and focus, has its own Pause/Play button whose choice is kept across pages, and stands still
+         for visitors who ask for reduced motion. -->
     <div class="topbar bg-inverse text-sm text-inverse-foreground">
       <div class="wrap flex min-h-(--bar-h) items-center gap-(--space)">
         <strong class="hidden shrink-0 font-normal sm:block">Latest</strong>
         {ticker.length > 0 ? (
+          <>
+          <button type="button" class="ticker-toggle" data-ticker-toggle aria-pressed="false" aria-label="Pause latest posts">
+            <svg class="ticker-toggle__pause" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="3" y="2" width="2.5" height="10" fill="currentColor" /><rect x="8.5" y="2" width="2.5" height="10" fill="currentColor" /></svg>
+            <svg class="ticker-toggle__play" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M4 2.2v9.6L11.5 7z" fill="currentColor" /></svg>
+          </button>
           <div class="ticker min-w-0 flex-1" aria-label="Latest posts">
             <div class="ticker__track">
               {[0, 1].map((copyN) => (
@@ -72,6 +78,7 @@ const bits = (f?.bodySecondary ?? "").split("·").map((x) => x.trim()).filter(Bo
               ))}
             </div>
           </div>
+          </>
         ) : <span class="flex-1"></span>}
         {rates.length > 0 && (
           <dl class="rates flex shrink-0" aria-label={`Exchange rates in US dollars, ${rates[0].date}`} title={`Official rate in USD, ${rates[0].date}`}>
@@ -387,6 +394,41 @@ const bits = (f?.bodySecondary ?? "").split("·").map((x) => x.trim()).filter(Bo
           window.addEventListener("load", function () { again(); setTimeout(function () { again(); focusField(); }, 400); });
           if (document.fonts && document.fonts.ready) document.fonts.ready.then(again);
         }
+      })();
+    </script>
+    <script is:inline>
+      // The news ticker's Pause/Play button (WCAG 2.2.2): a pressed state on the top bar stops the animation until the visitor
+      // resumes it; the choice is remembered on this device (if storage is available) so it survives moving between pages.
+      (function () {
+        var b = document.querySelector("[data-ticker-toggle]"), bar = b && b.closest(".topbar"); if (!b) return;
+        function set(p) {
+          bar.toggleAttribute("data-paused", p); b.setAttribute("aria-pressed", String(p));
+          b.setAttribute("aria-label", p ? "Play latest posts" : "Pause latest posts");
+          try { p ? localStorage.setItem("ticker-paused", "1") : localStorage.removeItem("ticker-paused"); } catch (e) {}
+        }
+        var saved = false; try { saved = localStorage.getItem("ticker-paused") === "1"; } catch (e) {}
+        set(saved);
+        b.addEventListener("click", function () { set(b.getAttribute("aria-pressed") !== "true"); });
+      })();
+    </script>
+    <script is:inline>
+      // The "Built on Wix Headless" banner is injected by Wix hosting with its Close button nested inside the promotional link, so
+      // assistive tech reads one link "Built on WIX Headless Close banner". Once it appears, the button is moved out to be the link's
+      // sibling (same place on screen, see global.css) and closes the banner by itself.
+      (function () {
+        function fix() {
+          var c = document.getElementById("wixheadless-banner-container"), a = document.getElementById("wixheadless-banner"), b = document.getElementById("wixheadless-banner-close");
+          if (!c || !a || !b) return false;
+          if (b.parentElement === a) {
+            c.appendChild(b); b.type = "button";
+            b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); c.style.display = "none"; });
+          }
+          return true;
+        }
+        if (fix()) return;
+        var mo = new MutationObserver(function () { if (fix()) mo.disconnect(); });
+        mo.observe(document.documentElement, { childList: true, subtree: true });
+        setTimeout(function () { mo.disconnect(); }, 15000);
       })();
     </script>
   </body>

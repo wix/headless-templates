@@ -21,8 +21,8 @@ export default function SubscribeForm({ formId, consent, cta, id = "sub" }: Prop
     if (busy) return;
     setFailed(false);
     const e: typeof errors = {};
-    if (!email.trim()) e.email = "Required"; else if (!EMAIL.test(email.trim())) e.email = "Enter a valid email";
-    if (!checked) e.consent = "Check the box to subscribe";
+    if (!email.trim()) e.email = "Enter your email address"; else if (!EMAIL.test(email.trim())) e.email = "Enter an email address in the format name@example.com";
+    if (!checked) e.consent = "Check the box to agree to receive the newsletter";
     setErrors(e);
     if (e.email || e.consent) { setTimeout(() => document.querySelector<HTMLElement>(`#${id} [aria-invalid="true"]`)?.focus(), 30); return; }
     if (!formId) { setFailed(true); return; }
@@ -33,7 +33,7 @@ export default function SubscribeForm({ formId, consent, cta, id = "sub" }: Prop
     } catch (err: any) {
       console.error("[subscribe] submit failed", err);
       const v = err?.details?.validationError?.fieldViolations?.[0]?.data?.errors?.[0];
-      if (v?.errorPath === "email") setErrors({ email: v.errorMessage ?? "Enter a valid email" }); else setFailed(true);
+      if (v?.errorPath === "email") setErrors({ email: v.errorMessage ?? "Enter an email address in the format name@example.com" }); else setFailed(true);
       setBusy(false);
     }
   }

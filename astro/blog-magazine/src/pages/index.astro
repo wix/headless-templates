@@ -165,7 +165,7 @@ const introPics = newest.items.slice(0, 6).map((p) => img(p.cover, 480, 320)).fi
           ) : (
             <ul class="row4">{b.items.map((p) => <li><HomeStory post={p} cats={catMap} prefer={[b.cat.id]} /></li>)}</ul>
           )}
-          <div class="block-foot"><a href={href} class="btn btn-outline">Read more</a></div>
+          <div class="block-foot"><a href={href} class="btn btn-outline">Read more<span class="sr-only"> in {b.cat.label}</span></a></div>
         </div>
       </section>
     );
@@ -231,7 +231,7 @@ const introPics = newest.items.slice(0, 6).map((p) => img(p.cover, 480, 320)).fi
       <div class="wrap">
         <header class="block-head"><h2 id="blk-4" class="block-title">{byForm(4)!.cat.label}</h2></header>
         <ul class="row4">{byForm(4)!.items.map((p) => <li><HomeStory post={p} cats={catMap} prefer={[byForm(4)!.cat.id]} /></li>)}</ul>
-        <div class="block-foot"><a href={`/category/${byForm(4)!.cat.slug}`} class="btn btn-outline">Read more</a></div>
+        <div class="block-foot"><a href={`/category/${byForm(4)!.cat.slug}`} class="btn btn-outline">Read more<span class="sr-only"> in {byForm(4)!.cat.label}</span></a></div>
       </div>
     </section>
   )}
@@ -244,7 +244,7 @@ const introPics = newest.items.slice(0, 6).map((p) => img(p.cover, 480, 320)).fi
           <HomeStory post={byForm(5)!.items[0]} cats={catMap} prefer={[byForm(5)!.cat.id]} variant="lg" excerpt={false} />
           {byForm(5)!.items.length > 1 && <ul class="series__list">{byForm(5)!.items.slice(1).map((p) => <li><HomeStory post={p} cats={catMap} prefer={[byForm(5)!.cat.id]} variant="h" /></li>)}</ul>}
         </div>
-        <div class="block-foot"><a href={`/category/${byForm(5)!.cat.slug}`} class="btn btn-outline">Read more</a></div>
+        <div class="block-foot"><a href={`/category/${byForm(5)!.cat.slug}`} class="btn btn-outline">Read more<span class="sr-only"> in {byForm(5)!.cat.label}</span></a></div>
       </div>
     </section>
   )}

@@ -7,14 +7,15 @@ import type { FormField as Field } from "../lib/content";
 
 const AUTOCOMPLETE: Record<string, string> = { first_name: "given-name", last_name: "family-name", email: "email", phone: "tel" };
 
+// Every message names its field and says what to enter (a list of identical "Required" errors tells a screen-reader user nothing).
 function fieldError(f: Field, raw: string): string {
-  const v = raw.trim();
-  if (f.required && !v) return "Required";
+  const v = raw.trim(), name = f.label.toLowerCase();
+  if (f.required && !v) return f.format === "EMAIL" ? "Enter your email address" : `Enter your ${name}`;
   if (!v) return "";
-  if (f.min && v.length < f.min) return `At least ${f.min} characters`;
-  if (f.max && v.length > f.max) return `At most ${f.max} characters`;
-  if (f.format === "EMAIL" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return "Enter a valid email";
-  if (f.format === "PHONE" && !/^[+()\-\s\d]{7,}$/.test(v)) return "Enter a valid phone number";
+  if (f.min && v.length < f.min) return `${f.label} must be at least ${f.min} characters`;
+  if (f.max && v.length > f.max) return `${f.label} must be at most ${f.max} characters`;
+  if (f.format === "EMAIL" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return "Enter an email address in the format name@example.com";
+  if (f.format === "PHONE" && !/^[+()\-\s\d]{7,}$/.test(v)) return "Enter a phone number using digits, for example 123-456-7890";
   return "";
 }
 
@@ -43,7 +44,7 @@ export default function ContactForm({ formId, fields }: { formId: string; fields
     } catch (err: any) {
       console.error("[contact] submit failed", err);
       const map: Record<string, string> = {};
-      for (const v of err?.details?.validationError?.fieldViolations ?? []) for (const fe of v?.data?.errors ?? []) if (fe.errorPath && !map[fe.errorPath]) map[fe.errorPath] = fe.errorMessage ?? "Invalid value";
+      for (const v of err?.details?.validationError?.fieldViolations ?? []) for (const fe of v?.data?.errors ?? []) if (fe.errorPath && !map[fe.errorPath]) map[fe.errorPath] = fe.errorMessage ?? `Check your ${(fields.find((x) => x.target === fe.errorPath)?.label ?? "entry").toLowerCase()}`;
       if (Object.keys(map).length) { setErrors(map); setTimeout(() => document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(), 50); }
       else { setFailed(true); setTimeout(() => document.getElementById("contact-error")?.focus(), 50); }
       setBusy(false);
