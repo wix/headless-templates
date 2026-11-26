@@ -1007,7 +1007,7 @@ h2.h2-split::before { display: none !important; }
   .hm-map path { stroke-dasharray: 1 1; stroke-dashoffset: calc(1 - var(--draw, 1)); }
 }
 
-/* Street map host (the SVG is loaded into it) and the OpenStreetMap credit. */
+/* Street map host (the SVG is loaded into it) and its credit line. */
 @layer components {
   .hm-map-host { position: absolute; inset: 0; pointer-events: none; }
   .hm-map-host > svg { width: 100%; height: 100%; display: block; }
