@@ -69,7 +69,7 @@
       "name": "blog-magazine",
       "title": "Magazine (Wix Blog)",
       "subtitle": "Editorial blog with category sections, search and newsletter",
-      "siteTemplateId": "62e888bb-0043-4465-9938-eda996a45e6e",
+      "siteTemplateId": "ac85baff-6d90-4f21-b5a6-e8309590d234",
       "gitPath": "astro/blog-magazine",
       "vibeCompatible": false
     }
