@@ -67,6 +67,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Events</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/multi-booking">Multi-Booking</a></td>
+      <td>A booking template where a visitor books several appointments in one checkout, with a marketing site, using Astro and Wix Headless.</td>
+      <td></td>
+      <td>Wix Bookings, Wix Forms, Wix CMS (Wix Data)</td>
+    </tr>
+    <tr>
       <td><a href="https://github.com/wix/headless-templates/tree/main/astro/rentals">Rentals</a></td>
       <td>A template for reserving rental spaces by the hour or day using Astro and Wix Headless.</td>
       <td></td>
