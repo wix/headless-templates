@@ -1,0 +1,18 @@
+---
+// Not found: in the store's own header and footer (StoreApp, page="content").
+import StoreApp from "../components/store/StoreApp";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { BUSINESS_NAME } from "../lib/site";
+import { loadStore } from "../lib/store-data";
+Astro.response.status = 404;
+const data = await loadStore();
+---
+<SiteLayout title="Page not found" products={data.items}>
+  <StoreApp client:load data={data} businessName={BUSINESS_NAME} initialUrl={Astro.url.href} page="content">
+    <div class="flex min-h-[50svh] flex-col items-start justify-center gap-6">
+      <h1 class="text-[clamp(2rem,1.2rem+2.6vw,3.25rem)] leading-[1.1] tracking-[-0.025em]">We can’t find that page</h1>
+      <p class="max-w-[48ch] text-lg text-muted-foreground">It may have moved, or the link may be wrong.</p>
+      <a href="/" class="btn btn-primary">Back to the store</a>
+    </div>
+  </StoreApp>
+</SiteLayout>

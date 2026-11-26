@@ -73,6 +73,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Rentals</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/one-screen-store">One-Screen Store</a></td>
+      <td>A one-screen store whose catalog switches between a grid and a strip, with products that open in place, using Astro and Wix Headless.</td>
+      <td><a href="https://business-name-7-itayka0-0f07.wix-site-host.com">Demo</a></td>
+      <td>Wix Stores, Wix eCommerce, Wix Gift Cards, Wix Forms, Wix CMS</td>
+    </tr>
+    <tr>
       <td colspan="4" align="center"><strong>Next.js</strong></td>
     </tr>
     <tr>

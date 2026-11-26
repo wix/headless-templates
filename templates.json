@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "one-screen-store",
+      "title": "One-Screen Store (Wix Stores)",
+      "subtitle": "Grid/Strip catalog, colour swatches, cart and gift cards",
+      "siteTemplateId": "15cfde13-98bf-4a65-a40c-9d6e75a18b45",
+      "gitPath": "astro/one-screen-store",
+      "vibeCompatible": false
     }
   ]
 }
