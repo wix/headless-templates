@@ -8,8 +8,9 @@
 // The category (Buy / Rent / Commercial) is not repeated on the card; "/ month" on the price already marks a rental.
 import { imgSrc, addressLines, isNew, isReduced, gallery, type Listing, type Category } from "../lib/cms";
 import { money, RENT_SLUG } from "../lib/site";
-interface Props { listing: Listing; categories?: Category[] }
-const { listing: l, categories = [] } = Astro.props;
+interface Props { listing: Listing; categories?: Category[]; level?: 2 | 3 }
+const { listing: l, categories = [], level = 3 } = Astro.props;
+const H = `h${level}`;
 const cat = categories.find((c) => c._id === l.category);
 const photos = [...new Set([l.image, ...gallery(l)].filter((x): x is string => !!x))].slice(0, 6).map((v) => imgSrc(v, 800, 600)).filter(Boolean);
 const open = l.status === "Available" || !l.status;
@@ -32,7 +33,7 @@ const lines = addressLines(l);
 ---
 <article class="card lcard flex h-full flex-col gap-4">
   <div class="flex flex-col gap-1">
-    <h3 class="card-title text-base"><a href={`/listings/${l.slug}`}>{l.title}</a></h3>
+    <H class="card-h card-title text-base"><a href={`/listings/${l.slug}`}>{l.title}</a></H>
     <p class="font-display text-h3 font-semibold">{money(l.price)}{cat?.slug === RENT_SLUG && <span class="font-sans text-sm font-normal text-muted-foreground"> / month</span>}{isReduced(l) && <s class="ml-2 font-sans text-sm font-normal text-muted-foreground">{money(l.priceWas)}</s>}</p>
   </div>
   <div class="media lcard-media" data-ratio="4/3" data-slides>

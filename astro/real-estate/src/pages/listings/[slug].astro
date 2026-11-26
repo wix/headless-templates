@@ -83,7 +83,7 @@ const check = '<svg class="ben-check" viewBox="0 0 24 24" width="22" height="22"
               {isNew(l) && <span class="status status-tag">New</span>}
               {isReduced(l) && <span class="status status-tag">Price reduced</span>}
             </div>
-            <div class="lp-pane lp-photos is-on">
+            <div class="lp-pane lp-photos is-on" id="lp-panel-photos" role="tabpanel" aria-labelledby="lp-tab-photos">
               {big.map((p, i) => i === 0 ? <img src={p} alt="" width="1600" height="1200" fetchpriority="high" class="is-on" /> : <img data-src={p} alt="" width="1600" height="1200" />)}
               {big.length > 1 && <>
                 <button type="button" class="lc-nav lc-prev" data-step="-1" aria-label="Previous photo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></button>
@@ -92,13 +92,13 @@ const check = '<svg class="ben-check" viewBox="0 0 24 24" width="22" height="22"
               <span class="lp-count" aria-live="polite"><span data-cur>1</span> / {big.length}</span>
               <button type="button" class="lp-zoom" data-zoom aria-label="View photo full screen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg></button>
             </div>
-            {planImg && <div class="lp-pane lp-plan"><img data-src={planImg} alt="" width="1600" height="1200" /></div>}
-            <div class="lp-pane lp-map"><iframe data-src={mapsEmbed(l)} title={`Map of ${lines.join(", ")}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+            {planImg && <div class="lp-pane lp-plan" id="lp-panel-plan" role="tabpanel" aria-labelledby="lp-tab-plan"><img data-src={planImg} alt="" width="1600" height="1200" /></div>}
+            <div class="lp-pane lp-map" id="lp-panel-map" role="tabpanel" aria-labelledby="lp-tab-map"><iframe data-src={mapsEmbed(l)} title={`Map of ${lines.join(", ")}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
           </div>
           <div class="lp-tabs" role="tablist" aria-label="Media">
-            <button type="button" role="tab" class="opt-pill is-on" aria-selected="true" data-tab="photos">Photos</button>
-            {planImg && <button type="button" role="tab" class="opt-pill" aria-selected="false" data-tab="plan">Floor Plan</button>}
-            <button type="button" role="tab" class="opt-pill" aria-selected="false" data-tab="map">Location</button>
+            <button type="button" role="tab" id="lp-tab-photos" aria-controls="lp-panel-photos" tabindex="0" class="opt-pill is-on" aria-selected="true" data-tab="photos">Photos</button>
+            {planImg && <button type="button" role="tab" id="lp-tab-plan" aria-controls="lp-panel-plan" tabindex="-1" class="opt-pill" aria-selected="false" data-tab="plan">Floor Plan</button>}
+            <button type="button" role="tab" id="lp-tab-map" aria-controls="lp-panel-map" tabindex="-1" class="opt-pill" aria-selected="false" data-tab="map">Location</button>
           </div>
           {small.length > 1 && <ul class="lp-thumbs">{small.map((t, i) => <li><button type="button" class:list={["lp-thumb", i === 0 && "is-on"]} data-go={i} aria-label={`Show photo ${i + 1}`}><img src={t} alt="" width="320" height="240" loading="lazy" /></button></li>)}</ul>}
           <dialog class="lp-full" aria-label={`${l.title}: photos`}>
@@ -146,8 +146,9 @@ const check = '<svg class="ben-check" viewBox="0 0 24 24" width="22" height="22"
               <li><details class="faq-item"><summary class="faq-q"><span>Floor Plan And Downloads</span><span class="faq-icon" aria-hidden="true" set:html={chev} /></summary>
                 <div class="faq-a">
                   {planImg && <div class="media" data-ratio="4/3"><img src={planImg} alt="" width="1600" height="1200" loading="lazy" /></div>}
+                  {l.floorPlanDescription && <p id="lp-plan-desc">{l.floorPlanDescription}</p>}
                   {(l.floorPlanUrl || l.brochureUrl) && <div class="mt-4 flex flex-wrap gap-3" data-noprint>
-                    {l.floorPlanUrl && <a class="link-btn" href={l.floorPlanUrl} target="_blank" rel="noopener noreferrer" download>Floor plan (PDF)</a>}
+                    {l.floorPlanUrl && <a class="link-btn" href={l.floorPlanUrl} target="_blank" rel="noopener noreferrer" download aria-describedby={l.floorPlanDescription ? "lp-plan-desc" : undefined}>Floor plan (PDF)</a>}
                     {l.brochureUrl && <a class="link-btn" href={l.brochureUrl} target="_blank" rel="noopener noreferrer" download>Brochure (PDF)</a>}
                   </div>}
                 </div></details></li>
@@ -257,10 +258,17 @@ const check = '<svg class="ben-check" viewBox="0 0 24 24" width="22" height="22"
       if (t.closest("[data-zoom]")) { fullImg.src = imgs[i].dataset.src || imgs[i].src; full.showModal(); return; }
       if (t.closest("[data-close]") || t === full) full.close();
     });
+    // Media tabs (APG tabs, automatic activation): one Tab stop; Left / Right / Home / End move between tabs and show their panel.
+    root.querySelector(".lp-tabs")?.addEventListener("keydown", (e) => {
+      const ke = e as KeyboardEvent; const tabs = [...root.querySelectorAll<HTMLElement>("[data-tab]")];
+      const i = tabs.indexOf(document.activeElement as HTMLElement); if (i < 0) return;
+      const n = ke.key === "ArrowRight" ? (i + 1) % tabs.length : ke.key === "ArrowLeft" ? (i - 1 + tabs.length) % tabs.length : ke.key === "Home" ? 0 : ke.key === "End" ? tabs.length - 1 : -1;
+      if (n < 0) return; ke.preventDefault(); setTab(tabs[n].dataset.tab!); tabs[n].focus();
+    });
     full.addEventListener("keydown", (e) => { if (e.key === "ArrowRight") show(i + 1); if (e.key === "ArrowLeft") show(i - 1); });
     const setTab = (name: string) => {
       stage.dataset.view = name;
-      root.querySelectorAll<HTMLElement>("[data-tab]").forEach((b) => { const on = b.dataset.tab === name; b.classList.toggle("is-on", on); b.setAttribute("aria-selected", String(on)); });
+      root.querySelectorAll<HTMLElement>("[data-tab]").forEach((b) => { const on = b.dataset.tab === name; b.classList.toggle("is-on", on); b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; });
       root.querySelectorAll<HTMLElement>(".lp-pane").forEach((p) => p.classList.toggle("is-on", p.classList.contains(`lp-${name === "photos" ? "photos" : name}`)));
       const pane = root.querySelector(`.lp-${name}`);
       pane?.querySelectorAll<HTMLElement>("[data-src]").forEach((el) => { if (!el.getAttribute("src")) el.setAttribute("src", el.dataset.src!); });
@@ -299,11 +307,13 @@ const check = '<svg class="ben-check" viewBox="0 0 24 24" width="22" height="22"
       days.innerHTML = list.map((d) => `<button type="button" class="bk-day${pick && +d === +pick ? " is-on" : ""}" ${open(d) ? "" : "disabled"} aria-pressed="${!!pick && +d === +pick}" data-day="${+d}"><span>${fmt(d, { weekday: "short" })}</span><b>${d.getDate()}</b></button>`).join("");
       paintTimes();
     };
+    // Days and times are re-rendered on each pick: put keyboard focus back on the button that was chosen.
+    const refocus = (sel: string) => bk.querySelector<HTMLElement>(sel)?.focus();
     bk.addEventListener("click", (e) => {
       const t = e.target as Element;
-      const w = t.closest<HTMLElement>("[data-week]"); if (w) { week = Math.max(0, week + Number(w.dataset.week)); return paint(); }
-      const d = t.closest<HTMLElement>("[data-day]"); if (d) { pick = new Date(Number(d.dataset.day)); time = ""; return paint(); }
-      const s = t.closest<HTMLElement>("[data-time]"); if (s) { time = s.dataset.time!; return paintTimes(); }
+      const w = t.closest<HTMLElement>("[data-week]"); if (w) { week = Math.max(0, week + Number(w.dataset.week)); paint(); if (w.isConnected && !(w as HTMLButtonElement).disabled) return; return refocus(".bk-head [data-week=\"1\"]"); }
+      const d = t.closest<HTMLElement>("[data-day]"); if (d) { pick = new Date(Number(d.dataset.day)); time = ""; paint(); return refocus(`[data-day="${d.dataset.day}"]`); }
+      const s = t.closest<HTMLElement>("[data-time]"); if (s) { time = s.dataset.time!; paintTimes(); return refocus(`[data-time="${s.dataset.time}"]`); }
       if (t.closest("[data-book]") && book.getAttribute("aria-disabled") === "true") { e.preventDefault(); times.querySelector<HTMLElement>(".bk-slot")?.focus(); }
     });
     paint();

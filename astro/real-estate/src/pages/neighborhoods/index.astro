@@ -17,7 +17,7 @@ const c = copy.neighborhoods;
       {c?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{c.body}</p>}
       </div>
       {hoods.length > 0 ? (
-        <ul class="page-items grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{hoods.map((n) => <li><NeighborhoodCard neighborhood={n} count={listings.filter((l) => l.neighborhood === n._id).length} /></li>)}</ul>
+        <ul class="page-items grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{hoods.map((n) => <li><NeighborhoodCard level={2} neighborhood={n} count={listings.filter((l) => l.neighborhood === n._id).length} /></li>)}</ul>
       ) : (
         <div class="note page-items">No neighborhoods yet.</div>
       )}

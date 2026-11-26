@@ -177,7 +177,7 @@ const footCards = [catCard("buy"), catCard("rent"),
         (function () {
           var still = matchMedia("(prefers-reduced-motion: reduce)").matches, heads = [];
           document.querySelectorAll("h2").forEach(function (h) {
-            if (h.classList.contains("sr-only") || h.id === "filters-title" || h.classList.contains("frame-words") || h.children.length) return;
+            if (h.classList.contains("sr-only") || h.classList.contains("card-h") || h.id === "filters-title" || h.classList.contains("frame-words") || h.children.length) return;
             var text = h.textContent.replace(/\s+/g, " ").trim(); if (!text) return;
             h.setAttribute("aria-label", text); h.textContent = ""; h.classList.add("h2-split");
             var parts = [];   // no square mark before headings any more
@@ -258,6 +258,21 @@ const footCards = [catCard("buy"), catCard("rent"),
         run(); addEventListener("load", run);
       })();
     </script>
+    <!-- The Wix hosting banner is injected at the top of <body> with its Close button inside its link. Rearranged as soon as it
+         appears: moved to the end of <body> (so after a page change the first Tab reaches "Skip to content", not the banner) and
+         the Close button set beside the link in the same container, so each is its own control with its own name. Looks unchanged. -->
+    <script is:inline>
+      (function () {
+        function fix() {
+          var box = document.getElementById("wixheadless-banner-container"); if (!box || box.dataset.fixed) return !!box;
+          var link = document.getElementById("wixheadless-banner"), btn = document.getElementById("wixheadless-banner-close");
+          box.dataset.fixed = "1"; document.body.appendChild(box);
+          if (link && btn && link.contains(btn)) { link.after(btn); box.classList.add("wxb-split"); }
+          return true;
+        }
+        if (!fix()) { var mo = new MutationObserver(function () { if (fix()) mo.disconnect(); }); mo.observe(document.documentElement, { childList: true, subtree: true }); setTimeout(function () { mo.disconnect(); }, 15000); }
+      })();
+    </script>
     <!-- Dropdowns: every <select class="field"> gets a button and a list in the site's menu style (white rounded panel, soft shadow, grey
          hover row). The native select stays in the form, hidden, and is kept in sync both ways: a pick sets it and fires "change" (so
          auto-submit and the filters' own scripts work); code that rewrites its options or sets its value repaints the button. Keyboard:
@@ -265,19 +280,23 @@ const footCards = [catCard("buy"), catCard("rent"),
     <script is:inline>
       (function () {
         var openDd = null;
-        function close(dd, focus) { if (!dd) return; dd.el.classList.remove("is-open"); dd.btn.setAttribute("aria-expanded", "false"); if (focus) dd.btn.focus(); if (openDd === dd) openDd = null; }
+        function close(dd, focus) { if (!dd) return; dd.el.classList.remove("is-open"); dd.btn.setAttribute("aria-expanded", "false"); dd.btn.removeAttribute("aria-activedescendant"); if (focus) dd.btn.focus(); if (openDd === dd) openDd = null; }
         function enhance(sel) {
           if (sel.dataset.dd) return; sel.dataset.dd = "1";
           var el = document.createElement("div"); el.className = "sx";
           sel.parentNode.insertBefore(el, sel); el.appendChild(sel); sel.classList.add("sx-native"); sel.tabIndex = -1; sel.setAttribute("aria-hidden", "true");
           var btn = document.createElement("button"); btn.type = "button";
           btn.className = sel.className.replace("sx-native", "").trim() + " sx-btn";
-          btn.setAttribute("aria-haspopup", "listbox"); btn.setAttribute("aria-expanded", "false");
-          var lab = sel.id && document.querySelector('label[for="' + sel.id + '"]');
-          if (lab) { lab.id = lab.id || sel.id + "-lab"; btn.setAttribute("aria-labelledby", lab.id + " " + sel.id + "-btn"); lab.addEventListener("click", function (e) { e.preventDefault(); btn.focus(); }); }
-          btn.id = sel.id ? sel.id + "-btn" : "";
+          // Select-only combobox (APG): the button is the combobox, the list its listbox; the highlighted option is exposed with
+          // aria-activedescendant while focus stays on the button, the committed one with aria-selected.
+          var uid = sel.id || ("sx" + Math.random().toString(36).slice(2, 8));
+          btn.id = uid + "-btn"; btn.setAttribute("role", "combobox"); btn.setAttribute("aria-haspopup", "listbox"); btn.setAttribute("aria-expanded", "false");
           var val = document.createElement("span"); val.className = "sx-val"; btn.appendChild(val);
-          var list = document.createElement("ul"); list.className = "sx-list"; list.setAttribute("role", "listbox"); list.tabIndex = -1;
+          var list = document.createElement("ul"); list.className = "sx-list"; list.id = uid + "-list"; list.setAttribute("role", "listbox"); list.tabIndex = -1;
+          btn.setAttribute("aria-controls", list.id);
+          var lab = sel.id && document.querySelector('label[for="' + sel.id + '"]');
+          if (lab) { lab.id = lab.id || uid + "-lab"; btn.setAttribute("aria-labelledby", lab.id); list.setAttribute("aria-labelledby", lab.id); lab.addEventListener("click", function (e) { e.preventDefault(); btn.focus(); }); }
+          else if (sel.getAttribute("aria-label")) { btn.setAttribute("aria-label", sel.getAttribute("aria-label")); list.setAttribute("aria-label", sel.getAttribute("aria-label")); }
           el.appendChild(btn); el.appendChild(list);
           var dd = { el: el, btn: btn, list: list, sel: sel, active: -1 };
           function items() { return [].slice.call(list.children); }
@@ -288,13 +307,13 @@ const footCards = [catCard("buy"), catCard("rent"),
           function build() {
             list.innerHTML = "";
             [].forEach.call(sel.options, function (o, i) {
-              var li = document.createElement("li"); li.setAttribute("role", "option"); li.className = "sx-opt"; li.textContent = o.text; li.dataset.i = i;
+              var li = document.createElement("li"); li.setAttribute("role", "option"); li.id = list.id + "-o" + i; li.className = "sx-opt"; li.textContent = o.text; li.dataset.i = i;
               if (o.disabled) li.setAttribute("aria-disabled", "true");
               list.appendChild(li);
             });
             paint();
           }
-          function setActive(i) { var all = items(); dd.active = Math.max(0, Math.min(all.length - 1, i)); all.forEach(function (li, k) { li.classList.toggle("is-active", k === dd.active); }); var a = all[dd.active]; if (a) a.scrollIntoView({ block: "nearest" }); }
+          function setActive(i) { var all = items(); dd.active = Math.max(0, Math.min(all.length - 1, i)); all.forEach(function (li, k) { li.classList.toggle("is-active", k === dd.active); }); var a = all[dd.active]; if (a) { a.scrollIntoView({ block: "nearest" }); btn.setAttribute("aria-activedescendant", a.id); } }
           function open() { if (openDd && openDd !== dd) close(openDd); openDd = dd; el.classList.add("is-open"); btn.setAttribute("aria-expanded", "true"); setActive(sel.selectedIndex); }
           function pick(i) { if (i < 0 || i >= sel.options.length || sel.options[i].disabled) return; var changed = sel.selectedIndex !== i; sel.selectedIndex = i; paint(); close(dd, true); if (changed) sel.dispatchEvent(new Event("change", { bubbles: true })); }
           btn.addEventListener("click", function () { el.classList.contains("is-open") ? close(dd) : open(); });

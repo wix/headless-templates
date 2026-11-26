@@ -16,7 +16,7 @@ An estate-agency wireframe built on **Wix Headless**: sale, rental and commercia
 
 Prices are plain numbers in the CMS; their currency is set once in `src/lib/site.ts` (`CURRENCY`, USD by default) and formatted with `Intl`. Interface wording (button labels, filter steps, viewing time slots) lives in code.
 
-The neighborhoods map (`public/maps/city-streets.svg`) is an original, procedurally drawn street network — no third-party map data, so no attribution is needed. Swap in your own drawing if you like.
+The neighborhoods map (`public/maps/city-streets.svg`) is drawn from OpenStreetMap street data, © OpenStreetMap contributors, available under the [Open Database License](https://www.openstreetmap.org/copyright). Keep a visible credit on the site if you keep this map, or replace the file with your own drawing.
 
 ## Quick start
 

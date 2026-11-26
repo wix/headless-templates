@@ -9,7 +9,7 @@ const AUTOCOMPLETE: Record<string, string> = { first_name: "given-name", last_na
 
 function fieldError(f: Field, raw: string): string {
   const v = raw.trim();
-  if (f.required && !v) return "Required";
+  if (f.required && !v) return `Enter your ${f.label.toLowerCase()}`;
   if (!v) return "";
   if (f.min && v.length < f.min) return `At least ${f.min} characters`;
   if (f.max && v.length > f.max) return `At most ${f.max} characters`;
@@ -63,7 +63,7 @@ export default function ContactForm({ form, submitLabel = "Submit", doneText = "
     <form onSubmit={onSubmit} noValidate className="grid gap-x-4 gap-y-5 sm:grid-cols-2">
       {fields.map((f) => (
         <div key={f.target} className={f.textarea || f.target === "property" || f.target === "property_address" ? "sm:col-span-2" : ""}>
-          <label htmlFor={`c-${f.target}`} className="field-label">{f.label}{f.required && <span className="sr-only"> (required)</span>}</label>
+          <label htmlFor={`c-${f.target}`} className="field-label">{f.label}{f.required && <span className="field-req"> (required)</span>}</label>
           {f.textarea || f.target === "message" ? (
             <textarea id={`c-${f.target}`} name={f.target} className="field" value={values[f.target] ?? ""} onChange={(e) => set(f.target, e.target.value)} maxLength={f.max}
               aria-invalid={errors[f.target] ? true : undefined} aria-describedby={errors[f.target] ? `ce-${f.target}` : undefined} />

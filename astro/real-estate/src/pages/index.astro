@@ -140,6 +140,8 @@ const hoodCount = (id: string) => active.filter((l) => l.neighborhood === id).le
           tipLo.textContent = minF.value ? short(+minF.value) : "No min"; tipHi.textContent = maxF.value ? short(+maxF.value) : "No max";
           out.textContent = !minF.value && !maxF.value ? "Any price" : !maxF.value ? short(+minF.value) + "+" + unit : !minF.value ? "Up to " + short(+maxF.value) + unit : short(+minF.value) + " – " + short(+maxF.value) + unit;
           lo.setAttribute("aria-valuetext", minF.value ? short(+minF.value) : "No minimum"); hi.setAttribute("aria-valuetext", maxF.value ? short(+maxF.value) : "No maximum");
+          // Each handle exposes only the range it can actually reach given the other handle.
+          lo.setAttribute("aria-valuemin", "0"); lo.setAttribute("aria-valuemax", String(b - 1)); hi.setAttribute("aria-valuemin", String(a + 1)); hi.setAttribute("aria-valuemax", String(top));
         }
         function setList(isRent) { rent = isRent; list = isRent ? RENT : SALE; var top = list.length + 1; lo.max = hi.max = top; lo.value = 0; hi.value = top; sync(); }
         lo.addEventListener("input", function () { sync(lo); }); hi.addEventListener("input", function () { sync(hi); });
@@ -242,7 +244,7 @@ const hoodCount = (id: string) => active.filter((l) => l.neighborhood === id).le
 
   {hoods.length > 0 && (
     <!-- Neighborhoods: the heading over its rule, one paragraph and the "See all" link, then a wide stage with a thin-line street map
-         (an original, made-up street network) and the neighborhoods' photos scattered over it, each with its name above. Copy: CMS row `neighborhoods`. -->
+         (OpenStreetMap street data) and the neighborhoods' photos scattered over it, each with its name above. Copy: CMS row `neighborhoods`. -->
     <section class="fp-section" data-fp>
       <div class="wrap">
         <div class="fp-head"><h2>{copy.neighborhoods?.title ?? "Our Neighborhoods"}</h2></div>
@@ -254,8 +256,8 @@ const hoodCount = (id: string) => active.filter((l) => l.neighborhood === id).le
       <!-- The neighborhoods scattered over a drawn city map: each a small photo with its name above; on hover (or focus) the photo
            opens to 1.5× its size from the centre, as a mask widening over a larger picture, and the name lifts clear of it, its pill swapping the name for the number of listings there. -->
       <div class="hm-stage">
-        <!-- Street map: an original, procedurally drawn city (no third-party map data), thin lines; loaded after the page as
-             /maps/city-streets.svg. -->
+        <!-- Street map: OpenStreetMap street data drawn as thin lines (© OpenStreetMap contributors, ODbL); loaded after the page
+             as /maps/city-streets.svg. -->
         <div class="hm-map-host" data-src="/maps/city-streets.svg"></div>
         <ul class="hm-list">
           {hoods.slice(0, 7).map((n, i) => { const src = imgSrc(n.image, 480, 600); return (

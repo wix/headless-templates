@@ -8,7 +8,7 @@
    everything follows. Nothing in a component repeats a value from this file.
 
    Direction: a non-branded Wix Studio wireframe for a blog or magazine. Greys only, ink as
-   the single emphasis colour; the cloning user brings the brand. A brand colour can be added here;
+   the single emphasis colour; the cloning user brings the brand. The reference template is red;
    the wireframe keeps its structure and drops its palette.
    Contrast (WCAG AA): foreground on background 18:1, muted-foreground on background 6.7:1 and
    on secondary 6.1:1, inverse-muted on inverse 7.9:1, destructive on white 6.1:1. */
@@ -600,7 +600,7 @@ html:has(.wm-hero) { overflow-anchor: none; }
 
 /* Every visible H2 on the site at one size and style: the section-title size (26 → 38px), Wix Madefor Text 500.
    Unlayered on purpose, so it wins over the size utilities on individual headings. The filters popup title keeps its own size. */
-h2:not(.sr-only):not(#filters-title) {
+h2:not(.sr-only):not(#filters-title):not(.card-h) {
   font-size: var(--text-h2);
   font-family: var(--font-display);
   font-weight: 500;
@@ -1658,3 +1658,19 @@ html.kbd .sx-btn:focus-visible { outline: 1px solid var(--color-foreground); out
 }
 .site-foot .foot-legal { position: relative; border-top: 0; }
 .site-foot .foot-legal::before { content: ""; position: absolute; top: 0; left: var(--gutter); right: var(--gutter); height: 1px; background: rgb(255 255 255 / 0.15); }
+
+/* ── Accessibility audit fixes (26 Nov 2026) ─────────────────────────────────────────────────────────────────────────────────── */
+/* F01: the Google score in a darker amber, 5.6:1 on white (the stars stay the brand yellow; the score carries the meaning). */
+.g-score, .wm-top .g-score { color: #8a6000; }
+/* F03: a visible "(required)" after each mandatory field's label, quieter than the label itself. */
+.field-req { color: var(--color-muted-foreground); font-weight: 400; }
+/* F08: on narrow screens the two listing actions stack instead of running past the edge. */
+.lp-actions { grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); }
+.lp-actions .btn { min-width: 0; }
+/* F11: the Wix banner with its Close button beside (not inside) the link — the container now draws the white pill. !important
+   because the banner's own stylesheet loads after this one. */
+#wixheadless-banner-container.wxb-split { display: flex !important; flex-wrap: nowrap !important; align-items: center !important; width: auto !important; height: 44px !important; left: auto !important; top: auto !important; background: #fff !important; border: 1px solid rgb(224 224 224) !important; border-radius: 6px !important; }
+#wixheadless-banner-container.wxb-split #wixheadless-banner { border: 0 !important; background: transparent !important; padding: 0 0 0 14px !important; height: 42px !important; }
+#wixheadless-banner-container.wxb-split #wixheadless-banner-close { position: static !important; display: flex !important; align-items: center; justify-content: center; width: 26px; height: 26px; padding: 6px !important; margin: 0 6px 0 8px !important; background: transparent !important; border: 0 !important; cursor: pointer; color: #000; }
+/* F08 (home): category cards never push past a 320px screen — the column may shrink below its content's width. */
+@media (max-width: 767px) { .cat-grid { grid-template-columns: minmax(0, 1fr); } .cat-grid > li, .cat-card, .cat-top { min-width: 0; } .cat-top { gap: .5rem; } }

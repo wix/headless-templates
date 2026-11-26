@@ -17,7 +17,7 @@ const c = copy.agents;
       {c?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{c.body}</p>}
       </div>
       {agents.length > 0 ? (
-        <ul class="page-items grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">{agents.map((a) => <li><AgentCard agent={a} /></li>)}</ul>
+        <ul class="page-items grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">{agents.map((a) => <li><AgentCard level={2} agent={a} /></li>)}</ul>
       ) : (
         <div class="note page-items">No agents yet.</div>
       )}

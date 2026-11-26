@@ -12,7 +12,7 @@ export type Listing = {
   bedrooms?: number; bathrooms?: number; area?: number; neighborhood?: string; agent?: string;
   street?: string; city?: string; state?: string; zip?: string; propertyId?: string; listedDate?: unknown;
   lotSize?: number; yearBuilt?: number; parking?: number; features?: string[]; videoUrl?: string;
-  floorPlanImage?: string; floorPlanUrl?: string; brochureUrl?: string; priceWas?: number; openHouseStart?: unknown; openHouseEnd?: unknown;
+  floorPlanImage?: string; floorPlanUrl?: string; floorPlanDescription?: string; brochureUrl?: string; priceWas?: number; openHouseStart?: unknown; openHouseEnd?: unknown;
   shortDescription?: string; description?: string; featured?: boolean; trending?: boolean; order: number;
   image?: string; gallery1?: string; gallery2?: string; gallery3?: string; gallery4?: string; gallery5?: string; gallery6?: string; gallery7?: string; gallery8?: string;
 };
