@@ -1,0 +1,57 @@
+---
+// /contact: a centred H1; under it, in the Home About grid (8px gaps), a wide plate with every contact detail (address,
+// phone and e-mail, opening hours) beside a Follow Us plate; then a grey plate across the grid holding the Wix Forms "Contact" form,
+// as wide as the FAQ column. Details come from the CMS row footer (one source for the footer and this page). The form is submitted
+// as the visitor (island: schema-driven, no elevation); a "Book Now" link arrives with ?service=<title>, which fills the Service field.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import ContactForm from "../components/ContactForm";
+import SocialIcon from "../components/SocialIcon.astro";
+import { getChrome } from "../lib/chrome";
+const { copy, social } = await getChrome();
+const s = copy.contact, f = copy.footer;
+const addr = (f?.body ?? "").split("\n").filter(Boolean);
+const bits = (f?.bodySecondary ?? "").split("·").map((x) => x.trim()).filter(Boolean);
+const SOCIAL_LABEL = { facebook: "Facebook", x: "X", instagram: "Instagram", youtube: "YouTube", tiktok: "TikTok", pinterest: "Pinterest", linkedin: "LinkedIn", threads: "Threads", whatsapp: "WhatsApp" } as const;
+---
+<SiteLayout closing={false}>
+  <section class="ct-page pt-(--gutter) pb-(--gutter)">
+    <div class="wrap">
+      <h1 class="text-center text-display">{s?.title ?? "Contact Us"}</h1>
+
+      <div class="ab-grid mt-10">
+        <div class="ab-plate ct-details">
+          <p class="font-display text-h3 font-medium">Get in Touch</p>
+          <dl class="ct-facts mt-auto pt-6">
+            {addr.length > 0 && <div><dt>Address</dt><dd>{addr.join(", ")}</dd></div>}
+            {bits.length > 0 && (
+              <div><dt>Phone &amp; Email</dt><dd>{bits.map((b, i) => <>{i > 0 && <span class="text-muted-foreground"> · </span>}<a href={b.includes("@") ? `mailto:${b}` : `tel:${b.replace(/[^\d+]/g, "")}`}>{b}</a></>)}</dd></div>
+            )}
+            {f?.hours && <div class="ct-tall"><dt>Opening Hours</dt><dd class="whitespace-pre-line">{f.hours}</dd></div>}
+          </dl>
+        </div>
+
+        {social.length > 0 && (
+          <div class="ab-plate ab-social">
+            <p class="font-display text-h3 font-medium">Follow Us</p>
+            <ul class="mt-auto pt-6">
+              {social.map((l) => (
+                <li>
+                  <a href={l.url} target="_blank" rel="noopener noreferrer" class="ab-social-link">
+                    <SocialIcon platform={l.platform} size={18} />
+                    <span class="flex-1">{SOCIAL_LABEL[l.platform]}</span>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M4 10l6-6M5 4h5v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    <span class="sr-only">(opens in a new tab)</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div class="ab-plate ct-form">
+          <div class="ct-form__inner"><ContactForm client:load /></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</SiteLayout>

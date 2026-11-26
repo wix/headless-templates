@@ -1,0 +1,281 @@
+---
+// Home: the CMS is the star. In order: a bento first screen (welcome card with search, Featured Services, the categories, Our Locations), Featured Services, Benefits, Team,
+// About Us, FAQ, Locations (near the end: the least interesting block), then the closing call to action (the layout adds it). Backgrounds alternate grey / plain.
+// Contact details (address, phone, e-mail, hours) are NOT on Home: they live in the footer and on /contact.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import SectionHead from "../components/SectionHead.astro";
+import ServiceCard from "../components/ServiceCard.astro";
+import LocationCard from "../components/LocationCard.astro";
+import FaqAccordion from "../components/FaqAccordion.astro";
+import Awards from "../components/Awards.astro";
+import SocialIcon from "../components/SocialIcon.astro";
+import { getChrome } from "../lib/chrome";
+import { getServices, getMembers, getCategories, getLocations, imgSrc, paragraphs, categoryHref, citiesOf, telHref } from "../lib/cms";
+import { money } from "../lib/site";
+import { getBenefits, getFaq } from "../lib/content";
+import { getCityServices } from "../lib/city";
+
+const [{ copy, social }, { services, city }, members, cats, locations, benefits, faq] = await Promise.all([
+  getChrome(), getCityServices(Astro), getMembers(), getCategories(), getLocations(), getBenefits(), getFaq(),
+]);
+const hero = copy.hero, about = copy.about;
+const featured = (services.some((s) => s.featured) ? services.filter((s) => s.featured) : services).slice(0, 6);
+// The bento's Featured Services card lists the first five; the Featured Services section shows all six in two rows.
+const featuredTop = featured.slice(0, 5);
+const aboutImg = imgSrc(about?.image, 1920, 1080);
+const SOCIAL_LABEL = { facebook: "Facebook", x: "X", instagram: "Instagram", youtube: "YouTube", tiktok: "TikTok", pinterest: "Pinterest", linkedin: "LinkedIn", threads: "Threads", whatsapp: "WhatsApp" } as const;
+const heroImg = imgSrc(hero?.image, 1600, 1000);
+const benefitsImg = imgSrc(copy.benefits?.image, 1920, 1080);
+const cities = citiesOf(locations);
+const firstPhone = (cities.find((c) => c.city === city) ?? cities[0])?.locations.find((l) => l.phone)?.phone;
+const count = (id: string) => services.filter((s) => s.category === id).length;
+---
+<SiteLayout>
+  <!-- First screen: a bento of three cards. 1) the welcome card (title + search, centred in the card), its photo as the card's own background; 2) Featured Services;
+       3) one tile per service category; 4) where to find us (one line per city) with the location actions. -->
+  <section class="pb-(--section-y)" data-bento-stage>
+    <div class="bento-pin">
+    <div class="wrap bento">
+      <div class="bento-card bento-hero">
+        {heroImg && <img class="bento-hero__bg" src={heroImg} alt="" width="1600" height="1000" fetchpriority="high" />}
+        <div class="bento-hero__body">
+          <h1 class="text-display bento-title">{hero?.title ?? "Write a Title Here"}</h1>
+          <form method="get" action="/services" role="search" class="relative mt-auto w-full">
+            <label for="home-q" class="sr-only">Search services</label>
+            <input id="home-q" name="q" type="search" class="field bg-background pr-14" placeholder="Search services" enterkeyhint="search" />
+            <button type="submit" aria-label="Search" class="absolute right-1 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-foreground transition-shadow hover:shadow-[inset_0_0_0_1px_var(--color-foreground)]">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.25" stroke="currentColor" stroke-width="1.75" /><path d="M12 12l4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="bento-card bento-side">
+        <div class="flex items-start justify-between gap-4">
+          <h2 class="text-h2">Featured Services</h2>
+          <a href="/services" class="link-btn shrink-0">View All</a>
+        </div>
+        <ul class="bento-svcs mt-auto pt-8">
+          {featuredTop.map((s) => (
+            <li>
+              <a href={`/services/${s.slug}`} class="bento-svc">
+                <span class="ls-title font-display text-h3 font-medium leading-snug">{s.title}</span>
+                <span class="flex shrink-0 items-center gap-3 text-sm text-muted-foreground">
+                  {s.duration && <span>{s.duration}</span>}
+                  {s.price != null && <span class="bento-price">{money(s.price)}</span>}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {cats.map((c) => (
+        <a href={categoryHref(c)} class="bento-card bento-cat group">
+          <span class="font-display text-h2 font-medium leading-tight">{c.title}</span>
+          <span class="mt-auto flex items-center justify-between gap-4 pt-[1.5625rem]">
+            <span class="text-sm text-muted-foreground">{count(c._id)} {count(c._id) === 1 ? "service" : "services"}</span>
+            <span aria-hidden="true" class="text-xl transition-transform group-hover:translate-x-1">→</span>
+          </span>
+        </a>
+      ))}
+
+      <div class="bento-card bento-wide">
+        <div>
+          <h2 class="text-h2">{copy.locations?.title ?? "Our Locations"}</h2>
+          <ul class="mt-[1.625rem] grid gap-2 text-sm md:flex md:flex-wrap md:gap-x-8 md:gap-y-2">
+            {cities.map((c) => (
+              <li class="flex items-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="7.25" stroke="currentColor" stroke-width="1.4" /><path d="M5.75 9.25 8 11.5l4.25-4.75" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                {c.city} <span class="text-muted-foreground">· {c.locations.length} {c.locations.length === 1 ? "location" : "locations"}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div class="mt-auto flex flex-nowrap items-center gap-2 lg:gap-3">
+          {firstPhone && <a href={telHref(firstPhone)} class="btn btn-outline">{firstPhone}</a>}
+          <a href="/locations" class="btn btn-primary">Find a Location</a>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  {featured.length > 0 && (
+    <section class="pb-(--section-y)">
+      <div class="wrap">
+        <SectionHead title="Featured Services" href="/services" action={copy.services?.ctaLabel ?? "See All Services"} />
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{featured.map((s) => <li><ServiceCard service={s} categories={cats} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  {benefits.length > 0 && (
+    <section class="section">
+      <div class="wrap">
+        <h2 class="text-h2">{copy.benefits?.title ?? "Our Benefits"}</h2>
+        {copy.benefits?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{copy.benefits.body}</p>}
+        {/* Three benefits, on the same grid as the service cards above (3 columns, same gaps). */}
+        <ul class="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+          {benefits.slice(0, 3).map((x) => (
+            <li class="border-t border-border pt-5">
+              <svg class="block" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10.25" /><path d="M7.75 12.25l2.75 2.75 5.75-6" /></svg>
+              <h3 class="mt-4 text-h3">{x.title}</h3>
+              <p class="mt-2 text-muted-foreground">{x.body}</p>
+            </li>
+          ))}
+        </ul>
+        {benefitsImg && <div class="media mt-12" data-ratio="16/9"><img src={benefitsImg} alt="" width="1920" height="1080" loading="lazy" /></div>}
+      </div>
+    </section>
+  )}
+
+  <Awards copy={copy.awards} />
+
+  {(about || members.length > 0) && (
+    <!-- About + Team in one section: a centred H2; a wide text plate beside the social links; a 16:9 photo across the grid; then, after
+         a section-sized gap, the Our Team H2 (left) and one plate per team member (photo, short bio, name and role). Copy is SiteContent "about" and "team"; people are TeamMembers. -->
+    <section class="section">
+      <div class="wrap">
+        <h2 class="text-center text-h2">{about?.title ?? "About Us"}</h2>
+        <div class="ab-grid mt-10">
+          {about && (
+            <div class="ab-plate ab-story">
+              {about.body && <p class="font-display text-lead leading-snug">{about.body}</p>}
+              <a href="/about" class="link-btn mt-auto self-start">{about.ctaLabel ?? "Learn More"}</a>
+            </div>
+          )}
+          {social.length > 0 && (
+            <div class="ab-plate ab-social">
+              <p class="font-display text-h3 font-medium">Follow Us</p>
+              <ul class="mt-auto pt-6">
+                {social.map((l) => (
+                  <li>
+                    <a href={l.url} target="_blank" rel="noopener noreferrer" class="ab-social-link">
+                      <SocialIcon platform={l.platform} size={18} />
+                      <span class="flex-1">{SOCIAL_LABEL[l.platform]}</span>
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M4 10l6-6M5 4h5v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                      <span class="sr-only">(opens in a new tab)</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {aboutImg && <a href="/about" class="media ab-wide-photo" data-ratio="16/9" aria-label={about?.title ?? "About Us"}><img src={aboutImg} alt="" width="1920" height="1080" loading="lazy" /></a>}
+        </div>
+        {members.length > 0 && <h2 class="mt-(--section-y) text-h2">{copy.team?.title ?? "Our Team"}</h2>}
+        <div class="ab-grid mt-10">
+          {members.slice(0, 3).map((m) => (
+            <a href={`/team/${m.slug}`} class="ab-plate ab-person">
+              {imgSrc(m.image, 192, 192) && <img class="ab-avatar" src={imgSrc(m.image, 192, 192)} alt="" width="96" height="96" loading="lazy" />}
+              {m.shortBio && <p class="mt-5 text-base">{m.shortBio}</p>}
+              <div class="mt-auto flex flex-col items-start gap-4 pt-6 lg:flex-row lg:items-end lg:justify-between">
+                <p class="text-sm"><span class="block text-foreground">{m.name}</span>{m.jobTitle && <span class="block text-muted-foreground">{m.jobTitle}</span>}</p>
+                <span class="ab-more" aria-hidden="true">
+                  Learn More
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
+        {members.length > 0 && <div class="mt-8 flex justify-center"><a href="/team" class="link-btn">{copy.team?.ctaLabel ?? "See All Team Members"}</a></div>}
+      </div>
+    </section>
+  )}
+
+  {faq.length > 0 && (
+    <section id="faq" class="section">
+      <div class="wrap"><FaqAccordion items={faq} title={copy.faq?.title ?? "Frequently Asked Questions"} contactImage={imgSrc(copy.faq?.image, 640, 480)} /></div>
+    </section>
+  )}
+
+  {locations.length > 0 && (
+    <section class="section">
+      <div class="wrap">
+        <SectionHead title={copy.locations?.title ?? "Our Locations"} href="/locations" action={copy.locations?.ctaLabel ?? "See All Locations"} />
+        {copy.locations?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{copy.locations.body}</p>}
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{locations.slice(0, 3).map((l) => <li><LocationCard location={l} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+</SiteLayout>
+
+<script>
+  // Desktop only (≥1024px): the first bento row opens tall with the title fitted to the full card width; scrolling collapses it to a
+  // compact row (title at H2 size, search right under it), folds the services list away row by row from the bottom (each row clips
+  // its own content, so nothing overlaps), and fades the category and location cards from 40% to full.
+  // Everything is driven by ONE number, --p (0 → 1 over the collapse distance), and all geometry is computed from it in CSS.
+  // Where the browser supports scroll-driven animations, --p is a CSS animation on the page's scroll timeline; elsewhere a rAF fallback
+  // sets it. The top is held by a sticky wrapper of constant height, so it never moves even if the shrink lands a frame late.
+  // This script only measures (once, and on resize) and hands CSS the sizes.
+  const stage = document.querySelector<HTMLElement>("[data-bento-stage]");
+  const pin = stage?.querySelector<HTMLElement>(".bento-pin");
+  const bento = stage?.querySelector<HTMLElement>(".bento");
+  const hero = bento?.querySelector<HTMLElement>(".bento-hero");
+  const title = bento?.querySelector<HTMLElement>(".bento-title");
+  const sideTitle = bento?.querySelector<HTMLElement>(".bento-side h2");
+  const form = hero?.querySelector<HTMLElement>("form");
+  const rows = bento ? [...bento.querySelectorAll<HTMLElement>(".bento-svcs > li")] : [];
+  if (stage && pin && bento && hero && title && sideTitle && form) {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const native = CSS.supports("animation-timeline: scroll()");
+    let D = 0, on = false, raf = 0;
+    const VARS = ["--h0", "--d", "--f0", "--ratio", "--lh", "--n", "--p"];
+    const reset = () => {
+      on = false; bento.removeAttribute("data-scroll"); stage.removeAttribute("style"); pin.removeAttribute("style"); window.__pinUntil = 0;
+      VARS.forEach((k) => bento.style.removeProperty(k));
+      title.removeAttribute("style");
+      rows.forEach((r) => r.removeAttribute("style"));
+    };
+    const measure = () => {
+      reset();
+      if (!mq.matches) return;
+      title.style.whiteSpace = "nowrap"; title.style.fontSize = "100px";
+      const avail = title.parentElement!.clientWidth;
+      const F0 = Math.min((100 * avail) / title.scrollWidth, 260);
+      const F1 = parseFloat(getComputedStyle(sideTitle).fontSize);
+      const LH = 1.1;
+      // Opening height: the normal layout with the fitted title in place (the scroll CSS is still off here).
+      title.style.fontSize = `${F0}px`; title.style.lineHeight = String(LH);
+      const rowH = rows.map((r) => r.getBoundingClientRect().height);
+      const H0 = hero.getBoundingClientRect().height;
+      bento.style.setProperty("--f0", `${F0}px`);
+      const cs = getComputedStyle(hero);
+      const gap = parseFloat(getComputedStyle(title.parentElement!).rowGap) || 32;
+      const H1 = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + F1 * LH + gap + form.getBoundingClientRect().height;
+      D = Math.max(1, H0 - H1);
+      bento.style.setProperty("--h0", `${H0}px`);
+      bento.style.setProperty("--d", `${D}px`);
+      bento.style.setProperty("--ratio", String(F1 / F0));
+      bento.style.setProperty("--lh", String(LH));
+      bento.style.setProperty("--n", String(rows.length));
+      rows.forEach((r, i) => { r.style.setProperty("--k", String(rows.length - 1 - i)); r.style.setProperty("--rh", `${rowH[i]}px`); });
+      // Pin: a wrapper of CONSTANT height (the opening bento height) is what sticks, so the pin never depends on the shrinking bento
+      // inside it and its top cannot move, whatever the timing of the shrink. The section grows by the collapse distance (so the pin
+      // holds for exactly that long) and gives it back with a negative bottom margin, so everything below stays where it was.
+      const secH = stage.getBoundingClientRect().height;
+      pin.style.height = `${bento.getBoundingClientRect().height}px`;
+      pin.style.top = `${pin.getBoundingClientRect().top + window.scrollY}px`;
+      stage.style.height = `${secH + D}px`;
+      stage.style.marginBottom = `${-D}px`;
+      window.__pinUntil = D;                                     // the header line waits for the pin to release
+      window.dispatchEvent(new Event("scroll"));
+      title.removeAttribute("style");
+      bento.setAttribute("data-scroll", native ? "native" : "js");
+      if (native) bento.style.removeProperty("--p");
+      on = true; update();
+    };
+    const update = () => {
+      raf = 0;
+      if (!on || native) return;
+      bento.style.setProperty("--p", String(Math.min(1, Math.max(0, window.scrollY / D))));
+    };
+    if (!native) window.addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+    let rt = 0;
+    window.addEventListener("resize", () => { clearTimeout(rt); rt = window.setTimeout(measure, 150); });
+    document.fonts?.ready.then(measure);
+    measure();
+  }
+</script>

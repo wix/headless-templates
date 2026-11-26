@@ -73,6 +73,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Rentals</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/services-wireframe">Services Business</a></td>
+      <td>A multi-location services site (services, team, locations, FAQ and a contact form) backed by Wix CMS collections, using Astro and Wix Headless.</td>
+      <td></td>
+      <td>Wix CMS (Wix Data), Wix Forms</td>
+    </tr>
+    <tr>
       <td colspan="4" align="center"><strong>Next.js</strong></td>
     </tr>
     <tr>

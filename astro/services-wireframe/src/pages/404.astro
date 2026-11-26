@@ -1,0 +1,16 @@
+---
+// Not found: the list-page head plate (centred title, a line, the ways back: Home, the services, the team). Also served for an unknown service, team member or policy.
+import SiteLayout from "../layouts/SiteLayout.astro";
+Astro.response.status = 404;
+---
+<SiteLayout title="Page not found" closing={false}>
+  <section class="pt-(--gutter) pb-(--section-y)">
+    <div class="wrap">
+      <div class="list-head list-head--center">
+        <h1 class="text-display">Page not found</h1>
+        <p class="mx-auto mt-4 max-w-[60ch] text-lg text-muted-foreground">The page you are looking for does not exist. Start from the home page or browse the services.</p>
+        <div class="mt-10 flex flex-wrap justify-center gap-3"><a href="/" class="btn btn-primary">Home</a><a href="/services" class="btn btn-outline">Services</a><a href="/team" class="btn btn-outline">Team</a></div>
+      </div>
+    </div>
+  </section>
+</SiteLayout>

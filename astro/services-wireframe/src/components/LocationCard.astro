@@ -1,0 +1,15 @@
+---
+// A location card: 4:3 image, name (the link stretches over the card), the address, a two-line description.
+import { imgSrc, addressLines, type Location } from "../lib/cms";
+interface Props { location: Location }
+const { location: l } = Astro.props;
+const src = imgSrc(l.image, 800, 600);
+---
+<article class="card flex h-full flex-col gap-4">
+  <div class="media" data-ratio="4/3">{src && <img src={src} alt="" width="800" height="600" loading="lazy" />}</div>
+  <div class="flex flex-1 flex-col gap-2">
+    <h3 class="card-title text-h3"><a href={`/locations/${l.slug}`}>{l.title}</a></h3>
+    <p class="meta">{addressLines(l.address).map((a) => <span>{a}</span>)}</p>
+    {l.description && <p class="clamp-2 text-muted-foreground">{l.description}</p>}
+  </div>
+</article>

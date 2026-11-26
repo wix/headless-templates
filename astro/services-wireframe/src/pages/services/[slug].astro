@@ -1,0 +1,95 @@
+---
+// A service: the detail first screen (title, short description, Book Now — opens Contact with the service filled in — and the figures
+// that are set: duration, price, locations), the description, the locations,
+// the team members who run it (the other side of the link), the gallery. No Wix SEO item type exists for CMS
+// pages, so the page passes its own <title>.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import TeamCard from "../../components/TeamCard.astro";
+import LocationCard from "../../components/LocationCard.astro";
+import DetailHero from "../../components/DetailHero.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import { getServiceFaq, getCopy, getAbout } from "../../lib/content";
+import SectionBar from "../../components/SectionBar.astro";
+import AboutList from "../../components/AboutList.astro";
+import { getCityServices } from "../../lib/city";
+import { getServices, getCategories, bySlug, related, imgSrc, gallery, paragraphs, categoryHref, type Member, type Location } from "../../lib/cms";
+import { money } from "../../lib/site";
+
+const [services, cats, inCity] = await Promise.all([getServices(), getCategories(), getCityServices(Astro)]);
+const s = bySlug(services, Astro.params.slug!);
+if (!s) return Astro.rewrite("/404");
+const [team, locs, faq, copy, topics] = await Promise.all([related<Member>("Services", s._id, "teamMembers"), related<Location>("Services", s._id, "locations"), getServiceFaq(s._id, s.category, Astro.url.pathname), getCopy(), getAbout({ service: s._id, category: s.category })]);
+const cat = cats.find((c) => c._id === s.category);
+const src = imgSrc(s.image, 1200, 1200);
+const details: [string, string][] = [
+  ["Duration", s.duration ?? ""],
+  ["Number of participants", s.participants ? String(s.participants) : ""], ["Price", s.price != null ? money(s.price) : ""],
+].filter(([, v]) => v) as [string, string][];
+const stats = [
+  ...details.filter(([k]) => k !== "Number of participants").map(([label, value]) => ({ label, value })),
+  locs.length > 0 && { label: locs.length > 1 ? "Locations" : "Location", value: String(locs.length) },
+  s.participants && { label: "Participants", value: String(s.participants) },
+].filter(Boolean).slice(0, 3) as { label: string; value: string }[];
+const shots = gallery(s);
+// About The Service: the description (as one Overview topic), then the topics written for this service or its category.
+const desc = paragraphs(s.description).join(" ");
+const aboutItems = [...(desc ? [{ title: "Overview", body: desc }] : []), ...topics];
+const sections = [
+  aboutItems.length > 0 && { id: "about", label: "About" },
+  team.length > 0 && { id: "team", label: "Team" },
+  locs.length > 0 && { id: "locations", label: "Locations" },
+  shots.length > 0 && { id: "gallery", label: "Gallery" },
+  faq.length > 0 && { id: "faq", label: "FAQ" },
+].filter(Boolean) as { id: string; label: string }[];
+---
+<SiteLayout title={s.title}>
+  <DetailHero title={s.title} desc={s.shortDescription} stats={stats} cover={src}>
+    <Fragment slot="crumbs"><a href="/">Home</a><a href="/services">Services</a>{cat && <a href={categoryHref(cat)}>{cat.title}</a>}<span aria-current="page">{s.title}</span></Fragment>
+    {!inCity.offered(s._id) && <p class="note">Not offered in {inCity.city}. Choose another city at the top of the page to see where it is available.</p>}
+    <Fragment slot="actions">
+      <a href={`/contact?service=${encodeURIComponent(s.title)}`} class="btn btn-primary">Book Now</a>
+      {team.length > 0 && <a href="#team" class="btn btn-outline">See Team</a>}
+    </Fragment>
+  </DetailHero>
+
+  <SectionBar sections={sections} />
+
+  <AboutList id="about" title="About The Service" items={aboutItems} />
+
+  {team.length > 0 && (
+    <section id="team" class="section bg-secondary">
+      <div class="wrap">
+        <h2 class="text-h2">Team</h2>
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{team.map((m) => <li><TeamCard member={m} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  {locs.length > 0 && (
+    <section id="locations" class="section">
+      <div class="wrap">
+        <h2 class="text-h2">{locs.length > 1 ? "Locations" : "Location"}</h2>
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{locs.map((x) => <li><LocationCard location={x} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  {shots.length > 0 && (
+    <section id="gallery" class="section">
+      <div class="wrap">
+        <h2 class="text-h2">Gallery</h2>
+        <ul class="mt-8 grid gap-4 sm:grid-cols-3">{shots.map((g) => <li class="media" data-ratio="4/3"><img src={imgSrc(g, 800, 600)} alt="" width="800" height="600" loading="lazy" /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  {faq.length > 0 && (
+    <section id="faq" class="section">
+      <div class="wrap">
+        <FaqAccordion items={faq} title={copy.faq?.title ?? "Frequently Asked Questions"} contactImage={imgSrc(copy.faq?.image, 640, 480)} />
+        {cat && <div class="mt-8 flex justify-center"><a href={`${categoryHref(cat)}#faq`} class="link-btn">More about {cat.title}</a></div>}
+      </div>
+    </section>
+  )}
+
+</SiteLayout>

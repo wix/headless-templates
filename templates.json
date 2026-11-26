@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "services-wireframe",
+      "title": "Services Business (Wix CMS)",
+      "subtitle": "Services, team, locations and FAQ from CMS collections",
+      "siteTemplateId": "9156f85c-555a-48d1-9803-958be0249d33",
+      "gitPath": "astro/services-wireframe",
+      "vibeCompatible": false
     }
   ]
 }

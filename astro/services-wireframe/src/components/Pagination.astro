@@ -1,0 +1,20 @@
+---
+// Numbered pages as links (so a page of results is shareable and works without JS). `href(n)` builds the URL for page n.
+// Shows first, last, and one page either side of the current; gaps become an ellipsis. Hidden when there is one page.
+interface Props { page: number; pages: number; href: (n: number) => string }
+const { page, pages, href } = Astro.props;
+const shown = new Set([1, pages, page - 1, page, page + 1].filter((n) => n >= 1 && n <= pages));
+const list = [...shown].sort((a, b) => a - b);
+---
+{pages > 1 && (
+  <nav aria-label="Pages" class="pager">
+    <a href={href(page - 1)} aria-disabled={page <= 1 ? "true" : undefined} tabindex={page <= 1 ? -1 : undefined} rel="prev">Previous</a>
+    {list.map((n, i) => (
+      <>
+        {i > 0 && n - list[i - 1] > 1 && <span class="gap" aria-hidden="true">…</span>}
+        <a href={href(n)} aria-current={n === page ? "page" : undefined} aria-label={`Page ${n}`}>{n}</a>
+      </>
+    ))}
+    <a href={href(page + 1)} aria-disabled={page >= pages ? "true" : undefined} tabindex={page >= pages ? -1 : undefined} rel="next">Next</a>
+  </nav>
+)}

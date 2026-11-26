@@ -1,0 +1,73 @@
+---
+// A location: the detail first screen (name, address, short description, Get Directions — a Google Maps link —, Call, figures: services, team, categories), description, the services available there and the team
+// who work there (the other side of both links), the gallery. Phone, e-mail and hours are not repeated here:
+// contact details live in the footer and on /contact. No Wix SEO item type exists for CMS pages, so the page passes its own <title>.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ServiceCard from "../../components/ServiceCard.astro";
+import DetailHero from "../../components/DetailHero.astro";
+import SectionBar from "../../components/SectionBar.astro";
+import AboutList from "../../components/AboutList.astro";
+import TeamCard from "../../components/TeamCard.astro";
+import { getLocations, getCategories, bySlug, related, imgSrc, gallery, paragraphs, addressLines, mapsUrl, telHref, type Service, type Member } from "../../lib/cms";
+
+const [locations, cats] = await Promise.all([getLocations(), getCategories()]);
+const l = bySlug(locations, Astro.params.slug!);
+if (!l) return Astro.rewrite("/404");
+const [services, team] = await Promise.all([related<Service>("Locations", l._id, "services"), related<Member>("Locations", l._id, "teamMembers")]);
+const src = imgSrc(l.image, 1200, 1200);
+const catCount = new Set(services.map((x) => x.category).filter(Boolean)).size;
+const stats = [
+  services.length > 0 && { label: services.length > 1 ? "Services" : "Service", value: String(services.length) },
+  team.length > 0 && { label: "Team members", value: String(team.length) },
+  catCount > 0 && { label: catCount > 1 ? "Categories" : "Category", value: String(catCount) },
+].filter(Boolean) as { label: string; value: string }[];
+const shots = gallery(l);
+const sections = [
+  paragraphs(l.description).length > 0 && { id: "about", label: "About" },
+  services.length > 0 && { id: "services", label: "Services" },
+  team.length > 0 && { id: "team", label: "Team" },
+  shots.length > 0 && { id: "gallery", label: "Gallery" },
+].filter(Boolean) as { id: string; label: string }[];
+---
+<SiteLayout title={l.title}>
+  <DetailHero title={l.title} desc={l.shortDescription ?? paragraphs(l.description)[0]} stats={stats} cover={src}>
+    {l.address && <p slot="sub" class="text-lg text-muted-foreground">{addressLines(l.address).join(", ")}</p>}
+    <Fragment slot="crumbs"><a href="/">Home</a><a href="/locations">Locations</a><span aria-current="page">{l.title}</span></Fragment>
+    <Fragment slot="actions">
+      <a href={mapsUrl(l)} target="_blank" rel="noopener noreferrer" class="btn btn-primary">Get Directions<span class="sr-only"> (opens in a new tab)</span></a>
+      {l.phone && <a href={telHref(l.phone)} class="btn btn-outline">Call {l.phone}</a>}
+    </Fragment>
+  </DetailHero>
+
+  <SectionBar sections={sections} />
+
+  <AboutList id="about" title="About This Location" items={[{ paragraphs: paragraphs(l.description) }]} />
+
+  {services.length > 0 && (
+    <section id="services" class="section bg-secondary">
+      <div class="wrap">
+        <h2 class="text-h2">Services</h2>
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{services.map((s) => <li><ServiceCard service={s} categories={cats} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  {team.length > 0 && (
+    <section id="team" class="section">
+      <div class="wrap">
+        <h2 class="text-h2">Team</h2>
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{team.map((m) => <li><TeamCard member={m} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  {shots.length > 0 && (
+    <section id="gallery" class="section bg-secondary">
+      <div class="wrap">
+        <h2 class="text-h2">Gallery</h2>
+        <ul class="mt-8 grid gap-4 sm:grid-cols-3">{shots.map((g) => <li class="media" data-ratio="4/3"><img src={imgSrc(g, 800, 600)} alt="" width="800" height="600" loading="lazy" /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+</SiteLayout>

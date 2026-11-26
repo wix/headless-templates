@@ -1,0 +1,32 @@
+---
+// The second menu of a detail page: links to the page's own sections. Out of the flow, tucked under the header; once the first
+// screen has scrolled past the header it slides out from under it, 1:1 with the scroll, and back in on the way up (CSS: .cat-bar).
+interface Props { sections: { id: string; label: string }[] }
+const { sections } = Astro.props;
+---
+{sections.length > 1 && (
+  <nav aria-label="On this page" class="cat-bar" data-hidden>
+    <div class="wrap flex h-(--header-h) items-center gap-2 overflow-x-auto">
+      {sections.map((s) => <a href={`#${s.id}`} class="nav-link">{s.label}</a>)}
+    </div>
+  </nav>
+)}
+
+<script>
+  const bar = document.querySelector<HTMLElement>(".cat-bar");
+  const first = document.querySelector<HTMLElement>("main > section");
+  const hdr = document.getElementById("site-header");
+  if (bar && first && hdr) {
+    let raf = 0;
+    const step = () => {
+      raf = 0;
+      const d = hdr.getBoundingClientRect().bottom - first.getBoundingClientRect().bottom;
+      const p = Math.min(1, Math.max(0, d / bar.offsetHeight));
+      bar.style.setProperty("--sp", p.toFixed(4));
+      bar.toggleAttribute("data-hidden", p === 0);
+    };
+    addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(step); }, { passive: true });
+    addEventListener("resize", () => { if (!raf) raf = requestAnimationFrame(step); });
+    step();
+  }
+</script>

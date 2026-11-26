@@ -1,0 +1,61 @@
+---
+// FAQ as numbered cards (Home, first): a card per question — number, question, a round +/× control — that opens smoothly to show the
+// answer (one open at a time). A last card invites visitors to get in touch. Built on buttons + region panels, so it works by keyboard
+// and announces its state; the open/close is a grid-rows transition (0fr → 1fr), smooth in every browser.
+import type { FaqItem } from "../lib/content";
+// `items` may be questions ({question, answer}) or text topics ({title, body}, the About The Service block). `more` hides the contact card;
+// `uid` keeps ids unique when two of these sit on one page.
+type Row = Partial<FaqItem> & { title?: string; body?: string };
+interface Props { items: Row[]; title?: string; contactHref?: string; contactImage?: string; more?: boolean; uid?: string }
+const { items, title = "Frequently Asked Questions", contactHref = "/contact", contactImage, more = true, uid = "faqx" } = Astro.props;
+---
+<div class="faqx" data-faqx>
+  <h2 class="text-center text-h2">{title}</h2>
+  <ul class="faqx-list mt-10">
+    {items.map((q, i) => (
+      <li class="faqx-item" data-open={i === 0 ? "" : undefined}>
+        <h3>
+          <button type="button" class="faqx-q" id={`${uid}-q-${i}`} aria-expanded={i === 0 ? "true" : "false"} aria-controls={`${uid}-a-${i}`}>
+            <span class="faqx-num" aria-hidden="true">{i + 1}</span>
+            <span class="faqx-text ls-title text-h3">{q.question ?? q.title}</span>
+            <span class="faqx-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5v11M1.5 7h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>
+            </span>
+          </button>
+        </h3>
+        <div class="faqx-a" id={`${uid}-a-${i}`} role="region" aria-labelledby={`${uid}-q-${i}`}>
+          <div class="faqx-a-inner"><p>{q.answer ?? q.body}</p></div>
+        </div>
+      </li>
+    ))}
+    {more && <li>
+      <a href={contactHref} class="faqx-item faqx-more">
+        <span class="faqx-more-body">
+          <span class="ls-title block text-h3">Still have questions?</span>
+          <span class="mt-1 block text-muted-foreground">Get in touch with our team, we usually reply within a day.</span>
+          <span class="faqx-icon faqx-icon--go mt-auto" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </span>
+        </span>
+        {contactImage && <span class="faqx-more-photo media"><img src={contactImage} alt="" width="640" height="480" loading="lazy" /></span>}
+      </a>
+    </li>}
+  </ul>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-faqx]").forEach((root) => {
+    const items = [...root.querySelectorAll<HTMLElement>(".faqx-item:not(.faqx-more)")];
+    const set = (item: HTMLElement, open: boolean) => {
+      item.toggleAttribute("data-open", open);
+      item.querySelector(".faqx-q")!.setAttribute("aria-expanded", String(open));
+    };
+    items.forEach((item) => {
+      item.querySelector(".faqx-q")!.addEventListener("click", () => {
+        const open = !item.hasAttribute("data-open");
+        items.forEach((other) => other !== item && set(other, false));   // one answer open at a time
+        set(item, open);
+      });
+    });
+  });
+</script>
