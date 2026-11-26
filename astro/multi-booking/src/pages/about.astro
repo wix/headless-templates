@@ -1,0 +1,28 @@
+---
+// /about: About and Team in one page, in the home page's language.
+//   1. The intro card: the About title, the story (lead word by word + the longer text), Book Our Services / Contact Us, a photo.
+//   2. The whole team (6 people, read live from Bookings), cards rising in by scroll.
+//   3. The closing card.
+// Content: CMS rows aboutPage, teamPage, cta; Bookings staff and services.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import PageIntro from "../components/blocks/PageIntro.astro";
+import TeamGrid from "../components/blocks/TeamGrid.astro";
+import ClosingCard from "../components/blocks/ClosingCard.astro";
+import { getSections } from "../lib/content";
+import { listServices, type ServiceDTO } from "../lib/services";
+import { getTeam } from "../lib/team";
+let services: ServiceDTO[] = [];
+try { services = await listServices(); } catch (e) { console.error("listServices failed", e); }
+const [sec, team] = await Promise.all([getSections(), getTeam(services)]);
+const s = sec.aboutPage, t = sec.teamPage, cta = sec.cta;
+---
+<SiteLayout title={s?.title ?? "About Us"}>
+  <PageIntro title={s?.title ?? "About Us"} lead={s?.body} text={s?.bodySecondary} image={s?.image}>
+    <Fragment slot="actions">
+      <a href="/book" class="btn btn-primary">Book Our Services</a>
+      <a href="#team" class="btn btn-outline">{t?.title ?? "Our Team"}</a>
+    </Fragment>
+  </PageIntro>
+  <TeamGrid title={t?.title ?? "Our Team"} members={team} />
+  {cta && <ClosingCard title={cta.title ?? "Let’s Work Together"} body={cta.body} image={sec.about?.image ?? s?.image} />}
+</SiteLayout>

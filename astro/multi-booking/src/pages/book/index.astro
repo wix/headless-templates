@@ -1,0 +1,18 @@
+---
+// /book — Select Service: category filters over one grid of service cards; a card opens its booking step.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ServiceList from "../../components/booking/ServiceList";
+import { listServices, type ServiceDTO } from "../../lib/services";
+
+let services: ServiceDTO[] = [];
+try { services = await listServices(); } catch (e) { console.error("listServices failed", e); }
+---
+<SiteLayout title="Select Service">
+  <div class="wrap pb-(--gutter) pt-(--gutter)">
+    <a href="/" class="link-btn text-muted-foreground no-underline hover:underline">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" /></svg>Back
+    </a>
+    <h1 class="mt-4 text-h2" data-split>Select Service</h1>
+    <ServiceList client:load services={services} />
+  </div>
+</SiteLayout>

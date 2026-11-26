@@ -1,0 +1,159 @@
+---
+// Home hero, the Conwest "immersive shrink" pattern in this site's type.
+//   Start: the photo fills the whole screen (the header is tucked away above it) with a huge title that wraps onto two lines.
+//   Scroll: the photo pulls in to a framed card (top: room for the header + the side padding; sides and bottom: --gutter) while the
+//   header slides in from the top. The title shrinks to the display size and its words travel from the two-line layout to a
+//   one-line layout (FLIP: each word is placed absolutely at its big-layout spot and transformed toward its small-layout spot).
+// Progress --t (0 → 1) is scrubbed from scroll; the panel is sticky meanwhile. Words rise in on load. Content: CMS `hero` row.
+// Reduced motion / no script: a plain hero under a normal header.
+import { imgSrc } from "../lib/media";
+interface Props { title: string; body?: string; ctaLabel: string; image?: unknown; imageMobile?: unknown }
+const { title, body, ctaLabel, image, imageMobile } = Astro.props;
+const words = title.split(/\s+/).filter(Boolean);
+---
+<section class="hero-shrink" data-hero-shrink style="--t:0">
+  <div class="hero-shrink__pin">
+    <div class="hero-shrink__frame">
+      {image && (
+        <picture>
+          {imageMobile && <source media="(max-width: 767.98px)" srcset={imgSrc(imageMobile as any, 1200, 1800)} />}
+          <img src={imgSrc(image as any, 2400, 1400)} alt="" width="2400" height="1400" fetchpriority="high" class="hero-shrink__img" />
+        </picture>
+      )}
+      <div class="hero-shrink__copy">
+        <h1 class="hero-shrink__title" aria-label={title}>
+          {words.map((w, i) => <span class="hero-shrink__word" aria-hidden="true"><span class="hero-shrink__in" style={`--i:${i}`}>{w}</span></span>)}
+        </h1>
+        <div class="hero-shrink__side">
+          {body && <p class="hero-shrink__body">{body}</p>}
+          <a href="/book" class="btn btn-primary">{ctaLabel}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-shrink {
+    --shrink-distance: 80svh;
+    --title-big: 11.5vw;
+    --title-small: clamp(2.5rem, 1.4rem + 4.4vw, 4.75rem);
+    position: relative; background: var(--color-background);
+  }
+  .hero-shrink__pin { position: relative; height: calc(100svh - var(--header-h)); min-height: 30rem; padding: var(--gutter); }
+  .hero-shrink__frame { position: relative; height: 100%; overflow: hidden; isolation: isolate; border-radius: 18px; background: var(--color-secondary); }
+  .hero-shrink__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .hero-shrink__copy {
+    position: absolute; inset-inline: clamp(1.25rem, 3vw, 3rem); bottom: clamp(1.25rem, 3vw, 3rem); z-index: 1;
+    display: grid; gap: clamp(1.25rem, 2.5vw, 2.5rem); align-items: end;
+  }
+  @media (min-width: 1024px) { .hero-shrink__copy { grid-template-columns: minmax(0, 1fr) auto; } }
+  .hero-shrink__title {
+    position: relative; margin: 0; font-family: var(--font-display); font-weight: 500; line-height: 0.9; letter-spacing: -0.045em;
+    font-size: var(--title-small); color: var(--color-foreground);
+  }
+  .hero-shrink__word { display: inline-block; margin-right: 0.22em; white-space: nowrap; }
+  .hero-shrink__word:last-child { margin-right: 0; }
+  .hero-shrink__in { display: inline-block; }
+  .hero-shrink__side { display: grid; gap: 1.5rem; justify-items: start; max-width: 26rem; }
+  .hero-shrink__body { margin: 0; font-size: var(--text-lg); color: var(--color-foreground); }
+  @media (max-width: 767.98px) { .hero-shrink { --title-big: 15vw; --shrink-distance: 60svh; } }
+
+  /* ── Motion (script on) ── */
+  .hero-shrink[data-motion="on"] { margin-top: calc(-1 * var(--header-h)); min-height: calc(100svh + var(--shrink-distance)); }
+  .hero-shrink[data-motion="on"] .hero-shrink__pin {
+    position: sticky; top: 0; height: 100svh;
+    padding: calc(var(--t) * (var(--header-h) + var(--gutter))) calc(var(--t) * var(--gutter)) calc(var(--t) * var(--gutter));
+  }
+  .hero-shrink[data-motion="on"] .hero-shrink__frame { border-radius: calc(var(--t) * 18px); }
+  .hero-shrink[data-motion="on"] .hero-shrink__img { transform: scale(calc(1.06 - var(--t) * 0.06)); }
+  /* The title box: big font (words are scaled down by transform), its height set per frame; words placed absolutely. */
+  .hero-shrink[data-flip] .hero-shrink__title { font-size: var(--title-big); height: var(--title-h, auto); }
+  .hero-shrink[data-flip] .hero-shrink__word {
+    position: absolute; left: 0; top: 0; margin: 0; transform-origin: 0 0;
+    transform: translate3d(var(--x), var(--y), 0) scale(var(--s)); will-change: transform;
+  }
+
+  /* Load: the title's words rise in one after another, then the side column. */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-shrink__in { animation: hero-word 0.9s cubic-bezier(.23, 1, .32, 1) both; animation-delay: calc(0.15s + var(--i) * 60ms); }
+    .hero-shrink__side { animation: hero-word 0.9s cubic-bezier(.23, 1, .32, 1) 0.45s both; }
+  }
+  @keyframes hero-word { from { opacity: 0; transform: translateY(0.5em) scale(0.985); } to { opacity: 1; transform: none; } }
+</style>
+
+<style is:global>
+  /* While the home hero is full-screen, the site header waits above the viewport and slides in as the photo shrinks. */
+  [data-shell] > header { transition: none; }
+  html[data-hero-header] [data-shell] > header { transform: translate3d(0, var(--hdr-y, 0%), 0); will-change: transform; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-hero-shrink]").forEach((el) => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    el.dataset.motion = "on";
+    document.documentElement.dataset.heroHeader = "";
+    const root = document.documentElement;
+    const pin = el.querySelector<HTMLElement>(".hero-shrink__pin")!;
+    const h1 = el.querySelector<HTMLElement>(".hero-shrink__title")!;
+    const words = [...h1.querySelectorAll<HTMLElement>(".hero-shrink__word")];
+    const ease = (x: number) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
+    const clamp = (v: number) => Math.min(1, Math.max(0, v));
+
+    // Two layouts, measured at the big font size: A = natural wrap at full width (two lines), B = the small size, one line
+    // (or as many lines as the width needs). Words carry A's spot (x, y) and B's spot scaled by s = small / big.
+    type Spot = { ax: number; ay: number; bx: number; by: number };
+    let spots: Spot[] = [], s = 1, hA = 0, hB = 0;
+    const measure = () => {
+      delete el.dataset.flip;
+      words.forEach((w) => { w.style.removeProperty("--x"); w.style.removeProperty("--y"); w.style.removeProperty("--s"); });
+      h1.style.fontSize = "var(--title-big)";
+      const big = parseFloat(getComputedStyle(h1).fontSize);
+      const box = h1.getBoundingClientRect();
+      const A = words.map((w) => { const r = w.getBoundingClientRect(); return { x: r.left - box.left, y: r.top - box.top, w: r.width }; });
+      hA = box.height;
+      const lineH = parseFloat(getComputedStyle(h1).lineHeight) || big * 0.9;
+      h1.style.fontSize = "";
+      const small = parseFloat(getComputedStyle(h1).fontSize);
+      s = small / big;
+      const gap = 0.22 * small, maxW = box.width;
+      let x = 0, line = 0;
+      const B = A.map((a) => {
+        const w = a.w * s;
+        if (x > 0 && x + w > maxW) { x = 0; line++; }
+        const spot = { x, y: line * lineH * s };
+        x += w + gap;
+        return spot;
+      });
+      hB = (line + 1) * lineH * s;
+      spots = A.map((a, i) => ({ ax: a.x, ay: a.y, bx: B[i].x, by: B[i].y }));
+      el.dataset.flip = "";
+    };
+
+    let ticking = false;
+    const frame = () => {
+      ticking = false;
+      const dist = el.offsetHeight - pin.offsetHeight;
+      const raw = dist > 0 ? clamp(-el.getBoundingClientRect().top / dist) : 1;
+      const t = ease(raw);
+      el.style.setProperty("--t", t.toFixed(4));
+      // Title: interpolate every word between its two spots, and the box height between the layouts.
+      words.forEach((w, i) => {
+        const p = spots[i]; if (!p) return;
+        w.style.setProperty("--x", `${(p.ax + (p.bx - p.ax) * t).toFixed(2)}px`);
+        w.style.setProperty("--y", `${(p.ay + (p.by - p.ay) * t).toFixed(2)}px`);
+        w.style.setProperty("--s", (1 + (s - 1) * t).toFixed(4));
+      });
+      h1.style.setProperty("--title-h", `${(hA + (hB - hA) * t).toFixed(2)}px`);
+      // Header: hidden above until the photo is half-way in, then slides down with it; stays once the hero is done.
+      const h = clamp((raw - 0.35) / 0.55);
+      root.style.setProperty("--hdr-y", `${(-100 * (1 - ease(h))).toFixed(2)}%`);
+    };
+    const on = () => { if (!ticking) { ticking = true; requestAnimationFrame(frame); } };
+    const remeasure = () => { measure(); frame(); };
+    addEventListener("scroll", on, { passive: true });
+    addEventListener("resize", remeasure);
+    (document as any).fonts?.ready?.then(remeasure);
+    remeasure();
+  });
+</script>

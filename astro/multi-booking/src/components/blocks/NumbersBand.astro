@@ -1,0 +1,27 @@
+---
+// The numbers band (home and About): three big tiles on the 3-column grid; each digit is a reel that rolls from 0 to its value
+// as the tile scrolls in. Content: CMS `numbers` row (title) and ContentItems group "numbers".
+import type { ContentItem } from "../../lib/content";
+interface Props { title?: string; items: ContentItem[]; joinNext?: boolean }
+const { title, items, joinNext = false } = Astro.props;
+---
+<section class={`section on-grey bg-secondary${joinNext ? " nums-band" : ""}`} aria-labelledby="numbers-title">
+  <div class="wrap">
+    {title && <h2 id="numbers-title" class="text-h2" data-split>{title}</h2>}
+    <ul class="nums">
+      {items.slice(0, 3).map((n, i) => {
+        const v = String(n.value ?? "");
+        return (
+          <li class={`nums__tile nums__tile--${i + 1}`} data-odometer data-progress>
+            <p class="nums__value" aria-label={v}>
+              {[...v].map((ch, k) => /\d/.test(ch)
+                ? <span class="reel" aria-hidden="true" data-digit={ch} data-spins={String([...v].length - k)}><span class="reel__col">{Array.from({ length: 10 * ([...v].length - k + 1) + 10 }, (_, d) => <span>{d % 10}</span>)}</span><span class="reel__sizer">{ch}</span></span>
+                : <span aria-hidden="true">{ch}</span>)}
+            </p>
+            {n.body && <p class="nums__body">{n.body}</p>}
+          </li>
+        );
+      })}
+    </ul>
+  </div>
+</section>

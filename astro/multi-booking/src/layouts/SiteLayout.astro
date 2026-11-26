@@ -1,0 +1,170 @@
+---
+// Site chrome for every page: header, footer. Header CTA = the site's one action ("Book now" → /book).
+//   hideCta   the page IS a booking surface: the header's "Book now" would point at itself.
+//   barSpace  the page renders the fixed action bar: reserve its height after the footer.
+import { getSections, getLegalPages, getSocialLinks } from "../lib/content";
+import { BUSINESS_NAME, NAV, BOOK_LABEL } from "../lib/site";
+import { listServices } from "../lib/services";
+import HeaderBook from "../components/HeaderBook";
+import "../styles/global.css";
+import "../styles/home.css";
+
+interface Props { title: string; description?: string; hideCta?: boolean; barSpace?: boolean; footer?: boolean; }
+const { title, description, hideCta = false, barSpace = false, footer: showFooter = true } = Astro.props;
+
+const [sections, legal, social, svc] = await Promise.all([getSections(), getLegalPages(), getSocialLinks(), hideCta ? Promise.resolve([]) : listServices().catch((e) => { console.error("listServices failed", e); return []; })]);
+// the booking policies, for the Confirm drawer the header's Book now opens once there are appointments in the list
+const policies = svc.map((s) => ({ name: s.name, lines: s.policy }));
+const PLATFORM_LABEL = { instagram: "Instagram", tiktok: "TikTok", facebook: "Facebook" } as const;
+const f = sections.footer;
+const bookLabel = sections.hero?.ctaLabel || BOOK_LABEL;
+const contactBits = (f?.bodySecondary ?? "").split("·").map((x) => x.trim()).filter(Boolean);
+const PHONE = /^[+0-9][0-9 ().-]+$/;
+const contacts = contactBits.map((text) => ({ text, href: text.includes("@") ? `mailto:${text}` : PHONE.test(text) ? `tel:${text.replace(/[^0-9+]/g, "")}` : undefined }));
+const pageTitle = title === BUSINESS_NAME ? title : `${title} | ${BUSINESS_NAME}`;
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => path === href || (href !== "/" && path.startsWith(href));
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" href="/favicon.svg" />
+  </head>
+  <body class="min-h-svh">
+    <div class="page-shell" data-shell data-no-clip={barSpace ? "" : undefined}>
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:bg-background focus:px-4 focus:py-3">Skip to content</a>
+
+    <header class="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
+      <div class="wrap flex h-(--header-h) items-center justify-between gap-4">
+        <a href="/" class="inline-flex min-h-11 items-center font-display text-lg font-medium tracking-tight text-foreground no-underline">{BUSINESS_NAME}</a>
+        <div class="flex items-center gap-2 lg:gap-6">
+          <nav aria-label="Main" class="hidden items-center gap-1 lg:flex">
+            {NAV.map((l) => <a href={l.href} aria-current={isCurrent(l.href) ? "page" : undefined} class="nav-link">{l.label}</a>)}
+          </nav>
+          {!hideCta && <HeaderBook client:load label={bookLabel} policies={policies} />}
+          <!-- Below 1024 the five links live in a menu panel under the header. -->
+          <button type="button" id="menu-btn" class="icon-btn lg:hidden" aria-expanded="false" aria-controls="menu-panel" aria-label="Menu">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path id="menu-open" d="M2 5h14M2 9h14M2 13h14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /><path id="menu-close" class="hidden" d="M3 3l12 12M15 3L3 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /></svg>
+          </button>
+        </div>
+      </div>
+      <div id="menu-panel" class="menu-panel lg:hidden" hidden>
+        <nav aria-label="Menu" class="wrap py-2">
+          <ul>
+            {NAV.map((l) => <li><a href={l.href} aria-current={isCurrent(l.href) ? "page" : undefined} class="menu-link flex min-h-12 items-center border-b border-border text-lg font-medium text-foreground no-underline aria-[current=page]:underline underline-offset-[0.25em]">{l.label}</a></li>)}
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+    </div>
+
+    {showFooter && (
+      <footer class="site-footer" data-footer>
+        <!-- One left-aligned grid: the name, then Address (with phone and e-mail), Opening hours, Pages, Social, Legal; the
+             credit under a hairline. -->
+        <div class="wrap site-footer__inner">
+          <p class="site-footer__brand">{f?.title ?? BUSINESS_NAME}</p>
+          <!-- Two halves like the closing card above (8px inset, the same gap), so the right half starts where the card's photo
+               starts. Row 1: Address (with phone and e-mail) | Opening hours. Row 2: the pages, in a row | the social links, in a row. -->
+          <div class="site-footer__grid">
+            {(f?.body || contacts.length > 0) && (
+              <address class="site-footer__col not-italic">
+                <p class="site-footer__label">Address</p>
+                {f?.body && <p class="site-footer__text">{f.body}</p>}
+                {contacts.length > 0 && (
+                  <p class="site-footer__text site-footer__contacts">
+                    {contacts.map((c) => c.href ? <a href={c.href} class="site-footer__link">{c.text}</a> : <span>{c.text}</span>)}
+                  </p>
+                )}
+              </address>
+            )}
+            {f?.hours && (
+              <div class="site-footer__col">
+                <p class="site-footer__label">Opening hours</p>
+                <p class="site-footer__text whitespace-pre-line">{f.hours}</p>
+              </div>
+            )}
+            <nav class="site-footer__col" aria-label="Pages">
+              <ul class="site-footer__row">
+                <li><a href="/" class="site-footer__link">Home</a></li>
+                {NAV.map((l) => <li><a href={l.href} class="site-footer__link">{l.label}</a></li>)}
+              </ul>
+            </nav>
+            {social.length > 0 && (
+              <nav class="site-footer__col" aria-label="Social media">
+                <ul class="site-footer__row">
+                  {social.map((l) => <li><a href={l.url} target="_blank" rel="noopener noreferrer" class="site-footer__link" aria-label={`${PLATFORM_LABEL[l.platform]} (opens in a new tab)`}>{PLATFORM_LABEL[l.platform]}</a></li>)}
+                </ul>
+              </nav>
+            )}
+          </div>
+          <div class="site-footer__bottom">
+            {legal.length > 0 && (
+              <nav aria-label="Legal">
+                <ul class="site-footer__legal">
+                  {legal.map((p) => <li><a href={`/policies/${p.slug}`} class="site-footer__small">{p.title}</a></li>)}
+                </ul>
+              </nav>
+            )}
+            {f?.credit && <p class="site-footer__small">{f.credit}</p>}
+          </div>
+        </div>
+      </footer>
+    )}
+    {barSpace && <div aria-hidden="true" class="h-(--bar-h) bg-inverse"></div>}
+    <script>
+      // The motion kit (word reveals, scroll scrubs, reels, stacks): one script for every page.
+      import "../scripts/home-motion";
+    </script>
+    <script is:inline>
+      // Footer reveal: the page sits on top of the (sticky-bottom) footer. While the footer shows, the page narrows: 0 → the side padding (--gutter) on each
+      // side with rounded bottom corners, scrubbed by how much of the footer is uncovered. clip-path only (no reflow, no transform).
+      (function () {
+        var shell = document.querySelector("[data-shell]"), foot = document.querySelector("[data-footer]");
+        if (!shell || !foot) return;
+        // Pages with the fixed booking action bar keep the page full width: the narrowing clip would also cut the bar off.
+        if (shell.hasAttribute("data-no-clip")) return;
+        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches, ticking = false;
+        function frame() {
+          ticking = false;
+          var shown = window.innerHeight - shell.getBoundingClientRect().bottom;
+          var t = Math.max(0, Math.min(1, shown / Math.max(1, Math.min(foot.offsetHeight, window.innerHeight))));
+          if (reduce) t = t > 0 ? 1 : 0;
+          // --reveal-scale: how much a full-width block must shrink to keep one gutter inside the narrowed page (used by the
+          // closing card); 1 when the footer is hidden.
+          var w0 = document.querySelector(".wrap"), g0 = w0 ? parseFloat(getComputedStyle(w0).paddingLeft) || 30 : 30, vw = window.innerWidth;
+          document.documentElement.style.setProperty("--reveal-scale", ((vw - 2 * g0 - 2 * g0 * t) / (vw - 2 * g0)).toFixed(5));
+          if (t <= 0) { shell.style.clipPath = ""; return; }
+          // The inset matches the site's side padding (--gutter, read off a .wrap so the clamp() is resolved).
+          var wrap = document.querySelector(".wrap"), g = wrap ? parseFloat(getComputedStyle(wrap).paddingLeft) || 30 : 30;
+          var x = (g * t).toFixed(2), r = (24 * t).toFixed(2);
+          shell.style.clipPath = "inset(0px " + x + "px 0px " + x + "px round 0px 0px " + r + "px " + r + "px)";
+        }
+        function on() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
+        window.addEventListener("scroll", on, { passive: true }); window.addEventListener("resize", on); frame();
+      })();
+      // Menu (below 1024): a disclosure. Escape, a tap outside or a link closes it; the button keeps aria-expanded in step.
+      (function () {
+        var btn = document.getElementById("menu-btn"), panel = document.getElementById("menu-panel");
+        if (!btn || !panel) return;
+        function set(open) {
+          panel.hidden = !open; btn.setAttribute("aria-expanded", String(open));
+          btn.setAttribute("aria-label", open ? "Close menu" : "Menu");
+          document.getElementById("menu-open").classList.toggle("hidden", open); document.getElementById("menu-close").classList.toggle("hidden", !open);
+        }
+        btn.addEventListener("click", function () { set(panel.hidden); });
+        document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !panel.hidden) { set(false); btn.focus(); } });
+        document.addEventListener("click", function (e) { if (!panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) set(false); });
+        window.matchMedia("(min-width: 1024px)").addEventListener("change", function (m) { if (m.matches) set(false); });
+      })();
+    </script>
+  </body>
+</html>

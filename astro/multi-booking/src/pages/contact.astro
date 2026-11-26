@@ -1,0 +1,25 @@
+---
+// /contact, in the home page's language: the intro card with the title and the business details (CMS row footer: one source
+// for the footer and this page) on the left, the Wix Forms contact form on the right (island: schema-driven, as the visitor).
+import SiteLayout from "../layouts/SiteLayout.astro";
+import PageIntro from "../components/blocks/PageIntro.astro";
+import ContactForm from "../components/ContactForm";
+import { getSections } from "../lib/content";
+const sec = await getSections();
+const s = sec.contactPage, f = sec.footer;
+const bits = (f?.bodySecondary ?? "").split("·").map((x) => x.trim()).filter(Boolean);
+---
+<SiteLayout title={s?.title ?? "Contact"}>
+  <PageIntro title={s?.title ?? "Contact"} lead={s?.body}>
+    <Fragment slot="actions">
+      <dl class="intro-spec">
+        {f?.body && <div><dt>Address</dt><dd>{f.body}</dd></div>}
+        {bits.length > 0 && (
+          <div><dt>Contact details</dt><dd>{bits.map((b) => <div><a href={b.includes("@") ? `mailto:${b}` : `tel:${b.replace(/[^\d+]/g, "")}`}>{b}</a></div>)}</dd></div>
+        )}
+        {f?.hours && <div><dt>Opening hours</dt><dd>{f.hours}</dd></div>}
+      </dl>
+    </Fragment>
+    <div slot="aside"><ContactForm client:load /></div>
+  </PageIntro>
+</SiteLayout>

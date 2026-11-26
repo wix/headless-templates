@@ -1,0 +1,24 @@
+---
+// The opening of an inner page, in the home page's language: a grey card under the header (one gutter all round) with the
+// page title (H1 at the H2 size, words rising in), a lead in the testimonial-quote style revealed word by word, optional
+// secondary text and actions; a photo on the right half (8px inset) — or any content passed in the "aside" slot. The card
+// opens out of a mask as the page loads.
+import { imgSrc } from "../../lib/media";
+interface Props { title: string; lead?: string; text?: string; image?: unknown; id?: string }
+const { title, lead, text, image, id = "page-title" } = Astro.props;
+const hasAside = Astro.slots.has("aside");
+---
+<section class="page-intro" aria-labelledby={id}>
+  <div class="wrap">
+    <div class="cta-card page-intro__card">
+      <div class="cta-card__copy">
+        <h1 id={id} class="text-h2" data-split>{title}</h1>
+        {lead && <p class="cta-card__statement rev__quote" data-words>{lead}</p>}
+        {text && <p class="page-intro__text" data-reveal>{text}</p>}
+        {Astro.slots.has("actions") && <div class="cta-card__actions" data-reveal><slot name="actions" /></div>}
+      </div>
+      {hasAside ? <div class="page-intro__aside"><slot name="aside" /></div>
+        : image && <div class="cta-card__photo"><img src={imgSrc(image as any, 1400, 1100)} alt="" width="1400" height="1100" fetchpriority="high" decoding="async" /></div>}
+    </div>
+  </div>
+</section>

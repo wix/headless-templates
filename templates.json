@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "multi-booking",
+      "title": "Multi-Booking (Wix Bookings)",
+      "subtitle": "Book several appointments in one checkout",
+      "siteTemplateId": "f4a866c8-68c8-488c-8aa8-f5b3673d7321",
+      "gitPath": "astro/multi-booking",
+      "vibeCompatible": false
     }
   ]
 }
