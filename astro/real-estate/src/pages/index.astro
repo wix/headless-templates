@@ -242,7 +242,7 @@ const hoodCount = (id: string) => active.filter((l) => l.neighborhood === id).le
 
   {hoods.length > 0 && (
     <!-- Neighborhoods: the heading over its rule, one paragraph and the "See all" link, then a wide stage with a thin-line street map
-         (real OpenStreetMap streets) and the neighborhoods' photos scattered over it, each with its name above. Copy: CMS row `neighborhoods`. -->
+         (an original, made-up street network) and the neighborhoods' photos scattered over it, each with its name above. Copy: CMS row `neighborhoods`. -->
     <section class="fp-section" data-fp>
       <div class="wrap">
         <div class="fp-head"><h2>{copy.neighborhoods?.title ?? "Our Neighborhoods"}</h2></div>
@@ -254,8 +254,8 @@ const hoodCount = (id: string) => active.filter((l) => l.neighborhood === id).le
       <!-- The neighborhoods scattered over a drawn city map: each a small photo with its name above; on hover (or focus) the photo
            opens to 1.5× its size from the centre, as a mask widening over a larger picture, and the name lifts clear of it, its pill swapping the name for the number of listings there. -->
       <div class="hm-stage">
-        <!-- Street map: real OpenStreetMap street data (central Prague), drawn as thin lines; loaded after
-             the page as /maps/city-streets.svg (built from OSM data, © OpenStreetMap contributors, ODbL). -->
+        <!-- Street map: an original, procedurally drawn city (no third-party map data), thin lines; loaded after the page as
+             /maps/city-streets.svg. -->
         <div class="hm-map-host" data-src="/maps/city-streets.svg"></div>
         <ul class="hm-list">
           {hoods.slice(0, 7).map((n, i) => { const src = imgSrc(n.image, 480, 600); return (
