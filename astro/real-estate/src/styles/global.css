@@ -1661,7 +1661,7 @@ html.kbd .sx-btn:focus-visible { outline: 1px solid var(--color-foreground); out
 
 /* ── Accessibility audit fixes (26 Nov 2026) ─────────────────────────────────────────────────────────────────────────────────── */
 /* F01: the Google score in a darker amber, 5.6:1 on white (the stars stay the brand yellow; the score carries the meaning). */
-.g-score, .wm-top .g-score { color: #8a6000; }
+.g-score, .wm-top .g-score { color: var(--color-foreground); }
 /* F03: a visible "(required)" after each mandatory field's label, quieter than the label itself. */
 .field-req { color: var(--color-muted-foreground); font-weight: 400; }
 /* F08: on narrow screens the two listing actions stack instead of running past the edge. */
