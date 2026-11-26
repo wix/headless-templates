@@ -1,0 +1,21 @@
+---
+// Questions and answers as native disclosures: work by keyboard and without JS, no script to ship. Questions are set like the listing
+// prices (display face, card-title size); answers like the body text. Hover: the rule under the question turns ink and the chevron's
+// circle fills; opening and closing slide smoothly where the browser can animate a disclosure's height.
+import type { FaqItem } from "../lib/content";
+interface Props { items: FaqItem[]; open?: number }
+const { items, open = 0 } = Astro.props;
+---
+<ul class="faq-list">
+  {items.map((q, i) => (
+    <li>
+      <details open={i === open ? true : undefined} class="faq-item">
+        <summary class="faq-q">
+          <span>{q.question}</span>
+          <span class="faq-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+        </summary>
+        <div class="faq-a"><p>{q.answer}</p></div>
+      </details>
+    </li>
+  ))}
+</ul>

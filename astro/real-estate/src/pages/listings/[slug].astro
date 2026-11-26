@@ -1,0 +1,321 @@
+---
+// A listing, laid out like a property portal's detail page:
+//  · breadcrumb;
+//  · top row on the site's 3-column grid — the photo stage over two columns (arrows, count, enlarge; Photos / Floor plan / Location tabs
+//    and a strip of thumbnails under it), and in the third column the address as the title, the short description, the facts with
+//    icons, the price, Save, Book a viewing and Mortgage advice, and the agent's phone;
+//  · body — Key features and folding sections (Further details, Property details, Floor plan and downloads, Mortgage, Location, Local
+//    life) and the agent band over two columns; in the third, a sticky card to pick a viewing day and time (it opens the contact form
+//    with the property, day and time filled in);
+//  · "You might also be interested in" (listing cards) and a valuation band.
+// On a phone everything stacks and a bar fixed at the foot repeats the price and the button. No Wix SEO item type exists for CMS pages,
+// so the page passes its own <title>.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ListingCard from "../../components/ListingCard.astro";
+import { getListings, getCategories, getAgents, getNeighborhoods, bySlug, imgSrc, gallery, paragraphs, addressLines, mapsEmbed, fmtDate, isNew, isReduced, pricePerSqft, toDate } from "../../lib/cms";
+import { money, RENT_SLUG, hc } from "../../lib/site";
+import { getChrome } from "../../lib/chrome";
+
+const [listings, cats, agents, hoods, { copy }] = await Promise.all([getListings(), getCategories(), getAgents(), getNeighborhoods(), getChrome()]);
+const band = copy.valueBand;
+const l = bySlug(listings, Astro.params.slug!);
+if (!l) return Astro.rewrite("/404");
+const cat = cats.find((c) => c._id === l.category);
+const agent = agents.find((a) => a._id === l.agent);
+const hood = hoods.find((n) => n._id === l.neighborhood);
+const similar = listings.filter((x) => x._id !== l._id && x.status !== "Sold" && (x.category === l.category || x.neighborhood === l.neighborhood)).slice(0, 3);
+const photos = [...new Set([l.image, ...gallery(l)].filter((x): x is string => !!x))];
+const big = photos.map((p) => imgSrc(p, 1600, 1200)), small = photos.map((p) => imgSrc(p, 320, 240));
+const open = l.status === "Available" || !l.status;
+const rent = cat?.slug === RENT_SLUG;
+const psf = !rent ? pricePerSqft(l) : 0;
+const lines = addressLines(l);
+const place = [l.street, l.city].filter(Boolean).join(", ") || l.title;
+const facts: [string, string][] = ([
+  ["Property type", l.type ?? ""], ["Status", l.status ?? ""], ["Bedrooms", l.bedrooms ? String(l.bedrooms) : ""], ["Bathrooms", l.bathrooms ? String(l.bathrooms) : ""],
+  ["Area", l.area ? `${l.area.toLocaleString("en-US")} sq ft` : ""], ["Lot size", l.lotSize ? `${l.lotSize.toLocaleString("en-US")} sq ft` : ""],
+  ["Year built", l.yearBuilt ? String(l.yearBuilt) : ""], ["Parking", l.parking ? `${l.parking} ${l.parking === 1 ? "space" : "spaces"}` : ""],
+  ["Price per sq ft", psf ? `${money(psf)}` : ""], ["Neighborhood", hood?.title ?? ""], ["Listed", fmtDate(l.listedDate)], ["Property ID", l.propertyId ?? ""],
+] as [string, string][]).filter(([, v]) => v);
+const ICON = {
+  type: "M3.5 10.5L12 4l8.5 6.5M5.5 9v10.5h13V9M10 19.5v-5h4v5",
+  bed: "M3 18.5V7M3 14.5h18v4M21 14.5v-2.5a2.5 2.5 0 0 0-2.5-2.5H11v5M6.5 12.25a1.75 1.75 0 1 0 0-.01",
+  bath: "M4 12h16v2.5a4.5 4.5 0 0 1-4.5 4.5h-7A4.5 4.5 0 0 1 4 14.5V12zM6.5 12V6.5A2.5 2.5 0 0 1 9 4h.5a2 2 0 0 1 2 2M7 19l-1 2M17 19l1 2",
+  area: "M4 4h6M4 4v6M20 20h-6M20 20v-6M4 4l6.5 6.5M20 20l-6.5-6.5M14 4h6v6M10 20H4v-6",
+};
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+const topFacts = [
+  l.type ? { icon: ICON.type, text: l.type } : null,
+  l.bedrooms ? { icon: ICON.bed, text: plural(l.bedrooms, "Bed", "Beds") } : null,
+  l.bathrooms ? { icon: ICON.bath, text: plural(l.bathrooms, "Bath", "Baths") } : null,
+  l.area ? { icon: ICON.area, text: `${l.area.toLocaleString("en-US")} sq.ft` } : null,
+].filter((x): x is { icon: string; text: string } => !!x);
+const features = (l.features ?? []).length ? l.features! : topFacts.map((f) => f.text);
+// Floor plan: a pastel placeholder image like the rest of the site (the last of the listing photos), until a real plan is uploaded.
+const planImg = photos.length ? imgSrc(photos[photos.length - 1], 1600, 1200) : "";
+const aimg = imgSrc(agent?.image, 320, 320);
+const tel = agent?.phone?.replace(/[^\d+]/g, "");
+// Mortgage estimate (sales only): 10% deposit, 25 years, 4.5% a year.
+const loan = Math.round((l.price ?? 0) * 0.9), mr = 0.045 / 12, nper = 25 * 12;
+const monthly = !rent && loan > 0 ? Math.round((loan * mr) / (1 - Math.pow(1 + mr, -nper))) : 0;
+const viewingHref = `/contact?property=${encodeURIComponent(l.title)}`;
+const ld = {
+  "@context": "https://schema.org", "@type": "RealEstateListing", name: l.title, description: (l.shortDescription ?? "").slice(0, 300),
+  datePosted: toDate(l.listedDate)?.toISOString().slice(0, 10), image: big.slice(0, 3),
+  offers: { "@type": "Offer", price: l.price, priceCurrency: "USD", availability: open ? "https://schema.org/InStock" : "https://schema.org/SoldOut" },
+  about: { "@type": "Residence", address: { "@type": "PostalAddress", streetAddress: l.street, addressLocality: l.city, addressRegion: l.state, postalCode: l.zip },
+    numberOfBedrooms: l.bedrooms || undefined, numberOfBathroomsTotal: l.bathrooms || undefined, floorSize: l.area ? { "@type": "QuantitativeValue", value: l.area, unitText: "sq ft" } : undefined },
+};
+const chev = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" /></svg>';
+const check = '<svg class="ben-check" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10.25" /><path d="M7.75 12.25l2.75 2.75 5.75-6" /></svg>';
+---
+<SiteLayout title={l.title}>
+  <article class="section lp pb-24 lg:pb-(--gutter)">
+    <div class="wrap">
+      <nav aria-label="Breadcrumb" class="meta" data-noprint><a href="/">Home</a><a href="/listings">Listings</a>{cat && <a href={`/listings?category=${cat.slug}`}>{cat.title}</a>}<span aria-current="page">{l.title}</span></nav>
+
+      <div class="lp-top">
+        <!-- Photo stage: photos / floor plan / map, switched by the tabs under it. -->
+        <div class="lp-stage-wrap" data-lp>
+          <div class="lp-stage media" data-view="photos">
+            <div class="badges">
+              {l.status && !open && l.status !== "Under offer" && <span class="status status-closed">{l.status}</span>}
+              {isNew(l) && <span class="status status-tag">New</span>}
+              {isReduced(l) && <span class="status status-tag">Price reduced</span>}
+            </div>
+            <div class="lp-pane lp-photos is-on" id="lp-panel-photos" role="tabpanel" aria-labelledby="lp-tab-photos">
+              {big.map((p, i) => i === 0 ? <img src={p} alt="" width="1600" height="1200" fetchpriority="high" class="is-on" /> : <img data-src={p} alt="" width="1600" height="1200" />)}
+              {big.length > 1 && <>
+                <button type="button" class="lc-nav lc-prev" data-step="-1" aria-label="Previous photo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></button>
+                <button type="button" class="lc-nav lc-next" data-step="1" aria-label="Next photo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg></button>
+              </>}
+              <span class="lp-count" aria-live="polite"><span data-cur>1</span> / {big.length}</span>
+              <button type="button" class="lp-zoom" data-zoom aria-label="View photo full screen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg></button>
+            </div>
+            {planImg && <div class="lp-pane lp-plan" id="lp-panel-plan" role="tabpanel" aria-labelledby="lp-tab-plan"><img data-src={planImg} alt="" width="1600" height="1200" /></div>}
+            <div class="lp-pane lp-map" id="lp-panel-map" role="tabpanel" aria-labelledby="lp-tab-map"><iframe data-src={mapsEmbed(l)} title={`Map of ${lines.join(", ")}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+          </div>
+          <div class="lp-tabs" role="tablist" aria-label="Media">
+            <button type="button" role="tab" id="lp-tab-photos" aria-controls="lp-panel-photos" tabindex="0" class="opt-pill is-on" aria-selected="true" data-tab="photos">Photos</button>
+            {planImg && <button type="button" role="tab" id="lp-tab-plan" aria-controls="lp-panel-plan" tabindex="-1" class="opt-pill" aria-selected="false" data-tab="plan">Floor Plan</button>}
+            <button type="button" role="tab" id="lp-tab-map" aria-controls="lp-panel-map" tabindex="-1" class="opt-pill" aria-selected="false" data-tab="map">Location</button>
+          </div>
+          {small.length > 1 && <ul class="lp-thumbs">{small.map((t, i) => <li><button type="button" class:list={["lp-thumb", i === 0 && "is-on"]} data-go={i} aria-label={`Show photo ${i + 1}`}><img src={t} alt="" width="320" height="240" loading="lazy" /></button></li>)}</ul>}
+          <dialog class="lp-full" aria-label={`${l.title}: photos`}>
+            <img alt="" />
+            <button type="button" class="lc-nav lc-prev" data-step="-1" aria-label="Previous photo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></button>
+            <button type="button" class="lc-nav lc-next" data-step="1" aria-label="Next photo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg></button>
+            <button type="button" class="icon-btn lp-close" data-close aria-label="Close"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg></button>
+          </dialog>
+        </div>
+
+        <!-- Summary -->
+        <div class="lp-info">
+          <h1 class="text-h2">{place}</h1>
+          {l.shortDescription && <p class="mt-4 text-muted-foreground">{l.shortDescription}</p>}
+          {topFacts.length > 0 && <ul class="facts mt-6">{topFacts.map((f) => <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={f.icon} /></svg>{f.text}</li>)}</ul>}
+          <p class="lp-price mt-8 font-display text-h3 font-semibold">{money(l.price)}{rent && <span class="font-sans text-sm font-normal text-muted-foreground"> / month</span>}{isReduced(l) && <s class="ml-2 font-sans text-sm font-normal text-muted-foreground">{money(l.priceWas)}</s>}</p>
+          {psf > 0 && <p class="mt-1 text-sm text-muted-foreground">{money(psf)} per sq ft</p>}
+          <div class="lp-actions mt-6" data-noprint>
+            <a href="#viewing" class="btn btn-primary">Book a Viewing</a>
+            {!rent && <a href="#mortgage" class="btn btn-secondary" data-open-section="mortgage">Mortgage Advice</a>}
+          </div>
+          {agent?.phone && <p class="mt-4 text-sm text-muted-foreground">Or call <a class="text-foreground underline underline-offset-4" href={`tel:${tel}`}>{agent.phone}</a> to speak with {agent.name}.</p>}
+        </div>
+      </div>
+
+      <div class="lp-body">
+        <div class="lp-main">
+          {features.length > 0 && (
+            <section class="lp-key">
+              <h2>Key Features</h2>
+              <ul class="lp-key-list">{features.map((f) => <li><Fragment set:html={check} />{f}</li>)}</ul>
+            </section>
+          )}
+
+          <ul class="faq-list lp-folds">
+            {l.description && (
+              <li><details class="faq-item" open><summary class="faq-q"><span>Further Details</span><span class="faq-icon" aria-hidden="true" set:html={chev} /></summary>
+                <div class="faq-a prose-site">{paragraphs(l.description).map((p) => <p>{p}</p>)}</div></details></li>
+            )}
+            {facts.length > 0 && (
+              <li><details class="faq-item"><summary class="faq-q"><span>Property Details</span><span class="faq-icon" aria-hidden="true" set:html={chev} /></summary>
+                <div class="faq-a"><dl class="lp-facts">{facts.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}</dl></div></details></li>
+            )}
+            {(planImg || l.floorPlanUrl || l.brochureUrl) && (
+              <li><details class="faq-item"><summary class="faq-q"><span>Floor Plan And Downloads</span><span class="faq-icon" aria-hidden="true" set:html={chev} /></summary>
+                <div class="faq-a">
+                  {planImg && <div class="media" data-ratio="4/3"><img src={planImg} alt="" width="1600" height="1200" loading="lazy" /></div>}
+                  {l.floorPlanDescription && <p id="lp-plan-desc">{l.floorPlanDescription}</p>}
+                  {(l.floorPlanUrl || l.brochureUrl) && <div class="mt-4 flex flex-wrap gap-3" data-noprint>
+                    {l.floorPlanUrl && <a class="link-btn" href={l.floorPlanUrl} target="_blank" rel="noopener noreferrer" download aria-describedby={l.floorPlanDescription ? "lp-plan-desc" : undefined}>Floor plan (PDF)</a>}
+                    {l.brochureUrl && <a class="link-btn" href={l.brochureUrl} target="_blank" rel="noopener noreferrer" download>Brochure (PDF)</a>}
+                  </div>}
+                </div></details></li>
+            )}
+            {monthly > 0 && (
+              <li id="mortgage"><details class="faq-item" data-section="mortgage"><summary class="faq-q"><span>Mortgage</span><span class="faq-icon" aria-hidden="true" set:html={chev} /></summary>
+                <div class="faq-a"><p>Estimated repayments from <strong class="text-foreground">{money(monthly)} / month</strong>, with a 10% deposit of {money(Math.round((l.price ?? 0) * 0.1))}, over 25 years at 4.5% a year. A guide only; speak to us for advice that fits you.</p>
+                <p class="mt-4"><a class="link-btn" href={`/contact?property=${encodeURIComponent(`${l.title} — mortgage advice`)}`}>Get Mortgage Advice</a></p></div></details></li>
+            )}
+            <li><details class="faq-item"><summary class="faq-q"><span>Location</span><span class="faq-icon" aria-hidden="true" set:html={chev} /></summary>
+              <div class="faq-a"><p>{lines.join(", ")}</p><iframe class="lp-mapbox" title={`Map of ${lines.join(", ")}`} src={mapsEmbed(l)} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div></details></li>
+            {hood && (
+              <li><details class="faq-item"><summary class="faq-q"><span>Local Life</span><span class="faq-icon" aria-hidden="true" set:html={chev} /></summary>
+                <div class="faq-a">{hood.description && <p>{hood.description}</p>}<p class="mt-4"><a class="link-btn" href={`/neighborhoods/${hood.slug}`}>About {hood.title}</a></p></div></details></li>
+            )}
+          </ul>
+
+          {agent && (
+            <section class="lp-agent bg-inverse">
+              {aimg && <div class="lp-agent-photo"><img src={aimg} alt="" width="320" height="320" loading="lazy" /></div>}
+              <div class="lp-agent-copy">
+                <h2>Interested In This Property?</h2>
+                <p class="mt-3">Talk to {agent.name}{agent.jobTitle ? `, ${agent.jobTitle}` : ""}.</p>
+                <div class="mt-6 flex flex-wrap gap-3">
+                  {agent.phone && <a class="btn btn-primary" href={`tel:${tel}`}>{agent.phone}</a>}
+                  {agent.email && <a class="btn btn-secondary" href={`mailto:${agent.email}`}>Email</a>}
+                </div>
+              </div>
+            </section>
+          )}
+        </div>
+
+        <aside class="lp-aside" aria-label="Book a viewing" data-noprint>
+          <div id="viewing" class="lp-aside-in">
+            <p class="font-display text-h3 font-semibold">{money(l.price)}{rent && <span class="font-sans text-sm font-normal text-muted-foreground"> / month</span>}</p>
+            <div class="bk mt-6" data-booking={l.title}>
+              <div class="bk-head">
+                <button type="button" class="bk-arrow" data-week="-1" aria-label="Previous week"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></button>
+                <p class="bk-month" aria-live="polite" data-month></p>
+                <button type="button" class="bk-arrow" data-week="1" aria-label="Next week"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg></button>
+              </div>
+              <div class="bk-days" role="group" aria-label="Day" data-days></div>
+              <div class="bk-times" data-times></div>
+              <div class="bk-foot">
+                <button type="button" class="bk-next" data-week="1">Next Week</button>
+                <a href={`/contact?property=${encodeURIComponent(l.title)}`} class="btn btn-primary" data-book aria-disabled="true">Book a Viewing</a>
+              </div>
+            </div>
+            {!rent && <a href="#mortgage" class="btn btn-secondary mt-3 w-full" data-open-section="mortgage">Mortgage Advice</a>}
+          </div>
+        </aside>
+      </div>
+    </div>
+  </article>
+
+  {similar.length > 0 && (
+    <section class="section">
+      <div class="wrap">
+        <h2 class="text-h2">You Might Also Be Interested In</h2>
+        <ul class="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{similar.map((x) => <li><ListingCard listing={x} categories={cats} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  <section class="section" data-noprint>
+    <div class="wrap">
+      <div class="lp-value">
+        <h2>{hc(band?.title ?? "Get a Free Valuation")}</h2>
+        {band?.body && <p class="mt-4">{band.body}</p>}
+        <a href="/sell#valuation" class="btn btn-primary mt-8">{band?.ctaLabel ?? "Get a Free Valuation"}</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="viewing-bar lg:hidden" data-noprint>
+    <p class="font-display text-lg font-semibold">{money(l.price)}{rent && <span class="font-sans text-sm font-normal text-muted-foreground"> / month</span>}</p>
+    <a href="#viewing" class="btn btn-primary btn-sm">Book a Viewing</a>
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} is:inline></script>
+</SiteLayout>
+
+<script>
+  const root = document.querySelector<HTMLElement>("[data-lp]");
+  if (root) {
+    const stage = root.querySelector<HTMLElement>(".lp-stage")!;
+    const imgs = [...root.querySelectorAll<HTMLImageElement>(".lp-photos img")];
+    const thumbs = [...root.querySelectorAll<HTMLElement>(".lp-thumb")];
+    const cur = root.querySelector("[data-cur]");
+    const full = root.querySelector<HTMLDialogElement>(".lp-full")!;
+    const fullImg = full.querySelector("img")!;
+    let i = 0;
+    const load = (el?: Element | null) => { if (el && (el as HTMLImageElement).dataset.src && !(el as HTMLImageElement).src) (el as HTMLImageElement).src = (el as HTMLImageElement).dataset.src!; };
+    const show = (n: number) => {
+      i = (n + imgs.length) % imgs.length;
+      [i, i + 1, i - 1].forEach((k) => load(imgs[(k + imgs.length) % imgs.length]));
+      imgs.forEach((x, k) => x.classList.toggle("is-on", k === i));
+      thumbs.forEach((t, k) => t.classList.toggle("is-on", k === i));
+      thumbs[i]?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      if (cur) cur.textContent = String(i + 1);
+      if (full.open) fullImg.src = imgs[i].dataset.src || imgs[i].src;
+    };
+    root.addEventListener("click", (e) => {
+      const t = e.target as Element;
+      const step = t.closest<HTMLElement>("[data-step]"); if (step) return show(i + Number(step.dataset.step));
+      const go = t.closest<HTMLElement>("[data-go]"); if (go) { setTab("photos"); return show(Number(go.dataset.go)); }
+      const tab = t.closest<HTMLElement>("[data-tab]"); if (tab) return setTab(tab.dataset.tab!);
+      if (t.closest("[data-zoom]")) { fullImg.src = imgs[i].dataset.src || imgs[i].src; full.showModal(); return; }
+      if (t.closest("[data-close]") || t === full) full.close();
+    });
+    // Media tabs (APG tabs, automatic activation): one Tab stop; Left / Right / Home / End move between tabs and show their panel.
+    root.querySelector(".lp-tabs")?.addEventListener("keydown", (e) => {
+      const ke = e as KeyboardEvent; const tabs = [...root.querySelectorAll<HTMLElement>("[data-tab]")];
+      const i = tabs.indexOf(document.activeElement as HTMLElement); if (i < 0) return;
+      const n = ke.key === "ArrowRight" ? (i + 1) % tabs.length : ke.key === "ArrowLeft" ? (i - 1 + tabs.length) % tabs.length : ke.key === "Home" ? 0 : ke.key === "End" ? tabs.length - 1 : -1;
+      if (n < 0) return; ke.preventDefault(); setTab(tabs[n].dataset.tab!); tabs[n].focus();
+    });
+    full.addEventListener("keydown", (e) => { if (e.key === "ArrowRight") show(i + 1); if (e.key === "ArrowLeft") show(i - 1); });
+    const setTab = (name: string) => {
+      stage.dataset.view = name;
+      root.querySelectorAll<HTMLElement>("[data-tab]").forEach((b) => { const on = b.dataset.tab === name; b.classList.toggle("is-on", on); b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; });
+      root.querySelectorAll<HTMLElement>(".lp-pane").forEach((p) => p.classList.toggle("is-on", p.classList.contains(`lp-${name === "photos" ? "photos" : name}`)));
+      const pane = root.querySelector(`.lp-${name}`);
+      pane?.querySelectorAll<HTMLElement>("[data-src]").forEach((el) => { if (!el.getAttribute("src")) el.setAttribute("src", el.dataset.src!); });
+    };
+  }
+  // Mortgage Advice opens the Mortgage section.
+  document.querySelectorAll("[data-open-section]").forEach((a) => a.addEventListener("click", () => { const d = document.querySelector<HTMLDetailsElement>(`[data-section="${(a as HTMLElement).dataset.openSection}"]`); if (d) d.open = true; }));
+  // Viewing calendar: one week at a time (Mon–Sun); weekends and days up to today are closed; six viewing times a day in one list.
+  const bk = document.querySelector<HTMLElement>("[data-booking]");
+  if (bk) {
+    const DAY = 864e5, today = new Date(); today.setHours(0, 0, 0, 0);
+    const monday = (d: Date) => { const x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+    const first = monday(today);
+    let week = 0, pick: Date | null = null, time = "";
+    const slots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:30 PM"];
+    const open = (d: Date) => d > today && d.getDay() !== 0 && d.getDay() !== 6;
+    const days = bk.querySelector("[data-days]")!, times = bk.querySelector("[data-times]")!, month = bk.querySelector("[data-month]")!;
+    const prev = bk.querySelector<HTMLButtonElement>('.bk-head [data-week="-1"]')!;
+    const book = bk.querySelector<HTMLAnchorElement>("[data-book]")!;
+    const fmt = (d: Date, o: Intl.DateTimeFormatOptions) => d.toLocaleDateString("en-US", o);
+    const paintBook = () => {
+      const ok = !!(pick && time);
+      book.setAttribute("aria-disabled", String(!ok));
+      book.href = `/contact?property=${encodeURIComponent(bk.dataset.booking + (ok ? ` — viewing ${fmt(pick!, { weekday: "short", day: "numeric", month: "short" })}, ${time}` : ""))}`;
+    };
+    const paintTimes = () => {
+      times.innerHTML = pick ? `<p class="bk-group">Available times</p><div class="bk-slots">${slots.map((t) => `<button type="button" class="bk-slot${t === time ? " is-on" : ""}" aria-pressed="${t === time}" data-time="${t}">${t}</button>`).join("")}</div>` : `<p class="bk-group">No open days this week.</p>`;
+      paintBook();
+    };
+    const paint = () => {
+      const start = new Date(first.getTime() + week * 7 * DAY);
+      const list = Array.from({ length: 7 }, (_, i) => new Date(start.getTime() + i * DAY));
+      if (!pick || !list.some((d) => +d === +pick!)) { pick = list.find(open) ?? null; time = ""; }
+      month.textContent = fmt(start, { month: "long", year: "numeric" });
+      prev.disabled = week === 0;
+      days.innerHTML = list.map((d) => `<button type="button" class="bk-day${pick && +d === +pick ? " is-on" : ""}" ${open(d) ? "" : "disabled"} aria-pressed="${!!pick && +d === +pick}" data-day="${+d}"><span>${fmt(d, { weekday: "short" })}</span><b>${d.getDate()}</b></button>`).join("");
+      paintTimes();
+    };
+    // Days and times are re-rendered on each pick: put keyboard focus back on the button that was chosen.
+    const refocus = (sel: string) => bk.querySelector<HTMLElement>(sel)?.focus();
+    bk.addEventListener("click", (e) => {
+      const t = e.target as Element;
+      const w = t.closest<HTMLElement>("[data-week]"); if (w) { week = Math.max(0, week + Number(w.dataset.week)); paint(); if (w.isConnected && !(w as HTMLButtonElement).disabled) return; return refocus(".bk-head [data-week=\"1\"]"); }
+      const d = t.closest<HTMLElement>("[data-day]"); if (d) { pick = new Date(Number(d.dataset.day)); time = ""; paint(); return refocus(`[data-day="${d.dataset.day}"]`); }
+      const s = t.closest<HTMLElement>("[data-time]"); if (s) { time = s.dataset.time!; paintTimes(); return refocus(`[data-time="${s.dataset.time}"]`); }
+      if (t.closest("[data-book]") && book.getAttribute("aria-disabled") === "true") { e.preventDefault(); times.querySelector<HTMLElement>(".bk-slot")?.focus(); }
+    });
+    paint();
+  }
+</script>

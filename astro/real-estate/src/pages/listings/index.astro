@@ -1,0 +1,219 @@
+---
+// /listings: one toolbar row — the search bar (location, keyword, property ID), the Filters button that opens the filters popup, the
+// sort — then the result count.
+// The popup (a side sheet, as on large agency sites) holds: area (neighborhood), looking to (category; switches the price list between sale
+// prices and monthly rent), price range, minimum bedrooms, minimum bathrooms, property type, must haves, and "include sold and rented".
+// The Filters button shows how many of those are set. The URL is the state
+// (?q=&category=&neighborhood=&type=&beds=&baths=&min=&max=&must=&status=&sort=&page=): one plain GET form, so a filtered page is shareable.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ListingCard from "../../components/ListingCard.astro";
+import Pagination from "../../components/Pagination.astro";
+import { getChrome } from "../../lib/chrome";
+import { getListings, getCategories, getNeighborhoods, queryListings, distinct, LISTING_SORTS, MUST_HAVES, type SortKey, type MustHave } from "../../lib/cms";
+import { RENT_SLUG, SALE_PRICES, RENT_PRICES, money } from "../../lib/site";
+
+const { copy } = await getChrome();
+const [listings, cats, hoods] = await Promise.all([getListings(), getCategories(), getNeighborhoods()]);
+const sp = Astro.url.searchParams;
+const q = (sp.get("q") ?? "").trim().slice(0, 80);
+const cat = cats.find((c) => c.slug === sp.get("category"));
+const hood = hoods.find((n) => n.slug === sp.get("neighborhood"));
+const types = distinct(listings.map((l) => l.type)), statuses = distinct(listings.map((l) => l.status));
+const type = types.includes(sp.get("type") ?? "") ? sp.get("type")! : "";
+const rawStatus = sp.get("status") ?? "";
+const status = rawStatus === "any" || statuses.includes(rawStatus) ? rawStatus : "";
+const num = (k: string) => { const v = Number(sp.get(k)); return Number.isFinite(v) && v > 0 ? v : 0; };
+const beds = num("beds"), baths = num("baths"), min = num("min"), max = num("max");
+const must = sp.getAll("must").filter((k): k is MustHave => MUST_HAVES.some((m) => m.key === k));
+const sort = (LISTING_SORTS.some((s) => s.key === sp.get("sort")) ? sp.get("sort") : "recommended") as SortKey;
+const r = queryListings(listings, { q, category: cat?._id, neighborhood: hood?._id, type, status, beds, baths, min, max, must, sort, page: Number(sp.get("page")) || 1 }, hoods);
+const href = (page?: number) => {
+  const u = new URLSearchParams();
+  const v: Record<string, string | number | undefined> = { q, category: cat?.slug, neighborhood: hood?.slug, type, status, beds, baths, min, max, sort: sort === "recommended" ? undefined : sort, page };
+  for (const [k, val] of Object.entries(v)) if (val) u.set(k, String(val));
+  for (const m of must) u.append("must", m);
+  const s = u.toString();
+  return `/listings${s ? `?${s}` : ""}`;
+};
+// The badge on the Filters button: one per filter set in the popup (the price range counts once).
+const active = [cat, hood, type, beds, baths, min || max, status].filter(Boolean).length + must.length;
+const filtered = !!(q || active);
+const isRent = cat?.slug === RENT_SLUG;
+const prices = (list: number[], cur: number) => (cur && !list.includes(cur) ? [...list, cur].sort((a, b) => a - b) : list);
+const priceList = isRent ? RENT_PRICES : SALE_PRICES;
+const label = (n: number, rent: boolean) => `${money(n)}${rent ? " / month" : ""}`;
+const c = copy.listings;
+---
+<SiteLayout>
+  <section class="section">
+    <div class="wrap">
+      <div class="page-top">
+      <h1 class="text-h2">{cat ? `${cat.title} Listings` : "All Listings"}</h1>
+      {c?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{c.body}</p>}
+      </div>
+
+      <form id="lf" method="get" action="/listings" role="search" class="page-tools">
+        <div class="page-tools-row">
+          <div class="page-search relative min-w-0">
+            <label for="l-q" class="sr-only">Location, keyword or property ID</label>
+            <input id="l-q" name="q" type="search" value={q} class="field list-search pr-14" placeholder="City, ZIP code, neighborhood, address or ID" enterkeyhint="search" />
+            <button type="submit" aria-label="Search" class="list-search-btn absolute right-1 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center text-foreground transition-opacity hover:opacity-60">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.25" stroke="currentColor" stroke-width="1.75" /><path d="M12 12l4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /></svg>
+            </button>
+          </div>
+          <div class="page-tools-under">
+          <button type="button" class="btn btn-secondary shrink-0" data-open-filters aria-haspopup="dialog" aria-controls="filters">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+            Filters{active > 0 && <span class="count-badge" aria-label={`${active} active`}>{active}</span>}
+          </button>
+          <div class="shrink-0">
+            <label for="l-sort" class="sr-only">Sort by</label>
+            <select id="l-sort" name="sort" class="field list-sort" data-autosubmit>{LISTING_SORTS.map((s) => <option value={s.key} selected={s.key === sort}>{`Sort: ${s.label}`}</option>)}</select>
+          </div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <p class="page-count text-sm text-muted-foreground" role="status">{r.total} {r.total === 1 ? "listing" : "listings"}{filtered && <> · <a class="underline underline-offset-4 transition-opacity hover:opacity-60" href="/listings">Clear filters</a></>}</p>
+        </div>
+
+        <dialog id="filters" class="sheet" aria-labelledby="filters-title">
+          <div class="sheet-head">
+            <h2 id="filters-title" class="text-h3">Filters</h2>
+            <button type="button" class="icon-btn" data-close-filters aria-label="Close filters">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+            </button>
+          </div>
+
+          <div class="sheet-body">
+            <div class="fgroup">
+              <label for="f-hood" class="fgroup-title">Area</label>
+              <select id="f-hood" name="neighborhood" class="field"><option value="">All neighborhoods</option>{hoods.map((n) => <option value={n.slug} selected={n._id === hood?._id}>{n.title}</option>)}</select>
+            </div>
+
+            <fieldset class="fgroup">
+              <legend class="fgroup-title">Looking To</legend>
+              <div class="opts">
+                <label class="opt"><input type="radio" name="category" value="" checked={!cat} /><span>Any</span></label>
+                {cats.map((x) => <label class="opt"><input type="radio" name="category" value={x.slug} checked={x._id === cat?._id} data-rent={x.slug === RENT_SLUG ? "" : undefined} /><span>{x.title}</span></label>)}
+              </div>
+            </fieldset>
+
+            <fieldset class="fgroup">
+              <legend class="fgroup-title">Price <span class="font-normal text-muted-foreground" data-price-unit>{isRent ? "per month" : ""}</span></legend>
+              <div class="grid grid-cols-2 gap-3">
+                <div><label for="f-min" class="sr-only">Minimum price</label>
+                  <select id="f-min" name="min" class="field" data-price><option value="">No minimum price</option>{prices(priceList, min).map((n) => <option value={n} selected={n === min}>{label(n, isRent)}</option>)}</select></div>
+                <div><label for="f-max" class="sr-only">Maximum price</label>
+                  <select id="f-max" name="max" class="field" data-price><option value="">No maximum price</option>{prices(priceList, max).map((n) => <option value={n} selected={n === max}>{label(n, isRent)}</option>)}</select></div>
+              </div>
+              <p class="field-error hidden" data-price-error>The minimum is above the maximum.</p>
+            </fieldset>
+
+            <fieldset class="fgroup">
+              <legend class="fgroup-title">Minimum No. Of Bedrooms</legend>
+              <div class="opts">
+                <label class="opt"><input type="radio" name="beds" value="" checked={!beds} /><span>Any</span></label>
+                {[1, 2, 3, 4, 5].map((n) => <label class="opt"><input type="radio" name="beds" value={n} checked={beds === n} /><span>{n === 5 ? "5+" : n}</span></label>)}
+              </div>
+            </fieldset>
+
+            <fieldset class="fgroup">
+              <legend class="fgroup-title">Minimum No. Of Bathrooms</legend>
+              <div class="opts">
+                <label class="opt"><input type="radio" name="baths" value="" checked={!baths} /><span>Any</span></label>
+                {[1, 2, 3, 4].map((n) => <label class="opt"><input type="radio" name="baths" value={n} checked={baths === n} /><span>{n === 4 ? "4+" : n}</span></label>)}
+              </div>
+            </fieldset>
+
+            {types.length > 0 && (
+              <fieldset class="fgroup">
+                <legend class="fgroup-title">Property Types</legend>
+                <div class="opts">
+                  <label class="opt"><input type="radio" name="type" value="" checked={!type} /><span>Any</span></label>
+                  {types.map((t) => <label class="opt"><input type="radio" name="type" value={t} checked={t === type} /><span>{t}</span></label>)}
+                </div>
+              </fieldset>
+            )}
+
+            <fieldset class="fgroup">
+              <legend class="fgroup-title">Must Haves</legend>
+              <div class="grid gap-1">
+                {MUST_HAVES.map((m) => <label class="check"><input type="checkbox" name="must" value={m.key} checked={must.includes(m.key)} /><span>{m.label}</span></label>)}
+              </div>
+            </fieldset>
+
+            <fieldset class="fgroup">
+              <legend class="sr-only">Status</legend>
+              <label class="check"><input type="checkbox" name="status" value="any" checked={status === "any"} /><span>Include sold and rented</span></label>
+              {status && status !== "any" && <input type="hidden" name="status" value={status} />}
+            </fieldset>
+          </div>
+
+          <div class="sheet-foot">
+            <button type="button" class="link-btn" data-clear-filters>Clear all</button>
+            <button type="submit" class="btn btn-primary flex-1">Apply</button>
+          </div>
+        </dialog>
+      </form>
+
+      {r.rows.length > 0 ? (
+        <ul class="mt-6 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{r.rows.map((l) => <li><ListingCard level={2} listing={l} categories={cats} /></li>)}</ul>
+      ) : (
+        <div class="note mt-6"><strong>No listings match.</strong> Widen the price range, include sold and rented listings, or <a class="underline underline-offset-4" href="/listings">clear the filters</a>.</div>
+      )}
+      <div class="mt-12"><Pagination page={r.page} pages={r.pages} href={(n) => href(n > 1 ? n : undefined)} /></div>
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ SALE: SALE_PRICES, RENT: RENT_PRICES }}>
+    // The filters popup: a modal side sheet. Opens from the Filters button; closes on ×, Escape, or a click on the backdrop.
+    // "Looking to" swaps the price list (sale prices or monthly rent); empty fields are dropped from the URL on Apply.
+    (function () {
+      var form = document.getElementById("lf"), dlg = document.getElementById("filters");
+      document.querySelector("[data-open-filters]").addEventListener("click", function () { dlg.showModal(); });
+      dlg.querySelector("[data-close-filters]").addEventListener("click", function () { dlg.close(); });
+      dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
+
+      var fmt = function (n) { return "$" + n.toLocaleString("en-US"); };
+      var selMin = document.getElementById("f-min"), selMax = document.getElementById("f-max");
+      var unit = dlg.querySelector("[data-price-unit]"), err = dlg.querySelector("[data-price-error]");
+      function fill(sel, list, rent, empty) {
+        sel.innerHTML = "";
+        sel.add(new Option(empty, ""));
+        list.forEach(function (n) { sel.add(new Option(fmt(n) + (rent ? " / month" : ""), String(n))); });
+      }
+      dlg.querySelectorAll('input[name="category"]').forEach(function (r) {
+        r.addEventListener("change", function () {
+          var rent = r.hasAttribute("data-rent");
+          fill(selMin, rent ? RENT : SALE, rent, "No minimum price");
+          fill(selMax, rent ? RENT : SALE, rent, "No maximum price");
+          unit.textContent = rent ? "per month" : "";
+          check();
+        });
+      });
+      function check() {
+        var a = Number(selMin.value), b = Number(selMax.value), bad = a && b && a > b;
+        err.classList.toggle("hidden", !bad);
+        selMin.setAttribute("aria-invalid", bad ? "true" : "false");
+      }
+      selMin.addEventListener("change", check); selMax.addEventListener("change", check);
+
+      dlg.querySelector("[data-clear-filters]").addEventListener("click", function () {
+        dlg.querySelectorAll('input[type="radio"][value=""]').forEach(function (r) { r.checked = true; r.dispatchEvent(new Event("change")); });
+        dlg.querySelectorAll('input[type="checkbox"]').forEach(function (c) { c.checked = false; });
+        dlg.querySelectorAll("select").forEach(function (s) { s.value = ""; });
+        check();
+      });
+
+      form.addEventListener("submit", function (e) {
+        var a = Number(selMin.value), b = Number(selMax.value);
+        if (a && b && a > b) { e.preventDefault(); check(); return; }
+        form.querySelectorAll("input[name], select[name]").forEach(function (el) {
+          if ((el.type === "radio" || el.type === "checkbox") ? (el.checked && el.value === "") : el.value === "") el.disabled = true;
+        });
+        var s = form.querySelector('[name="sort"]'); if (s.value === "recommended") s.disabled = true;
+      });
+    })();
+  </script>
+</SiteLayout>

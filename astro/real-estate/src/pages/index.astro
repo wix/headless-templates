@@ -1,0 +1,364 @@
+---
+// Home: the listings are the star. In order: hero with a listing search (location or ID, category, type, bedrooms, max price) and one button,
+// Contact Us; Browse by Category (Buy, Rent, Commercial, with counts); Featured Listings; Benefits; Neighborhoods; Agents; Recently Sold;
+// About Us; FAQ; the closing call
+// to action (the layout adds it). Backgrounds alternate grey / plain. Contact details live in the footer and on /contact only.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import SectionHead from "../components/SectionHead.astro";
+import ListingCard from "../components/ListingCard.astro";
+import AgentCard from "../components/AgentCard.astro";
+import NeighborhoodCard from "../components/NeighborhoodCard.astro";
+import FaqList from "../components/FaqList.astro";
+import GoogleRating from "../components/GoogleRating.astro";
+import { getChrome } from "../lib/chrome";
+import { getListings, getAgents, getNeighborhoods, getCategories, distinct, imgSrc, paragraphs, isActive, isClosed } from "../lib/cms";
+import { getBenefits, getFaq } from "../lib/content";
+import { RENT_SLUG, SALE_PRICES, RENT_PRICES, hc } from "../lib/site";
+
+const [{ copy }, listings, agents, hoods, cats, benefits, faq] = await Promise.all([
+  getChrome(), getListings(), getAgents(), getNeighborhoods(), getCategories(), getBenefits(), getFaq(),
+]);
+const hero = copy.hero, about = copy.about;
+// Listings per neighborhood, shown in a neighborhood's name pill on hover.
+const counts: Record<string, number> = {}; for (const l of listings) if (l.neighborhood) counts[l.neighborhood] = (counts[l.neighborhood] ?? 0) + 1;
+// The hero title split into letters: each one drops out of view on scroll (see the hero script).
+const heroTitle = hc(hero?.title ?? "Write A Title Here");
+const active = listings.filter(isActive);
+// Home listing sections: Buy and Rent, six active listings each, featured ones first.
+const byCat = ["buy", RENT_SLUG].map((slug) => cats.find((c) => c.slug === slug)).filter((c): c is NonNullable<typeof c> => !!c)
+  .map((c) => ({ cat: c, rows: active.filter((l) => l.category === c._id).sort((a, b) => Number(!!b.featured) - Number(!!a.featured)).slice(0, 6) }));
+const sold = listings.filter(isClosed).slice(0, 3);
+const types = distinct(listings.map((l) => l.type));
+// About: its paragraphs (body, then bodySecondary split on blank lines), shared out between the two text columns.
+const aboutParas = [about?.body, ...paragraphs(about?.bodySecondary)].filter((x): x is string => !!x);
+const aboutImg = imgSrc(about?.image, 2400, 1350), heroImg = imgSrc(hero?.image, 2400, 1350);
+// The hero's right caption: the city line of the business address (footer row), as the reference's location caption.
+const city = (copy.footer?.body ?? "").split("\n").filter(Boolean).at(-1) ?? "";
+// About: the title split around the photo ("About [photo] Us"); a one-word title sits left of it.
+const aboutWords = (about?.title ?? "").trim().split(/\s+/);
+const aboutLeft = aboutWords.slice(0, Math.max(1, Math.ceil(aboutWords.length / 2))).join(" ");
+const aboutRight = aboutWords.slice(Math.max(1, Math.ceil(aboutWords.length / 2))).join(" ");
+// Where each neighborhood sits on the map stage (left %, top %), a loose scatter like a pinned board.
+const HM_POS: [number, number][] = [[6, 8], [29, 30], [52, 6], [76, 24], [14, 60], [44, 64], [70, 62]];
+const agentImgs = agents.slice(0, 5).map((a) => imgSrc(a.image, 1200, 1200));
+const count = (id: string) => active.filter((l) => l.category === id).length;
+const hoodCount = (id: string) => active.filter((l) => l.neighborhood === id).length;
+---
+<SiteLayout>
+  <!-- Hero: the title as an oversized wordmark across the page, a hairline, then one row: the intro left, the listing search centred
+       (it runs down over the photo below), the Google rating right; then the photo full bleed. -->
+  <section class="wm-hero">
+    <div class="wrap">
+      <h1 class="wordmark" data-fit aria-label={heroTitle}><span class="wm-mask" aria-hidden="true">{[...heroTitle].map((ch) => <span class="wm-ch">{ch === " " ? "\u00a0" : ch}</span>)}</span></h1>
+      <div class="wm-top">
+        {hero?.body && <div class="wm-intro"><p class="mark">{hero.body}</p></div>}
+        <form method="get" action="/listings" role="search" class="wm-form grid gap-3 rounded-card p-4 sm:grid-cols-2 sm:p-5">
+            <div class="sm:col-span-2"><label for="h-q" class="field-label">Location or property ID</label>
+              <input id="h-q" name="q" type="search" class="field" placeholder="City, ZIP code, neighborhood or ID" enterkeyhint="search" /></div>
+            <div><label for="h-cat" class="field-label">Looking to</label>
+              <select id="h-cat" name="category" class="field"><option value="">Buy, rent or commercial</option>{cats.map((c) => <option value={c.slug}>{c.title}</option>)}</select></div>
+            <div><label for="h-type" class="field-label">Property type</label>
+              <select id="h-type" name="type" class="field"><option value="">Any type</option>{types.map((t) => <option value={t}>{t}</option>)}</select></div>
+            <div class="hs-row sm:col-span-2">
+              <div><label for="h-beds" class="field-label">Bedrooms</label>
+                <select id="h-beds" name="beds" class="field"><option value="">Any</option>{[1, 2, 3, 4].map((n) => <option value={n}>{n}+</option>)}</select></div>
+              <!-- Price: one track with two handles (minimum and maximum). The ends mean "no limit"; the steps follow "Looking to"
+                   (sale prices, or monthly rent when Rent is picked). The handles write the hidden min / max fields. -->
+              <div class="price-range" data-price-range data-sale={JSON.stringify(SALE_PRICES)} data-rent={JSON.stringify(RENT_PRICES)} data-rent-slug={RENT_SLUG}>
+                <div class="flex items-baseline justify-between gap-3"><span class="field-label" id="h-price-label">Price</span><output class="pr-out" for="h-pmin h-pmax" aria-live="polite">Any price</output></div>
+                <div class="pr-track">
+                  <span class="pr-fill"></span>
+                  <span class="pr-tip" data-tip="lo" aria-hidden="true"></span><span class="pr-tip" data-tip="hi" aria-hidden="true"></span>
+                  <input id="h-pmin" type="range" min="0" max={SALE_PRICES.length + 1} step="1" value="0" aria-label="Minimum price" />
+                  <input id="h-pmax" type="range" min="0" max={SALE_PRICES.length + 1} step="1" value={SALE_PRICES.length + 1} aria-label="Maximum price" />
+                </div>
+                <input type="hidden" name="min" value="" /><input type="hidden" name="max" value="" />
+              </div>
+              <button type="submit" class="btn btn-primary hs-submit">
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.25" stroke="currentColor" stroke-width="1.75" /><path d="M12 12l4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" /></svg>
+                Search
+              </button>
+            </div>
+          </form>
+        <GoogleRating score={copy.rating?.title} count={copy.rating?.body} compact />
+      </div>
+    </div>
+    <script is:inline>
+      // Hero on scroll: the title shrinks smoothly to 40% (it stays in the flow, so the content under it rises with it) while its letters
+      // drop out (the search card keeps its colour). Off with reduced motion.
+      (function () {
+        var h = document.querySelector(".wm-hero .wordmark"); if (!h || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        var MIN = 0.4, raf = 0, chars = h.querySelectorAll(".wm-ch");
+        var row = document.querySelector(".wm-hero .wm-top"), card = null;
+        function update() {
+          raf = 0;
+          var range = Math.max(320, innerHeight * 0.6), p = Math.min(1, Math.max(0, scrollY / range));
+          var e = p * p * (3 - 2 * p);   // smoothstep: eases in and out
+          h.style.setProperty("--shrink", (1 - (1 - MIN) * e).toFixed(4));
+          // Letters drop down out of the line's mask from both ends at once toward the middle, starting with the first pixel of scroll
+          // and done within the first ~40% of the shrink run (about a quarter of a screen); scrolling back lifts them up again.
+          var lp = Math.min(1, Math.max(0, p / 0.4)), n = chars.length, mid = (n - 1) / 2, maxD = Math.floor(mid), span = 0.5;
+          var step = maxD > 0 ? (1 - span) / maxD : 0;
+          for (var i = 0; i < n; i++) {
+            var d = Math.min(i, n - 1 - i);   // distance from the nearer end: the two outer letters go first, the middle ones last
+            var t = Math.min(1, Math.max(0, (lp - d * step) / span)); t = t * t * (3 - 2 * t);
+            chars[i].style.transform = t ? "translateY(" + (t * 105).toFixed(2) + "%)" : "";
+          }
+        }
+        addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+        addEventListener("resize", update);
+        function start() { card = row && row.querySelector(".wm-form"); update(); }
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+      })();
+    </script>
+    <script is:inline>
+      // Hero price range: two handles on one track. Step 0 = no minimum, the last step = no maximum; between them the price list.
+      (function () {
+        var box = document.querySelector("[data-price-range]"); if (!box) return;
+        var form = box.closest("form"), lo = box.querySelector("#h-pmin"), hi = box.querySelector("#h-pmax");
+        var fill = box.querySelector(".pr-fill"), out = box.querySelector(".pr-out");
+        var minF = form.querySelector('input[name="min"]'), maxF = form.querySelector('input[name="max"]');
+        var tipLo = box.querySelector('[data-tip="lo"]'), tipHi = box.querySelector('[data-tip="hi"]');
+        // While a handle is in use (pressed, dragged or moved by keyboard) both values show over the handles; they fade a moment after.
+        var hideT; function busy() { clearTimeout(hideT); box.classList.add("is-busy"); } function idle() { clearTimeout(hideT); hideT = setTimeout(function () { box.classList.remove("is-busy"); }, 900); }
+        [lo, hi].forEach(function (el) {
+          el.addEventListener("pointerdown", busy); el.addEventListener("input", function () { busy(); if (!el.matches(":active")) idle(); });
+          el.addEventListener("pointerup", idle); el.addEventListener("pointercancel", idle); el.addEventListener("blur", idle);
+          el.addEventListener("keydown", function (e) { if (/Arrow|Page|Home|End/.test(e.key)) busy(); }); el.addEventListener("keyup", idle);
+        });
+        var SALE = JSON.parse(box.dataset.sale), RENT = JSON.parse(box.dataset.rent), list = SALE, rent = false;
+        function short(n) { return n >= 1e6 ? "$" + (n / 1e6).toFixed(n % 1e6 ? 1 : 0).replace(/\.0$/, "") + "M" : n >= 1e4 ? "$" + Math.round(n / 1e3) + "K" : "$" + n.toLocaleString("en-US"); }
+        function sync(moved) {
+          var top = list.length + 1, a = +lo.value, b = +hi.value;
+          if (a > b - 1) { if (moved === lo) { a = b - 1; lo.value = a; } else { b = a + 1; hi.value = b; } }
+          lo.style.zIndex = a >= top - 1 ? 5 : 3;   // the minimum handle stays reachable when both sit at the right end
+          var t = 20, pa = a / top, pb = b / top;   // the handle (20px) travels the track minus its own width
+          fill.style.left = "calc(" + (pa * 100) + "% + " + (t / 2 - pa * t) + "px)"; fill.style.right = "calc(" + ((1 - pb) * 100) + "% + " + (t / 2 - (1 - pb) * t) + "px)";
+          tipLo.style.left = "calc(" + (pa * 100) + "% + " + (t / 2 - pa * t) + "px)"; tipHi.style.left = "calc(" + (pb * 100) + "% + " + (t / 2 - pb * t) + "px)";
+          minF.value = a > 0 ? list[a - 1] : ""; maxF.value = b < top ? list[b - 1] : "";
+          var unit = rent ? " / mo" : "";
+          tipLo.textContent = minF.value ? short(+minF.value) : "No min"; tipHi.textContent = maxF.value ? short(+maxF.value) : "No max";
+          out.textContent = !minF.value && !maxF.value ? "Any price" : !maxF.value ? short(+minF.value) + "+" + unit : !minF.value ? "Up to " + short(+maxF.value) + unit : short(+minF.value) + " – " + short(+maxF.value) + unit;
+          lo.setAttribute("aria-valuetext", minF.value ? short(+minF.value) : "No minimum"); hi.setAttribute("aria-valuetext", maxF.value ? short(+maxF.value) : "No maximum");
+          // Each handle exposes only the range it can actually reach given the other handle.
+          lo.setAttribute("aria-valuemin", "0"); lo.setAttribute("aria-valuemax", String(b - 1)); hi.setAttribute("aria-valuemin", String(a + 1)); hi.setAttribute("aria-valuemax", String(top));
+        }
+        function setList(isRent) { rent = isRent; list = isRent ? RENT : SALE; var top = list.length + 1; lo.max = hi.max = top; lo.value = 0; hi.value = top; sync(); }
+        lo.addEventListener("input", function () { sync(lo); }); hi.addEventListener("input", function () { sync(hi); });
+        var cat = form.querySelector('select[name="category"]');
+        if (cat) cat.addEventListener("change", function () { setList(cat.value === box.dataset.rentSlug); });
+        form.addEventListener("submit", function () { form.querySelectorAll("input[name], select[name]").forEach(function (el) { if (el.value === "") el.disabled = true; }); });
+        window.addEventListener("pageshow", function () { form.querySelectorAll("[disabled]").forEach(function (el) { el.disabled = false; }); });
+        setList(cat && cat.value === box.dataset.rentSlug);
+      })();
+    </script>
+    <div class="wm-photo">
+      {heroImg && <img src={heroImg} alt="" width="2400" height="1350" fetchpriority="high" />}
+    </div>
+  </section>
+
+  {cats.length > 0 && (
+    <!-- Browse by Category: three large square photos, the category's name (H2 size) and listing count above each (the photo is the
+         category's first active listing). Hover or focus: the rule under the name is redrawn in ink while the old one slides out to the
+         right; the count grows into a "View listings" button that keeps the count at its end; the photo zooms; the other cards step back.
+         Texts stay put. The whole card is the link. -->
+    <section class="section-lg cat-section">
+      <div class="wrap">
+        <div class="bl-head">
+          <h2>{hc(copy.browse?.title ?? "Browse By Category")}</h2>
+          {copy.browse?.body && <p class="max-w-[40ch] text-sm text-muted-foreground">{copy.browse.body}</p>}
+        </div>
+        <ul class="cat-grid">
+          {cats.map((c) => { const l = active.find((x) => x.category === c._id); const src = l ? imgSrc(l.image, 1000, 1000) : ""; return (
+            <li><a href={`/listings?category=${c.slug}`} class="cat-card">
+              <span class="cat-top">
+                <span class="cat-name">{c.title}</span>
+                <span class="cat-btn2">
+                  <span class="cat-rest">{count(c._id)} {count(c._id) === 1 ? "listing" : "listings"}<span aria-hidden="true"> →</span></span>
+                  <span class="cat-pill" aria-hidden="true">View listings <span class="cat-pill-count">{count(c._id)}</span></span>
+                </span>
+              </span>
+              <span class="cat-photo">
+                {src && <img src={src} alt="" width="1000" height="1000" loading="lazy" />}
+              </span>
+            </a></li>
+          ); })}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <!-- Two listing sections in place of Featured: Buy, then Rent. Six active listings each (featured ones first, then dashboard order),
+       titled with the category's name, and a link through to that category's full list. -->
+  {byCat.map(({ cat: c, rows }, i) => rows.length > 0 && (
+    <section class:list={["section", i === 0 && "bg-secondary"]}>
+      <div class="wrap">
+        <SectionHead title={c.title} href={`/listings?category=${c.slug}`} action={`${copy.listings?.ctaLabel ?? "See All Listings"}`} />
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{rows.map((l) => <li><ListingCard listing={l} categories={cats} /></li>)}</ul>
+      </div>
+    </section>
+  ))}
+
+  {benefits.length > 0 && (
+    <!-- Our Benefits, after the reference's "Our collaborators": one large photo on the left (the first benefit's CMS `image`) across
+         two columns of the listing grid above; on the right, one card wide, the heading and one hairline row per benefit (a check icon,
+         its title, its text under them); each row rises into view from under a mask as it comes up the screen. The section intro is not shown here. -->
+    <section class="section">
+      <div class="wrap ben-grid">
+        <div class="ben-photo">
+          <div class="media" data-ratio="4/3">{(() => { const src = imgSrc(benefits.find((x) => x.image)?.image, 1400, 1400); return src && <img src={src} alt="" width="1400" height="1400" loading="lazy" />; })()}</div>
+        </div>
+        <div class="ben-text">
+          <h2 class="mark">{copy.benefits?.title ?? "Our Benefits"}</h2>
+          <ul class="ben-list" data-rise>
+            {benefits.map((x, i) => (
+              <li><div class="ben-mask"><div class="ben-in">
+                <div class="ben-row"><svg class="ben-check" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10.25" /><path d="M7.75 12.25l2.75 2.75 5.75-6" /></svg><h3>{x.title}</h3></div>
+                {x.body && <p>{x.body}</p>}
+              </div></div></li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <script is:inline>
+        // Rows of every [data-rise] list (benefits, agents) rise into view from under their own mask as they come up the screen (scroll-driven; back down when scrolling up).
+        (function () {
+          if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+          var rows = [], raf = 0;
+          function update() {
+            raf = 0;
+            rows.forEach(function (li) {
+              var r = li.getBoundingClientRect(), vh = innerHeight;
+              var p = Math.min(1, Math.max(0, (vh - r.top) / (vh * 0.3))); p = p * p * (3 - 2 * p);
+              li.querySelector(".ben-in").style.transform = p < 1 ? "translateY(" + ((1 - p) * 100).toFixed(2) + "%)" : "";
+            });
+          }
+          addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+          addEventListener("resize", update);
+          function start() { rows = [].slice.call(document.querySelectorAll("[data-rise] > li")); update(); }
+          if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+        })();
+      </script>
+    </section>
+  )}
+
+  {hoods.length > 0 && (
+    <!-- Neighborhoods: the heading over its rule, one paragraph and the "See all" link, then a wide stage with a thin-line street map
+         (OpenStreetMap street data) and the neighborhoods' photos scattered over it, each with its name above. Copy: CMS row `neighborhoods`. -->
+    <section class="fp-section" data-fp>
+      <div class="wrap">
+        <div class="fp-head"><h2>{copy.neighborhoods?.title ?? "Our Neighborhoods"}</h2></div>
+        <div class="fp-intro">
+          {copy.neighborhoods?.bodySecondary ? <p>{copy.neighborhoods.bodySecondary}</p> : copy.neighborhoods?.body && <p>{copy.neighborhoods.body}</p>}
+          <a href="/neighborhoods" class="link-btn">{copy.neighborhoods?.ctaLabel ?? "See all neighborhoods"}</a>
+        </div>
+      </div>
+      <!-- The neighborhoods scattered over a drawn city map: each a small photo with its name above; on hover (or focus) the photo
+           opens to 1.5× its size from the centre, as a mask widening over a larger picture, and the name lifts clear of it, its pill swapping the name for the number of listings there. -->
+      <div class="hm-stage">
+        <!-- Street map: OpenStreetMap street data drawn as thin lines (© OpenStreetMap contributors, ODbL); loaded after the page
+             as /maps/city-streets.svg. -->
+        <div class="hm-map-host" data-src="/maps/city-streets.svg"></div>
+        <ul class="hm-list">
+          {hoods.slice(0, 7).map((n, i) => { const src = imgSrc(n.image, 480, 600); return (
+            <li style={`--x:${HM_POS[i % HM_POS.length][0]}%;--y:${HM_POS[i % HM_POS.length][1]}%`}>
+              <a href={`/neighborhoods/${n.slug}`} class="hm-card">
+                <span class="hm-name"><span class="hm-n1">{n.title}</span><span class="hm-n2" aria-hidden="true">{counts[n._id] ?? 0} {(counts[n._id] ?? 0) === 1 ? "listing" : "listings"}</span></span>
+                <span class="hm-frame"><span class="hm-clip">{src && <img src={src} alt="" width="480" height="600" loading="lazy" />}</span></span>
+              </a>
+            </li>
+          ); })}
+        </ul>
+      </div>
+      <script is:inline>
+        // City map: keep its lines at true pixel widths (the drawing is scaled to cover the stage) (the map is shown whole, no drawing on scroll).
+        (function () {
+          var stage = document.querySelector(".hm-stage"), host = stage && stage.querySelector(".hm-map-host"), svg = null; if (!host) return;
+          var items = [].slice.call(stage.querySelectorAll(".hm-list > li"));
+          var still = matchMedia("(prefers-reduced-motion: reduce)").matches, raf = 0;
+          fetch(host.getAttribute("data-src")).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
+            if (!t) return; host.innerHTML = t; svg = host.querySelector("svg"); update();
+          });
+          function update() {
+            raf = 0;
+            var r = stage.getBoundingClientRect(), vh = innerHeight;
+            if (!svg) { svg = document.createElement("i"); svg.style.display = "none"; }   // placeholder until the map file arrives
+            svg.style.setProperty("--u", (1 / Math.max(r.width / 1440, r.height / 900)).toFixed(4));
+            if (still) { items.forEach(function (li) { li.style.setProperty("--rv", "1"); }); return; }
+            // Each neighborhood photo opens from the bottom through its mask as it comes up the screen (--rv: 0 → 1).
+            items.forEach(function (li) {
+              var b = li.getBoundingClientRect(), q = Math.min(1, Math.max(0, (vh - b.top) / (vh * 0.35)));
+              li.style.setProperty("--rv", (q * q * (3 - 2 * q)).toFixed(4));
+            });
+          }
+          addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+          addEventListener("resize", update); update();
+          // Name pills: measure the name and the count so the pill can slide between the two widths on hover.
+          function sizePills() { items.forEach(function (li) { var pill = li.querySelector(".hm-name"), a = pill && pill.querySelector(".hm-n1"), b = pill && pill.querySelector(".hm-n2"); if (!a || !b) return; pill.style.setProperty("--w1", a.offsetWidth + "px"); pill.style.setProperty("--w2", b.offsetWidth + "px"); }); }
+          sizePills(); if (document.fonts) document.fonts.ready.then(sizePills); addEventListener("resize", sizePills);
+        })();
+      </script>
+    </section>
+  )}
+
+  {agents.length > 0 && (
+    <!-- Agents, as the benefits block's twin: on the left, one card wide on the listing grid, the heading, the intro and one hairline
+         row per agent (name | job title, linking to the agent's page); on the right, across the other two columns, one large square
+         photo (the first agent's). Rows rise into view from under a mask with the scroll (shared [data-rise] script); no hover effect. -->
+    <section class="section-lg agents-section">
+      <div class="wrap ben-grid">
+        <div>
+          <h2 class="mark">{copy.agents?.title ?? "Our Agents"}</h2>
+          <div class="mt-6 border-t border-border pt-8">{copy.agents?.body && <p class="ben-intro">{copy.agents.body}</p>}</div>
+          <ul class="agent-rows" data-rise>
+            {agents.slice(0, 5).map((a) => (
+              <li><div class="ben-mask"><div class="ben-in"><p class="agent-row"><span>{a.name}</span><span>{a.jobTitle}</span></p></div></div></li>
+            ))}
+          </ul>
+          <a href="/agents" class="link-btn mt-6">{copy.agents?.ctaLabel ?? "See All Agents"}</a>
+        </div>
+        <div class="agent-photo">
+          <div class="media" data-ratio="1">{agentImgs[0] && <img src={agentImgs[0]} alt="" width="1200" height="1200" loading="lazy" />}</div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {sold.length > 0 && (
+    <section class="section bg-secondary">
+      <div class="wrap">
+        <SectionHead title={copy.sold?.title ?? "Recently Sold"} href="/listings?status=Sold" action={copy.sold?.ctaLabel ?? "See Sold Listings"} />
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{sold.map((l) => <li><ListingCard listing={l} categories={cats} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  {about && (
+    <!-- About: the heading (CMS about `title`) over a hairline; under it two text columns on the card grid — the first paragraph and the "Learn more"
+         button in the first column, the closing paragraph in the third — then a full-width 16:9 photo (CMS about `image`,
+         a horizontal original loaded large) with the site's rounded corners. -->
+    <section class="section-lg">
+      <div class="wrap">
+        <div class="ab-head"><h2>{about.title ?? "About Us"}</h2></div>
+        <div class="ab-cols">
+          <div class="ab-copy">
+            {aboutParas[0] && <p>{aboutParas[0]}</p>}
+            <a href="/about" class="btn btn-secondary mt-8">{about.ctaLabel ?? "Learn More"}</a>
+          </div>
+          <div class="ab-copy ab-right">{aboutParas.slice(2).map((t) => <p>{t}</p>)}</div>
+        </div>
+        <div class="ab-wide media" data-ratio="16/9">{aboutImg && <img src={aboutImg} alt="" width="2400" height="1350" loading="lazy" />}</div>
+      </div>
+    </section>
+  )}
+
+  {faq.length > 0 && (
+    <section class="section bg-secondary">
+      <!-- FAQ: the heading with "See all questions" at its end, then the questions under it across the content width. -->
+      <div class="wrap">
+        <div class="faq-head"><h2 class="text-h2">{copy.faq?.title ?? "Frequently Asked Questions"}</h2><a href="/faq" class="link-btn">See all questions</a></div>
+        <div class="mt-8"><FaqList items={faq.slice(0, 4)} /></div>
+      </div>
+    </section>
+  )}
+</SiteLayout>

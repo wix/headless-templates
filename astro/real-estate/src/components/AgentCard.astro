@@ -1,0 +1,24 @@
+---
+// An agent card: 4:5 portrait, name, job title, a three-line bio, then the agent's phone and Email (outline
+// pills, ink on hover). No agent pages and no card hover: only the buttons react.
+import { imgSrc, type Agent } from "../lib/cms";
+interface Props { agent: Agent; level?: 2 | 3 }
+const { agent: a, level = 3 } = Astro.props;
+const H = `h${level}`;
+const src = imgSrc(a.image, 640, 800);
+const tel = a.phone?.replace(/[^\d+]/g, "");
+---
+<article class="agent-card flex h-full flex-col gap-4">
+  <div class="media" data-ratio="4/5">{src && <img src={src} alt="" width="640" height="800" loading="lazy" />}</div>
+  <div class="flex flex-1 flex-col gap-1">
+    <H class="card-h text-h3">{a.name}</H>
+    {a.jobTitle && <p class="meta"><span>{a.jobTitle}</span></p>}
+    {a.shortBio && <p class="clamp-3 mt-1 text-muted-foreground">{a.shortBio}</p>}
+  </div>
+  {(a.phone || a.email) && (
+    <div class="agent-btns">
+      {a.phone && <a class="btn btn-secondary" href={`tel:${tel}`} aria-label={`Call ${a.name}: ${a.phone}`}>{a.phone}</a>}
+      {a.email && <a class="btn btn-secondary" href={`mailto:${a.email}`} aria-label={`Email ${a.name}`}>Email</a>}
+    </div>
+  )}
+</article>

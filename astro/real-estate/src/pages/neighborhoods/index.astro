@@ -1,0 +1,26 @@
+---
+// /neighborhoods: every neighborhood in one grid (CMS order) — no search, sort or pages.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import NeighborhoodCard from "../../components/NeighborhoodCard.astro";
+import { getChrome } from "../../lib/chrome";
+import { getNeighborhoods, getListings } from "../../lib/cms";
+
+const { copy } = await getChrome();
+const [hoods, listings] = await Promise.all([getNeighborhoods(), getListings()]);
+const c = copy.neighborhoods;
+---
+<SiteLayout>
+  <section class="section">
+    <div class="wrap">
+      <div class="page-top">
+      <h1 class="text-h2">{c?.title ?? "Our Neighborhoods"}</h1>
+      {c?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{c.body}</p>}
+      </div>
+      {hoods.length > 0 ? (
+        <ul class="page-items grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{hoods.map((n) => <li><NeighborhoodCard level={2} neighborhood={n} count={listings.filter((l) => l.neighborhood === n._id).length} /></li>)}</ul>
+      ) : (
+        <div class="note page-items">No neighborhoods yet.</div>
+      )}
+    </div>
+  </section>
+</SiteLayout>

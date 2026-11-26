@@ -1,0 +1,16 @@
+---
+// A neighborhood card: 4:3 image, name (the link stretches over the card), the number of listings, a two-line description.
+import { imgSrc, type Neighborhood } from "../lib/cms";
+interface Props { neighborhood: Neighborhood; count?: number; level?: 2 | 3 }
+const { neighborhood: n, count, level = 3 } = Astro.props;
+const H = `h${level}`;
+const src = imgSrc(n.image, 800, 600);
+---
+<article class="card flex h-full flex-col gap-4">
+  <div class="media" data-ratio="4/3">{src && <img src={src} alt="" width="800" height="600" loading="lazy" />}</div>
+  <div class="flex flex-1 flex-col gap-2">
+    <H class="card-h card-title text-h3"><a href={`/neighborhoods/${n.slug}`}>{n.title}</a></H>
+    {count != null && <p class="meta"><span>{count} {count === 1 ? "listing" : "listings"}</span></p>}
+    {n.description && <p class="clamp-2 text-muted-foreground">{n.description}</p>}
+  </div>
+</article>
