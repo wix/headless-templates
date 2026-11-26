@@ -1,0 +1,23 @@
+---
+// The closing card (home, About, Contact): "Let's Work Together" — an H2, a statement revealed word by word, Book Our Services /
+// Contact Us, and a photo on the right half; the card opens out of a mask by scroll and shrinks with the footer reveal.
+// Content: CMS `cta` row (title, body) and an image.
+import { imgSrc } from "../../lib/media";
+interface Props { title: string; body?: string; image?: unknown; showContact?: boolean }
+const { title, body, image, showContact = true } = Astro.props;
+---
+<section class="section on-plain cta-band" aria-labelledby="cta-title">
+  <div class="wrap">
+    <div class="cta-card" data-scrub data-scrub-span="0.8">
+      <div class="cta-card__copy">
+        <h2 id="cta-title" class="text-h2" data-words>{title}</h2>
+        {body && <p class="cta-card__statement rev__quote" data-words>{body}</p>}
+        <div class="cta-card__actions">
+          <a href="/book" class="btn btn-primary">Book Our Services</a>
+          {showContact && <a href="/contact" class="btn btn-outline">Contact Us</a>}
+        </div>
+      </div>
+      {image && <div class="cta-card__photo"><img src={imgSrc(image as any, 1400, 1100)} alt="" width="1400" height="1100" loading="lazy" decoding="async" /></div>}
+    </div>
+  </div>
+</section>

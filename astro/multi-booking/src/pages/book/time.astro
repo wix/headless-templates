@@ -1,0 +1,25 @@
+---
+// /book/time — Select time. Server-rendered (the service, its photo and facts); availability loads in the browser,
+// in the visitor's time zone.
+// ?service=<slug>  start a new appointment for that service   &slot=<local start>  preselect a time (details modal rows)
+// ?edit=<id>       reopen an appointment already in the list (Edit)
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import TimePicker from "../../components/booking/TimePicker";
+import { listServices, type ServiceDTO } from "../../lib/services";
+
+let services: ServiceDTO[] = [];
+try { services = await listServices(); } catch (e) { console.error("listServices failed", e); }
+const q = Astro.url.searchParams;
+// only what the picker reads from the URL, so the server render and the first client render agree
+const query = { service: q.get("service") ?? undefined, edit: q.get("edit") ?? undefined, slot: q.get("slot") ?? undefined };
+// an unknown service slug is a 404 (the page still says so and links back to the list)
+if (query.service && services.length && !services.some((s) => s.slug === query.service)) Astro.response.status = 404;
+---
+<SiteLayout title="Book" hideCta footer={false}>
+  <div class="wrap pb-56 pt-(--gutter) sm:pb-40 lg:pb-32">
+    <a href="/book" class="link-btn text-muted-foreground no-underline hover:underline">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" /></svg>All services
+    </a>
+    <TimePicker client:load services={services} query={query} />
+  </div>
+</SiteLayout>

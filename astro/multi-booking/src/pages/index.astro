@@ -1,0 +1,111 @@
+---
+// Home = a marketing landing page: hero, Our Services (the tile grid stays prominent, right after the hero), Packages, Team, Features,
+// Gallery, Testimonials, About, Location and hours, FAQ, the closing call to action, footer. Sections alternate grey / plain, so the
+// last (the call to action) is plain against the grey footer; a card is white on grey and grey on plain. Copy: CMS (HomeSections rows,
+// ContentItems groups); services and team are read live. Every call to action leads to /book.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import ServicesRail from "../components/ServicesRail.astro";
+import HeroShrink from "../components/HeroShrink.astro";
+import TeamReveal from "../components/TeamReveal.astro";
+import NumbersBand from "../components/blocks/NumbersBand.astro";
+import ClosingCard from "../components/blocks/ClosingCard.astro";
+import { getSections, getContentItems, getGallery } from "../lib/content";
+import { imgSrc } from "../lib/media";
+import { listServices, type ServiceDTO } from "../lib/services";
+import { getTeam } from "../lib/team";
+import { BUSINESS_NAME, HOME_TILES, HOME_TEAM, BOOK_LABEL } from "../lib/site";
+
+let services: ServiceDTO[] = [];
+try { services = await listServices(); } catch (e) { console.error("listServices failed", e); }
+const [sec, numbers, features, reviews, faq, team, gallery] = await Promise.all([getSections(), getContentItems("numbers"), getContentItems("features"), getContentItems("testimonials"), getContentItems("faq"), getTeam(services), getGallery()]);
+const { hero, services: intro, team: teamSec, features: featSec, testimonials: revSec, about, numbers: numSec, faq: faqSec, cta, footer: biz } = sec;
+const tiles = services.slice(0, HOME_TILES);
+const arrow = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
+---
+<SiteLayout title={BUSINESS_NAME}>
+  {hero && (
+    <HeroShrink title={hero.title ?? ""} body={hero.body} ctaLabel={hero.ctaLabel || BOOK_LABEL} image={hero.image} imageMobile={hero.imageMobile} />
+  )}
+
+  {tiles.length > 0 && (
+    <ServicesRail title={intro?.title ?? "Our Services"} ctaLabel={intro?.ctaLabel ?? "See all services"} services={tiles} />
+  )}
+
+  {team.length > 0 && teamSec && (
+    <TeamReveal title={teamSec.title ?? "Our Team"} members={team.slice(0, HOME_TEAM)} aboutTitle={about?.title ?? "About Us"} aboutBody={about?.body ?? teamSec.body} />
+  )}
+
+  {numbers.length > 0 && (
+    <NumbersBand title={numSec?.title} items={numbers} joinNext={features.length > 0} />
+  )}
+
+  {features.length > 0 && featSec && (
+    <section class="section on-grey bg-secondary feat-band" aria-labelledby="features-title">
+      <!-- Continues the numbers band: the same grey and the same 3-column grid as the number tiles above. -->
+      <div class="wrap feat3">
+        <div class="feat3__head">
+          <h2 id="features-title" class="text-h2" data-split>{featSec.title}</h2>
+          {featSec.body && <p class="feat3__intro" data-reveal>{featSec.body}</p>}
+        </div>
+        <ul class="feat3__list">
+          {features.slice(0, 3).map((f, i) => (
+            <li class="feat3__item" data-scrub>
+              <svg class="feat3__icon" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15.25" fill="none" stroke="currentColor" stroke-width="1.5" /><path d="m10 16.5 4 4 8-9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <div class="feat3__copy">
+                {f.title && <h3 class="feat3__title">{f.title}</h3>}
+                <p class="feat3__text">{f.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  {reviews.length > 0 && revSec && (
+    <section class="section on-plain" aria-labelledby="reviews-title">
+      <div class="wrap">
+        <h2 id="reviews-title" class="text-h2" data-split>{revSec.title}</h2>
+        <!-- Sticky stacked cards: each one shrinks a touch as the next slides over it. Card: pill, quote and name on the left,
+             a photo on the right (placeholders from the CMS Gallery collection until the owner adds client photos). -->
+        <ul class="stack" data-stack style={`--n:${Math.min(reviews.length, 3)}`}>
+          {reviews.slice(0, 3).map((r, i, all) => {
+            const photo = gallery[i % Math.max(gallery.length, 1)]?.image;
+            return (
+              <li class="stack__card rev__card" style={`--i:${i}`}>
+                <div class="rev__copy">
+                  <span class="rev__pill">{String(i + 1).padStart(2, "0")} / {String(all.length).padStart(2, "0")}</span>
+                  <blockquote class="rev__quote" data-words>{r.body}</blockquote>
+                  <p class="rev__who" data-words>{r.title}</p>
+                </div>
+                {photo && <div class="rev__photo"><img src={imgSrc(photo, 900, 1100)} alt="" width="900" height="1100" loading="lazy" decoding="async" /></div>}
+              </li>
+            );
+          })}
+          <li class="stack__rest" aria-hidden="true"></li>
+        </ul>
+      </div>
+    </section>
+  )}
+
+  {faq.length > 0 && faqSec && (
+    <section class="section on-plain faq-band" aria-labelledby="faq-title">
+      <div class="wrap">
+        <h2 id="faq-title" class="text-h2" data-split>{faqSec.title}</h2>
+        <!-- The questions run the full content width under the title. -->
+        <div class="acc faq-full" data-accordion>
+          {faq.slice(0, 4).map((q, i) => (
+            <details data-scrub>
+              <summary><span>{q.title}</span><span class="acc__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg></span></summary>
+              <div class="acc-body"><p>{q.body}</p></div>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {cta && (
+    <ClosingCard title={cta.title ?? "Let’s Work Together"} body={cta.body} image={about?.image} />
+  )}
+</SiteLayout>

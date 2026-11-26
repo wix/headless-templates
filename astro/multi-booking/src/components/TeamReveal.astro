@@ -1,0 +1,215 @@
+---
+// Home About + Team block: a scroll-driven, pinned sequence (the Conwest "Real People" pattern), in this site's type and colour.
+//   1. About Us reveals first, scrubbed by scroll: the heading, the About text word by word, then "Learn More About Us".
+//      The About part is black (white text); as the About copy drifts up and fades out, the background blends to white.
+//   2. The About copy drifts up and fades out.
+//   3. The team title sits huge in the centre; its words rise in one by one.
+//   4. Three portrait cards (the first HOME_TEAM members) rise from below, staggered, pass over the title (which turns
+//      transparent) and stay on screen until the section scrolls away.
+// Every value is scrubbed from scroll progress (one rAF per frame, transforms and opacity only). With reduced motion, or without
+// script, the block renders as a plain, fully visible layout. Content: CMS `team` row (title, body, ctaLabel) and Bookings staff.
+import type { Member } from "../lib/team";
+// The About block that opens the sequence: heading, text and a link to /about (CMS `about` row).
+interface Props { title: string; members: Member[]; aboutTitle?: string; aboutBody?: string; aboutCta?: string }
+const { title, members, aboutTitle = "About Us", aboutBody, aboutCta = "Learn More About Us" } = Astro.props;
+const body = aboutBody;
+const words = title.split(/\s+/).filter(Boolean);
+const bodyWords = (body ?? "").split(/\s+/).filter(Boolean);
+// A larger rendition of the portrait for a tall 2:3 card (the DTO carries a 640x800 fill URL).
+const big = (u: string) => u.replace(/\/v1\/fill\/w_\d+,h_\d+/, "/v1/fill/w_960,h_1440");
+---
+<section class="team-reveal" aria-labelledby="team-title" data-team-reveal>
+  <div class="team-reveal__pin">
+    <div class="team-reveal__copy" aria-labelledby="about-intro-title">
+      <h2 id="about-intro-title" class="team-reveal__about-title team-reveal__item">{aboutTitle}</h2>
+      {bodyWords.length > 0 && (
+        <p class="team-reveal__statement" aria-label={body}>
+          {bodyWords.map((w) => <Fragment><span class="team-reveal__sword team-reveal__item" aria-hidden="true">{w}</span>{" "}</Fragment>)}
+        </p>
+      )}
+      <div class="team-reveal__cta team-reveal__item">
+        <a href="/about" class="btn btn-primary">{aboutCta}</a>
+      </div>
+    </div>
+
+    <h2 id="team-title" class="team-reveal__title" aria-label={title}>
+      {words.map((w, i) => <span class="team-reveal__word" aria-hidden="true" style={`--i:${i}`}>{w}</span>)}
+    </h2>
+
+    <ul class="team-reveal__row">
+      {members.map((m, i) => (
+        <li class="team-reveal__card" style={`--i:${i}`}>
+          <figure>
+            <div class="team-reveal__media">
+              {m.photo && <img src={big(m.photo)} alt="" width="960" height="1440" loading="lazy" decoding="async" />}
+            </div>
+            <figcaption class="team-reveal__caption">
+              <span class="team-reveal__name">{m.name}</span>
+              {m.bio && <span class="team-reveal__bio">{m.bio}</span>}
+            </figcaption>
+          </figure>
+        </li>
+      ))}
+    </ul>
+
+  </div>
+</section>
+
+<style>
+  /* ── Static layout (no script / reduced motion): title, cards, copy stacked and visible ── */
+  .team-reveal { position: relative; padding-block: var(--section-y); }
+  .team-reveal__pin { display: grid; gap: 2.5rem; width: 100%; max-width: calc(var(--content-max) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+  .team-reveal__title {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 0 0.22em; margin: 0;
+    font-family: var(--font-display); font-weight: 500; font-size: var(--text-h2);
+    line-height: 1.1; letter-spacing: -0.015em; text-align: center; color: var(--color-foreground);
+  }
+  .team-reveal__word { display: inline-block; white-space: nowrap; }
+  .team-reveal__row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(0.5rem, 1.2vw, 1.125rem); margin: 0; padding: 0; list-style: none; }
+  .team-reveal__media { aspect-ratio: 2 / 3; overflow: hidden; border-radius: 8px; background: var(--color-muted); }
+  .team-reveal__media img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.035); }
+  .team-reveal__caption { display: grid; gap: 0.25rem; margin-top: 0.875rem; }
+  .team-reveal__name { font-family: var(--font-display); font-size: var(--text-h3); font-weight: 500; line-height: 1.2; letter-spacing: -0.005em; }
+  .team-reveal__bio { font-size: var(--text-sm); color: var(--color-muted-foreground); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .team-reveal__copy { display: grid; justify-items: center; gap: 2rem; text-align: center; }
+  .team-reveal__about-title { margin: 0; font-family: var(--font-display); font-size: var(--text-h2); font-weight: 500; line-height: 1.1; letter-spacing: -0.015em; }
+  .team-reveal__statement { max-width: 34ch; margin: 0; font-family: var(--font-display); font-size: clamp(1.375rem, 1.1rem + 1.1vw, 2rem); font-weight: 500; line-height: 1.25; letter-spacing: -0.015em; text-wrap: balance; }
+  .team-reveal__sword { display: inline-block; }
+  @media (max-width: 639.98px) {
+    .team-reveal__caption { margin-top: 0.5rem; }
+    .team-reveal__name { font-size: var(--text-sm); }
+    .team-reveal__bio { display: none; }
+  }
+
+  /* ── Motion: set by the script (data-motion="on") ── */
+  .team-reveal[data-motion="on"] { min-height: 540vh; padding-block: 0; }
+  /* --dark (1 → 0, set by the script): black while About Us is on screen, blending to white for the team. */
+  .team-reveal[data-motion="on"] { background-color: color-mix(in srgb, var(--color-inverse) calc(var(--dark, 1) * 100%), var(--color-background)); }
+  .team-reveal[data-motion="on"] .team-reveal__copy { color: var(--color-inverse-foreground); }
+  .team-reveal[data-motion="on"] .team-reveal__copy .btn-primary { background: var(--color-inverse-foreground); color: var(--color-inverse); }
+  .team-reveal[data-motion="on"] .team-reveal__copy .btn-primary:hover { background: transparent; color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+  .team-reveal[data-motion="on"] .team-reveal__copy :focus-visible { outline-color: var(--color-inverse-foreground); }
+  .team-reveal[data-motion="on"] .team-reveal__pin {
+    position: sticky; top: 0; display: block; max-width: none; height: 100svh; padding: 0; overflow: hidden; isolation: isolate;
+  }
+  .team-reveal[data-motion="on"] .team-reveal__title {
+    position: absolute; top: calc(var(--header-h) + (100svh - var(--header-h)) / 2); left: 50%; z-index: 1;
+    width: min(calc(100vw - 2 * var(--gutter)), 12em);
+    transform: translate3d(-50%, -50%, 0) scale(var(--title-scale, 1)); opacity: var(--title-opacity, 1);
+  }
+  .team-reveal[data-motion="on"] .team-reveal__word {
+    opacity: var(--w-op, 0); transform: translate3d(0, var(--w-y, 34px), 0); will-change: transform, opacity;
+  }
+  .team-reveal[data-motion="on"] .team-reveal__row {
+    /* The same padding on every side as the other sections (--gutter): the row runs from the header + gutter down to the
+       bottom edge − gutter, and from gutter to gutter across (content capped like .wrap). Each photo fills the height left
+       above its name and bio (cropped, object-fit: cover). */
+    position: absolute; top: calc(var(--header-h) + var(--gutter)); left: 50%; z-index: 2;
+    --gap: var(--gutter);
+    --row-w: min(calc(100vw - 2 * var(--gutter)), var(--content-max));
+    width: var(--row-w); height: calc(100svh - var(--header-h) - 2 * var(--gutter));
+    gap: var(--gap); grid-template-rows: 100%;
+    transform: translate3d(-50%, var(--row-lift, 0px), 0); will-change: transform;
+  }
+  .team-reveal { --caption-h: 4.75rem; }
+  @media (max-width: 639.98px) { .team-reveal { --caption-h: 2.25rem; } }
+  .team-reveal[data-motion="on"] .team-reveal__statement { font-size: clamp(1.375rem, min(1.1rem + 1.1vw, 4.2svh), 2rem); }
+  .team-reveal[data-motion="on"] .team-reveal__card figure { display: flex; flex-direction: column; height: 100%; margin: 0; }
+  .team-reveal[data-motion="on"] .team-reveal__media { aspect-ratio: auto; flex: 1 1 auto; min-height: 0; }
+  .team-reveal[data-motion="on"] .team-reveal__card {
+    opacity: var(--c-op, 0); transform: translate3d(0, var(--c-y, 110vh), 0) scale(var(--c-scale, 0.982)); will-change: transform, opacity;
+  }
+  .team-reveal[data-motion="on"] .team-reveal__copy {
+    position: absolute; top: calc(var(--header-h) + (100svh - var(--header-h)) / 2); left: 50%; z-index: 3;
+    width: min(calc(100vw - 2 * var(--gutter)), 60rem);
+    transform: translate3d(-50%, calc(-50% + var(--copy-y, 0px)), 0); opacity: var(--copy-op, 1); pointer-events: none;
+  }
+  .team-reveal[data-copy="on"] .team-reveal__copy { pointer-events: auto; }
+  /* About heading, each word and the link: scrubbed in order by scroll (set per item by the script). */
+  .team-reveal[data-motion="on"] .team-reveal__item {
+    display: inline-block; opacity: var(--a-op, 0); transform: translate3d(0, var(--a-y, 0.62em), 0) scale(var(--a-s, 0.985));
+    transform-origin: left bottom; will-change: transform, opacity;
+  }
+  @media (max-width: 1023.98px) {
+    .team-reveal[data-motion="on"] { min-height: 440vh; }
+    /* tablet and phone: the photos keep the desktop's 2:3 instead of stretching to the screen's height; the row sits centred */
+    .team-reveal[data-motion="on"] .team-reveal__row {
+      top: calc(var(--header-h) + (100svh - var(--header-h)) / 2); height: auto; grid-template-rows: auto;
+      transform: translate3d(-50%, calc(-50% + var(--row-lift, 0px)), 0);
+    }
+    .team-reveal[data-motion="on"] .team-reveal__card figure { height: auto; }
+    .team-reveal[data-motion="on"] .team-reveal__media { aspect-ratio: 2 / 3; flex: none; }
+  }
+  @media (max-width: 719.98px) { .team-reveal[data-motion="on"] { min-height: 400vh; } }
+</style>
+
+<script>
+  // Scroll scrubbing: progress p (0..1) over the section's scroll distance drives every custom property. One rAF per scroll.
+  const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const range = (p: number, a: number, b: number) => clamp((p - a) / (b - a));
+  const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+  const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  function init(section: HTMLElement) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    section.dataset.motion = "on";
+    const title = section.querySelector<HTMLElement>(".team-reveal__title")!;
+    const words = [...section.querySelectorAll<HTMLElement>(".team-reveal__word")];
+    const row = section.querySelector<HTMLElement>(".team-reveal__row")!;
+    const cards = [...section.querySelectorAll<HTMLElement>(".team-reveal__card")];
+    const copy = section.querySelector<HTMLElement>(".team-reveal__copy")!;
+    const items = [...section.querySelectorAll<HTMLElement>(".team-reveal__item")];
+    let ticking = false;
+
+    const frame = () => {
+      ticking = false;
+      const r = section.getBoundingClientRect();
+      const dist = section.offsetHeight - innerHeight;
+      const p = dist > 0 ? clamp(-r.top / dist) : 1;
+      const vh = innerHeight;
+
+      // 1 · About Us first (p 0 → 0.2): heading, then each word, then the link.
+      const m = Math.max(items.length, 1);
+      items.forEach((el, i) => {
+        const a = (i / m) * 0.15;
+        const t = easeOut(range(p, a, a + 0.05));
+        el.style.setProperty("--a-op", t.toFixed(3));
+        el.style.setProperty("--a-y", `${(0.62 * (1 - t)).toFixed(3)}em`);
+        el.style.setProperty("--a-s", (0.985 + 0.015 * t).toFixed(4));
+      });
+      // 2 · The About copy drifts up and fades out (p 0.27 → 0.36) before the team appears.
+      const exit = easeInOut(range(p, 0.27, 0.36));
+      copy.style.setProperty("--copy-y", `${(-70 * exit).toFixed(1)}px`);
+      copy.style.setProperty("--copy-op", (1 - exit).toFixed(3));
+      // Background: black through About Us, then a smooth blend to white as the copy leaves (p 0.27 → 0.4).
+      section.style.setProperty("--dark", (1 - easeInOut(range(p, 0.27, 0.4))).toFixed(4));
+      section.dataset.copy = p > 0.12 && p < 0.3 ? "on" : "off";
+
+      // 3 · Team title words rise in, one after another (p 0.37 → 0.48).
+      const n = Math.max(words.length, 1);
+      words.forEach((w, i) => {
+        const t = easeOut(range(p, 0.37 + (i / n) * 0.06, 0.37 + (i / n) * 0.06 + 0.05));
+        w.style.setProperty("--w-op", t.toFixed(3));
+        w.style.setProperty("--w-y", `${(34 * (1 - t)).toFixed(1)}px`);
+      });
+      // The title eases back and turns transparent as the cards run over it.
+      const cover = easeInOut(range(p, 0.5, 0.8));
+      title.style.setProperty("--title-scale", (1 - 0.06 * cover).toFixed(4));
+      title.style.setProperty("--title-opacity", (1 - easeInOut(range(p, 0.5, 0.6))).toFixed(3));
+
+      // 4 · Cards: start 110/118/126vh below and arrive staggered (p 0.47 → 0.85), then hold to the end of the pin.
+      cards.forEach((c, i) => {
+        const t = easeOut(range(p, 0.47 + i * 0.04, 0.77 + i * 0.04));
+        c.style.setProperty("--c-y", `${((110 + i * 8) * (1 - t) / 100 * vh).toFixed(1)}px`);
+        c.style.setProperty("--c-op", range(t, 0, 0.35).toFixed(3));
+        c.style.setProperty("--c-scale", (0.982 + 0.018 * t).toFixed(4));
+      });
+      row.style.setProperty("--row-lift", "0px");
+    };
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(frame); } };
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("resize", onScroll);
+    frame();
+  }
+  document.querySelectorAll<HTMLElement>("[data-team-reveal]").forEach(init);
+</script>

@@ -1,0 +1,30 @@
+---
+// The whole team (About): portrait cards on the 3-column grid (6 = two rows), each rising in by scroll; name, bio and the
+// services they cover. Read live from Bookings staff.
+import type { Member } from "../../lib/team";
+interface Props { title: string; body?: string; members: Member[] }
+const { title, body, members } = Astro.props;
+const big = (u: string) => u.replace(/\/v1\/fill\/w_\d+,h_\d+/, "/v1/fill/w_960,h_1200");
+---
+<section id="team" class="section on-plain team-band" aria-labelledby="team-title">
+  <div class="wrap">
+    <div class="team-grid__head">
+      <h2 id="team-title" class="text-h2" data-split>{title}</h2>
+      {body && <p class="team-grid__intro" data-reveal>{body}</p>}
+    </div>
+    {members.length > 0 ? (
+      <ul class="team-grid">
+        {members.map((m) => (
+          <li class="team-grid__card" data-scrub>
+            <div class="team-grid__media">{m.photo && <img src={big(m.photo)} alt="" width="960" height="1200" loading="lazy" decoding="async" />}</div>
+            <div class="team-grid__body">
+              <h3 class="team-grid__name">{m.name}</h3>
+              {m.bio && <p class="team-grid__bio">{m.bio}</p>}
+              {m.services.length > 0 && <p class="team-grid__svc"><span>Services</span> {m.services.join(", ")}</p>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : <p class="note mt-10" role="status">The team could not be loaded.</p>}
+  </div>
+</section>

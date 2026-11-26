@@ -1,0 +1,14 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import PageIntro from "../components/blocks/PageIntro.astro";
+import { getSections } from "../lib/content";
+const sec = await getSections();
+---
+<SiteLayout title="Page Not Found">
+  <PageIntro title="Page not found" lead="The page you're looking for doesn't exist or has moved." image={sec.about?.image}>
+    <Fragment slot="actions">
+      <a href="/book" class="btn btn-primary">Book now</a>
+      <a href="/" class="btn btn-outline">Back to Home</a>
+    </Fragment>
+  </PageIntro>
+</SiteLayout>

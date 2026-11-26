@@ -1,0 +1,8 @@
+---
+// /book/done — where Book now lands (placeOrder resolved) and where hosted checkout returns (postFlowUrl).
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import Done from "../../components/booking/Done";
+---
+<SiteLayout title="Booking" hideCta>
+  <div class="flow pb-24 pt-(--gutter)"><Done client:only="react" /></div>
+</SiteLayout>

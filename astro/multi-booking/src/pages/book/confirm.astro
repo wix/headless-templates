@@ -1,0 +1,19 @@
+---
+// /book/confirm — Confirm. Client-only: it reads the visitor's list of appointments (sessionStorage), not SEO content.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ConfirmPage from "../../components/booking/ConfirmPage";
+import { listServices, type ServiceDTO } from "../../lib/services";
+
+let services: ServiceDTO[] = [];
+try { services = await listServices(); } catch (e) { console.error("listServices failed", e); }
+const policies = services.map((s) => ({ name: s.name, lines: s.policy }));
+---
+<SiteLayout title="Confirm" hideCta>
+  <div class="wrap pb-(--gutter) pt-(--gutter)"><div class="confirm-flow">
+    <a id="back" href="/book" class="link-btn text-muted-foreground no-underline hover:underline">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" /></svg>Back
+    </a>
+    <h1 class="mt-1 text-h2" data-split>Confirm</h1>
+    <ConfirmPage client:only="react" policies={policies} />
+  </div></div>
+</SiteLayout>
