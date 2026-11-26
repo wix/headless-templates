@@ -64,6 +64,14 @@
       "siteTemplateId": "307dedf5-7179-483c-9e6c-6cdcdd6684b3",
       "gitPath": "astro/rentals",
       "vibeCompatible": false
+    },
+    {
+      "name": "real-estate",
+      "title": "Real Estate (Wix CMS)",
+      "subtitle": "Listings, agents, neighborhoods and a valuation form",
+      "siteTemplateId": "1d51c344-cd8c-4ada-8c41-068855a42647",
+      "gitPath": "astro/real-estate",
+      "vibeCompatible": false
     }
   ]
 }

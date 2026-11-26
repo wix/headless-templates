@@ -1,0 +1,1660 @@
+@import url('https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:wght@400;500;700&display=swap');
+@import 'tailwindcss';
+
+/* ─── THE design system ─────────────────────────────────────────────────────────────────
+   Every colour, type size, radius, spacing tier and motion value on the site is decided
+   HERE, and every component reads these tokens through Tailwind utilities (bg-secondary,
+   text-muted-foreground, text-h2 …) or the .component classes below. Change a token,
+   everything follows. Nothing in a component repeats a value from this file.
+
+   Direction: a non-branded Wix Studio wireframe for a blog or magazine. Greys only, ink as
+   the single emphasis colour; the cloning user brings the brand. A brand colour can be added here;
+   the wireframe keeps its structure and drops its palette.
+   Contrast (WCAG AA): foreground on background 18:1, muted-foreground on background 6.7:1 and
+   on secondary 6.1:1, inverse-muted on inverse 7.9:1, destructive on white 6.1:1. */
+@theme {
+  /* ── colour ── */
+  /* Matched to the Wix headless reference templates: ink #161616 on white, cool greys, one hairline grey. */
+  --color-background: #ffffff;
+  --color-foreground: #161616;
+  --color-primary: #161616;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f2f2f2;            /* light band; quiet fills (cards, notes, chips) */
+  --color-secondary-foreground: #161616;
+  --color-muted: #eaeaea;                /* mid band; media frames */
+  --color-muted-foreground: #5c5c5c;
+  --color-inverse: #161616;
+  --color-inverse-foreground: #ffffff;
+  --color-inverse-muted: #b3b3ae;
+  --color-border: #dbdbdb;               /* hairlines and form-field edges only */
+  --color-destructive: #b42318;
+
+  /* ── shape ── photos and cards 12px; controls are pills (--radius-control); fields and chips 6px. */
+  --radius-lg: 8px;
+  --radius-md: 6px;
+  --radius-sm: 4px;
+  --radius-card: 0.75rem;
+  --radius-control: 9999px;
+  --radius-chip: 6px;
+  --radius-sheet: 12px;
+
+  /* ── type ── headings Wix Madefor Text 500, body Arial (as the reference templates). */
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-display: 'Wix Madefor Text', Arial, Helvetica, sans-serif;
+  --font-weight-semibold: 500;                           /* every "semibold" label reads as the templates' medium */
+  --text-xs: 0.8125rem;                                  /* 13: meta */
+  --text-sm: 0.875rem;                                   /* 14: labels */
+  --text-base: 0.9375rem;                                /* 15: body */
+  --text-lg: 1.0625rem;                                  /* 17: lead paragraphs */
+  --text-lead: clamp(1.375rem, 1.1rem + 1.1vw, 2rem);
+  --text-h3: 1.25rem;                                    /* 20: card titles */
+  --text-h2: clamp(1.625rem, 1.2rem + 1.6vw, 2.375rem);  /* 26→38: section titles */
+  --text-display: clamp(2.5rem, 2.036rem + 1.905vw, 3.75rem); /* 40→60: page titles */
+
+  /* ── motion ── one easing, two durations (state 160ms, sheet 260ms), everywhere. */
+  --ease-site: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ── spacing tiers ── declared once; the section tier and gutter CHANGE at each breakpoint.
+     8   label → control            (gap-2)
+     16  control → control / card → card on a phone   (gap-4)
+     24  group → group, card → card from tablet       (gap-6)
+     40  last decision → next block (gap-10 / mt-10)
+     section: 48 phone / 64 tablet / 80 desktop  (a blog's rhythm is tighter than a landing page's)
+     gutter:  20 phone / 32 tablet / 48 desktop; content stops at 1440.
+   --article-max is the reading column (68ch of body text at 19px). */
+:root {
+  --section-y: 3rem;
+  --gutter: 1.25rem;
+  --header-h: 4rem;
+  --content-max: 90rem;
+  --article-max: 46rem;
+}
+@media (min-width: 768px) { :root { --section-y: 4rem; --gutter: 2rem; } }
+@media (min-width: 1024px) { :root { --section-y: 5rem; --gutter: 3rem; --header-h: 4.5rem; } }
+
+@layer base {
+  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 1rem); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 500; line-height: 1.1; letter-spacing: -0.015em; text-wrap: balance; }
+  p { text-wrap: pretty; }
+  img { max-width: 100%; }
+  ::placeholder { color: var(--color-muted-foreground); opacity: 1; }
+  :focus-visible { outline: 1px solid var(--color-foreground); outline-offset: 3px; }
+  button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
+  .bg-inverse :focus-visible { outline-color: var(--color-inverse-foreground); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+  }
+}
+
+@layer components {
+  /* The page container: gutter on both sides, content capped at 1440. */
+  .wrap { width: 100%; max-width: calc(var(--content-max) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+  /* The reading column: the same gutter, content capped at --article-max. */
+  .article { width: 100%; max-width: calc(var(--article-max) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+  .section { padding-block: var(--section-y); }
+
+  /* The one button system. Primary = filled ink; secondary = quiet fill (no outline: a border is the loudest mark
+     in a greyscale page). 48px tall, above the 44px tap floor. .btn-sm is for header and in-card actions (44px). */
+  /* Reference-template buttons: a filled pill turns into an ink outline on hover; an outline pill fills with ink. Weight 400, 1px press. */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-height: 3rem; padding-inline: 1.5rem; border-radius: var(--radius-control);
+    font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; line-height: 1; white-space: nowrap; text-decoration: none;
+    transition: background-color 200ms var(--ease-site), color 200ms var(--ease-site), box-shadow 200ms var(--ease-site), transform 300ms var(--ease-site), opacity 300ms var(--ease-site);
+  }
+  .btn-sm { min-height: 2.5rem; padding-inline: 1.25rem; font-size: var(--text-base); }
+  .btn-primary { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .btn-primary:hover:not(:disabled):not([aria-disabled="true"]) { background-color: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .btn-secondary { background: transparent; color: var(--color-foreground); box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .btn-secondary:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--color-foreground); color: var(--color-background); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary:disabled { opacity: 1; background: var(--color-muted); color: var(--color-muted-foreground); }
+  .bg-inverse .btn-primary { background: var(--color-inverse-foreground); color: var(--color-inverse); }
+  .bg-inverse .btn-primary:hover:not(:disabled) { background-color: transparent; color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+  .bg-inverse .btn-secondary { color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); }
+  .bg-inverse .btn-secondary:hover:not(:disabled) { background-color: var(--color-inverse-foreground); color: var(--color-inverse); }
+  /* A text action (See all, Back, Show more): 1px underline, fades on hover, 44px target. */
+  .link-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; min-height: 2.75rem; min-width: 2.75rem; font-size: var(--text-sm); font-weight: 400; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; transition: opacity 180ms var(--ease-site); }
+  .link-btn:hover { opacity: 0.55; }
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; flex: none;
+    border-radius: 9999px; border: 0; background: var(--color-secondary);
+    transition: background-color 160ms var(--ease-site), box-shadow 160ms var(--ease-site), opacity 160ms var(--ease-site);
+  }
+  .icon-btn:hover:not(:disabled) { background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .icon-btn:disabled, .icon-btn[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
+
+  /* Static copy (About, legal pages). */
+  .prose-site { max-width: 68ch; }
+  .prose-site > * + * { margin-top: 1em; }
+  .prose-site h2 { font-size: var(--text-h3); margin-top: 2.25em; }
+  .prose-site h2 + * { margin-top: 0.75em; }
+  .prose-site ul { list-style: disc; padding-left: 1.25em; }
+  .prose-site li + li { margin-top: 0.4em; }
+  .prose-site a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; transition: opacity 180ms var(--ease-site); }
+  .prose-site a:hover { opacity: 0.55; }
+
+  /* Horizontal rail (phone and tablet): snaps, peeks the next item, pulls the track to the viewport edge while the
+     first item stays on the page gutter. Used by the Highlights strip and the category pills. */
+  .rail {
+    display: grid; grid-auto-flow: column; grid-auto-columns: max-content; gap: 1rem;
+    overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+    margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail > * { scroll-snap-align: start; }
+
+  /* ── Blog ────────────────────────────────────────────────────────────────────────────────────────────── */
+  /* A section's title: the heading on a hairline, its action (See all) at the far end. No label above it. */
+  .sect-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); }
+  .sect-head h2 { font-size: var(--text-h3); }
+
+  /* Media frame: every cover is 16:9; a post with no cover shows the quiet frame (no broken <img>). */
+  .media { position: relative; display: block; overflow: hidden; border-radius: var(--radius-card); background: var(--color-secondary); aspect-ratio: 16 / 9; }
+  .media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 400ms var(--ease-site); }
+  a:hover > .media img, .card:hover .media img { transform: scale(1.03); }
+  .card .card-title a:hover { text-decoration: none; }
+  .card:hover .card-title { opacity: 0.6; }
+  .card-title { transition: opacity 160ms var(--ease-site); }
+  .media[data-ratio="1"] { aspect-ratio: 1; }
+  .media[data-ratio="4/3"] { aspect-ratio: 4 / 3; }
+  .media[data-ratio="4/5"] { aspect-ratio: 4 / 5; }
+
+  /* Category label on a card: a quiet pill that is a link of its own (44px reachable through the card's padding is not
+     needed: it sits inside meta, and the whole card is the tap target on a phone). */
+  .pill { display: inline-flex; align-items: center; min-height: 1.75rem; padding: 0 0.75rem; border-radius: var(--radius-control); background: var(--color-secondary); font-size: var(--text-xs); font-weight: 500; line-height: 1; color: var(--color-foreground); text-decoration: none; transition: background-color 160ms var(--ease-site), box-shadow 160ms var(--ease-site); }
+  .pill:hover { background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .media .pill { position: absolute; left: 0.75rem; top: 0.75rem; background: var(--color-background); }
+
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; font-size: var(--text-xs); color: var(--color-muted-foreground); }
+  .meta > * + *::before { content: "·"; margin-right: 0.5rem; }
+  .card-title { font-family: var(--font-display); font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; text-wrap: balance; overflow-wrap: anywhere; }
+  .card-title a { color: inherit; text-decoration: none; }
+  .card-title a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  /* The title link stretches over the whole card, so a card is one tap target; the category pill stays above it. */
+  .card { position: relative; }
+  .card .card-title a::after { content: ""; position: absolute; inset: 0; }
+  .card .pill, .card .meta a { position: relative; z-index: 1; }
+  .card .media .pill { position: absolute; }
+  .clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* The lead story: the cover with the title over a scrim. The scrim keeps white text above 7:1 on the lightest placeholder. */
+  .lead { position: relative; display: block; overflow: hidden; background: var(--color-inverse); color: var(--color-inverse-foreground); }
+  /* The card owns the ratio and the cover fills it, so when the grid stretches the card to the height of the Latest News column
+     the cover crops further instead of leaving a dark band. */
+  .lead { aspect-ratio: 4 / 3; }
+  .lead .media { position: absolute; inset: 0; aspect-ratio: auto; height: 100%; }
+  @media (min-width: 768px) { .lead { aspect-ratio: 16 / 10; } }
+  .lead .scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgb(20 20 20 / 0.86) 0%, rgb(20 20 20 / 0.55) 45%, rgb(20 20 20 / 0.05) 100%); }
+  .lead .body { position: absolute; inset-inline: 0; bottom: 0; padding: 1.25rem; }
+  @media (min-width: 768px) { .lead .body { padding: 2rem; } }
+  .lead .meta { color: var(--color-inverse-muted); }
+  .lead .pill { background: var(--color-inverse-foreground); color: var(--color-inverse); }
+
+  /* Must Read: one wide dark panel down the page. Phone: cover on top, text below. Desktop: cover 3/5 beside the text 2/5, the cover
+     filling the panel's height (it crops rather than leaving a band when the text runs longer). */
+  .feature { position: relative; display: grid; overflow: hidden; background: var(--color-inverse); color: var(--color-inverse-foreground); }
+  .feature .body { display: flex; flex-direction: column; justify-content: center; gap: 1rem; padding: 1.5rem; }
+  .feature .meta { color: var(--color-inverse-muted); }
+  .feature .pill { background: var(--color-inverse-foreground); color: var(--color-inverse); }
+  @media (min-width: 768px) { .feature .body { padding: 2.5rem; } }
+  @media (min-width: 1024px) {
+    .feature { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); min-height: 26rem; }
+    .feature .media { aspect-ratio: auto; }
+    .feature .media img { position: absolute; inset: 0; }
+    .feature .body { padding: 3rem; }
+  }
+
+  /* Highlights: circular covers on a rail. */
+  .hl { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; width: 7.5rem; text-align: center; text-decoration: none; color: var(--color-foreground); }
+  .hl .media { width: 6.5rem; height: 6.5rem; aspect-ratio: 1; border-radius: 9999px; }
+  .hl span { font-size: var(--text-xs); font-weight: 500; line-height: 1.3; }
+  .hl:hover span { text-decoration: underline; text-underline-offset: 3px; }
+  @media (min-width: 768px) { .hl { width: 8.5rem; } .hl .media { width: 7.5rem; height: 7.5rem; } }
+
+  /* Tag chip: a quiet pill with the post count, 44px tall tap target. */
+  .chip { display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2.75rem; padding: 0 1rem; border-radius: var(--radius-control); background: var(--color-secondary); font-size: var(--text-sm); font-weight: 500; text-decoration: none; color: var(--color-foreground); transition: background-color 160ms var(--ease-site), box-shadow 160ms var(--ease-site); }
+  .chip:hover { background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .chip[aria-current="true"] { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .chip small { font-size: var(--text-xs); color: var(--color-muted-foreground); }
+  .chip[aria-current="true"] small { color: var(--color-inverse-muted); }
+
+  /* Forms. */
+  /* Fields: 6px corners, grey hairline; the edge turns ink on hover and on focus (no extra ring). */
+  .field { display: block; width: 100%; min-height: 3rem; padding: 0.75rem 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-chip); background: var(--color-background); color: var(--color-foreground); font-size: 1rem; transition: border-color 160ms var(--ease-site); }
+  .field:hover { border-color: var(--color-foreground); }
+  .field:focus, .field:focus-visible { border-color: var(--color-foreground); outline: none; }
+  .field[aria-invalid="true"] { border-color: var(--color-destructive); }
+  select.field { appearance: none; padding-right: 2.5rem; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23161616' stroke-width='1.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; }
+  textarea.field { min-height: 6.5rem; resize: vertical; }
+  .field-label { display: block; margin-bottom: 0.5rem; font-size: var(--text-sm); font-weight: 500; }
+  .field-error { margin-top: 0.375rem; font-size: var(--text-sm); color: var(--color-destructive); }
+  .check { display: flex; align-items: flex-start; gap: 0.75rem; min-height: 2.75rem; font-size: var(--text-sm); }
+  .check input { flex: none; width: 1.25rem; height: 1.25rem; margin-top: 0.125rem; accent-color: var(--color-foreground); }
+  .note { padding: 0.75rem 1rem; border-left: 3px solid var(--color-border); background: var(--color-secondary); font-size: var(--text-sm); color: var(--color-muted-foreground); }
+  .note strong { color: var(--color-foreground); }
+  .note a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+  .bg-inverse .field { background: var(--color-inverse); border-color: var(--color-inverse-muted); color: var(--color-inverse-foreground); }
+  .bg-inverse .note { background: rgb(255 255 255 / 0.08); color: var(--color-inverse-muted); border-color: var(--color-inverse-muted); }
+  .bg-inverse .note strong { color: var(--color-inverse-foreground); }
+  .bg-inverse .field-error { color: #ffb4a8; }
+
+  /* Phone and tablet menu and the search panel: a panel under the sticky header, full width, the page behind stays put. */
+  .panel { position: absolute; inset-inline: 0; top: 100%; background: var(--color-background); border-bottom: 1px solid var(--color-border); box-shadow: 0 16px 32px rgb(20 20 20 / 0.08); max-height: calc(100svh - var(--header-h)); overflow-y: auto; }
+  .panel[hidden] { display: none; }
+  .panel li:last-child a { border-bottom: 0; }
+  /* Header links: ink, a pill outline on hover, the current page underlined (the reference templates' nav). */
+  .nav-link { display: inline-flex; align-items: center; min-height: 2rem; padding-inline: 1rem; border-radius: 9999px; font-size: var(--text-base); font-weight: 400; color: var(--color-foreground); text-decoration: none; white-space: nowrap; transition: box-shadow 160ms var(--ease-site), background-color 160ms var(--ease-site); }
+  .nav-link:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .nav-link[aria-current="page"] { text-decoration: underline; text-underline-offset: 0.35em; text-decoration-thickness: 1px; }
+  .nav-link[aria-current="page"]:hover { text-decoration: none; }
+  .nav-link:active { background: var(--color-secondary); box-shadow: none; }
+  /* "More": a native <details> so it works by keyboard and without JS. */
+  .more > summary { list-style: none; cursor: pointer; }
+  .more > summary::-webkit-details-marker { display: none; }
+  .more[open] > summary { color: var(--color-foreground); }
+  .more-list { position: absolute; right: 0; top: 100%; min-width: 14rem; padding: 0.5rem; background: var(--color-background); border: 1px solid var(--color-border); box-shadow: 0 16px 32px rgb(20 20 20 / 0.08); z-index: 40; }
+  .more-list a { display: flex; align-items: center; min-height: 2.75rem; padding-inline: 0.75rem; font-size: var(--text-sm); color: var(--color-foreground); text-decoration: none; }
+  .more-list a:hover { background: var(--color-secondary); }
+
+  /* Section dropdown (desktop): a section link plus a chevron button that opens its categories. Open by click or keyboard
+     ([data-open]); on a pointer device hover shows it too, as an extra, never the only way. */
+  .dd-btn { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 2.75rem; color: var(--color-muted-foreground); border-radius: 9999px; }
+  .dd-btn:hover, .dd-item[data-open] .dd-btn { color: var(--color-foreground); }
+  .dd-item[data-open] .dd-btn svg { transform: rotate(180deg); }
+  .dd-list { display: none; }
+  .dd-item[data-open] > .dd-list { display: block; }
+  @media (hover: hover) and (pointer: fine) { .dd-item:hover > .dd-list { display: block; } }
+  .more-list a[aria-current="page"] { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+
+  /* The site-wide subscribe card sits a section tier below the page; when the page already ends on section padding the tier is not doubled. */
+  .sub-site { padding-top: var(--section-y); }
+  .section + .sub-site, [class~="pb-(--section-y)"] + .sub-site { padding-top: 0; }
+
+  /* Search: results highlight the matched words. */
+  mark { background: var(--color-muted); color: inherit; padding: 0 0.125em; }
+  .suggest { background: var(--color-background); }
+  .suggest a { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: 0.75rem; align-items: center; min-height: 3.5rem; padding: 0.5rem 0; text-decoration: none; color: var(--color-foreground); border-bottom: 1px solid var(--color-border); }
+  .suggest a:last-child { border-bottom: 0; }
+  .suggest a:hover strong, .suggest a[aria-selected="true"] strong { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Pagination. */
+  .pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem; }
+  .pager a, .pager span.gap { display: inline-flex; align-items: center; justify-content: center; min-width: 2.75rem; min-height: 2.75rem; padding-inline: 0.75rem; border-radius: 9999px; font-size: var(--text-sm); font-weight: 600; text-decoration: none; color: var(--color-foreground); }
+  .pager a { transition: box-shadow 160ms var(--ease-site), background-color 160ms var(--ease-site); font-weight: 400; }
+  .pager a:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .pager a[aria-current="page"] { background: var(--color-primary); color: var(--color-primary-foreground); }
+  .pager a[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
+
+  /* Article body: Ricos renders into .ricos-content with hashed class names and its own light-theme colours and sizes, so the
+     overrides below are !important and select by element. Colour, type and spacing are pinned to the tokens; the viewer is a
+     React island, which is why these live here (global) and not in the page's scoped style. */
+  .ricos-content { font-size: var(--text-lg); line-height: 1.7; }
+  .ricos-content * { color: var(--color-foreground) !important; font-family: var(--font-sans) !important; }
+  .ricos-content p, .ricos-content li { font-size: var(--text-lg) !important; line-height: 1.7 !important; }
+  .ricos-content p, .ricos-content ul, .ricos-content ol, .ricos-content blockquote { margin-top: 1.25em !important; margin-bottom: 0 !important; }
+  .ricos-content ul, .ricos-content ol { padding-left: 1.5em; }
+  .ricos-content h1, .ricos-content h2, .ricos-content h3, .ricos-content h4 { font-family: var(--font-display) !important; font-weight: 600 !important; line-height: 1.2 !important; letter-spacing: -0.015em; margin: 2em 0 0 !important; }
+  .ricos-content h2 { font-size: var(--text-lead) !important; }
+  .ricos-content h3, .ricos-content h4 { font-size: var(--text-h3) !important; }
+  .ricos-content blockquote { margin-inline: 0 !important; padding: 0.25rem 0 0.25rem 1.5rem !important; border-left: 3px solid var(--color-foreground) !important; }
+  .ricos-content blockquote p { margin-top: 0 !important; font-family: var(--font-display) !important; font-size: var(--text-h3) !important; line-height: 1.4 !important; }
+  .ricos-content a { text-decoration: underline; text-underline-offset: 3px; }
+}
+
+/* Listing status badge on a card or gallery image: light for an open listing, ink for one that is under offer, sold or rented. */
+@layer components {
+  .status { position: absolute; left: 0.75rem; top: 0.75rem; z-index: 1; display: inline-flex; align-items: center; min-height: 1.75rem; padding: 0 0.75rem; border-radius: var(--radius-control); font-size: var(--text-xs); font-weight: 500; line-height: 1; }
+
+  /* A grey tile (category, benefit, note card): 12px corners; a link tile gets the templates' ink frame on hover. */
+  .tile { position: relative; border-radius: var(--radius-card); background: var(--color-secondary); transition: background-color 160ms var(--ease-site); }
+  a.tile::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--color-foreground); opacity: 0; transition: opacity 160ms var(--ease-site); pointer-events: none; }
+  a.tile:hover::after, a.tile:focus-visible::after { opacity: 1; }
+
+  /* Hero over a full-bleed photo (the templates' pastel hero). */
+  .hero { position: relative; isolation: isolate; overflow: hidden; background: var(--color-secondary); }
+  .hero > img.hero-bg { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; }
+  .status-open { background: var(--color-background); color: var(--color-foreground); }
+  .status-closed { background: var(--color-primary); color: var(--color-primary-foreground); }
+}
+
+/* Listing page: photo gallery with a viewer, the fixed phone action bar, badges, the features list. */
+@layer components {
+  .badges { position: absolute; left: 0.75rem; top: 0.75rem; z-index: 1; display: flex; flex-wrap: wrap; gap: 0.375rem; max-width: calc(100% - 1.5rem); }
+  .badges .status { position: static; }
+  .status-tag { background: var(--color-background); color: var(--color-foreground); }
+  .gallery { display: grid; gap: 0.75rem; }
+  @media (min-width: 1024px) { .gallery { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); } }
+  .gallery .g-main { position: relative; display: block; width: 100%; padding: 0; border: 0; cursor: zoom-in; }
+  .g-thumbs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
+  @media (min-width: 1024px) { .g-thumbs { grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; } }
+  .g-thumbs button { position: relative; display: block; width: 100%; padding: 0; border: 0; cursor: zoom-in; }
+  .g-more { position: absolute; inset: 0; display: grid; place-items: center; background: rgb(20 20 20 / 0.55); color: var(--color-inverse-foreground); font-weight: 600; font-size: var(--text-sm); }
+  dialog.lightbox { width: min(96vw, 80rem); max-width: none; max-height: 96svh; padding: 0; border: 0; background: var(--color-inverse); color: var(--color-inverse-foreground); }
+  dialog.lightbox::backdrop { background: rgb(20 20 20 / 0.82); }
+  .lightbox figure { margin: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; max-height: 96svh; }
+  .lightbox img { width: 100%; max-height: calc(96svh - 4rem); object-fit: contain; background: var(--color-inverse); }
+  .lightbox .lb-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0.75rem; font-size: var(--text-sm); }
+  .lightbox .icon-btn { background: transparent; color: var(--color-inverse-foreground); box-shadow: inset 0 0 0 1px var(--color-inverse-muted); }
+  .lightbox .icon-btn:hover:not(:disabled) { background: rgb(255 255 255 / 0.12); }
+  .viewing-bar { position: fixed; inset-inline: 0; bottom: 0; z-index: 35; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem var(--gutter); padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)); background: var(--color-background); border-top: 1px solid var(--color-border); box-shadow: 0 -8px 24px rgb(20 20 20 / 0.08); }
+  .feature-list { columns: 1; column-gap: 2rem; list-style: none; padding: 0; margin: 0; }
+  @media (min-width: 640px) { .feature-list { columns: 2; } }
+  @media (min-width: 1024px) { .feature-list { columns: 3; } }
+  .feature-list li { break-inside: avoid; display: flex; gap: 0.625rem; align-items: baseline; padding-block: 0.375rem; }
+  .feature-list li::before { content: "✓"; font-weight: 700; }
+  .listing-aside { position: static; }
+  @media (min-width: 1024px) { .listing-aside { position: sticky; top: calc(var(--header-h) + 1rem); } }
+}
+@media print {
+  header, footer, .viewing-bar, [data-noprint], dialog { display: none !important; }
+  main { padding: 0 !important; }
+}
+
+/* Listings filters popup: a modal side sheet from the right (full width on a phone), a scrolling body and a sticky Apply bar. */
+@layer components {
+  .count-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; height: 1.25rem; padding-inline: 0.375rem; border-radius: 9999px; background: var(--color-primary); color: var(--color-primary-foreground); font-size: 0.75rem; line-height: 1; }
+  .btn-secondary:hover .count-badge { background: var(--color-background); color: var(--color-foreground); }
+
+  dialog.sheet { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(100vw, 28rem); max-width: none; height: 100dvh; max-height: none; padding: 0; border: 0; background: var(--color-background); color: var(--color-foreground); flex-direction: column; box-shadow: -16px 0 48px rgb(22 22 22 / 0.12); }
+  dialog.sheet[open] { display: flex; animation: sheet-in 260ms var(--ease-site); }
+  dialog.sheet::backdrop { background: rgb(22 22 22 / 0.4); animation: fade-in 260ms var(--ease-site); }
+  @keyframes sheet-in { from { transform: translateX(100%); } to { transform: none; } }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--color-border); }
+  .sheet-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 0 1.5rem; }
+  .sheet-foot { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem calc(1rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--color-border); background: var(--color-background); }
+
+  .fgroup { margin: 0; padding: 1.5rem 0; border: 0; border-bottom: 1px solid var(--color-border); min-width: 0; }
+  .fgroup:last-child { border-bottom: 0; }
+  .fgroup-title { display: block; margin-bottom: 0.875rem; padding: 0; font-family: var(--font-display); font-size: var(--text-base); font-weight: 500; }
+
+  /* Single-choice options as pills: grey at rest, an ink outline on hover, filled ink when picked. */
+  .opts { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .opt { position: relative; cursor: pointer; }
+  .opt input { position: absolute; opacity: 0; pointer-events: none; }
+  .opt span { display: inline-flex; align-items: center; justify-content: center; min-width: 2.75rem; min-height: 2.5rem; padding-inline: 1rem; border-radius: 9999px; background: var(--color-secondary); font-size: var(--text-sm); transition: background-color 160ms var(--ease-site), color 160ms var(--ease-site), box-shadow 160ms var(--ease-site); }
+  .opt:hover span { background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .opt input:checked + span { background: var(--color-primary); color: var(--color-primary-foreground); box-shadow: none; }
+  .opt input:focus-visible + span { outline: 1px solid var(--color-foreground); outline-offset: 3px; }
+  .check { cursor: pointer; align-items: center; }
+  .check input { margin-top: 0; }
+}
+
+/* ── Editorial compositions (after the reference studio site): oversized wordmarks, captions in small caps, a square mark before
+     labels, a photo framed between two words that opens to full width, a narrow text column set right, staggered grids. ── */
+@layer components {
+  .section-lg { padding-block: calc(var(--section-y) * 1.6); }
+  .mark::before { content: ""; display: inline-block; width: 0.45em; height: 0.45em; margin-right: 0.6em; vertical-align: 0.12em; background: currentColor; }
+  .caption-row { display: flex; justify-content: space-between; gap: 1rem; font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-foreground); }
+  .offset-col { max-width: 40rem; }
+  @media (min-width: 1024px) { .offset-col { margin-left: calc(100% / 12 * 5); } }
+  .big-quote { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.75rem, 1.2rem + 2.2vw, 3rem); line-height: 1.15; letter-spacing: -0.02em; text-wrap: pretty; }
+  .big-quote > span { margin-right: 0.3em; }
+
+  /* Header: the links sit in one grey pill, centred on the page. */
+  .nav-pill { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); align-items: center; gap: 0.125rem; padding: 0.25rem; border-radius: 9999px; background: var(--color-secondary); }
+  .nav-pill .nav-link:hover { background: var(--color-background); box-shadow: none; }
+
+  /* Home hero. */
+  .wm-hero { padding-top: 3rem; }
+  @media (min-width: 1024px) { .wm-hero { padding-top: 6rem; } }
+  .wm-intro { max-width: 24rem; margin-left: auto; font-size: var(--text-sm); line-height: 1.5; }
+  .wordmark { font-family: var(--font-display); font-weight: 500; font-size: clamp(3rem, 9.4vw, 11.5rem); line-height: 0.92; letter-spacing: -0.05em; margin-left: -0.04em; text-wrap: balance; }
+  .wm-hero .caption-row { margin-top: 1.25rem; }
+  .wm-photo { position: relative; margin-top: 1.5rem; }
+  .wm-photo > img { display: block; width: 100%; height: clamp(22rem, 78vh, 56rem); object-fit: cover; }
+  .wm-search { padding-block: 1.5rem; }
+  @media (min-width: 768px) { .wm-search { position: absolute; inset-inline: 0; bottom: 0; padding-block: 2.5rem; } }
+
+  /* Staggered grid: the first card alone in the middle, then a left column set high and a right column set low. */
+  .stagger { display: grid; gap: 3rem; }
+  @media (min-width: 768px) {
+    .stagger { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; row-gap: 5rem; }
+    .stagger > li:nth-child(3n + 1) { grid-column: 4 / span 6; }
+    .stagger > li:nth-child(3n + 2) { grid-column: 1 / span 5; }
+    .stagger > li:nth-child(3n + 3) { grid-column: 7 / span 6; margin-top: 9rem; }
+  }
+
+  /* Agents roster: hairline rows; the rows not pointed at fade, and the photo on the right follows the row. */
+  .roster { border-top: 1px solid var(--color-border); }
+  .roster a { display: flex; justify-content: space-between; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--color-border); font-size: var(--text-sm); color: var(--color-foreground); text-decoration: none; transition: opacity 200ms var(--ease-site); }
+  .roster a span:last-child { color: var(--color-muted-foreground); text-align: right; }
+  .roster:hover a:not(:hover), .roster:focus-within a:not(:focus) { opacity: 0.45; }
+  .roster-stage { position: relative; }
+  .roster-stage img { position: absolute; inset: 0; opacity: 0; transition: opacity 500ms var(--ease-site), transform 400ms var(--ease-site); }
+  .roster-stage img.is-on { opacity: 1; }
+
+  /* About: the title's words either side of a centred photo; the photo opens to the full page width as it scrolls through. */
+  .frame-words { position: relative; display: block; min-height: clamp(14rem, 40vw, 34rem); font-family: var(--font-display); font-weight: 400; font-size: clamp(1.5rem, 4.6vw, 4.25rem); letter-spacing: -0.03em; line-height: 1; }
+  .frame-words > span[aria-hidden] { position: absolute; top: 50%; transform: translateY(-50%); z-index: 0; }
+  .frame-words > span[aria-hidden]:first-child { left: var(--gutter); }
+  .frame-words > span[aria-hidden]:last-child { right: var(--gutter); }
+  .frame-photo { position: relative; z-index: 1; display: block; overflow: hidden; left: 50%; transform: translateX(-50%); width: clamp(9rem, 36vw, 32rem); height: clamp(14rem, 40vw, 34rem); border-radius: var(--radius-card); background: var(--color-secondary); }
+  .frame-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      /* Pinned: the block is 220vh tall, the frame sticks under the header, and the photo opens over the first two thirds of that run. */
+      .frame-scroll { height: 220vh; view-timeline: --frame block; }
+      .frame-scroll > .frame-words { position: sticky; top: var(--header-h); height: calc(100svh - var(--header-h)); min-height: 0; display: flex; align-items: center; }
+      .frame-photo { animation: frame-open linear both; animation-timeline: --frame; animation-range: contain 5% contain 70%; }
+      @keyframes frame-open { to { width: 100vw; height: calc(100svh - var(--header-h)); border-radius: 0; } }
+    }
+  }
+
+  /* Footer. */
+  .foot-links { columns: 2; column-gap: 2rem; max-width: 22rem; }
+  .foot-links a { display: inline-flex; align-items: center; min-height: 2.25rem; color: var(--color-inverse-foreground); text-decoration: none; transition: opacity 180ms var(--ease-site); }
+  .foot-links a:hover { opacity: 0.6; }
+  .media[data-ratio="16/10"] { aspect-ratio: 16 / 10; }
+  .foot-card .media { background: rgb(255 255 255 / 0.08); }
+  .foot-card-cap { position: absolute; inset-inline: 0; bottom: 0; display: flex; justify-content: space-between; gap: 1rem; padding: 2.5rem 1rem 0.875rem; font-size: var(--text-sm); color: #fff; background: linear-gradient(to top, rgb(22 22 22 / 0.55), transparent); }
+  .foot-card:hover .foot-card-cap span:first-child { text-decoration: underline; text-underline-offset: 0.2em; }
+  .foot-wordmark { margin-top: 3rem; font-family: var(--font-display); font-weight: 500; font-size: clamp(3rem, 13vw, 16rem); line-height: 0.8; letter-spacing: -0.055em; white-space: nowrap; overflow: hidden; padding-bottom: 0.12em; }
+}
+/* Unlayered: the social icons hard-set their ink colour as a utility; in the dark footer they take the light ink. */
+.site-foot [aria-label="Social media"] a { color: var(--color-inverse-foreground); }
+/* Fit-to-width wordmarks: the script in the layout sizes the line to the container; under 40px it gives up and the text wraps. */
+[data-fit] > span { display: inline-block; white-space: nowrap; }
+[data-fit].fit-wrap > span { white-space: normal; }
+
+/* Hero top row: the Google rating badge left, the intro right (stacked, intro first, on a phone). */
+@layer components {
+  .wm-top { display: flex; flex-direction: column-reverse; gap: 1.75rem; margin-top: 2.5rem; }
+  @media (min-width: 768px) { .wm-top { flex-direction: row; align-items: flex-start; justify-content: space-between; margin-top: 3.5rem; } }
+  .wm-top .wm-intro { margin-left: 0; }
+  @media (min-width: 768px) { .wm-top .wm-intro { margin-left: auto; } }
+  .g-rating { display: inline-flex; align-items: center; gap: 0.75rem; align-self: flex-start; padding: 0.625rem 1rem 0.625rem 0.75rem; border-radius: var(--radius-card); background: var(--color-background); box-shadow: inset 0 0 0 1px var(--color-border); }
+  @media (min-width: 768px) { .g-rating { align-self: flex-start; } }
+  .g-logo { width: 2.25rem; height: 2.25rem; flex: none; }
+  .g-title { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 700; line-height: 1.2; }
+  .g-score { display: flex; align-items: center; gap: 0.375rem; margin-top: 0.125rem; font-family: var(--font-display); font-size: 1.125rem; font-weight: 700; line-height: 1; color: #e7a500; }
+  .g-stars { position: relative; display: inline-block; }
+  .g-stars-row { display: flex; gap: 0.125rem; }
+  .g-stars-row svg { width: 1rem; height: 1rem; flex: none; fill: none; stroke: #f4b400; stroke-width: 1.5; stroke-linejoin: round; }
+  .g-stars-on { position: absolute; inset: 0 auto 0 0; overflow: hidden; }
+  .g-stars-on svg { fill: #f4b400; }
+  .g-count { margin-top: 0.25rem; font-size: var(--text-xs); line-height: 1.2; color: var(--color-muted-foreground); }
+}
+
+/* Header pill and hero, as the owner's mock-up: everything in one centred pill; title, hairline, intro left and rating right; the search
+   card at the top left of the photo. */
+@layer components {
+  .head-pill { display: flex; align-items: center; gap: 0.75rem; width: 100%; max-width: 100%; padding: 0.3125rem 0.3125rem 0.3125rem 1.5rem; border-radius: 9999px; background: var(--color-secondary); }
+  @media (min-width: 1024px) { .head-pill { width: auto; gap: 0; } }
+  .head-logo { flex: 1; min-width: 0; display: inline-flex; align-items: center; min-height: 2.5rem; font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; letter-spacing: -0.01em; color: var(--color-foreground); text-decoration: none; transition: opacity 160ms var(--ease-site); }
+  .head-logo:hover { opacity: 0.6; }
+  @media (min-width: 1024px) { .head-logo { flex: none; margin-right: 2.5rem; } }
+  .head-nav { align-items: center; }
+  .head-nav .nav-link { min-height: 2.75rem; padding-inline: 1.125rem; border-radius: 0; transition: color 160ms var(--ease-site); }
+  .head-nav .nav-link + .nav-link { border-left: 1px solid var(--color-border); }
+  .head-nav .nav-link:hover { box-shadow: none; background: transparent; color: var(--color-muted-foreground); }
+  .head-nav .nav-link:active { background: transparent; }
+  .head-cta { min-height: 2.5rem; padding-inline: 1rem; }
+  @media (min-width: 1024px) { .head-cta { margin-left: 4rem; } }
+
+  .wm-hero { padding-top: 4rem; }
+  @media (min-width: 1024px) { .wm-hero { padding-top: 9rem; } }
+  .wordmark { font-weight: 400; letter-spacing: -0.012em; margin-left: -0.02em; }
+  .wm-top { flex-direction: column; gap: 1.5rem; margin-top: 2.5rem; padding-top: 2.25rem; border-top: 1px solid var(--color-border); }
+  @media (min-width: 768px) { .wm-top { flex-direction: row; align-items: flex-start; justify-content: space-between; margin-top: 2.5rem; } }
+  .wm-top .wm-intro { max-width: 30rem; margin-left: 0; font-size: var(--text-base); }
+  @media (min-width: 768px) { .wm-top .wm-intro { margin-left: 0; } }
+  .wm-top .wm-intro p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .g-rating.g-compact { align-self: flex-start; padding: 0.5rem 1.75rem 0.5rem 0.875rem; }
+  .g-compact .g-logo { width: 2rem; height: 2rem; }
+  .wm-photo { margin-top: 3rem; }
+  @media (min-width: 768px) { .wm-search { top: 0; bottom: auto; padding-block: 2.75rem; } }
+}
+/* Header pill, tighter: no dividers, link spacing 40% less (36px → 21.6px between labels), the pill shrinks with it. */
+@layer components {
+  .head-nav .nav-link { padding-inline: 0.675rem; }
+  .head-nav .nav-link + .nav-link { border-left: 0; }
+  @media (min-width: 1024px) { .head-logo { margin-right: 1.5rem; } .head-cta { margin-left: 2.4rem; } }
+}
+
+/* Hero row, as the owner's second mock-up: intro left, rating right, the listing search between them as a grey card centred on the page,
+   half the content width, starting just under the hairline and running down over the photo. Phone and tablet: stacked in that order. */
+@layer components {
+  .wm-form { background: var(--color-secondary); }
+  .wm-form .field { background-color: var(--color-secondary); }
+  .wm-top .wm-intro { max-width: 17rem; }
+  @media (min-width: 768px) { .wm-top { flex-wrap: wrap; } .wm-form { order: 3; flex-basis: 100%; } }
+  @media (min-width: 1024px) {
+    .wm-top { position: relative; flex-wrap: nowrap; }
+    .wm-form { position: absolute; z-index: 2; top: 2rem; left: 50%; width: 50%; transform: translateX(-50%); }
+    .wm-photo { margin-top: 2.5rem; }
+  }
+}
+@layer components { @media (min-width: 1024px) { .wm-top .wm-intro { max-width: min(17rem, calc(25% - 1.5rem)); } } }
+/* Home hero photo: 16:9 at every width. */
+@layer components { .wm-photo > img { height: auto; aspect-ratio: 16 / 9; } }
+
+/* Hero search, last row: bedrooms | price range (two handles) | Search button, the button standing apart from the fields. */
+@layer components {
+  .hs-row { display: grid; gap: 0.75rem; align-items: end; }
+  @media (min-width: 640px) { .hs-row { grid-template-columns: minmax(6.5rem, 0.75fr) minmax(0, 1.6fr) auto; column-gap: 1rem; } }
+  .hs-submit { min-height: 3rem; padding-inline: 1.375rem; }
+  .price-range .field-label { margin-bottom: 0; }
+  .pr-out { font-size: var(--text-sm); color: var(--color-foreground); white-space: nowrap; }
+  .pr-track { position: relative; height: 3rem; margin-top: 0.5rem; }
+  .pr-track::before { content: ""; position: absolute; inset-inline: 0; top: 50%; height: 2px; margin-top: -1px; border-radius: 2px; background: var(--color-border); }
+  .pr-fill { position: absolute; top: 50%; height: 2px; margin-top: -1px; left: 0; right: 0; background: var(--color-foreground); }
+  .pr-track input[type="range"] { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; z-index: 3; }
+  .pr-track input[type="range"]:focus { outline: none; }
+  .pr-track input[type="range"]::-webkit-slider-runnable-track { height: 100%; background: none; }
+  .pr-track input[type="range"]::-moz-range-track { height: 100%; background: none; }
+  .pr-track input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; width: 1.25rem; height: 1.25rem; margin-top: calc((3rem - 1.25rem) / 2); border-radius: 9999px; background: var(--color-background); box-shadow: inset 0 0 0 2px var(--color-foreground), 0 1px 4px rgb(22 22 22 / 0.15); cursor: grab; transition: transform 160ms var(--ease-site); }
+  .pr-track input[type="range"]::-moz-range-thumb { pointer-events: auto; width: 1.25rem; height: 1.25rem; border: 0; border-radius: 9999px; background: var(--color-background); box-shadow: inset 0 0 0 2px var(--color-foreground), 0 1px 4px rgb(22 22 22 / 0.15); cursor: grab; }
+  .pr-track input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.12); }
+  .pr-track input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; background: var(--color-foreground); }
+  .pr-track input[type="range"]:focus-visible::-webkit-slider-thumb { outline: 1px solid var(--color-foreground); outline-offset: 3px; }
+  .pr-track input[type="range"]:focus-visible::-moz-range-thumb { outline: 1px solid var(--color-foreground); outline-offset: 3px; }
+}
+
+/* Price range: handles at half size at rest, full size on hover, focus or while dragged; the min and max values show under the handles
+   while they are in use. */
+@layer components {
+  .pr-track input[type="range"]::-webkit-slider-thumb { transform: scale(0.5); transition: transform 160ms var(--ease-site), background-color 160ms var(--ease-site); }
+  .pr-track input[type="range"]:hover::-webkit-slider-thumb, .pr-track input[type="range"]:active::-webkit-slider-thumb,
+  .pr-track input[type="range"]:focus-visible::-webkit-slider-thumb, .price-range.is-busy input[type="range"]::-webkit-slider-thumb { transform: scale(1); }
+  .pr-track input[type="range"]::-moz-range-thumb { transform: scale(0.5); transition: transform 160ms var(--ease-site); }
+  .pr-track input[type="range"]:hover::-moz-range-thumb, .pr-track input[type="range"]:active::-moz-range-thumb,
+  .pr-track input[type="range"]:focus-visible::-moz-range-thumb, .price-range.is-busy input[type="range"]::-moz-range-thumb { transform: scale(1); }
+  .pr-tip { position: absolute; top: calc(50% + 0.875rem); z-index: 6; transform: translate(-50%, -4px); padding: 0.1875rem 0.5rem; border-radius: 9999px; background: var(--color-foreground); color: var(--color-background); font-size: 0.75rem; line-height: 1.2; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 160ms var(--ease-site), transform 160ms var(--ease-site); }
+  .price-range.is-busy .pr-tip { opacity: 1; transform: translate(-50%, 0); }
+}
+/* Hero title scroll shrink: --shrink scales the title (the fitted size is set inline by the layout's fit script). The page keeps its
+   place while the title's height changes (no scroll anchoring jumps). */
+@layer components {
+  .wm-hero .wordmark { font-size: calc(clamp(3rem, 9.4vw, 11.5rem) * var(--shrink, 1)); will-change: font-size; }
+  .wm-hero .wordmark.fit-wrap { font-size: calc(clamp(2.5rem, 11vw, 4rem) * var(--shrink, 1)); }
+}
+html:has(.wm-hero) { overflow-anchor: none; }
+/* Price range handles: solid ink at rest (small); white with the ink rim while hovered, focused or dragged (full size). */
+@layer components {
+  .pr-track input[type="range"]::-webkit-slider-thumb { background: var(--color-foreground); }
+  .pr-track input[type="range"]::-moz-range-thumb { background: var(--color-foreground); }
+  .pr-track input[type="range"]:hover::-webkit-slider-thumb, .pr-track input[type="range"]:active::-webkit-slider-thumb,
+  .pr-track input[type="range"]:focus-visible::-webkit-slider-thumb, .price-range.is-busy input[type="range"]::-webkit-slider-thumb { background: var(--color-background); }
+  .pr-track input[type="range"]:hover::-moz-range-thumb, .pr-track input[type="range"]:active::-moz-range-thumb,
+  .pr-track input[type="range"]:focus-visible::-moz-range-thumb, .price-range.is-busy input[type="range"]::-moz-range-thumb { background: var(--color-background); }
+}
+/* Hero title shrinks toward the centre: centred on its line (at full size it fills the width, so nothing moves at rest). */
+@layer components { .wm-hero .wordmark { text-align: center; margin-left: 0; } }
+
+/* Every visible H2 on the site at one size and style: the section-title size (26 → 38px), Wix Madefor Text 500.
+   Unlayered on purpose, so it wins over the size utilities on individual headings. The filters popup title keeps its own size. */
+h2:not(.sr-only):not(#filters-title) {
+  font-size: var(--text-h2);
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+/* Hero photo rides over the intro row and the hairline as it rises (the search card stays above it). */
+@layer components { @media (min-width: 1024px) { .wm-hero .wm-photo { position: relative; z-index: 1; } .wm-hero .wm-form { z-index: 3; } } }
+/* Range track runs from handle centre to handle centre (the handle is 20px), so nothing sticks out past the handles at their ends. */
+@layer components { .pr-track::before { inset-inline: 10px; } }
+/* Hero intro: shown whole (no ellipsis); the copy is written to sit on two lines. */
+@layer components { .wm-top .wm-intro p { display: block; -webkit-line-clamp: unset; overflow: visible; } }
+
+/* Big name list (Browse by Category): three columns (photo | names | count and link), names large and grey, the one in focus in ink. */
+@layer components {
+  .bl-head { display: grid; gap: 1.25rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--color-border); }
+  @media (min-width: 1024px) { .bl-head { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; } }
+  .bl-body { display: grid; gap: 2rem; margin-top: 3rem; }
+  @media (min-width: 1024px) { .bl-body { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 4rem; } }
+  .bl-stage { display: none; }
+  @media (min-width: 1024px) { .bl-stage { display: block; position: sticky; top: calc(var(--header-h) + 1.5rem); align-self: start; max-width: 85%; } }
+  .bl-stage .media { position: relative; }
+  .bl-stage img { position: absolute; inset: 0; opacity: 0; transition: opacity 400ms var(--ease-site); }
+  .bl-stage img.is-on { opacity: 1; }
+  @media (min-width: 1024px) { .bl-list { grid-column: 2 / span 2; } }
+  .bl-list a { display: grid; align-items: baseline; gap: 0.25rem 1rem; color: var(--color-foreground); text-decoration: none; }
+  @media (min-width: 1024px) { .bl-list a { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .bl-name { font-family: var(--font-display); font-weight: 500; font-size: clamp(2rem, 1.2rem + 3.2vw, 4rem); line-height: 1.08; letter-spacing: -0.025em; color: #d3d3d3; transition: color 200ms var(--ease-site); }
+  .bl-list a.is-on .bl-name { color: var(--color-foreground); }
+  .bl-meta { display: flex; justify-content: space-between; gap: 1rem; font-size: var(--text-sm); opacity: 0; transition: opacity 200ms var(--ease-site); }
+  .bl-list a.is-on .bl-meta { opacity: 1; }
+  .bl-view { color: var(--color-muted-foreground); white-space: nowrap; transition: color 160ms var(--ease-site); }
+  .bl-list a:hover .bl-view { color: var(--color-foreground); }
+  @media (max-width: 1023px) { .bl-meta { display: none; } .bl-list a.is-on .bl-meta { display: flex; padding-bottom: 0.5rem; } }
+}
+/* Big list names on one line, sized to the column (a third of the page) at every width. */
+@layer components { .bl-name { white-space: nowrap; font-size: clamp(2rem, 3.4vw, 3.5rem); } }
+/* Browse by Category: the block is a scroll run (a screen plus 40vh per category); its content pins under the header for the run. */
+@layer components {
+  .bl-scroll { position: relative; height: calc(100svh + var(--n, 3) * 40vh); }
+  .bl-pin { position: sticky; top: var(--header-h); min-height: calc(100svh - var(--header-h)); display: flex; align-items: center; }
+  .bl-head { grid-template-columns: none; }
+  @media (min-width: 1024px) { .bl-head { grid-template-columns: repeat(3, minmax(0, 1fr)); } .bl-head > p { grid-column: 2; } }
+  .bl-pin .bl-stage { position: static; }
+  .bl-list a { cursor: pointer; }
+  .bl-list a:hover .bl-name { color: var(--color-muted-foreground); }
+  .bl-list a.is-on:hover .bl-name { color: var(--color-foreground); }
+}
+/* Hero title letters: the line is a mask (overflow hidden, a little room below for descenders); each letter moves on its own. */
+@layer components {
+  .wm-mask { overflow: hidden; padding-bottom: 0.12em; margin-bottom: -0.12em; vertical-align: top; }
+  .wm-ch { display: inline-block; will-change: transform; }
+}
+
+/* Browse by Category: three square photo cards with the name above. Hover / focus: photo zooms and darkens, a "View listings" pill
+   rises in its centre, the arrow runs, the name shifts; the other cards dim. */
+@layer components {
+  .cat-grid { display: grid; gap: 2.5rem 1.5rem; margin-top: 3rem; }
+  @media (min-width: 768px) { .cat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .cat-grid { margin-top: 4rem; } }
+  .cat-grid > li { transition: opacity 300ms var(--ease-site), filter 300ms var(--ease-site); }
+  @media (hover: hover) { .cat-grid:has(.cat-card:hover) > li:not(:has(.cat-card:hover)) { opacity: 0.35; filter: grayscale(1); } }
+  .cat-card { display: block; color: var(--color-foreground); text-decoration: none; }
+  .cat-top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--color-border); transition: border-color 300ms var(--ease-site); }
+  .cat-name { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.75rem, 1.1rem + 2.2vw, 3rem); line-height: 1; letter-spacing: -0.025em; transition: transform 400ms var(--ease-site); }
+  .cat-count { display: inline-flex; align-items: center; gap: 0.5rem; font-size: var(--text-sm); color: var(--color-muted-foreground); white-space: nowrap; transition: color 300ms var(--ease-site); }
+  .cat-arrow { display: inline-block; transition: transform 400ms var(--ease-site); }
+  .cat-photo { position: relative; display: block; overflow: hidden; aspect-ratio: 1; border-radius: var(--radius-card); background: var(--color-secondary); }
+  .cat-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 700ms var(--ease-site), filter 500ms var(--ease-site); }
+  .cat-photo::after { content: ""; position: absolute; inset: 0; background: rgb(22 22 22 / 0.42); opacity: 0; transition: opacity 400ms var(--ease-site); }
+  .cat-cta { position: absolute; left: 50%; top: 50%; z-index: 1; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1.5rem; border-radius: 9999px; background: var(--color-background); color: var(--color-foreground); font-size: var(--text-base); white-space: nowrap; opacity: 0; transform: translate(-50%, calc(-50% + 1.25rem)) scale(0.92); transition: opacity 350ms var(--ease-site), transform 450ms var(--ease-site); }
+  .cat-card:hover .cat-photo img, .cat-card:focus-visible .cat-photo img { transform: scale(1.08); }
+  .cat-card:hover .cat-photo::after, .cat-card:focus-visible .cat-photo::after { opacity: 1; }
+  .cat-card:hover .cat-cta, .cat-card:focus-visible .cat-cta { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  .cat-card:hover .cat-name, .cat-card:focus-visible .cat-name { transform: translateX(0.375rem); }
+  .cat-card:hover .cat-count, .cat-card:focus-visible .cat-count { color: var(--color-foreground); }
+  .cat-card:hover .cat-arrow, .cat-card:focus-visible .cat-arrow { transform: translateX(0.375rem); }
+  .cat-card:hover .cat-top, .cat-card:focus-visible .cat-top { border-color: var(--color-foreground); }
+  .cat-card:focus-visible { outline: none; }
+  .cat-card:focus-visible .cat-photo { outline: 1px solid var(--color-foreground); outline-offset: 4px; }
+}
+
+/* Category cards, second pass: names at the H2 size and still on hover; the rule redraws; the count becomes the button. */
+@layer components {
+  .cat-name { font-size: var(--text-h2); line-height: 1.1; letter-spacing: -0.015em; }
+  .cat-card:hover .cat-name, .cat-card:focus-visible .cat-name { transform: none; }
+  .cat-top { position: relative; overflow: hidden; align-items: center; border-bottom: 0; }
+  /* The rule: the grey one slides out to the right into the mask; the ink one draws in from the left. */
+  .cat-top::before, .cat-top::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; }
+  .cat-top::before { background: var(--color-border); transition: transform 550ms var(--ease-site); }
+  .cat-top::after { background: var(--color-foreground); transform: scaleX(0); transform-origin: left; transition: transform 650ms var(--ease-site) 80ms; }
+  .cat-card:hover .cat-top::before, .cat-card:focus-visible .cat-top::before { transform: translateX(101%); }
+  .cat-card:hover .cat-top::after, .cat-card:focus-visible .cat-top::after { transform: scaleX(1); }
+  /* The count → button: at rest "10 listings →" as plain text; on hover an ink pill grows to the left out of it, "View listings"
+     appears, and the count stays at its end in a small light badge. */
+  .cat-btn { display: inline-flex; align-items: center; flex: none; min-height: 2.5rem; padding: 0; border-radius: 9999px; font-size: var(--text-sm); color: var(--color-muted-foreground); white-space: nowrap; transition: background-color 400ms var(--ease-site), color 300ms var(--ease-site), padding 450ms var(--ease-site); }
+  .cat-btn-label { display: inline-block; max-width: 0; overflow: hidden; opacity: 0; transition: max-width 500ms var(--ease-site), opacity 300ms var(--ease-site), margin 450ms var(--ease-site); }
+  .cat-btn-count { display: inline-flex; align-items: center; justify-content: center; min-width: 0; border-radius: 9999px; transition: background-color 400ms var(--ease-site), color 300ms var(--ease-site), min-width 450ms var(--ease-site), padding 450ms var(--ease-site); }
+  .cat-btn-unit { display: inline-block; max-width: 6rem; overflow: hidden; transition: max-width 450ms var(--ease-site), opacity 250ms var(--ease-site); }
+  .cat-btn-arrow { display: inline-block; max-width: 1.5rem; margin-left: 0.5rem; overflow: hidden; transition: max-width 400ms var(--ease-site), margin 400ms var(--ease-site), opacity 250ms var(--ease-site); }
+  .cat-card:hover .cat-btn, .cat-card:focus-visible .cat-btn { background: var(--color-foreground); color: var(--color-background); padding: 0 0.375rem 0 1.25rem; }
+  .cat-card:hover .cat-btn-label, .cat-card:focus-visible .cat-btn-label { max-width: 9rem; opacity: 1; margin-right: 0.625rem; }
+  .cat-card:hover .cat-btn-count, .cat-card:focus-visible .cat-btn-count { background: var(--color-background); color: var(--color-foreground); min-width: 1.75rem; padding: 0.25rem 0.5rem; }
+  .cat-card:hover .cat-btn-unit, .cat-card:focus-visible .cat-btn-unit { max-width: 0; opacity: 0; }
+  .cat-card:hover .cat-btn-arrow, .cat-card:focus-visible .cat-btn-arrow { max-width: 0; margin-left: 0; opacity: 0; }
+  /* Photo: zoom only (the darkening and the centre pill are gone). */
+  .cat-card:hover .cat-photo::after, .cat-card:focus-visible .cat-photo::after { opacity: 0; }
+}
+/* Hero: the photo no longer rides up over the row; the search card scales from its top centre on scroll (set by the hero script). */
+@layer components {
+  @media (min-width: 1024px) { .wm-hero .wm-photo { z-index: auto; } .wm-hero .wm-form { transform-origin: 50% 0; will-change: transform; } }
+}
+
+/* Category button, smooth: the finished pill ("View listings" + the count) sits on the right from the start and is revealed by a
+   single clip that opens from its right edge to the left, while the plain "N listings →" fades out beneath it. One easing, one motion. */
+@layer components {
+  .cat-btn2 { display: inline-grid; flex: none; justify-items: end; align-items: center; }
+  .cat-btn2 > * { grid-area: 1 / 1; }
+  .cat-rest { font-size: var(--text-sm); color: var(--color-muted-foreground); white-space: nowrap; transition: opacity 300ms var(--ease-site); }
+  .cat-pill { display: inline-flex; align-items: center; gap: 0.625rem; min-height: 2.5rem; padding: 0 0.375rem 0 1.25rem; border-radius: 9999px; background: var(--color-foreground); color: var(--color-background); font-size: var(--text-sm); white-space: nowrap; clip-path: inset(0 0 0 100% round 9999px); transition: clip-path 600ms cubic-bezier(0.65, 0, 0.35, 1); }
+  .cat-pill-count { display: inline-flex; align-items: center; justify-content: center; min-width: 1.75rem; height: 1.75rem; padding: 0 0.5rem; border-radius: 9999px; background: var(--color-background); color: var(--color-foreground); }
+  .cat-card:hover .cat-pill, .cat-card:focus-visible .cat-pill { clip-path: inset(0 0 0 0 round 9999px); }
+  .cat-card:hover .cat-rest, .cat-card:focus-visible .cat-rest { opacity: 0; }
+}
+@layer components { @media (min-width: 1024px) { .wm-hero .wm-form { will-change: width, transform; } } }
+/* Browse by Category head, as the owner's mock-up: title with the paragraph stacked under it on the left, no rule under the head,
+   a wide gap before the cards; the section starts closer to the photo above. */
+@layer components {
+  .cat-section { padding-top: 4rem; }
+  .cat-section .bl-head { display: block; padding-bottom: 0; border-bottom: 0; }
+  .cat-section .bl-head > p { margin-top: 1.25rem; max-width: 34ch; }
+  .cat-section .cat-grid { margin-top: 5rem; }
+  @media (min-width: 1024px) { .cat-section .cat-grid { margin-top: 8rem; } }
+}
+
+/* Hero search card on scroll: --dk (0 → 1, set by the hero script) mixes it from the grey card with ink controls to an ink card with
+   white controls — labels and price text white, fields white, the range track and handles white, the Search button white with ink text. */
+@layer components {
+  .wm-hero .wm-form { --dk: 0; --dkp: calc(var(--dk) * 100%); background: color-mix(in srgb, var(--color-foreground) var(--dkp), var(--color-secondary)); }
+  .wm-hero .wm-form .field-label, .wm-hero .wm-form .pr-out { color: color-mix(in srgb, #ffffff var(--dkp), var(--color-foreground)); }
+  .wm-hero .wm-form .field { background-color: color-mix(in srgb, #ffffff var(--dkp), var(--color-secondary)); border-color: color-mix(in srgb, #ffffff var(--dkp), var(--color-border)); }
+  .wm-hero .wm-form .pr-track::before { background: color-mix(in srgb, rgb(255 255 255 / 0.35) var(--dkp), var(--color-border)); }
+  .wm-hero .wm-form .pr-fill { background: color-mix(in srgb, #ffffff var(--dkp), var(--color-foreground)); }
+  .wm-hero .wm-form .pr-track input[type="range"]::-webkit-slider-thumb { background: color-mix(in srgb, #ffffff var(--dkp), var(--color-foreground)); box-shadow: inset 0 0 0 2px color-mix(in srgb, #ffffff var(--dkp), var(--color-foreground)), 0 1px 4px rgb(22 22 22 / 0.15); }
+  .wm-hero .wm-form .pr-track input[type="range"]::-moz-range-thumb { background: color-mix(in srgb, #ffffff var(--dkp), var(--color-foreground)); }
+  .wm-hero .wm-form .price-range.is-busy input[type="range"]::-webkit-slider-thumb,
+  .wm-hero .wm-form .pr-track input[type="range"]:hover::-webkit-slider-thumb { background: color-mix(in srgb, var(--color-foreground) var(--dkp), #ffffff); }
+  .wm-hero .wm-form .pr-tip { background: color-mix(in srgb, #ffffff var(--dkp), var(--color-foreground)); color: color-mix(in srgb, var(--color-foreground) var(--dkp), #ffffff); }
+  .wm-hero .wm-form .hs-submit { background: color-mix(in srgb, #ffffff var(--dkp), var(--color-primary)); color: color-mix(in srgb, var(--color-foreground) var(--dkp), var(--color-primary-foreground)); }
+  .wm-hero .wm-form .hs-submit:hover:not(:disabled) { background: transparent; color: color-mix(in srgb, #ffffff var(--dkp), var(--color-foreground)); box-shadow: inset 0 0 0 1px color-mix(in srgb, #ffffff var(--dkp), var(--color-foreground)); }
+}
+
+/* Hero card, dark state for the fields: they turn ink like the card, with a white outline and white text; hover (and focus) brightens
+   the outline to full white and lifts the fill a touch. In the light state the fields keep the grey look with the ink hover. */
+@layer components {
+  .wm-hero .wm-form .field {
+    background-color: color-mix(in srgb, var(--color-foreground) var(--dkp), var(--color-secondary));
+    border-color: color-mix(in srgb, rgb(255 255 255 / 0.5) var(--dkp), var(--color-border));
+    color: color-mix(in srgb, #ffffff var(--dkp), var(--color-foreground));
+    transition: border-color 200ms var(--ease-site), background-color 200ms var(--ease-site), box-shadow 200ms var(--ease-site);
+  }
+  .wm-hero .wm-form .field::placeholder { color: color-mix(in srgb, rgb(255 255 255 / 0.6) var(--dkp), var(--color-muted-foreground)); }
+  .wm-hero .wm-form .field:hover, .wm-hero .wm-form .field:focus, .wm-hero .wm-form .field:focus-visible {
+    border-color: color-mix(in srgb, #ffffff var(--dkp), var(--color-foreground));
+    background-color: color-mix(in srgb, #262626 var(--dkp), var(--color-secondary));
+  }
+  .wm-hero .wm-form.is-dark .field:hover, .wm-hero .wm-form.is-dark .field:focus-visible { box-shadow: 0 0 0 1px #ffffff; }
+  .wm-hero .wm-form.is-dark select.field { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23ffffff' stroke-width='1.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  .wm-hero .wm-form.is-dark select.field option { color: var(--color-foreground); background: #ffffff; }
+}
+
+/* No width cap: the page container always spans the screen (side gutters only). Above 1440px the root size grows with the screen,
+   so everything set in rem — type, spacing, cards, controls, the header pill — scales up in proportion and the composition holds. */
+:root { --content-max: none; }
+.wrap { max-width: none; }
+@media (min-width: 1440px) { html { font-size: calc(100vw / 1440 * 16); } }
+/* Browse by Category: the space above its title equals the site's side padding (the gutter). */
+@layer components { .cat-section { padding-top: var(--gutter); } }
+/* Browse by Category: the space under the cards equals the gutter too. */
+@layer components { .cat-section { padding-bottom: var(--gutter); } }
+
+/* Listing card facts: type, beds, baths, area, each with a line icon, no separators. */
+@layer components {
+  .facts { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem 1.25rem; margin: 0; padding: 0; list-style: none; font-size: var(--text-sm); color: var(--color-muted-foreground); }
+  .facts li { display: inline-flex; align-items: center; gap: 0.4375rem; white-space: nowrap; }
+  .facts svg { flex: none; width: 1.125rem; height: 1.125rem; color: var(--color-foreground); }
+}
+
+/* Listing cards, hover / focus (every list: home sections, listings, search, similar, agent and neighborhood pages): the photo zooms
+   and dims a touch, a white round arrow button rises in its bottom-right corner, and the other cards in the same list fade back.
+   The texts do not move. */
+@layer components {
+  .lcard .media img { transition: transform 700ms var(--ease-site); }
+  .lcard .media::after { content: ""; position: absolute; inset: 0; background: rgb(22 22 22 / 0.18); opacity: 0; transition: opacity 400ms var(--ease-site); pointer-events: none; }
+  .lcard-go { position: absolute; right: 0.875rem; bottom: 0.875rem; z-index: 2; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 9999px; background: var(--color-background); color: var(--color-foreground); opacity: 0; transform: translateY(0.5rem) scale(0.85); transition: opacity 300ms var(--ease-site), transform 450ms var(--ease-site); pointer-events: none; }
+  .lcard:hover .media img, .lcard:focus-within .media img { transform: scale(1.06); }
+  .lcard:hover .media::after, .lcard:focus-within .media::after { opacity: 1; }
+  .lcard:hover .lcard-go, .lcard:focus-within .lcard-go { opacity: 1; transform: none; }
+  .card.lcard:hover .card-title { opacity: 1; }
+  ul > li { transition: opacity 300ms var(--ease-site); }
+  @media (hover: hover) { ul:has(> li > .lcard:hover) > li:not(:has(> .lcard:hover)) { opacity: 0.45; } }
+}
+
+/* Listing grids: more room between rows. Unlayered so it wins over the grids' gap utilities. */
+ul:has(> li > .lcard) { row-gap: 5rem; }
+/* Listing card address: hidden at rest (its line kept), fades and rises in on hover or focus; always shown where there is no hover. */
+@layer components {
+  .lcard-addr { opacity: 0; transform: translateY(0.375rem); transition: opacity 350ms var(--ease-site), transform 450ms var(--ease-site); }
+  .lcard:hover .lcard-addr, .lcard:focus-within .lcard-addr { opacity: 1; transform: none; }
+  @media (hover: none) { .lcard-addr { opacity: 1; transform: none; } }
+}
+
+/* Featured Neighborhoods (after the reference's Featured Projects). */
+@layer components {
+  .fp-section { padding-block: var(--section-y); }
+  .fp-head { padding-bottom: 1.5rem; border-bottom: 1px solid var(--color-border); }
+  .fp-intro { display: grid; gap: 1.5rem; margin-top: 2rem; }
+  @media (min-width: 1024px) { .fp-intro { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; } .fp-label { grid-column: 1 / span 4; } .fp-copy { grid-column: 6 / span 6; } }
+  .fp-label { font-size: var(--text-sm); }
+  .fp-copy { font-size: var(--text-lg); line-height: 1.5; }
+  .fp-copy p + p { margin-top: 1.25rem; }
+  .fp-copy .link-btn { margin-top: 0.75rem; font-size: var(--text-base); }
+
+  .fp-grid { display: grid; gap: 3rem; margin: 4rem 0 0; padding: 0; list-style: none; }
+  @media (min-width: 768px) {
+    .fp-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; row-gap: 0; margin-top: 6rem; }
+    .fp-grid > li:nth-child(1) { grid-column: 4 / span 6; }
+    .fp-grid > li:nth-child(2) { grid-column: 1 / span 5; grid-row: 2; margin-top: calc(28rem + 31rem); }
+    .fp-grid > li:nth-child(3) { grid-column: 7 / span 6; grid-row: 2; margin-top: 28rem; }
+  }
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .fp-grid > li:nth-child(2) { margin-top: calc(10rem + 12rem); }
+    .fp-grid > li:nth-child(3) { margin-top: 10rem; }
+  }
+  .fp-card { position: relative; display: block; color: var(--color-foreground); text-decoration: none; }
+  .fp-media { position: relative; display: block; overflow: hidden; background: var(--color-secondary); aspect-ratio: 682 / 816; }
+  .fp-grid > li:nth-child(2) .fp-media { aspect-ratio: 537 / 645; }
+  .fp-grid > li:nth-child(3) .fp-media { aspect-ratio: 653 / 1013; }
+  .fp-media img { position: absolute; left: 0; top: -5%; width: 100%; height: 110%; object-fit: cover; will-change: transform; }
+  /* The name line: across the photo's top, white in difference mode (reads on light and dark photos), following the pointer. */
+  .fp-cap { position: absolute; left: 0; right: 0; top: 0; z-index: 2; display: flex; justify-content: space-between; gap: 1rem; padding: 0.875rem 1rem; color: #ffffff; mix-blend-mode: difference; font-size: var(--text-lg); line-height: 1.2; pointer-events: none; transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1); }
+  .fp-card:focus-visible { outline: none; }
+  .fp-card:focus-visible .fp-media { outline: 1px solid var(--color-foreground); outline-offset: 4px; }
+}
+
+/* Listing badges: all white with ink text (Under offer, Sold, Rented included); the "10+ views today" badge carries a star. */
+@layer components {
+  .status, .status-open, .status-closed, .status-tag { background: var(--color-background); color: var(--color-foreground); }
+  .status-hot { gap: 0.3125rem; }
+  .status-hot svg { flex: none; }
+}
+
+/* Listing card photo carousel: photos stacked and cross-faded; round white arrows at the sides on hover (always on touch screens);
+   small dots at the bottom. The card's stretched title link sits above the photo (so a click on the photo opens the listing); the
+   badges and arrows sit above that link. */
+@layer components {
+  .card .card-title a::after { z-index: 2; }
+  .lcard .badges { z-index: 3; }
+  .lcard-media img { position: absolute; inset: 0; opacity: 0; transition: opacity 350ms var(--ease-site), transform 700ms var(--ease-site); }
+  .lcard-media img.is-on { opacity: 1; }
+  .lcard-go { display: none; }
+  .lc-nav { position: absolute; top: 50%; z-index: 4; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; margin-top: -1.25rem; border: 0; border-radius: 9999px; background: var(--color-background); color: var(--color-foreground); cursor: pointer; opacity: 0; transition: opacity 250ms var(--ease-site), transform 300ms var(--ease-site), background-color 200ms var(--ease-site), color 200ms var(--ease-site); }
+  .lc-prev { left: 0.75rem; transform: translateX(-0.375rem); }
+  .lc-next { right: 0.75rem; transform: translateX(0.375rem); }
+  .lcard:hover .lc-nav, .lc-nav:focus-visible { opacity: 1; transform: none; }
+  .lc-nav:hover { background: var(--color-foreground); color: var(--color-background); }
+  .lc-nav:focus-visible { outline: 1px solid var(--color-background); outline-offset: 2px; }
+  .lc-dots { position: absolute; left: 50%; bottom: 0.75rem; z-index: 3; display: flex; gap: 0.3125rem; transform: translateX(-50%); opacity: 0; transition: opacity 250ms var(--ease-site); pointer-events: none; }
+  .lc-dots > span { width: 0.375rem; height: 0.375rem; border-radius: 9999px; background: rgb(255 255 255 / 0.55); transition: background-color 200ms var(--ease-site), transform 200ms var(--ease-site); }
+  .lc-dots > span.is-on { background: #ffffff; transform: scale(1.25); }
+  .lcard:hover .lc-dots { opacity: 1; }
+  @media (hover: none) { .lc-nav, .lc-dots { opacity: 1; transform: none; } }
+}
+/* Listing cards: no darkening of the photo on hover (the zoom, arrows and dots stay). */
+@layer components { .lcard:hover .media::after, .lcard:focus-within .media::after { opacity: 0; } }
+
+/* Our Benefits (after the reference's collaborators block): columns on the listing grid above (3 columns, 1.5rem gap) — the text in
+   the first, the photo across the other two. Rows are buttons (they switch the photo; they lead nowhere). */
+@layer components {
+  .ben-grid { display: grid; gap: 2.5rem; }
+  @media (min-width: 1024px) { .ben-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 1.5rem; } .ben-photo { grid-column: 2 / span 2; } }
+  .ben-intro { font-size: var(--text-lg); line-height: 1.5; }
+  .ben-rows { margin-top: 3rem; padding: 0; list-style: none; }
+  .ben-rows button { display: flex; width: 100%; justify-content: space-between; gap: 1rem; padding: 0.875rem 0; border: 0; border-bottom: 1px solid var(--color-border); background: none; font: inherit; font-size: var(--text-base); color: var(--color-foreground); text-align: left; cursor: pointer; transition: opacity 200ms var(--ease-site); }
+  .ben-rows button span:last-child { color: var(--color-muted-foreground); }
+  .ben-rows:hover button:not(:hover), .ben-rows:focus-within button:not(:focus) { opacity: 0.45; }
+  .ben-rows button[aria-current="true"] span:first-child { text-decoration: underline; text-underline-offset: 0.25em; text-decoration-thickness: 1px; }
+  .ben-photo .roster-stage { border-radius: 0; }
+  .ben-cap { display: flex; justify-content: space-between; gap: 1.5rem; margin-top: 0.875rem; font-size: var(--text-lg); }
+  .ben-cap [data-caption] { text-align: right; max-width: 70%; }
+}
+
+/* Our Benefits, second pass: each row shows its text; one static photo with the site's rounded corners; no caption. */
+@layer components {
+  .ben-list { margin: 3rem 0 0; padding: 0; list-style: none; border-top: 1px solid var(--color-border); }
+  .ben-list > li { padding: 1rem 0 1.125rem; border-bottom: 1px solid var(--color-border); }
+  .ben-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+  .ben-row h3 { font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; letter-spacing: 0; line-height: 1.4; }
+  .ben-row span { color: var(--color-muted-foreground); font-size: var(--text-base); }
+  .ben-list p { margin-top: 0.375rem; max-width: 40ch; font-size: var(--text-sm); line-height: 1.5; color: var(--color-muted-foreground); }
+  .ben-photo .media { border-radius: var(--radius-card); }
+}
+
+/* Every visible H2 carries the square mark. Without the script it is a ::before; the script turns it into a real piece of the heading
+   (.h2-sq) so it can rise with the letters. Words are masks (.h2w), letters move inside them (.h2c). */
+h2:not(.sr-only):not(#filters-title):not(.frame-words)::before { content: ""; display: inline-block; width: 0.45em; height: 0.45em; margin-right: 0.6em; vertical-align: 0.12em; background: currentColor; }
+h2.h2-split::before { display: none !important; }
+.h2w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.14em; margin-bottom: -0.14em; }
+.h2c { display: inline-block; will-change: transform; }
+.h2-sq { width: 0.45em; height: 0.45em; margin-right: 0.15em; vertical-align: 0.12em; background: currentColor; }
+
+/* Benefits, third pass: photo left across two grid columns, text right in the third; the list's top rule sits under the heading. */
+@layer components {
+  @media (min-width: 1024px) { .ben-photo { grid-column: 1 / span 2; } .ben-text { grid-column: 3; } }
+  .ben-text .ben-list { margin-top: 1.5rem; }
+}
+
+/* Type: one size for all running text — paragraphs, descriptions, intros, labels, captions — 15px; small UI text (meta, badges,
+   tooltips) 14px at the least. Unlayered so it overrides the theme's tokens. */
+:root { --text-xs: 0.875rem; --text-sm: 0.9375rem; --text-base: 0.9375rem; --text-lg: 0.9375rem; }
+.pr-tip, .count-badge { font-size: 0.875rem; }
+.field { font-size: var(--text-base); }
+/* Phones: form fields stay at 16px so iOS does not zoom in on focus. */
+@media (max-width: 767px) { .field { font-size: 1rem; } }
+/* Benefits photo: square. */
+@layer components { .ben-photo .media { aspect-ratio: 1; } }
+
+/* Benefit rows: a check-circle before the title (the numbers are gone), the text indented under the title; each row's content sits in
+   a mask and rises into it on scroll (set by the section's script). */
+@layer components {
+  .ben-row { justify-content: flex-start; align-items: center; gap: 0.75rem; }
+  .ben-check { flex: none; width: 1.375rem; height: 1.375rem; color: var(--color-foreground); }
+  .ben-list p { padding-left: calc(1.375rem + 0.75rem); }
+  .ben-mask { overflow: hidden; }
+  .ben-in { will-change: transform; }
+}
+/* Listing card address: only on hover (or keyboard focus) — a clicked carousel arrow no longer keeps it showing. */
+@layer components {
+  .lcard:focus-within .lcard-addr { opacity: 0; transform: translateY(0.375rem); }
+  .lcard:hover .lcard-addr, .lcard:has(:focus-visible) .lcard-addr { opacity: 1; transform: none; }
+  @media (hover: none) { .lcard .lcard-addr, .lcard:focus-within .lcard-addr { opacity: 1; transform: none; } }
+}
+
+/* Featured Neighborhoods, opening as the owner's mock-up: the heading over its rule, one paragraph and the "See all" link on the left,
+   then the photos on the listing grid (3 columns, 1.5rem gap) with the site's rounded corners — the first across two columns from the
+   left, the second in the third column set lower, the third under the first. */
+@layer components {
+  .fp-intro { display: block; margin-top: 2.5rem; max-width: 42rem; font-size: var(--text-base); line-height: 1.6; }
+  .fp-intro .link-btn { margin-top: 1.25rem; font-size: var(--text-base); }
+  .fp-media { border-radius: var(--radius-card); }
+  @media (min-width: 768px) {
+    .fp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 1.5rem; row-gap: 6rem; margin-top: 4.5rem; }
+    .fp-grid > li:nth-child(1) { grid-column: 1 / span 2; grid-row: 1; margin-top: 0; }
+    .fp-grid > li:nth-child(2) { grid-column: 3; grid-row: 1; margin-top: 18rem; }
+    .fp-grid > li:nth-child(3) { grid-column: 2 / span 2; grid-row: 2; margin-top: 0; }
+    .fp-grid > li:nth-child(1) .fp-media, .fp-grid > li:nth-child(3) .fp-media { aspect-ratio: 16 / 10; }
+    .fp-grid > li:nth-child(2) .fp-media { aspect-ratio: 4 / 5; }
+  }
+  @media (min-width: 768px) and (max-width: 1023px) { .fp-grid > li:nth-child(2) { margin-top: 8rem; } }
+}
+
+/* Neighborhoods over a city map: a full-width stage with the line drawing behind and the photo cards placed by --x / --y. The photo is a
+   window (.hm-frame) onto a picture 1.5× its size (.hm-clip, clipped to the window at rest); hover / focus opens the clip to the full
+   picture — the photo grows 1.5× from its centre as a widening mask — and the name above lifts clear by the same quarter. */
+@layer components {
+  .hm-stage { position: relative; margin-top: 3rem; overflow: hidden; }
+  .hm-map { position: absolute; inset: 0; width: 100%; height: 100%; color: #d9d9d9; pointer-events: none; }
+  .hm-map .cm-blocks { stroke-width: 0.6; color: #e3e3e3; stroke: #e3e3e3; }
+  .hm-map .cm-streets { stroke-width: 0.7; }
+  .hm-map .cm-parks { stroke-width: 0.8; stroke-dasharray: 3 3; }
+  .hm-map .cm-river { stroke-width: 1; stroke: #c9c9c9; }
+  .hm-map .cm-bridges { stroke-width: 0.8; stroke: #c9c9c9; }
+  .hm-map .cm-ring { stroke-width: 0.9; stroke: #cfcfcf; stroke-dasharray: 8 5; }
+  .hm-map .cm-avenues { stroke-width: 1.3; stroke: #c4c4c4; }
+  .hm-list { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem 1.25rem; margin: 0; padding: 3rem var(--gutter); list-style: none; }
+  @media (min-width: 768px) {
+    .hm-stage { height: clamp(40rem, 62vw, 56rem); }
+    .hm-list { position: absolute; inset: 0; display: block; padding: 0; }
+    .hm-list > li { position: absolute; left: var(--x); top: var(--y); width: var(--w); }
+  }
+  .hm-list > li { --w: clamp(7rem, 9.5vw, 10rem); z-index: 1; }
+  .hm-list > li:hover, .hm-list > li:focus-within { z-index: 5; }
+  .hm-card { display: block; color: var(--color-foreground); text-decoration: none; }
+  .hm-name { position: relative; z-index: 2; display: inline-block; margin-bottom: 0.5rem; padding: 0.125rem 0.375rem; margin-left: -0.375rem; border-radius: 4px; background: var(--color-background); font-size: var(--text-sm); line-height: 1.3; white-space: nowrap; transition: transform 550ms cubic-bezier(0.22, 1, 0.36, 1); }
+  .hm-frame { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; }
+  .hm-clip { position: absolute; inset: -25%; overflow: hidden; clip-path: inset(16.6667% round 6px); transition: clip-path 600ms cubic-bezier(0.22, 1, 0.36, 1); background: var(--color-secondary); }
+  .hm-clip img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.08); transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1); }
+  .hm-card:hover .hm-clip, .hm-card:focus-visible .hm-clip { clip-path: inset(0 round 10px); }
+  .hm-card:hover .hm-clip img, .hm-card:focus-visible .hm-clip img { transform: none; }
+  .hm-card:hover .hm-name, .hm-card:focus-visible .hm-name { transform: translateY(calc(var(--w) * -0.3125)); }
+  .hm-card:focus-visible { outline: none; }
+  .hm-card:focus-visible .hm-name { text-decoration: underline; }
+  @media (max-width: 767px) { .hm-list > li { width: auto; } .hm-clip { inset: 0; clip-path: inset(0 round 8px); } .hm-card:hover .hm-name { transform: none; } }
+}
+
+/* City map, second pass: every street one 1px grey line, the river one 10px grey line (--u, set by the script, undoes the drawing's
+   scale so the widths are true pixels); lines draw in with the scroll (--draw: 0 → 1); the map fades out at its four edges. */
+@layer components {
+  .hm-map { color: #cdcdcd; --u: 1;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent), linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+    -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent), linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent); mask-composite: intersect; }
+  .hm-map .cm-street { stroke-width: calc(var(--u) * 1px); }
+  .hm-map .cm-river { stroke-width: calc(var(--u) * 10px); stroke: #dadada; }
+  .hm-map path { stroke-dasharray: 1 1; stroke-dashoffset: calc(1 - var(--draw, 1)); }
+}
+
+/* Street map host (the SVG is loaded into it) and the OpenStreetMap credit. */
+@layer components {
+  .hm-map-host { position: absolute; inset: 0; pointer-events: none; }
+  .hm-map-host > svg { width: 100%; height: 100%; display: block; }
+  .hm-map { color: #c8c8c8; }
+  .hm-credit { position: absolute; right: var(--gutter); bottom: 0.75rem; z-index: 2; font-size: var(--text-xs); color: var(--color-muted-foreground); text-decoration: none; }
+  .hm-credit:hover { text-decoration: underline; }
+}
+/* City map drawing, per street: each line has its own --d delay, so the streets draw outward from the centre with the scroll. */
+@layer components { .hm-map path { stroke-dasharray: 1 1; stroke-dashoffset: clamp(0, calc(1 - (var(--draw, 1) * 1.6 - var(--d, 0)) * 2.5), 1); } }
+
+/* Page transitions (after the reference "async page transitions" demo), as a cross-document View Transition: on every same-site
+   navigation the page you leave shrinks to 0.8, lifts 30vh and dims to 40% while the new page wipes up over it from the bottom
+   (a clip from inset(100% 0 0 0) to none) — 0.7s on the reference's easing curve (sampled into linear()). The header pill stays put.
+   Browsers without cross-document view transitions simply navigate; reduced motion turns it off. */
+@view-transition { navigation: auto; }
+header.sticky { view-transition-name: site-header; }
+::view-transition { background: var(--color-foreground); }
+::view-transition-old(root), ::view-transition-new(root) { mix-blend-mode: normal; animation-duration: 0.7s; animation-fill-mode: both;
+  animation-timing-function: linear(0, 0.008, 0.02, 0.037, 0.06, 0.09, 0.127, 0.172, 0.226, 0.289, 0.362, 0.444, 0.533, 0.622, 0.707, 0.782, 0.837, 0.875, 0.907, 0.933, 0.955, 0.973, 0.986, 0.995, 1); }
+::view-transition-old(root) { animation-name: vt-leave; transform-origin: 50% 50%; }
+::view-transition-new(root) { animation-name: vt-enter; }
+@keyframes vt-leave { to { transform: translateY(-30vh) scale(0.8); opacity: 0.4; } }
+@keyframes vt-enter { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+::view-transition-group(site-header) { animation: none; z-index: 2; }
+::view-transition-old(site-header) { display: none; }
+::view-transition-new(site-header) { animation: none; }
+@media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
+
+/* Neighborhood cards on the map, second pass:
+   - names as small ink pills with white text (the price-range tooltip's style);
+   - the photo opens from the bottom through its mask as it scrolls into view (--rv, set by the map script);
+   - hover / focus grows the photo to 1.2× (was 1.5×), the name lifting by the same tenth. */
+@layer components {
+  .hm-name { padding: 0.25rem 0.625rem; margin-left: 0; border-radius: 9999px; background: var(--color-foreground); color: var(--color-background); font-size: var(--text-xs); line-height: 1.2; opacity: var(--rv, 1); }
+  .hm-clip { clip-path: inset(calc(16.6667% + (1 - var(--rv, 1)) * 66.6667%) 16.6667% 16.6667% 16.6667% round 6px); }
+  .hm-card:hover .hm-clip, .hm-card:focus-visible .hm-clip { clip-path: inset(10% round 8px); }
+  .hm-card:hover .hm-name, .hm-card:focus-visible .hm-name { transform: translateY(calc(var(--w) * -0.125)); }
+  @media (max-width: 767px) { .hm-clip { clip-path: inset(calc((1 - var(--rv, 1)) * 100%) 0 0 0 round 8px); } .hm-card:hover .hm-clip { clip-path: inset(0 round 8px); } }
+}
+/* Google badge on the home hero: every text in it at the hero paragraph's size and weight (15px, regular, the body face). */
+@layer components {
+  .wm-top .g-title, .wm-top .g-score, .wm-top .g-count { font-family: var(--font-sans); font-size: var(--text-base); font-weight: 400; line-height: 1.4; letter-spacing: 0; }
+  .wm-top .g-score { margin-top: 0.125rem; }
+}
+/* Neighborhood name pills: no fade — each opens from the bottom through a mask together with its photo (--rv). */
+@layer components {
+  .hm-name { opacity: 1; clip-path: inset(calc((1 - var(--rv, 1)) * 100%) 0 0 0 round 9999px); }
+}
+
+/* Agents block (the benefits block's twin, mirrored): text in the first grid column, a large square photo across the other two;
+   hairline rows with no hover effect. */
+@layer components {
+  @media (min-width: 1024px) { .agent-photo { grid-column: 2 / span 2; } }
+  .agent-photo .media { aspect-ratio: 1; border-radius: var(--radius-card); }
+  .agent-rows { margin: 3rem 0 0; padding: 0; list-style: none; border-top: 1px solid var(--color-border); }
+  .agent-rows > li { border-bottom: 1px solid var(--color-border); }
+  .agent-rows a { display: flex; justify-content: space-between; gap: 1rem; padding: 0.875rem 0; font-size: var(--text-base); color: var(--color-foreground); text-decoration: none; }
+  .agent-rows a span:last-child { color: var(--color-muted-foreground); text-align: right; }
+}
+/* City map drawing, spread over the whole run: a street starts at its --d (0 → 0.6) and takes 40% of the run, so the last ones finish
+   exactly as the run ends (--draw = 1) and lines keep drawing the whole time the map is on screen. */
+@layer components { .hm-map path { stroke-dashoffset: clamp(0, calc(1 - (var(--draw, 1) - var(--d, 0)) * 2.5), 1); } }
+
+/* Text actions ("See all …", "Back to …", "Clear all"): outline pills — a thin ink outline, rounded ends — that fill with ink and turn
+   their text white on hover / focus. Same height as the small buttons. */
+@layer components {
+  .link-btn { min-height: 2.5rem; min-width: 0; padding-inline: 1.125rem; border-radius: 9999px; box-shadow: inset 0 0 0 1px var(--color-foreground); color: var(--color-foreground); background: transparent; font-size: var(--text-base); font-weight: 400; text-decoration: none; white-space: nowrap; transition: background-color 200ms var(--ease-site), color 200ms var(--ease-site); }
+  .link-btn:hover, .link-btn:focus-visible { opacity: 1; background: var(--color-foreground); color: var(--color-background); text-decoration: none; }
+  .sect-head .link-btn { margin-block: -0.25rem; }
+  .bg-inverse .link-btn { box-shadow: inset 0 0 0 1px var(--color-inverse-foreground); color: var(--color-inverse-foreground); }
+  .bg-inverse .link-btn:hover { background: var(--color-inverse-foreground); color: var(--color-inverse); }
+}
+/* Agents block: the space under it equals the site gutter. */
+@layer components { .agents-section { padding-bottom: var(--gutter); } }
+/* Page transition, faster and less linear: 0.42s (40% shorter than 0.7s) on a strong ease-in — it starts gently and keeps
+   accelerating, reaching full speed as it lands. */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.42s; animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0); }
+/* Page transition length: 0.6s (same accelerating curve). */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.6s; }
+
+/* Photos grow into place with the scroll: every photo frame (cards, categories, benefits, agents, the neighborhoods on the map, the
+   footer card, photos on inner pages) starts at 82% of its size as it enters the screen and reaches full size by the time it is 40%
+   of the way in. Pure CSS scroll timeline, tied to each frame's own position; off with reduced motion or where unsupported. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .media, .cat-photo, .hm-frame { animation: photo-grow linear both; animation-timeline: view(); animation-range: entry 0% cover 40%; }
+    .wm-photo .media, dialog .media { animation: none; }
+    @keyframes photo-grow { from { transform: scale(0.82); } to { transform: none; } }
+  }
+}
+
+/* About (after the reference about page): the statement heading across the content width on two balanced lines, a hairline, then the
+   label left and the story right (from 5/12, as the reference), then a wide 16:9 photo with the site's rounded corners. */
+@layer components {
+  .ab-head { padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+  .ab-head h2 { max-width: 100%; text-wrap: balance; }
+  .ab-body { display: grid; gap: 1.5rem; margin-top: 2.5rem; }
+  @media (min-width: 1024px) { .ab-body { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; } .ab-label { grid-column: 1 / span 4; } .ab-copy { grid-column: 6 / span 6; } }
+  .ab-label { font-size: var(--text-base); color: var(--color-muted-foreground); }
+  .ab-copy p + p { margin-top: 1.25rem; }
+  .ab-copy { line-height: 1.6; }
+  .ab-photo { margin-top: 4.5rem; aspect-ratio: 16 / 9; border-radius: var(--radius-card); }
+  .ab-photo img { width: 100%; height: 100%; object-fit: cover; }
+}
+/* Single photos no longer grow in on scroll (the stepped lists carry the motion now). */
+.media, .cat-photo, .hm-frame { animation: none !important; }
+/* About, as the owner's mock-up: text | 16:9 photo | text, on the 3-column card grid (1.5rem gaps), all starting on one line. */
+@layer components {
+  .ab-cols { display: grid; gap: 2rem; margin-top: 2.5rem; align-items: start; }
+  @media (min-width: 768px) { .ab-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 1.5rem; } }
+  .ab-cols .ab-photo { margin-top: 0; }
+}
+/* About columns: each child in its own grid column (overrides the earlier 12-column placement of .ab-copy). */
+@layer components { @media (min-width: 768px) { .ab-cols > * { grid-column: auto; } } .ab-cols .ab-photo { width: 100%; } }
+/* About photo: 3:4 portrait. */
+@layer components { .ab-cols .ab-photo { aspect-ratio: 3 / 4; } }
+
+/* FAQ: on the 3-column card grid — the heading in the first column, the questions across the other two, so their left edge lines up
+   with the About photo above. */
+@layer components {
+  @media (min-width: 1024px) { .faq-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 1.5rem; } .faq-grid > :last-child { grid-column: 2 / span 2; } }
+}
+
+/* Vertical rhythm: every section's top and bottom padding equals the site gutter (the side padding) — 20 / 32 / 48px, scaling with
+   the page above 1440px. Unlayered and last, so it wins over the earlier section paddings. */
+:root { --section-y: var(--gutter); }
+.section, .section-lg, .fp-section, .cat-section, .agents-section, .wm-hero + section { padding-top: var(--gutter); padding-bottom: var(--gutter); }
+@layer components { .faq-grid { row-gap: 2.5rem; } }
+/* About, third pass: text in the first and third grid columns, then the photo across the content width, 16:9, rounded. */
+@layer components {
+  @media (min-width: 768px) { .ab-cols .ab-right { grid-column: 3; } }
+  .ab-wide { margin-top: 3rem; aspect-ratio: 16 / 9; border-radius: var(--radius-card); }
+  .ab-wide img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+/* FAQ, rebuilt: heading row (title, "See all" at its end), then the questions full width within the gutters. */
+@layer components {
+  .faq-head { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+  .faq-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-border); }
+  .faq-list > li { position: relative; border-bottom: 1px solid var(--color-border); }
+  /* The rule under a question turns ink on hover (drawn over the grey one, from the left). */
+  .faq-list > li::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--color-foreground); transform: scaleX(0); transform-origin: left; transition: transform 500ms var(--ease-site); }
+  .faq-list > li:hover::after, .faq-list > li:focus-within::after { transform: scaleX(1); }
+  .faq-q { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 4.5rem; padding: 1rem 0; cursor: pointer; list-style: none;
+    font-family: var(--font-display); font-size: var(--text-h3); font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; }
+  .faq-q::-webkit-details-marker { display: none; }
+  .faq-q:focus-visible { outline: none; }
+  .faq-q:focus-visible span:first-child { text-decoration: underline; text-underline-offset: 0.2em; }
+  .faq-icon { display: grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; border-radius: 9999px; box-shadow: inset 0 0 0 1px var(--color-foreground); transition: background-color 250ms var(--ease-site), color 250ms var(--ease-site); }
+  .faq-icon svg { transition: transform 400ms var(--ease-site); }
+  .faq-q:hover .faq-icon, .faq-q:focus-visible .faq-icon { background: var(--color-foreground); color: var(--color-background); }
+  .faq-item[open] .faq-icon svg { transform: rotate(180deg); }
+  .faq-a p { max-width: 68ch; padding-bottom: 1.5rem; font-size: var(--text-base); line-height: 1.6; color: var(--color-muted-foreground); }
+  /* Smooth open / close (browsers that can animate a disclosure's height; others just open). */
+  .faq-item { interpolate-size: allow-keywords; }
+  .faq-item::details-content { block-size: 0; overflow: hidden; transition: block-size 450ms var(--ease-site), content-visibility 450ms allow-discrete; }
+  .faq-item[open]::details-content { block-size: auto; }
+}
+
+/* Page transition as a push: the new page rises from below the screen while growing from 0.85 to full size, and pushes the old page
+   up and out (it shrinks to 0.85 and dims on its way). Same length and curve as before (0.6s, accelerating). */
+::view-transition-old(root) { animation-name: vt-push-out; }
+::view-transition-new(root) { animation-name: vt-push-in; }
+@keyframes vt-push-out { from { transform: none; opacity: 1; } to { transform: translateY(-100%) scale(0.85); opacity: 0.4; } }
+@keyframes vt-push-in { from { transform: translateY(100%) scale(0.85); } to { transform: none; } }
+/* Neighborhood name pills centred over their photo. */
+@layer components { .hm-name { display: block; width: fit-content; margin-inline: auto; } }
+
+/* Footer cards (Buy, Rent, Sell): the category cards, smaller and on ink — 4:3 photos, names at the card-title size, white text and
+   rules, the pill inverted. */
+@layer components {
+  .foot-cats { margin-top: 3.5rem; padding-bottom: 0; list-style: none; }
+  .foot-cats .cat-name { font-size: clamp(1.375rem, 1rem + 1.2vw, 1.75rem); color: var(--color-inverse-foreground); }
+  .foot-cats .cat-photo { aspect-ratio: 4 / 3; background: rgb(255 255 255 / 0.08); }
+  .foot-cats .cat-card { color: var(--color-inverse-foreground); }
+  .foot-cats .cat-top::before { background: rgb(255 255 255 / 0.2); }
+  .foot-cats .cat-top::after { background: var(--color-inverse-foreground); }
+  .foot-cats .cat-rest { color: var(--color-inverse-muted); }
+  .foot-cats .cat-pill { background: var(--color-inverse-foreground); color: var(--color-inverse); }
+  .foot-cats .cat-pill-count { background: var(--color-inverse); color: var(--color-inverse-foreground); }
+  @media (hover: hover) { .foot-cats:has(.cat-card:hover) > li:not(:has(.cat-card:hover)) { opacity: 0.5; filter: none; } }
+}
+/* Page transition timing, as the reference demo: 0.7s on its own easing curve (GSAP "pageTransition", sampled into linear()) — a soft
+   start, a quick middle and a soft landing. The push itself is unchanged. */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.7s;
+  animation-timing-function: linear(0, 0.008, 0.02, 0.037, 0.06, 0.09, 0.127, 0.172, 0.226, 0.289, 0.362, 0.444, 0.533, 0.622, 0.707, 0.782, 0.837, 0.875, 0.907, 0.933, 0.955, 0.973, 0.986, 0.995, 1); }
+
+/* Hover on a card no longer fades the other cards' photos — only their texts step back (categories, footer cards, listing cards). */
+@media (hover: hover) {
+  .cat-grid:has(.cat-card:hover) > li:not(:has(.cat-card:hover)),
+  .foot-cats:has(.cat-card:hover) > li:not(:has(.cat-card:hover)),
+  ul:has(> li > .lcard:hover) > li:not(:has(> .lcard:hover)) { opacity: 1 !important; filter: none !important; }
+  .cat-grid:has(.cat-card:hover) > li:not(:has(.cat-card:hover)) .cat-top { opacity: 0.35; }
+  ul:has(> li > .lcard:hover) > li:not(:has(> .lcard:hover)) .lcard > :not(.media) { opacity: 0.4; }
+}
+.cat-top, .lcard > :not(.media) { transition: opacity 300ms var(--ease-site); }
+
+/* Footer, bottom part: the contact row on the 3-column card grid (left-aligned in each column), then — set apart by a wider gap and a
+   rule — legal links on the left and the one-line credit on the right. */
+@layer components {
+  .foot-contact { display: grid; gap: 1.5rem; margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid rgb(255 255 255 / 0.15); font-size: var(--text-sm); color: var(--color-inverse-muted); }
+  @media (min-width: 768px) { .foot-contact { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 1.5rem; } }
+  .foot-legal { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 4.5rem; padding-top: 1rem; padding-bottom: 1.5rem; border-top: 1px solid rgb(255 255 255 / 0.15); font-size: var(--text-xs); color: var(--color-inverse-muted); }
+  @media (min-width: 768px) { .foot-legal { flex-direction: row; align-items: center; justify-content: space-between; } }
+  .foot-credit { text-align: left; }
+  @media (min-width: 768px) { .foot-credit { text-align: right; } }
+}
+/* Footer: the space above its first row equals the site gutter. Unlayered, so it wins over the row's padding utilities. */
+.site-foot > .wrap:first-child { padding-top: var(--gutter); }
+/* Listings toolbar: the sort as a pill matching the Filters button (same height, same rounded ends, same outline). */
+@layer components {
+  .list-sort { width: auto; min-height: 3rem; padding: 0 2.75rem 0 1.25rem; border: 0; border-radius: var(--radius-control); background-color: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); background-position: right 1.125rem center; cursor: pointer; transition: background-color 200ms var(--ease-site); }
+  .list-sort:hover { border: 0; background-color: var(--color-secondary); }
+  .list-sort:focus, .list-sort:focus-visible { border: 0; outline: 1px solid var(--color-foreground); outline-offset: 3px; }
+}
+
+/* No second ring on click: mouse focus never draws the outline; fields and selects (which count as focus-visible on click) mark focus
+   with their own edge only. Keyboard focus on links and buttons keeps the ring. */
+@layer components {
+  :focus:not(:focus-visible) { outline: none !important; }
+  select:focus, select:focus-visible, input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):focus, textarea:focus, .list-sort:focus { outline: none !important; }
+}
+
+/* Listings search: the clear cross is a thin ink X in the site's line style (no browser-blue glyph); the search button is a bare ink magnifier. */
+@layer components {
+  .list-search::-webkit-search-cancel-button {
+    -webkit-appearance: none; appearance: none; width: 14px; height: 14px; margin-left: 0.5rem; cursor: pointer;
+    background-color: var(--color-foreground); transition: opacity .2s;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M1.5 1.5l11 11M12.5 1.5l-11 11' stroke='%23000' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M1.5 1.5l11 11M12.5 1.5l-11 11' stroke='%23000' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  .list-search::-webkit-search-cancel-button:hover { opacity: .6; }
+  .list-search-btn svg { width: 20px; height: 20px; }
+}
+
+/* Inner pages: the page top (H1 and intro) is centred; the search bar sits centred under it, with Filters and Sort centred below it,
+   then the result count. */
+@layer components {
+  .page-top { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .page-top > p { margin-inline: auto; }
+  .page-tools { margin-top: 2rem; }
+  .page-tools-row { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+  .page-search { width: 100%; max-width: 40rem; }
+  .page-tools-under { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+  .page-count { text-align: center; }
+}
+
+/* Inner pages: twice the room above the page top (under the header) and between the result count and the items. */
+main > :is(section, article):first-child:has(.page-top) { padding-top: calc(var(--gutter) * 2); }
+:is(.page-tools, .page-count) + :is(ul, .note) { margin-top: 3.9rem; }
+
+/* Footer contact: address, hours, phone and email all white, one style. */
+.foot-contact, .foot-contact * { color: var(--color-inverse-foreground) !important; font-size: var(--text-sm) !important; font-weight: 400 !important; line-height: 1.6 !important; }
+.foot-contact a { text-decoration: none; transition: opacity .2s; }
+.foot-contact a:hover { opacity: .6; }
+.page-top + .page-items { margin-top: 3.9rem; }
+
+/* Filters drawer in the site's own button language: every control is a fully rounded pill with a 1px ink outline (as Filters, Sort and
+   the outline buttons); the chosen option is solid ink; hover fills ink. Group titles get real room above and below the rule. */
+@layer components {
+  .fgroup { padding: 2rem 0; }
+  .fgroup-title { float: left; width: 100%; margin: 0 0 1.25rem; font-family: var(--font-display); font-size: var(--text-base); font-weight: 500; }
+  .fgroup-title + * { clear: both; }
+  .opt span { min-height: 2.75rem; padding-inline: 1.25rem; background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); font-size: var(--text-base); transition: background-color .2s, color .2s; }
+  .opt:hover span { background: var(--color-foreground); color: var(--color-background); }
+  .opt input:checked + span { background: var(--color-foreground); color: var(--color-background); }
+  .sheet select.field, .sheet .field { min-height: 3rem; border: 0; border-radius: 9999px; padding-inline: 1.25rem 2.75rem; background-color: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); background-position: right 1.125rem center; }
+  .sheet .field:hover { background-color: var(--color-secondary); }
+  .sheet .icon-btn { background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .sheet .icon-btn:hover:not(:disabled) { background: var(--color-foreground); color: var(--color-background); }
+  .sheet-head h2 { font-family: var(--font-display); }
+  .chip { border-radius: 9999px; background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .chip:hover { background: var(--color-foreground); color: var(--color-background); }
+}
+/* Hero search card: its dropdowns are pills too, like every other control on the site. */
+.wm-form select.field { border-radius: 9999px; padding-left: 1.25rem; }
+
+/* ── Listing page (portal layout) ─────────────────────────────────────────────────────────────────────────────────────────────── */
+@layer components {
+  .lp .meta { margin-bottom: 1.5rem; }
+  .lp-top, .lp-body { display: grid; gap: var(--gutter) 1.5rem; }
+  @media (min-width: 1024px) {
+    .lp-top, .lp-body { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lp-stage-wrap, .lp-main { grid-column: span 2; }
+    .lp-aside { position: sticky; top: calc(var(--header-h) + 1.5rem); align-self: start; }
+  }
+  .lp-body { margin-top: calc(var(--gutter) * 1.5); }
+
+  /* stage */
+  .lp-stage { position: relative; aspect-ratio: 4 / 3; border-radius: var(--radius-card); overflow: hidden; background: var(--color-secondary); }
+  .lp-pane { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .3s; }
+  .lp-pane.is-on { opacity: 1; visibility: visible; }
+  .lp-photos img, .lp-plan img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .35s; }
+  .lp-photos img.is-on, .lp-plan img { opacity: 1; }
+  .lp-map iframe, .lp-mapbox { width: 100%; height: 100%; border: 0; filter: grayscale(1) contrast(1.05); }
+  .lp-mapbox { display: block; height: 22rem; margin-top: 1rem; border-radius: var(--radius-card); background: var(--color-secondary); }
+  .lp-stage .badges { z-index: 3; }
+  .lp-stage .lc-nav { opacity: 1; z-index: 2; }
+  .lp-count, .lp-zoom { position: absolute; z-index: 2; display: inline-flex; align-items: center; gap: .25rem; border-radius: 9999px; background: var(--color-background); color: var(--color-foreground); font-size: var(--text-xs); }
+  .lp-count { right: 1rem; bottom: 1rem; padding: .25rem .75rem; }
+  .lp-zoom { right: 1rem; top: 1rem; width: 2.5rem; height: 2.5rem; justify-content: center; border: 0; cursor: pointer; transition: background-color .2s, color .2s; }
+  .lp-zoom:hover { background: var(--color-foreground); color: var(--color-background); }
+  .lp-tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+  .opt-pill { display: inline-flex; align-items: center; min-height: 2.5rem; padding-inline: 1.25rem; border: 0; border-radius: 9999px; background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); font-size: var(--text-base); cursor: pointer; transition: background-color .2s, color .2s; }
+  .opt-pill:hover, .opt-pill.is-on { background: var(--color-foreground); color: var(--color-background); }
+  .lp-thumbs { display: flex; gap: .5rem; margin: 1rem 0 0; padding: 0; list-style: none; overflow-x: auto; scrollbar-width: none; }
+  .lp-thumbs::-webkit-scrollbar { display: none; }
+  .lp-thumb { display: block; width: 6.5rem; aspect-ratio: 4 / 3; padding: 0; border: 0; border-radius: .5rem; overflow: hidden; cursor: pointer; opacity: .5; transition: opacity .2s; }
+  .lp-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .lp-thumb:hover, .lp-thumb.is-on { opacity: 1; }
+  .lp-full { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgb(22 22 22 / .96); }
+  .lp-full[open] { display: grid; place-items: center; }
+  .lp-full img { max-width: 92vw; max-height: 86dvh; border-radius: var(--radius-card); object-fit: contain; }
+  .lp-full .lc-nav { opacity: 1; }
+  .lp-close { position: absolute; top: 1.25rem; right: 1.25rem; background: var(--color-background); }
+
+  /* summary */
+  .lp-info .facts { flex-wrap: wrap; }
+  .lp-save { display: inline-flex; align-items: center; gap: .5rem; padding: 0; border: 0; background: none; font-size: var(--text-base); cursor: pointer; transition: opacity .2s; }
+  .lp-save:hover { opacity: .6; }
+  .lp-save[aria-pressed="true"] svg path { fill: currentColor; }
+  .lp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .lp-actions > :only-child { grid-column: 1 / -1; }
+
+  /* body */
+  .lp-key { padding: var(--gutter); border-radius: var(--radius-card); background: var(--color-secondary); }
+  .lp-key-list { display: grid; gap: .875rem 1.5rem; margin: 2rem 0 0; padding: 0; list-style: none; }
+  @media (min-width: 768px) { .lp-key-list { grid-template-columns: 1fr 1fr; } }
+  .lp-key-list li { display: flex; align-items: flex-start; gap: .75rem; }
+  .lp-key-list .ben-check { margin-top: -.125rem; }
+  .lp-folds { margin-top: 2.5rem; }
+  .lp-facts { display: grid; margin: 0; }
+  @media (min-width: 768px) { .lp-facts { grid-template-columns: 1fr 1fr; column-gap: 2.5rem; } }
+  .lp-facts > div { display: flex; justify-content: space-between; gap: 1.5rem; padding-block: .75rem; border-bottom: 1px solid var(--color-border); }
+  .lp-facts dd { color: var(--color-foreground); text-align: right; }
+  .lp-agent { display: grid; gap: 1.5rem; align-items: center; margin-top: calc(var(--gutter) * 1.5); padding: var(--gutter); border-radius: var(--radius-card); }
+  @media (min-width: 768px) { .lp-agent { grid-template-columns: 9rem minmax(0, 1fr); gap: 2.5rem; } }
+  .lp-agent-photo { width: 9rem; aspect-ratio: 1; border-radius: var(--radius-card); overflow: hidden; }
+  .lp-agent-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .lp-agent-copy p { color: var(--color-inverse-muted); }
+
+  /* booking card */
+  .lp-book { padding: 1.75rem; border-radius: var(--radius-card); box-shadow: inset 0 0 0 1px var(--color-border); background: var(--color-background); }
+  .lp-book fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+  .lp-book-title { float: left; width: 100%; margin-bottom: .875rem; font-family: var(--font-display); font-weight: 500; }
+  .lp-book-title + * { clear: both; }
+  .lp-days { display: flex; gap: .5rem; overflow-x: auto; scrollbar-width: none; padding: 1px; }
+  .lp-day { position: relative; cursor: pointer; flex: none; }
+  .lp-day input { position: absolute; opacity: 0; pointer-events: none; }
+  .lp-day span { display: flex; flex-direction: column; align-items: center; width: 3.75rem; padding: .625rem 0; border-radius: 9999px; box-shadow: inset 0 0 0 1px var(--color-foreground); transition: background-color .2s, color .2s; }
+  .lp-day small { font-size: var(--text-xs); }
+  .lp-day b { font-family: var(--font-display); font-size: 1.375rem; font-weight: 500; line-height: 1.3; }
+  .lp-day:hover span, .lp-day input:checked + span { background: var(--color-foreground); color: var(--color-background); }
+  .lp-day input:focus-visible + span { outline: 1px solid var(--color-foreground); outline-offset: 3px; }
+  .lp-slots { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+  /* valuation band */
+  .lp-value { padding: calc(var(--gutter) * 1.5) var(--gutter); border-radius: var(--radius-card); text-align: center; }
+  .lp-value p { max-width: 40ch; margin-inline: auto; color: var(--color-inverse-muted); }
+}
+.lp-days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); overflow: visible; }
+.lp-day span { width: auto; }
+.lp-agent h2 { color: var(--color-inverse-foreground); }
+.lp-value { background: var(--color-secondary); }
+.lp-value p { color: var(--color-muted-foreground); }
+
+/* About page, first two sections: left-aligned title over a hairline; a small square-marked label in column 1 and the copy from column 2;
+   then a wide 16:9 photo (section 1) or three tall photos stepping down 5rem each (section 2). */
+@layer components {
+  .abp-title { max-width: 62%; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); text-wrap: balance; }
+  @media (max-width: 1023px) { .abp-title { max-width: none; } }
+  .abp-row { display: grid; gap: 1.25rem; margin-top: 2rem; }
+  @media (min-width: 1024px) { .abp-row { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 1.5rem; } .abp-copy { grid-column: 2 / span 2; max-width: 40rem; } }
+  .abp-label { display: flex; align-items: center; gap: .625rem; font-size: var(--text-sm); }
+  .abp-label::before { content: ""; width: .5rem; height: .5rem; background: currentColor; }
+  .abp-copy { display: grid; gap: 1.25rem; color: var(--color-foreground); }
+  .abp-wide { margin-top: var(--gutter); aspect-ratio: 16 / 9; border-radius: var(--radius-card); overflow: hidden; }
+  .abp-wide img { width: 100%; height: 100%; object-fit: cover; }
+  .abp-trio { display: grid; gap: 1.5rem; margin: calc(var(--gutter) * 1.5) 0 0; padding: 0; list-style: none; }
+  @media (min-width: 768px) { .abp-trio { grid-template-columns: repeat(3, minmax(0, 1fr)); padding-bottom: 10rem; } .abp-trio li:nth-child(2) { transform: translateY(5rem); } .abp-trio li:nth-child(3) { transform: translateY(10rem); } }
+  .abp-trio li { aspect-ratio: 9 / 16; border-radius: var(--radius-card); overflow: hidden; }
+  .abp-trio img { width: 100%; height: 100%; object-fit: cover; }
+  main > .abp-first { padding-top: calc(var(--gutter) * 2); }
+}
+@media (min-width: 1024px) { .abp-title { max-width: none; padding-right: 38%; } }
+.abp-row { align-items: start; } .abp-label { line-height: 1.6; }
+
+/* Viewing calendar (as the bookings page): a card with a grey month bar and round week arrows, a row of seven day tiles (closed days
+   faded), times grouped Morning / Afternoon / Evening, a Next Week pill and the Book a Viewing button. */
+@layer components {
+  .bk { border-radius: var(--radius-card); box-shadow: inset 0 0 0 1px var(--color-border); overflow: hidden; background: var(--color-background); }
+  .bk-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .875rem 1rem; background: var(--color-secondary); }
+  .bk-month { font-family: var(--font-display); font-size: var(--text-base); font-weight: 500; }
+  .bk-arrow { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 9999px; background: var(--color-background); cursor: pointer; transition: background-color .2s, color .2s, opacity .2s; }
+  .bk-arrow:hover:not(:disabled) { background: var(--color-foreground); color: var(--color-background); }
+  .bk-arrow:disabled { opacity: .4; cursor: default; background: transparent; }
+  .bk-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .375rem; padding: 1rem; border-bottom: 1px solid var(--color-border); }
+  .bk-day { display: flex; flex-direction: column; align-items: center; gap: .125rem; padding: .5rem 0; border: 0; border-radius: .625rem; box-shadow: inset 0 0 0 1px var(--color-border); background: var(--color-background); cursor: pointer; transition: box-shadow .2s, background-color .2s; }
+  .bk-day span { font-size: var(--text-xs); color: var(--color-muted-foreground); }
+  .bk-day b { font-family: var(--font-display); font-size: var(--text-base); font-weight: 500; }
+  .bk-day:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .bk-day.is-on { box-shadow: inset 0 0 0 1.5px var(--color-foreground); background: var(--color-secondary); }
+  .bk-day:disabled { opacity: .4; cursor: default; }
+  .bk-times { padding: .5rem 1rem 0; }
+  .bk-group { margin: 1rem 0 .625rem; font-size: var(--text-sm); color: var(--color-muted-foreground); }
+  .bk-slots { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .bk-slot { min-height: 2.5rem; padding-inline: .875rem; border: 0; border-radius: .625rem; box-shadow: inset 0 0 0 1px var(--color-border); background: var(--color-background); font-size: var(--text-sm); cursor: pointer; transition: box-shadow .2s, background-color .2s, color .2s; }
+  .bk-slot:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .bk-slot.is-on { background: var(--color-foreground); color: var(--color-background); box-shadow: none; }
+  .bk-foot { display: grid; gap: .625rem; padding: 1.25rem 1rem 1rem; }
+  .bk-next { min-height: 3rem; border: 0; border-radius: 9999px; box-shadow: inset 0 0 0 1px var(--color-border); background: transparent; font-size: var(--text-base); cursor: pointer; transition: box-shadow .2s; }
+  .bk-next:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+  .bk-foot .btn[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+}
+
+/* Folding answers: room under the last element, so nothing touches the rule below; blocks inside get a steady gap. */
+.faq-a { padding-bottom: 1.75rem; }
+.faq-a p { padding-bottom: 0; }
+.faq-a > * + * { margin-top: 1rem; }
+.faq-a.prose-site > p + p { margin-top: 1rem; }
+
+/* About story photos: 3:4; they start stepped (0 / 5rem / 10rem) and settle into one line as the row scrolls up (--al: 1 → 0, set
+   by the page script). No extra room under them: the section's own padding (the site gutter) follows. */
+.abp-trio li { aspect-ratio: 3 / 4; }
+@media (min-width: 768px) {
+  .abp-trio { padding-bottom: 0; }
+  .abp-trio li:nth-child(2) { transform: translateY(calc(5rem * var(--al, 0))); }
+  .abp-trio li:nth-child(3) { transform: translateY(calc(10rem * var(--al, 0))); }
+}
+
+/* Viewing calendar, tighter: unpicked days without a frame (a hairline on hover), times as full pills in one list of six (three per
+   row), and the whole aside always fits the screen under the header. */
+.bk-day { box-shadow: none; }
+.bk-day:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--color-border); }
+.bk-days { padding: .75rem 1rem; }
+.bk-times { padding: 0 1rem; }
+.bk-group { margin: 1rem 0 .625rem; }
+.bk-slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.bk-slot { border-radius: 9999px; padding-inline: .5rem; }
+.bk-foot { padding: 1rem; }
+@media (min-width: 1024px) { .lp-aside { max-height: calc(100dvh - var(--header-h) - 3rem); overflow-y: auto; scrollbar-width: none; } }
+.contact-card { max-width: 48rem; margin: 3.9rem auto 0; }
+
+/* About testimonials (as the reference): heading left, round outline arrows right; grey rounded cards in a row that starts on the site
+   gutter and runs to the screen edge, ~4.3 cards in view on desktop; title, quote and name, no photos. */
+@layer components {
+  .tm-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; }
+  .tm-nav { display: flex; gap: .5rem; flex: none; }
+  .tm-arrow { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; border: 0; border-radius: 9999px; background: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); cursor: pointer; transition: background-color .2s, color .2s, opacity .2s; }
+  .tm-arrow:hover:not(:disabled) { background: var(--color-foreground); color: var(--color-background); }
+  .tm-arrow:disabled { opacity: .3; cursor: default; }
+  .tm-track { display: flex; gap: 1.5rem; margin: 2.5rem 0 0; padding: 0 var(--gutter); list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: none; overscroll-behavior-x: contain; }
+  .tm-track::-webkit-scrollbar { display: none; }
+  .tm-track:focus-visible { outline: 1px solid var(--color-foreground); outline-offset: 4px; }
+  .tm-card { flex: 0 0 min(80vw, calc((100vw - 2 * var(--gutter) - 3 * 1.5rem) / 4.3)); scroll-snap-align: start; display: flex; flex-direction: column; gap: 1rem; padding: 1.75rem; border-radius: var(--radius-card); background: var(--color-secondary); }
+  .tm-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 500; }
+  .tm-quote { margin: 0; font-size: var(--text-base); line-height: 1.6; color: var(--color-foreground); }
+  .tm-name { margin-top: auto; font-size: var(--text-sm); color: var(--color-muted-foreground); }
+}
+
+/* No focus ring after a click, anywhere: rings show only while the visitor is using the keyboard (html.kbd, set by the layout). */
+html:not(.kbd) *:focus, html:not(.kbd) *:focus-visible, html:not(.kbd) *:focus-within { outline: none !important; }
+html:not(.kbd) input:focus-visible + span, html:not(.kbd) .opt input:focus-visible + span, html:not(.kbd) .lp-day input:focus-visible + span { outline: none !important; }
+
+/* Testimonials on grey: the cards turn white. */
+.tm.bg-secondary .tm-card { background: var(--color-background); }
+.agent-btns { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: .75rem; }
+
+/* Sell · valuation: a white card on grey, split exactly in half (heading + form | photo); the photo fills its half to the card's edges. */
+@layer components {
+  .val-card { display: grid; border-radius: var(--radius-card); background: var(--color-background); overflow: hidden; }
+  @media (min-width: 1024px) { .val-card { grid-template-columns: 1fr 1fr; } }
+  .val-copy { padding: var(--gutter); }
+  .val-photo { position: relative; min-height: 20rem; border-radius: 0; }
+  .val-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+}
+/* Header pill: the Contact button sits with the same gap on its right as above and below (7px). */
+.head-pill { padding-right: 0.4375rem; }
+/* Valuation photo fills the whole right half (no fixed ratio). */
+.val-photo { aspect-ratio: auto !important; height: 100%; }
+@media (min-width: 1024px) { .val-card { align-items: stretch; } }
+/* Footer bottom: the credit line sits under the legal links, left-aligned, in the same block (no extra rule). */
+@media (min-width: 768px) { .foot-legal { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: .25rem; } }
+.foot-credit, .foot-legal .foot-credit { text-align: left !important; }
+main .abp-photo-band { padding-block: 0 !important; }
+/* Home agent rows: plain rows (agents have no pages of their own). */
+.agent-rows .agent-row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.875rem 0; font-size: var(--text-base); color: var(--color-foreground); }
+.agent-rows .agent-row span:last-child { color: var(--color-muted-foreground); text-align: right; }
+/* Agent cards: no hover at all (no zoom, no fade). */
+.agent-card .media img { transform: none !important; }
+
+/* Neighborhood map: shown whole, no line drawing on scroll. */
+.hm-map path { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
+/* Neighborhood pill: the name, swapped on hover / focus for the number of listings in that area (both stacked in one cell, so the pill
+   keeps the wider width and nothing jumps). */
+.hm-name { display: grid; }
+.hm-n1, .hm-n2 { grid-area: 1 / 1; text-align: center; transition: opacity .25s, transform .3s var(--ease-site); }
+.hm-n2 { opacity: 0; transform: translateY(40%); }
+.hm-card:hover .hm-n1, .hm-card:focus-visible .hm-n1 { opacity: 0; transform: translateY(-40%); }
+.hm-card:hover .hm-n2, .hm-card:focus-visible .hm-n2 { opacity: 1; transform: none; }
+/* Neighborhood pill width follows its text: the name's width at rest, the count's width on hover, sliding between them (--w1 / --w2 are
+   measured by the page script; without them the pill keeps its natural width). */
+.hm-name { box-sizing: content-box; width: var(--w1, fit-content); overflow: hidden; transition: width .35s var(--ease-site), transform .3s var(--ease-site); }
+.hm-n1, .hm-n2 { width: max-content; justify-self: center; white-space: nowrap; }
+.hm-card:hover .hm-name, .hm-card:focus-visible .hm-name { width: var(--w2, fit-content); }
+/* Pill text: both labels sit centred on the pill's middle (absolute), so a narrowing pill never shifts or crops them sideways. */
+.hm-name { display: block; position: relative; height: 1.2em; line-height: 1.2; }
+.hm-n1, .hm-n2 { position: absolute; left: 50%; top: 0; grid-area: auto; transform: translateX(-50%); }
+.hm-n2 { transform: translate(-50%, 110%); }
+.hm-card:hover .hm-n1, .hm-card:focus-visible .hm-n1 { transform: translate(-50%, -110%); }
+.hm-card:hover .hm-n2, .hm-card:focus-visible .hm-n2 { transform: translateX(-50%); }
+/* …and vertically on the pill's middle (absolute offsets count from the padding edge, so centre on 50%). */
+.hm-n1, .hm-n2 { top: 50%; transform: translate(-50%, -50%); }
+.hm-n2 { transform: translate(-50%, 60%); }
+.hm-card:hover .hm-n1, .hm-card:focus-visible .hm-n1 { transform: translate(-50%, -160%); }
+.hm-card:hover .hm-n2, .hm-card:focus-visible .hm-n2 { transform: translate(-50%, -50%); }
+
+/* Dropdowns (all sizes): the visible control is a button with the field's own look; its list opens as the site's menu panel — white,
+   12px corners, hairline edge, soft shadow, rows with 8px corners that turn grey on hover / arrow keys; the picked row is ink. */
+@layer components {
+  .sx { position: relative; min-width: 0; }
+  .sx-native { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; opacity: 0; pointer-events: none; }
+  .sx-btn { display: flex; align-items: center; width: 100%; text-align: left; cursor: pointer; color: inherit; font: inherit; }
+  .sx-btn.list-sort { width: auto; }
+  .sx-val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sx-list { position: absolute; z-index: 60; top: calc(100% + .375rem); left: 0; min-width: 100%; max-height: 18rem; margin: 0; padding: .375rem; overflow-y: auto; list-style: none;
+    border-radius: .75rem; background: var(--color-background); color: var(--color-foreground); box-shadow: 0 0 0 1px var(--color-border), 0 12px 32px -8px rgb(22 22 22 / .18);
+    opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity .18s, transform .18s var(--ease-site), visibility 0s .18s; scrollbar-width: thin; }
+  .sx.is-open .sx-list { opacity: 1; visibility: visible; transform: none; transition: opacity .18s, transform .18s var(--ease-site), visibility 0s; }
+  .sx-opt { padding: .625rem 1rem; border-radius: .5rem; font-size: var(--text-base); line-height: 1.4; white-space: nowrap; cursor: pointer; }
+  .sx-opt.is-active { background: var(--color-secondary); }
+  .sx-opt[aria-selected="true"] { font-weight: 500; }
+  .sx-opt[aria-disabled="true"] { opacity: .4; cursor: default; }
+  .wm-form .sx-list { min-width: max(100%, 12rem); }
+}
+/* The dropdown button wears the select's look: chevron, pill shape in the hero and filters. */
+.sx-btn.field { appearance: none; padding-right: 2.5rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23161616' stroke-width='1.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; transition: background-color .2s; }
+.sx.is-open .sx-btn.field { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 7.5L6 4l3.5 3.5' stroke='%23161616' stroke-width='1.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+.wm-form .sx-btn.field { border-radius: 9999px; padding-left: 1.25rem; }
+.sheet .sx-btn.field { min-height: 3rem; border: 0; border-radius: 9999px; padding-inline: 1.25rem 2.75rem; background-color: transparent; box-shadow: inset 0 0 0 1px var(--color-foreground); background-position: right 1.125rem center; }
+.sheet .sx-btn.field:hover { background-color: var(--color-secondary); }
+.sx-btn.list-sort { padding: 0 2.75rem 0 1.25rem; background-position: right 1.125rem center; }
+.sx-btn:focus { outline: none; }
+html.kbd .sx-btn:focus-visible { outline: 1px solid var(--color-foreground); outline-offset: 3px; }
+/* Touch screens: the photo dots stay centred under the photo (keep the -50% shift the hover rule above dropped). */
+@media (hover: none) { .lc-dots { transform: translateX(-50%); } }
+@media (max-width: 1023px) { .lc-dots { transform: translateX(-50%); } }
+
+/* Listing page, tablet and phone: the summary comes first, then the photo slider; both span the full width inside the gutters (the
+   single grid column can no longer be stretched by the thumbnail strip). Desktop untouched. */
+@media (max-width: 1023px) {
+  .lp-top, .lp-body { grid-template-columns: minmax(0, 1fr); }
+  .lp-top > *, .lp-body > * { min-width: 0; }
+  .lp-info { order: -1; }
+  .lp-stage-wrap { width: 100%; }
+  .lp-info .lp-actions { max-width: none; }
+}
+/* Listing page, tablet and phone: the viewing calendar comes before Key features and scrolls with the page (not fixed); everything after
+   it runs full width inside the gutters. */
+@media (max-width: 1023px) {
+  .lp-aside { order: -1; position: static; max-height: none; overflow: visible; }
+  .lp-main, .lp-aside, .lp-key, .lp-folds, .lp-agent { width: 100%; }
+}
+/* Burger menu: the current page is underlined like the desktop nav, same weight as the other pages. */
+#menu-panel a[aria-current="page"] { font-weight: 500; text-decoration: underline; text-underline-offset: 0.35em; text-decoration-thickness: 1px; }
+/* Testimonials, tablet: cards twice as wide as before (about 2.15 in view); phone: one card at 80% of the screen with the next peeking. */
+@media (max-width: 1023px) { .tm-card { flex-basis: calc((100vw - 2 * var(--gutter) - 3 * 1.5rem) / 4.3 * 2); } }
+@media (max-width: 767px) { .tm-card { flex-basis: 80vw; } }
+
+/* Form fields everywhere (inputs, text areas, dropdowns): no fill, only their outline; a white fill appears on hover on desktop only
+   (pointer devices from 1024px). The dropdown chevrons are background images, so only the colour is touched. */
+.field, .sx-btn.field, .sheet .field, .sheet .sx-btn.field, .wm-form .field, .wm-hero .wm-form .field { background-color: transparent !important; transition: background-color .2s, border-color .2s, box-shadow .2s; }
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  .field:hover, .sx-btn.field:hover, .sheet .field:hover, .sheet .sx-btn.field:hover, .wm-form .field:hover, .wm-hero .wm-form .field:hover { background-color: #ffffff !important; }
+}
+
+/* ── Phone (≤767px) ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Hero: the gap between the rule and the intro equals the side gutter; the Google badge spans the form's width; the photo under it
+     sits inside the gutters with rounded corners. */
+  .wm-hero .wm-top { padding-top: var(--gutter); }
+  .wm-top .g-rating { width: 100%; box-sizing: border-box; }
+  .wm-photo { margin-inline: var(--gutter); border-radius: var(--radius-card); overflow: hidden; }
+  /* Three times the room before the neighborhoods block. */
+  .fp-section { padding-top: calc(var(--gutter) * 3) !important; }
+  /* A hairline between listing cards (one per row on a phone), inside the gutters. */
+  ul:has(> li > .lcard) { row-gap: 0 !important; }
+  ul:has(> li > .lcard) > li + li { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--color-border); }
+  /* Home · About: both paragraphs first, then the Learn More button. */
+  .ab-cols { display: flex; flex-direction: column; gap: 1.25rem; }
+  .ab-cols > .ab-copy:first-child { display: contents; }
+  .ab-cols > .ab-copy:first-child > p { order: 1; }
+  .ab-cols > .ab-right { order: 2; }
+  .ab-cols > .ab-copy:first-child > .btn { order: 3; margin-top: .75rem; align-self: flex-start; }
+}
+
+/* Burger menu (tablet and phone): a rounded card that floats under the header inside the side gutters, with a gap above; the page
+   behind dims while it is open. */
+@media (max-width: 1023px) {
+  #menu-panel.panel { inset-inline: var(--gutter); top: calc(100% + .5rem); border: 0; border-radius: var(--radius-card); box-shadow: 0 0 0 1px var(--color-border), 0 16px 40px -8px rgb(20 20 20 / .2); max-height: calc(100svh - var(--header-h) - 1rem - var(--gutter)); }
+  #menu-panel .wrap { padding-inline: 1.25rem; }
+  html.menu-open body::after { content: ""; position: fixed; inset: 0; z-index: 25; background: rgb(22 22 22 / .55); animation: fade-in 220ms var(--ease-site); }
+}
+/* Header pill, tablet and phone: a 1px black outline at 10% so it never melts into grey sections. */
+@media (max-width: 1023px) { .head-pill { box-shadow: inset 0 0 0 1px rgb(0 0 0 / .1); } }
+/* …and on desktop too: the header pill keeps its 1px 10% outline at every size. */
+.head-pill { box-shadow: inset 0 0 0 1px rgb(0 0 0 / .1); }
+
+/* Text links that had no hover of their own (breadcrumbs, inline underlined links, plain links in copy): fade on hover. */
+.meta a, a.underline, .prose-site a, a:not([class]) { transition: opacity .2s; }
+.meta a:hover, a.underline:hover, .prose-site a:hover, a:not([class]):hover { opacity: .6; }
+/* Fields on desktop hover: the white fill plus an ink edge, so the hover also shows on white backgrounds. */
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  .field:hover { border-color: var(--color-foreground) !important; }
+  .sheet .field:hover, .sheet .sx-btn.field:hover, .list-sort:hover { box-shadow: inset 0 0 0 1px var(--color-foreground), inset 0 0 0 1px var(--color-foreground) !important; }
+}
+
+/* No square marks anywhere: not before headings, labels or the hero intro. */
+.mark::before, .abp-label::before, h2::before, .h2-sq { display: none !important; content: none !important; }
+.abp-label { gap: 0; }
+/* Footer: Buy / Rent / Sell cards come first, then the name, intro, links and social row. */
+.site-foot > .foot-cats:first-child { margin-top: 0; padding-top: var(--gutter); }
+.site-foot .foot-top { margin-top: 3.5rem; }
+
+/* Footer top on the card grid (3 columns from 768px, same gap as the Buy / Rent / Sell cards): name + intro | social (right);
+   site map | address, phone, e-mail | hours — the contact columns start on the site map's first line. */
+.foot-grid { display: grid; gap: 2rem 1.5rem; }
+.ft-contact { font-size: var(--text-sm); line-height: 1.6; color: var(--color-inverse-foreground); }
+.ft-contact p, .ft-contact a { color: var(--color-inverse-foreground); }
+@media (min-width: 768px) {
+  .foot-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 2rem; }
+  .ft-brand { grid-column: 1 / span 2; grid-row: 1; }
+  .ft-social { grid-column: 3; grid-row: 1; justify-self: end; }
+  .ft-nav { grid-column: 1; grid-row: 2; }
+  .ft-c1 { grid-column: 2; grid-row: 2; }
+  .ft-c2 { grid-column: 3; grid-row: 2; }
+  .ft-contact { padding-top: .375rem; }   /* first line level with the site map's first link */
+}
+@media (max-width: 767px) { .ft-social { order: 5; } }
+
+/* Footer: social icons sit under the intro on the left; a dark hairline (as above the legal links) separates that block from the site
+   map and contacts. All footer hairlines stop at the side gutters. */
+.ft-rule { grid-column: 1 / -1; height: 1px; background: rgb(255 255 255 / 0.15); }
+@media (min-width: 768px) {
+  .ft-brand { grid-column: 1 / -1; grid-row: 1; }
+  .ft-rule { grid-row: 2; }
+  .ft-nav, .ft-c1, .ft-c2 { grid-row: 3; }
+}
+.site-foot .foot-legal { position: relative; border-top: 0; }
+.site-foot .foot-legal::before { content: ""; position: absolute; top: 0; left: var(--gutter); right: var(--gutter); height: 1px; background: rgb(255 255 255 / 0.15); }

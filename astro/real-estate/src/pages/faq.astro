@@ -1,0 +1,18 @@
+---
+// /faq: every question from the Faq collection as a disclosure.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import FaqList from "../components/FaqList.astro";
+import { getChrome } from "../lib/chrome";
+import { getFaq } from "../lib/content";
+const [{ copy }, faq] = await Promise.all([getChrome(), getFaq()]);
+---
+<SiteLayout>
+  <section class="section">
+    <div class="wrap">
+      <div class="page-top">
+      <h1 class="text-h2">{copy.faq?.title ?? "Frequently Asked Questions"}</h1>
+      </div>
+      <div class="mx-auto mt-10 max-w-3xl">{faq.length > 0 ? <FaqList items={faq} /> : <p class="note">No questions yet.</p>}</div>
+    </div>
+  </section>
+</SiteLayout>

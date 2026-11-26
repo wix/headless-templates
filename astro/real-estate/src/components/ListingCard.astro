@@ -1,0 +1,73 @@
+---
+// A listing card: the title and the price above (price per month for rentals, the old price struck through when reduced; the title
+// link stretches over the card), then the 4:3 photo with its badges (Sold or Rented only — no Available or Under offer — New, Price
+// reduced, and "10+ views today" with a star for listings flagged `trending` in the CMS), then the facts with icons (type, beds,
+// baths, area) and the address. The photo is a small carousel of the listing's photos (main + gallery, up to 6): on hover, arrows
+// appear at its sides to flip through them (always shown on touch screens); the next photos load on first approach. Hover / focus
+// also zooms the photo a touch, fades the other cards in the list back and fades the address in (its line is reserved); texts stay put.
+// The category (Buy / Rent / Commercial) is not repeated on the card; "/ month" on the price already marks a rental.
+import { imgSrc, addressLines, isNew, isReduced, gallery, type Listing, type Category } from "../lib/cms";
+import { money, RENT_SLUG } from "../lib/site";
+interface Props { listing: Listing; categories?: Category[] }
+const { listing: l, categories = [] } = Astro.props;
+const cat = categories.find((c) => c._id === l.category);
+const photos = [...new Set([l.image, ...gallery(l)].filter((x): x is string => !!x))].slice(0, 6).map((v) => imgSrc(v, 800, 600)).filter(Boolean);
+const open = l.status === "Available" || !l.status;
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+// Icon paths (24×24, drawn with a 1.6 stroke in the text colour).
+const ICON = {
+  type: "M3.5 10.5L12 4l8.5 6.5M5.5 9v10.5h13V9M10 19.5v-5h4v5",
+  bed: "M3 18.5V7M3 14.5h18v4M21 14.5v-2.5a2.5 2.5 0 0 0-2.5-2.5H11v5M6.5 12.25a1.75 1.75 0 1 0 0-.01",
+  bath: "M4 12h16v2.5a4.5 4.5 0 0 1-4.5 4.5h-7A4.5 4.5 0 0 1 4 14.5V12zM6.5 12V6.5A2.5 2.5 0 0 1 9 4h.5a2 2 0 0 1 2 2M7 19l-1 2M17 19l1 2",
+  area: "M4 4h6M4 4v6M20 20h-6M20 20v-6M4 4l6.5 6.5M20 20l-6.5-6.5M14 4h6v6M10 20H4v-6",
+};
+const facts = [
+  l.type ? { icon: ICON.type, text: l.type } : null,
+  l.bedrooms ? { icon: ICON.bed, text: plural(l.bedrooms, "Bed", "Beds") } : null,
+  l.bathrooms ? { icon: ICON.bath, text: plural(l.bathrooms, "Bath", "Baths") } : null,
+  l.area ? { icon: ICON.area, text: `${l.area.toLocaleString("en-US")} sq.ft` } : null,
+].filter((x): x is { icon: string; text: string } => !!x);
+const tags = [isNew(l) ? "New" : "", isReduced(l) ? "Price reduced" : ""].filter(Boolean);
+const lines = addressLines(l);
+---
+<article class="card lcard flex h-full flex-col gap-4">
+  <div class="flex flex-col gap-1">
+    <h3 class="card-title text-base"><a href={`/listings/${l.slug}`}>{l.title}</a></h3>
+    <p class="font-display text-h3 font-semibold">{money(l.price)}{cat?.slug === RENT_SLUG && <span class="font-sans text-sm font-normal text-muted-foreground"> / month</span>}{isReduced(l) && <s class="ml-2 font-sans text-sm font-normal text-muted-foreground">{money(l.priceWas)}</s>}</p>
+  </div>
+  <div class="media lcard-media" data-ratio="4/3" data-slides>
+    <div class="badges">
+      {l.status && !open && l.status !== "Under offer" && <span class="status status-closed">{l.status}</span>}
+      {tags.map((t) => <span class="status status-tag">{t}</span>)}
+      {l.trending && <span class="status status-tag status-hot"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M12 2.8l2.75 5.7 6.25.83-4.57 4.36 1.15 6.21L12 16.9l-5.58 3l1.15-6.21L3 9.33l6.25-.83z" /></svg>10+ views today</span>}
+    </div>
+    {photos.map((p, i) => i === 0 ? <img src={p} alt="" width="800" height="600" loading="lazy" class="is-on" /> : <img data-src={p} alt="" width="800" height="600" />)}
+    {photos.length > 1 && <>
+      <button type="button" class="lc-nav lc-prev" aria-label={`Previous photo of ${l.title}`}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></button>
+      <button type="button" class="lc-nav lc-next" aria-label={`Next photo of ${l.title}`}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg></button>
+      <span class="lc-dots" aria-hidden="true">{photos.map((_, i) => <span class:list={[i === 0 && "is-on"]} />)}</span>
+    </>}
+  </div>
+  <div class="flex flex-1 flex-col gap-2">
+    <ul class="facts">{facts.map((f) => <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={f.icon} /></svg>{f.text}</li>)}</ul>
+    <p class="lcard-addr text-sm text-muted-foreground">{lines.join(", ")}</p>
+  </div>
+</article>
+
+<script>
+  // Card photo carousels (one handler for every card on the page): the arrows flip through the photos; the neighbours load on first approach.
+  const load = (img?: Element) => { if (img instanceof HTMLImageElement && !img.src && img.dataset.src) img.src = img.dataset.src; };
+  document.addEventListener("pointerover", (e) => {
+    const box = (e.target as Element).closest?.("[data-slides]");
+    if (box && !box.hasAttribute("data-warm")) { box.setAttribute("data-warm", ""); const imgs = box.querySelectorAll("img"); load(imgs[1]); load(imgs[imgs.length - 1]); }
+  });
+  document.addEventListener("click", (e) => {
+    const btn = (e.target as Element).closest?.(".lc-nav"); if (!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    const box = btn.closest("[data-slides]")!; const imgs = [...box.querySelectorAll("img")]; const dots = [...box.querySelectorAll(".lc-dots > span")];
+    const cur = Math.max(0, imgs.findIndex((x) => x.classList.contains("is-on")));
+    const n = (cur + (btn.classList.contains("lc-next") ? 1 : -1) + imgs.length) % imgs.length;
+    load(imgs[n]); load(imgs[(n + 1) % imgs.length]); load(imgs[(n - 1 + imgs.length) % imgs.length]);
+    imgs.forEach((x, i) => x.classList.toggle("is-on", i === n)); dots.forEach((d, i) => d.classList.toggle("is-on", i === n));
+  });
+</script>

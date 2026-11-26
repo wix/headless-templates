@@ -1,0 +1,56 @@
+---
+// A neighborhood: image, name, description, Get directions to the area, its listings (the rows that point at it), the gallery,
+// previous / next. No Wix SEO item type exists for CMS pages, so the page passes its own <title>.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ListingCard from "../../components/ListingCard.astro";
+import { getNeighborhoods, getListings, getCategories, bySlug, neighbours, imgSrc, gallery, paragraphs } from "../../lib/cms";
+
+const [hoods, listings, cats] = await Promise.all([getNeighborhoods(), getListings(), getCategories()]);
+const n = bySlug(hoods, Astro.params.slug!);
+if (!n) return Astro.rewrite("/404");
+const mine = listings.filter((l) => l.neighborhood === n._id);
+const { prev, next } = neighbours(hoods, n.slug);
+const src = imgSrc(n.image, 1200, 900);
+const shots = gallery(n);
+---
+<SiteLayout title={n.title}>
+  <article class="section">
+    <div class="wrap">
+      <nav aria-label="Breadcrumb" class="meta justify-center"><a href="/">Home</a><a href="/neighborhoods">Neighborhoods</a><span aria-current="page">{n.title}</span></nav>
+      <div class="page-top mt-6">
+        <h1 class="text-h2">{n.title}</h1>
+      </div>
+      <div class="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-16">
+        <div class="media" data-ratio="4/3">{src && <img src={src} alt="" width="1200" height="900" fetchpriority="high" />}</div>
+        <div class="flex flex-col items-start gap-5">
+          {n.description && <div class="prose-site text-lg text-muted-foreground">{paragraphs(n.description).map((p) => <p>{p}</p>)}</div>}
+          <a href={`/listings?q=${encodeURIComponent(n.title)}`} class="btn btn-secondary">Search this area</a>
+        </div>
+      </div>
+    </div>
+  </article>
+  {mine.length > 0 && (
+    <section class="section bg-secondary">
+      <div class="wrap">
+        <h2 class="text-h2">Listings</h2>
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{mine.map((l) => <li><ListingCard listing={l} categories={cats} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+  {shots.length > 0 && (
+    <section class="section">
+      <div class="wrap">
+        <h2 class="text-h2">Gallery</h2>
+        <ul class="mt-8 grid gap-4 sm:grid-cols-3">{shots.map((g) => <li class="media" data-ratio="4/3"><img src={imgSrc(g, 800, 600)} alt="" width="800" height="600" loading="lazy" /></li>)}</ul>
+      </div>
+    </section>
+  )}
+  {(prev || next) && (
+    <nav aria-label="More neighborhoods" class="border-t border-border">
+      <div class="wrap flex flex-wrap items-center justify-between gap-2 py-4">
+        {prev ? <a class="link-btn" href={`/neighborhoods/${prev.slug}`}>← {prev.title}</a> : <span />}
+        {next ? <a class="link-btn" href={`/neighborhoods/${next.slug}`}>{next.title} →</a> : <span />}
+      </div>
+    </nav>
+  )}
+</SiteLayout>

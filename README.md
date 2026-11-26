@@ -73,6 +73,12 @@ Here are some useful links for getting started with Wix Headless and the availab
       <td>Wix Rentals</td>
     </tr>
     <tr>
+      <td><a href="https://github.com/wix/headless-templates/tree/main/astro/real-estate">Real Estate</a></td>
+      <td>An estate-agency template with listings, filters, agents, neighborhoods and lead forms using Astro and Wix Headless.</td>
+      <td><a href="https://business-name-10-itayka0-1007.wix-site-host.com">Demo</a></td>
+      <td>Wix CMS, Wix Forms</td>
+    </tr>
+    <tr>
       <td colspan="4" align="center"><strong>Next.js</strong></td>
     </tr>
     <tr>

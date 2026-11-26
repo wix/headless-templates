@@ -1,0 +1,26 @@
+---
+// /agents: every agent in one grid (CMS order) — no search, sort or pages.
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import AgentCard from "../../components/AgentCard.astro";
+import { getChrome } from "../../lib/chrome";
+import { getAgents } from "../../lib/cms";
+
+const { copy } = await getChrome();
+const agents = await getAgents();
+const c = copy.agents;
+---
+<SiteLayout>
+  <section class="section">
+    <div class="wrap">
+      <div class="page-top">
+      <h1 class="text-h2">{c?.title ?? "Our Agents"}</h1>
+      {c?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{c.body}</p>}
+      </div>
+      {agents.length > 0 ? (
+        <ul class="page-items grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">{agents.map((a) => <li><AgentCard agent={a} /></li>)}</ul>
+      ) : (
+        <div class="note page-items">No agents yet.</div>
+      )}
+    </div>
+  </section>
+</SiteLayout>

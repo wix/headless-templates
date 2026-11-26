@@ -1,0 +1,22 @@
+---
+// /contact: the page top and the Wix Forms "Contact" form centred under it (the business details live in the footer),
+// submitted as the visitor (island: schema-driven, no elevation). A "Request a viewing" link arrives with ?property=<title>, which fills the Property field.
+import SiteLayout from "../layouts/SiteLayout.astro";
+import ContactForm from "../components/ContactForm";
+import { getFormByName } from "../lib/forms";
+import { getChrome } from "../lib/chrome";
+const { copy } = await getChrome();
+const s = copy.contact;
+const form = await getFormByName("Contact");
+---
+<SiteLayout closing={false}>
+  <section class="section">
+    <div class="wrap">
+      <div class="page-top">
+      <h1 class="text-h2">{s?.title ?? "Contact Us"}</h1>
+      {s?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{s.body}</p>}
+      </div>
+      <div class="contact-card tile p-6 sm:p-8 lg:p-10"><ContactForm client:load form={form} /></div>
+    </div>
+  </section>
+</SiteLayout>

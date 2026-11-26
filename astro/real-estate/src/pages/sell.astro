@@ -1,0 +1,69 @@
+---
+import { hc } from "../lib/site";
+// /sell: the owner's page. A heading and one button (Get a Free Valuation, which scrolls to the form), How It Works (the SellSteps rows),
+// Recently Sold (proof), and the valuation form (Wix Forms "Valuation": first name, last name, email, phone, property address, message).
+import SiteLayout from "../layouts/SiteLayout.astro";
+import ListingCard from "../components/ListingCard.astro";
+import SectionHead from "../components/SectionHead.astro";
+import ContactForm from "../components/ContactForm";
+import { getFormByName } from "../lib/forms";
+import { getChrome } from "../lib/chrome";
+import { getSellSteps } from "../lib/content";
+import { getListings, getCategories, isClosed, imgSrc } from "../lib/cms";
+
+const [{ copy }, steps, listings, cats] = await Promise.all([getChrome(), getSellSteps(), getListings(), getCategories()]);
+const sell = copy.sell, how = copy.sellSteps, v = copy.valuation, soldCopy = copy.sold;
+const sold = listings.filter(isClosed).slice(0, 3);
+const img = imgSrc(copy.about?.image, 2400, 1350);
+// Valuation photo: a pastel placeholder from the listings, like the other photos on the site.
+const valImg = imgSrc(listings.find((l) => l.image && l.image !== copy.about?.image)?.image ?? copy.about?.image, 1200, 1500);
+const form = await getFormByName("Valuation");
+---
+<SiteLayout closing={false}>
+  <section class="section">
+    <div class="wrap">
+      <div class="page-top">
+        <h1 class="text-h2">{hc(sell?.title ?? "Sell With Us")}</h1>
+        {sell?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{sell.body}</p>}
+        <div class="mt-8"><a href="#valuation" class="btn btn-primary">{sell?.ctaLabel ?? "Get a Free Valuation"}</a></div>
+      </div>
+      <div class="media mt-(--gutter)" data-ratio="16/9">{img && <img src={img} alt="" width="2400" height="1350" fetchpriority="high" />}</div>
+    </div>
+  </section>
+
+  {steps.length > 0 && (
+    <section class="section">
+      <div class="wrap">
+        <h2 class="text-h2">{how?.title ?? "How It Works"}</h2>
+        {how?.body && <p class="mt-4 max-w-[60ch] text-lg text-muted-foreground">{how.body}</p>}
+        <ol class="mt-10 grid gap-8 md:grid-cols-3">
+          {steps.map((s, i) => <li class="tile p-6"><span class="font-display text-sm font-semibold text-muted-foreground">0{i + 1}</span><h3 class="mt-3 text-h3">{s.title}</h3><p class="mt-2 text-muted-foreground">{s.body}</p></li>)}
+        </ol>
+      </div>
+    </section>
+  )}
+
+  {sold.length > 0 && (
+    <section class="section bg-secondary">
+      <div class="wrap">
+        <SectionHead title={soldCopy?.title ?? "Recently Sold"} href="/listings?status=Sold" action={soldCopy?.ctaLabel ?? "See Sold Listings"} />
+        <ul class="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{sold.map((l) => <li><ListingCard listing={l} categories={cats} /></li>)}</ul>
+      </div>
+    </section>
+  )}
+
+  <!-- Valuation: on grey, one white card across the page (inside the gutters), split in half — heading, text and form on the left,
+       a photo filling the right half. -->
+  <section id="valuation" class="section bg-secondary">
+    <div class="wrap">
+      <div class="val-card">
+        <div class="val-copy">
+          <h2 class="text-h2">{v?.title ?? "Free Valuation"}</h2>
+          {v?.body && <p class="mt-4 text-muted-foreground">{v.body}</p>}
+          <div class="mt-8"><ContactForm client:load form={form} submitLabel="Request valuation" doneText="Your request was sent." /></div>
+        </div>
+        <div class="val-photo media">{valImg && <img src={valImg} alt="" width="1200" height="1500" loading="lazy" />}</div>
+      </div>
+    </div>
+  </section>
+</SiteLayout>
