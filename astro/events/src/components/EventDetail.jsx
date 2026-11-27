@@ -1,8 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { orders, ticketReservations, rsvpV2 } from '@wix/events';
+import { ticketDefinitionsV2, ticketReservations, rsvpV2 } from '@wix/events';
 import { redirects } from '@wix/redirects';
 import { media } from '@wix/sdk';
 import { BUSINESS_NAME } from '../utils/constants';
+import {
+  getOrderLimit,
+  getPricingOptions,
+  getReservationErrorCode,
+  getTicketQuantityLimit,
+  getTicketSelectionInvoice,
+  getTicketSelectionQuantity,
+  getTicketSelectionReservationLines,
+  getVisibleTicketDefinitions,
+  isDonation,
+  normalizePrice,
+  setTicketDonation,
+  setTicketQuantity,
+} from '@wix/events-registration-core';
+import { issueMessage, money, priceLabel, reservationMessage, saleLabel } from '../utils/tickets';
+import SeatingPicker from './SeatingPicker.jsx';
+import TotalRows from './TotalRows.jsx';
 
 function imgSrc(mainImage, w = 1000, h = 1000) {
   const v = mainImage?.url ?? mainImage;
@@ -11,79 +28,127 @@ function imgSrc(mainImage, w = 1000, h = 1000) {
   return typeof v === 'string' ? v : (v.url ?? '');
 }
 
-/* ─── Ticket Picker (TICKETING events) ──────────────────────────────────── */
-function TicketPicker({ event }) {
-  const [tiers, setTiers] = useState(null);
-  const [quantities, setQuantities] = useState({});
+/**
+ * Reserve the ticket lines (held for a few minutes), then send the guest to the Wix-hosted
+ * checkout, which collects their details and payment and lists any seats. Runs in the browser:
+ * the return URLs need the site's origin.
+ */
+async function reserveAndCheckout(event, tickets) {
+  const reservation = await ticketReservations.createTicketReservation({ tickets });
+  const origin = window.location.origin;
+  const { redirectSession } = await redirects.createRedirectSession({
+    eventsCheckout: { reservationId: reservation._id, eventSlug: event.slug },
+    // Wix appends ?orderNumber=&eventId= to the thank-you URL; /event-confirmation reads eventId.
+    callbacks: {
+      thankYouPageUrl: `${origin}/event-confirmation`,
+      postFlowUrl: `${origin}/events/${event.slug}`,
+    },
+  });
+  window.location.href = redirectSession.fullUrl;
+}
+
+/* ─── Tier Picker (TICKETING events without a seating map) ──────────────── */
+// @wix/events-registration-core keeps the TicketSelection ({ [ticketDefinitionId]: { quantity,
+// pricingOptionIds, donation } }), refuses quantities past the ticket's or the order's limit, prices
+// the preliminary invoice and builds the reservation lines.
+function TierPicker({ event, tickets }) {
+  const orderLimit = getOrderLimit(event);
+  const [selection, setSelection] = useState({});
   const [reserving, setReserving] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    orders.queryAvailableTickets({ filter: { eventId: event._id }, limit: 20 })
-      .then(({ definitions }) => setTiers(definitions ?? []))
-      .catch(() => setTiers([]));
-  }, [event._id]);
+  // One row per ticket, or per price of a ticket with several prices.
+  const rows = tickets.flatMap((ticket) => {
+    const options = getPricingOptions(ticket);
+    return options.length
+      ? options.map((o) => ({ key: `${ticket._id}:${o.optionId}`, ticket, pricingOptionId: o.optionId, name: `${ticket.name}: ${o.name}`, price: money(o.price) }))
+      : [{ key: ticket._id, ticket, name: ticket.name, price: priceLabel(ticket) }];
+  });
 
-  function setQty(id, qty) {
-    setQuantities(q => ({ ...q, [id]: Math.max(0, qty) }));
+  function setQuantity(row, quantity) {
+    setError('');
+    // The package refuses a count past a limit; check it first to say which limit.
+    const { limitedBy, max } = getTicketQuantityLimit(selection, row.ticket, { orderLimit, pricingOptionId: row.pricingOptionId });
+    if (quantity > max) {
+      setError(limitedBy === 'ORDER_LIMIT' ? `Up to ${orderLimit} tickets per order.` : `Up to ${max} of this ticket per order.`);
+      return;
+    }
+    setSelection(setTicketQuantity(selection, { ticketDefinition: row.ticket, pricingOptionId: row.pricingOptionId, quantity: Math.max(0, quantity) }, { orderLimit }));
   }
 
   async function handleReserve() {
     setError('');
-    const selections = Object.entries(quantities)
-      .filter(([, qty]) => qty > 0)
-      .map(([ticketDefinitionId, quantity]) => ({ ticketDefinitionId, quantity }));
-    if (selections.length === 0) { setError('Choose at least one ticket.'); return; }
+    const result = getTicketSelectionReservationLines(selection, tickets, { eventId: event._id, orderLimit });
+    if ('issues' in result) { setError(issueMessage(result.issues)); return; }
     setReserving(true);
     try {
-      const reservation = await ticketReservations.createTicketReservation({ tickets: selections });
-      const origin = window.location.origin;
-      const { redirectSession } = await redirects.createRedirectSession({
-        eventsCheckout: { reservationId: reservation._id, eventSlug: event.slug },
-        callbacks: {
-          thankYouPageUrl: `${origin}/event-confirmation`,
-          postFlowUrl: `${origin}/events/${event.slug}`,
-        },
-      });
-      window.location.href = redirectSession.fullUrl;
+      await reserveAndCheckout(event, result.tickets);
     } catch (e) {
-      const msg = e?.message ?? '';
-      if (/payment method|not configured|premium/i.test(msg)) {
-        setError("Ticket sales aren't switched on yet — the organizer needs to connect a payment method.");
-      } else {
-        setError('Could not reserve tickets. Please try again.');
-      }
       console.error(e);
+      setError(reservationMessage(getReservationErrorCode(e), e));
     } finally {
       setReserving(false);
     }
   }
 
-  if (tiers === null) return <p className="muted">Loading tickets…</p>;
-  if (tiers.length === 0) return <p className="muted">Tickets aren't available yet.</p>;
+  const count = getTicketSelectionQuantity(selection);
 
   return (
     <div>
-      {tiers.map(tier => (
-        <div key={tier._id} className="tier-row">
-          <div>
-            <p className="tier-name">{tier.name}</p>
-            {tier.description && <p className="tier-desc">{tier.description}</p>}
-            <p className="tier-price">{tier.free ? 'Free' : `${tier.price?.currency ?? ''} ${tier.price?.value ?? ''}`}</p>
+      {rows.map((row) => {
+        const quantity = getTicketSelectionQuantity(selection, { ticketDefinitionId: row.ticket._id, pricingOptionId: row.pricingOptionId });
+        const unavailable = saleLabel(row.ticket, event);
+        const donation = selection[row.ticket._id]?.donation ?? '';
+        return (
+          <div key={row.key} className="tier-row">
+            <div>
+              <p className="tier-name">{row.name}</p>
+              {row.ticket.description && <p className="tier-desc">{row.ticket.description}</p>}
+              <p className="tier-price">{unavailable || row.price}</p>
+              {isDonation(row.ticket) && quantity > 0 && (
+                <input
+                  aria-label={`Your amount per ticket for ${row.ticket.name}`}
+                  className="guest-price"
+                  inputMode="decimal"
+                  placeholder={priceLabel(row.ticket)}
+                  value={donation}
+                  onChange={(e) => setSelection(setTicketDonation(selection, { ticketDefinition: row.ticket, donation: e.target.value === '' ? '' : normalizePrice(e.target.value, donation) }, { orderLimit }))}
+                />
+              )}
+            </div>
+            <div className="qty">
+              <button className="qty-btn" disabled={!!unavailable || quantity === 0} aria-label={`Fewer ${row.name}`} onClick={() => setQuantity(row, quantity - 1)}>−</button>
+              <span style={{ minWidth: 20, textAlign: 'center' }}>{quantity}</span>
+              <button className="qty-btn" disabled={!!unavailable} aria-label={`More ${row.name}`} onClick={() => setQuantity(row, quantity + 1)}>+</button>
+            </div>
           </div>
-          <div className="qty">
-            <button className="qty-btn" onClick={() => setQty(tier._id, (quantities[tier._id] ?? 0) - 1)}>−</button>
-            <span style={{ minWidth: 20, textAlign: 'center' }}>{quantities[tier._id] ?? 0}</span>
-            <button className="qty-btn" onClick={() => setQty(tier._id, (quantities[tier._id] ?? 0) + 1)}>+</button>
-          </div>
-        </div>
-      ))}
+        );
+      })}
+      {count > 0 && <TotalRows invoice={getTicketSelectionInvoice(event, tickets, selection)} />}
       <button onClick={handleReserve} disabled={reserving} className="btn full" style={{ marginTop: 16 }}>
         {reserving ? 'Reserving…' : 'Get Tickets'}
       </button>
       {error && <p className="error" style={{ marginTop: 8 }}>{error}</p>}
     </div>
   );
+}
+
+/* ─── Ticket Picker (TICKETING events) ──────────────────────────────────── */
+// A seated event sells places on its seating map; it never sells ticket quantities, because Wix
+// would issue tickets that hold no seat. Any other ticketed event sells ticket quantities.
+function TicketPicker({ event }) {
+  const [tickets, setTickets] = useState(null);
+
+  useEffect(() => {
+    ticketDefinitionsV2.queryAvailableTicketDefinitions({ filter: { eventId: event._id }, sort: [{ fieldName: 'sortIndex', order: 'ASC' }] })
+      .then(({ ticketDefinitions }) => setTickets(getVisibleTicketDefinitions(ticketDefinitions ?? [])))
+      .catch((e) => { console.error('Failed to load tickets', e); setTickets([]); });
+  }, [event]);
+
+  if (tickets === null) return <p className="muted">Loading tickets…</p>;
+  if (tickets.length === 0) return <p className="muted">Tickets aren't available yet.</p>;
+  if (event.seating) return <SeatingPicker event={event} tickets={tickets} reserve={(lines) => reserveAndCheckout(event, lines)} />;
+  return <TierPicker event={event} tickets={tickets} />;
 }
 
 /* ─── RSVP Form (RSVP events) ────────────────────────────────────────────── */
