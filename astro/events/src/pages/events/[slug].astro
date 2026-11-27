@@ -7,6 +7,7 @@ import { wixEventsV2 } from '@wix/events';
 import { members } from '@wix/members';
 import Layout from '../../layouts/Layout.astro';
 import EventDetail from '../../components/EventDetail.jsx';
+import { SEATING_APP_ID } from '../../utils/seating';
 
 // Registers this route in /_wix/pages.json so the sitemap and dashboard
 // SEO editor know it exists. `slug` here is this route's own parameter
@@ -44,10 +45,22 @@ event = rawEvent && {
   mainImage: rawEvent.mainImage ?? null,
   dateAndTimeSettings: { formatted: { dateAndTime: rawEvent.dateAndTimeSettings?.formatted?.dateAndTime ?? '' } },
   location: { name: rawEvent.location?.name ?? '' },
+  status: rawEvent.status,
+  // @wix/events-registration-core reads the order limit, currency, tax and additional fees from
+  // registration.tickets, and whether registration closed from registration.status.
   registration: {
     initialType: rawEvent.registration?.initialType,
+    status: rawEvent.registration?.status,
     rsvp: { responseType: rawEvent.registration?.rsvp?.responseType },
+    tickets: rawEvent.registration?.tickets && {
+      ticketLimitPerOrder: rawEvent.registration.tickets.ticketLimitPerOrder,
+      currency: rawEvent.registration.tickets.currency,
+      taxSettings: rawEvent.registration.tickets.taxSettings ?? null,
+      additionalFees: rawEvent.registration.tickets.additionalFees ?? [],
+    },
   },
+  // A seated event's tickets are managed by the Wix Seating app: guests pick places on its map.
+  seating: rawEvent.registration?.tickets?.stockManagerAppId === SEATING_APP_ID,
 };
 seoTagsServiceConfig = seoConfig;
 
