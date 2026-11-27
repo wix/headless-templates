@@ -9,19 +9,22 @@ import {
   getPlaceSelectionInvoice,
   getPlaceSelectionQuantity,
   getPlaceSelectionReservationLines,
+  getPlaceSelectionSubtotal,
   getPlaces,
   getPlanStock,
   getPricingOptions,
   getReservationErrorCode,
-  getCheckoutTotals,
+  getSeatingPlanExternalId,
+  getSelectedPlanPlaceIds,
   isAvailabilityError,
   isDonation,
   normalizePrice,
   removePlace,
   setPlaceDonation,
+  setPlacePricingOption,
   setPlaceQuantity,
 } from '@wix/events-registration-core';
-import { categoryColors, placeLabel, placesById, seatingExternalId, selectedPlanIds, ticketColors } from '../utils/seating';
+import { categoryColors, placeLabel, placesById, ticketColors } from '../utils/seating';
 import { issueMessage, money, priceLabel, reservationMessage, saleLabel } from '../utils/tickets';
 import TotalRows from './TotalRows.jsx';
 
@@ -52,7 +55,7 @@ export default function SeatingPicker({ event, tickets, reserve }) {
   const loadMap = useCallback(async () => {
     setLoading(true);
     try {
-      const next = await seatingReservation.getSeatingReservationSummaryByExternalId(seatingExternalId(event._id));
+      const next = await seatingReservation.getSeatingReservationSummaryByExternalId(getSeatingPlanExternalId(event._id));
       setSummary(next?.plan ? next : null);
       // Keep what is still free on the new map.
       setSelection((s) => clampPlaceSelection(s, placesById(getPlaces(next, tickets))));
@@ -88,19 +91,15 @@ export default function SeatingPicker({ event, tickets, reserve }) {
     const entry = selection.find((s) => s.placeId === place.id && (!pricingOptionId || s.pricingOptionIds?.[0] === pricingOptionId));
     if (!entry) { if (quantity > 0) add(place, pricingOptionId); return; }
     if (quantity < 1) { setSelection(removePlace(selection, { place, pricingOptionId })); return; }
-    const next = setPlaceQuantity(selection, { place, pricingOptionId, quantity }, { orderLimit });
-    if (next === selection) {
-      const { limit } = getPlaceAvailability(place, selection, { orderLimit, pricingOptionId });
+    // The package refuses a count past a limit; check it first to say which limit.
+    const { limit } = getPlaceAvailability(place, selection, { orderLimit, pricingOptionId });
+    if (quantity > limit.max) {
       setError(limit.limitedBy === 'ORDER_LIMIT' ? blockedCopy.ORDER_LIMIT : 'No more places left there.');
       return;
     }
-    setSelection(next);
+    setSelection(setPlaceQuantity(selection, { place, pricingOptionId, quantity }, { orderLimit }));
   }
 
-  /** A seat's or a whole table's price option: every ticket at that place takes it. */
-  function setOption(place, pricingOptionId) {
-    setSelection(selection.map((s) => (s.placeId === place.id ? { ...s, pricingOptionIds: Array.from({ length: s.quantity }, () => pricingOptionId) } : s)));
-  }
 
   async function handleReserve() {
     setError('');
@@ -124,10 +123,6 @@ export default function SeatingPicker({ event, tickets, reserve }) {
 
   const mapTickets = tickets.filter((t) => places.some((p) => p.ticket._id === t._id));
   const picked = [...new Set(selection.map((s) => s.placeId))].map((id) => byId[id]).filter(Boolean);
-  /** The tickets at one place, before tax and fees: a whole table adds up its seats. */
-  const placePrice = (place) => getCheckoutTotals(
-    getPlaceSelectionInvoice(event, tickets, selection.filter((s) => s.placeId === place.id), { withAdditionalFees: false }),
-  ).subTotal;
   const count = getPlaceSelectionQuantity(selection);
 
   return (
@@ -148,7 +143,7 @@ export default function SeatingPicker({ event, tickets, reserve }) {
         style={{ height: 420 }}
         placesStock={getPlanStock(summary.plan, places, selection)}
         categoryColors={categoryColors(summary.plan, colors)}
-        selectedPlaceIds={selectedPlanIds(selection, byId)}
+        selectedPlaceIds={getSelectedPlanPlaceIds(selection, byId)}
         onPlaceActivate={(place) => togglePlace(place.id)}
       />
       <p className="muted" style={{ marginTop: 8 }}>
@@ -172,7 +167,7 @@ export default function SeatingPicker({ event, tickets, reserve }) {
                   <div>
                     <p className="tier-name">{label}</p>
                     <p className="tier-desc">{[place.sectionTitle, place.ticket.name].filter(Boolean).join(' · ')}</p>
-                    <p className="tier-price">{money(placePrice(place))}</p>
+                    <p className="tier-price">{money(getPlaceSelectionSubtotal(event, tickets, selection, { placeId: place.id }))}</p>
                     {isDonation(place.ticket) && (
                       <input
                         aria-label={`Your amount per ticket for ${label}`}
@@ -187,7 +182,7 @@ export default function SeatingPicker({ event, tickets, reserve }) {
                 </div>
                 <div className="qty" style={{ flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                   {place.archetype !== 'AREA' && options.length > 0 && (
-                    <select aria-label={`Price for ${label}`} value={entries[0]?.pricingOptionIds?.[0] ?? ''} onChange={(e) => setOption(place, e.target.value)}>
+                    <select aria-label={`Price for ${label}`} value={entries[0]?.pricingOptionIds?.[0] ?? ''} onChange={(e) => setSelection(setPlacePricingOption(selection, { place, pricingOptionId: e.target.value }))}>
                       {options.map((o) => <option key={o.optionId} value={o.optionId}>{o.name} ({money(o.price)})</option>)}
                     </select>
                   )}

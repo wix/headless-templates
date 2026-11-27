@@ -7,7 +7,7 @@ import { wixEventsV2 } from '@wix/events';
 import { members } from '@wix/members';
 import Layout from '../../layouts/Layout.astro';
 import EventDetail from '../../components/EventDetail.jsx';
-import { SEATING_APP_ID } from '../../utils/seating';
+import { isSeatedEvent } from '@wix/events-registration-core';
 
 // Registers this route in /_wix/pages.json so the sitemap and dashboard
 // SEO editor know it exists. `slug` here is this route's own parameter
@@ -60,7 +60,7 @@ event = rawEvent && {
     },
   },
   // A seated event's tickets are managed by the Wix Seating app: guests pick places on its map.
-  seating: rawEvent.registration?.tickets?.stockManagerAppId === SEATING_APP_ID,
+  seating: isSeatedEvent(rawEvent),
 };
 seoTagsServiceConfig = seoConfig;
 

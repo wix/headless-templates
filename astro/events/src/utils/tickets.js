@@ -1,15 +1,8 @@
 // Ticket rules come from @wix/events-registration-core: what a guest can pick, prices, the
 // preliminary invoice, reservation lines and what reservation errors mean. It takes the @wix/events
-// SDK objects as they are. This file only turns its codes and amounts into the copy the pickers show.
-import {
-  formatMoney,
-  getCheckoutTotals,
-  getMinimumDonationPrice,
-  getPriceRange,
-  getTicketSaleState,
-  isDonation,
-  isFree,
-} from '@wix/events-registration-core';
+// SDK objects as they are and returns codes and amounts. This file only turns them into the copy the
+// pickers show.
+import { formatMoney, getCheckoutTotals, getTicketPriceLabel, getTicketUnavailableReason } from '@wix/events-registration-core';
 
 /** The visitor's locale. Prices render in the browser only (tickets load after mount). */
 export function locale() {
@@ -21,32 +14,28 @@ export function money(amount) {
   return formatMoney(locale(), amount);
 }
 
-/** Ticket definitions to list, in the organizer's order, without the ones hidden until their sale. */
-export function visibleTickets(ticketDefinitions, event) {
-  return (ticketDefinitions ?? [])
-    .filter((t) => !getTicketSaleState(t, event).hidden)
-    .sort((a, b) => (a.sortIndex ?? 0) - (b.sortIndex ?? 0));
-}
-
 /** "Free", "€20.00", "€12.00 – €18.00" or "From €5.00" (pay what you want). */
 export function priceLabel(ticket) {
-  if (isFree(ticket)) return 'Free';
-  if (isDonation(ticket)) {
-    const min = getMinimumDonationPrice(ticket);
-    return Number(min?.value) > 0 ? `From ${money(min)}` : 'Pay what you want';
+  const label = getTicketPriceLabel(ticket);
+  switch (label?.type) {
+    case 'FREE': return 'Free';
+    case 'DONATION': return label.minimum ? `From ${money(label.minimum)}` : 'Pay what you want';
+    case 'PRICE': return money(label.price);
+    case 'PRICE_RANGE': return `${money(label.min)} – ${money(label.max)}`;
+    default: return '';
   }
-  const range = getPriceRange(ticket);
-  if (!range) return '';
-  return range.samePrice ? money(range.min) : `${money(range.min)} – ${money(range.max)}`;
 }
+
+const UNAVAILABLE_COPY = {
+  REGISTRATION_CLOSED: 'Registration closed',
+  SOLD_OUT: 'Sold out',
+  SALE_ENDED: 'Sale ended',
+  GOES_ON_SALE: 'Not on sale yet',
+};
 
 /** Why a ticket can't be bought right now, or '' when it's on sale. */
 export function saleLabel(ticket, event) {
-  const state = getTicketSaleState(ticket, event);
-  if (state.soldOut) return 'Sold out';
-  if (state.saleEnded) return 'Sale ended';
-  if (state.goesOnSale) return 'Not on sale yet';
-  return '';
+  return UNAVAILABLE_COPY[getTicketUnavailableReason(ticket, event)] ?? '';
 }
 
 /**
@@ -56,9 +45,10 @@ export function saleLabel(ticket, event) {
 export function totalRows(invoice) {
   const t = getCheckoutTotals(invoice);
   const rows = [];
+  // The totals only carry tax and the service fee when they aren't zero.
   if (t.hasSubTotal) rows.push({ label: 'Subtotal', amount: t.subTotal });
-  if (t.tax?.amount && Number(t.tax.amount.value) > 0) rows.push({ label: t.tax.name || 'Tax', amount: t.tax.amount });
-  if (t.addedFee && Number(t.addedFee.value) > 0) rows.push({ label: 'Service fee', amount: t.addedFee });
+  if (t.tax) rows.push({ label: t.tax.name || 'Tax', amount: t.tax.amount });
+  if (t.addedFee) rows.push({ label: 'Service fee', amount: t.addedFee });
   for (const fee of t.additionalFees) rows.push({ label: fee.name, amount: fee.amount });
   rows.push({ label: 'Total', amount: t.buyerTotal, total: true });
   return rows;

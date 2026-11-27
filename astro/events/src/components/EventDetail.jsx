@@ -11,12 +11,13 @@ import {
   getTicketSelectionInvoice,
   getTicketSelectionQuantity,
   getTicketSelectionReservationLines,
+  getVisibleTicketDefinitions,
   isDonation,
   normalizePrice,
   setTicketDonation,
   setTicketQuantity,
 } from '@wix/events-registration-core';
-import { issueMessage, money, priceLabel, reservationMessage, saleLabel, visibleTickets } from '../utils/tickets';
+import { issueMessage, money, priceLabel, reservationMessage, saleLabel } from '../utils/tickets';
 import SeatingPicker from './SeatingPicker.jsx';
 import TotalRows from './TotalRows.jsx';
 
@@ -66,12 +67,13 @@ function TierPicker({ event, tickets }) {
 
   function setQuantity(row, quantity) {
     setError('');
-    const next = setTicketQuantity(selection, { ticketDefinition: row.ticket, pricingOptionId: row.pricingOptionId, quantity: Math.max(0, quantity) }, { orderLimit });
-    if (next === selection && quantity > getTicketSelectionQuantity(selection, { ticketDefinitionId: row.ticket._id, pricingOptionId: row.pricingOptionId })) {
-      const { limitedBy, max } = getTicketQuantityLimit(selection, row.ticket, { orderLimit, pricingOptionId: row.pricingOptionId });
+    // The package refuses a count past a limit; check it first to say which limit.
+    const { limitedBy, max } = getTicketQuantityLimit(selection, row.ticket, { orderLimit, pricingOptionId: row.pricingOptionId });
+    if (quantity > max) {
       setError(limitedBy === 'ORDER_LIMIT' ? `Up to ${orderLimit} tickets per order.` : `Up to ${max} of this ticket per order.`);
+      return;
     }
-    setSelection(next);
+    setSelection(setTicketQuantity(selection, { ticketDefinition: row.ticket, pricingOptionId: row.pricingOptionId, quantity: Math.max(0, quantity) }, { orderLimit }));
   }
 
   async function handleReserve() {
@@ -139,7 +141,7 @@ function TicketPicker({ event }) {
 
   useEffect(() => {
     ticketDefinitionsV2.queryAvailableTicketDefinitions({ filter: { eventId: event._id }, sort: [{ fieldName: 'sortIndex', order: 'ASC' }] })
-      .then(({ ticketDefinitions }) => setTickets(visibleTickets(ticketDefinitions, event)))
+      .then(({ ticketDefinitions }) => setTickets(getVisibleTicketDefinitions(ticketDefinitions ?? [])))
       .catch((e) => { console.error('Failed to load tickets', e); setTickets([]); });
   }, [event]);
 
